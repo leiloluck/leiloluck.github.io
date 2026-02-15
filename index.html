@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Festival Support & Harm Reduction Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Custom Scrollbar for clean look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d1d5db; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af; 
+        }
+        
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        
+        @media (max-width: 640px) {
+            .chart-container {
+                height: 300px;
+            }
+        }
+
+        .tab-active {
+            border-bottom: 2px solid #4b5563;
+            color: #1f2937;
+            font-weight: 600;
+        }
+        
+        .tab-inactive {
+            color: #6b7280;
+        }
+
+        .card-transition {
+            transition: all 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-[#fdfbf7] text-gray-800 font-sans leading-relaxed selection:bg-stone-200">
+
+    <!-- 
+    Chosen Palette: Warm Neutrals (Stone, Sand, Slate)
+    Background: #fdfbf7 (Off-white/Cream)
+    Text: #1f2937 (Gray-900)
+    Accents: #e7e5e4 (Stone-200), #78716c (Stone-500)
+    -->
+
+    <!-- 
+    Application Structure Plan: 
+    The app is designed as a "Protocol Dashboard". 
+    1. Header: Context and Reset.
+    2. Protocol Selector: Buttons to switch between "Sober Baseline" and Substance Modifications.
+    3. Main Content Grid:
+       - Left Column: Timeline Guide (Before/During/After) - This is the primary reading area.
+       - Right Column: Analytics & Quick Facts - Radar charts for risk profiles and duration bars.
+    4. Rationale: Festival support crew need quick access to specific substance advice while understanding the "Baseline" physiological needs. 
+       Splitting by timeline (Before/During/After) matches the chronological nature of a festival night.
+    -->
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Header Section -->
+        <header class="mb-10 text-center sm:text-left border-b border-stone-200 pb-6 flex flex-col sm:flex-row justify-between items-center">
+            <div>
+                <h1 class="text-3xl sm:text-4xl font-bold text-stone-800 tracking-tight">Harm Reduction Protocols</h1>
+                <p class="mt-2 text-stone-600 max-w-2xl">
+                    Evidence-based guide for physiological maintenance during extended exertion (dancing/festivals). 
+                    Select a context below to view specific protocol adjustments.
+                </p>
+            </div>
+            <div class="mt-4 sm:mt-0 text-right">
+                <div class="text-xs font-mono text-stone-400 uppercase tracking-widest">Current Mode</div>
+                <div id="current-mode-display" class="text-xl font-bold text-stone-800">Sober / Baseline</div>
+            </div>
+        </header>
+
+        <!-- Navigation / Substance Selector -->
+        <nav class="mb-12">
+            <p class="text-sm font-semibold text-stone-500 uppercase tracking-wider mb-4">Select Context / Substance</p>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3" id="substance-nav">
+                <!-- Buttons injected via JS -->
+            </div>
+        </nav>
+
+        <!-- Main Content Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            
+            <!-- LEFT COLUMN: The Guide (Timeline) -->
+            <div class="lg:col-span-7 space-y-8">
+                
+                <!-- Introduction Paragraph for Guide Section -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-100">
+                    <h2 class="text-lg font-bold text-stone-800 mb-2">Protocol Timeline</h2>
+                    <p class="text-stone-600 text-sm">
+                        This section breaks down the recommended actions into chronological phases. 
+                        It answers critical questions regarding nutrition, hydration, and recovery. 
+                        <span id="intro-modifier" class="font-semibold text-stone-800">Displaying standard universal practices.</span>
+                    </p>
+                </div>
+
+                <!-- BEFORE Phase -->
+                <section class="card-transition">
+                    <div class="flex items-center mb-4">
+                        <span class="flex items-center justify-center w-8 h-8 rounded-full bg-stone-200 text-stone-700 font-bold text-sm mr-3">1</span>
+                        <h3 class="text-xl font-bold text-stone-800">Preparation (Before)</h3>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
+                        <div class="p-6">
+                            <ul class="space-y-4" id="content-before">
+                                <!-- Content injected via JS -->
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- DURING Phase -->
+                <section class="card-transition">
+                    <div class="flex items-center mb-4">
+                        <span class="flex items-center justify-center w-8 h-8 rounded-full bg-stone-200 text-stone-700 font-bold text-sm mr-3">2</span>
+                        <h3 class="text-xl font-bold text-stone-800">Activity (During)</h3>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
+                        <div class="p-6">
+                            <div class="mb-4 bg-stone-50 p-4 rounded-lg border-l-4 border-stone-400">
+                                <h4 class="font-bold text-sm text-stone-700 uppercase mb-1">Critical Focus</h4>
+                                <p id="focus-during" class="text-stone-600 text-sm">Hydration balance and electrolyte maintenance.</p>
+                            </div>
+                            <ul class="space-y-4" id="content-during">
+                                <!-- Content injected via JS -->
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- AFTER Phase -->
+                <section class="card-transition">
+                    <div class="flex items-center mb-4">
+                        <span class="flex items-center justify-center w-8 h-8 rounded-full bg-stone-200 text-stone-700 font-bold text-sm mr-3">3</span>
+                        <h3 class="text-xl font-bold text-stone-800">Recovery (After & Next Morning)</h3>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
+                        <div class="p-6">
+                            <ul class="space-y-4" id="content-after">
+                                <!-- Content injected via JS -->
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+
+            <!-- RIGHT COLUMN: Visualization & Data -->
+            <div class="lg:col-span-5 space-y-8">
+                
+                <!-- Intro for Data Section -->
+                <div class="bg-stone-100 p-5 rounded-xl border border-stone-200">
+                    <h2 class="text-base font-bold text-stone-800 mb-2">Physiological Impact Analysis</h2>
+                    <p class="text-stone-600 text-xs">
+                        Visualizing how the current state deviates from a rested baseline. Use this to anticipate risks like overheating or sleep disruption.
+                    </p>
+                </div>
+
+                <!-- Risk Radar Chart -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                    <h3 class="text-sm font-bold text-stone-500 uppercase tracking-wider mb-4 text-center">Load Profile</h3>
+                    <div class="chart-container">
+                        <canvas id="riskRadar"></canvas>
+                    </div>
+                    <p class="mt-4 text-xs text-center text-stone-500 italic">
+                        Values represent estimated physiological load (0-10).
+                    </p>
+                </div>
+
+                <!-- Duration / Timeline Chart -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                    <h3 class="text-sm font-bold text-stone-500 uppercase tracking-wider mb-4 text-center">Effect Duration (Hours)</h3>
+                    <div class="chart-container" style="height: 200px;">
+                        <canvas id="durationBar"></canvas>
+                    </div>
+                    <div class="mt-4 text-sm text-stone-600 bg-stone-50 p-3 rounded">
+                        <span class="font-bold">Sleep Strategy:</span> <span id="sleep-strategy-text">Normal sleep cycle recommended.</span>
+                    </div>
+                </div>
+
+                <!-- Emergency Flags (Dynamic) -->
+                <div id="emergency-flags" class="hidden bg-red-50 p-6 rounded-xl border border-red-100">
+                    <h3 class="text-red-800 font-bold mb-2 flex items-center">
+                        <span class="text-xl mr-2">⚠️</span> Risk Factors
+                    </h3>
+                    <ul id="risk-list" class="list-disc list-inside text-sm text-red-700 space-y-1">
+                        <!-- Injected via JS -->
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="mt-16 border-t border-stone-200 pt-8 text-center text-stone-400 text-xs">
+            <p>This guide is for harm reduction and educational purposes only. In case of medical emergency, seek professional help immediately.</p>
+            <p class="mt-2">Based on established harm reduction guidelines (RollSafe, TripSit, PsychonautWiki).</p>
+        </footer>
+
+    </div>
+
+    <!-- 
+    Visualization & Content Choices:
+    1. Navigation: Grid of buttons for quick access. Interaction updates all content.
+    2. Lists (Timeline): Used for text content to make it scannable. Icons (Unicode) add visual cues.
+    3. Radar Chart: Chosen to compare multi-dimensional risks (Hydration, Sleep, Heat, Neurotoxicity) against the baseline.
+       Allows user to see "Heat" spike for MDMA vs "Sleep" spike for Amphetamine.
+    4. Bar Chart: Visualizes duration to manage expectations about sleep latency.
+    -->
+
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <script>
+        // Data Store
+        const substanceData = {
+            sober: {
+                name: "Sober (Baseline)",
+                type: "Standard",
+                color: "rgb(75, 85, 99)", // Gray
+                duration: [6, 8], // Energy duration roughly
+                risks: { hydration: 2, heat: 3, sleep: 1, neuro: 0 },
+                emergency: [],
+                sleepStrategy: "Wind down naturally. Non-Sleep Deep Rest (NSDR) if overtired.",
+                content: {
+                    before: [
+                        "<strong>Meal Timing:</strong> Eat a complex carbohydrate meal (pasta, rice, oats) 3-4 hours before dancing. This provides sustained glycogen.",
+                        "<strong>Pre-hydration:</strong> Drink 500ml of water in the 2 hours leading up to the event.",
+                        "<strong>Supplements:</strong> Magnesium Glycinate (200mg) pre-load can help muscle stamina."
+                    ],
+                    during: [
+                        "<strong>Hydration Rule:</strong> If dancing hard, drink 250-500ml per hour. Do not exceed 800ml/h to avoid hyponatremia.",
+                        "<strong>Electrolytes vs. Water:</strong> Electrolytes are priority #1 during sweating. Sodium is crucial to prevent water intoxication.",
+                        "<strong>Food:</strong> Salty snacks (nuts, pretzels) are superior to fruit during the event as they replace sodium lost in sweat. Fruit is okay but provides a sugar spike/crash.",
+                        "<strong>Rest:</strong> Take a 15-minute sitting break every 90 minutes to cool down."
+                    ],
+                    after: [
+                        "<strong>Immediate:</strong> Consume protein (shake or bar) and simple carbs (banana) within 30 mins of stopping to aid muscle repair.",
+                        "<strong>Magnesium:</strong> Take Magnesium Glycinate/Citrate (200-400mg) before bed to reduce muscle tension and improve sleep quality.",
+                        "<strong>The '6-Hour' Rule:</strong> If you wake up after only 6 hours, do not force sleep, but <strong>stay horizontal</strong>. Listen to 'Yoga Nidra' or calm music. Your body needs physical rest even if your brain is awake.",
+                        "<strong>Next Day Food:</strong> Focus on antioxidant-rich foods (berries, greens) and lean proteins. Avoid heavy greasy food which taxes digestion."
+                    ]
+                }
+            },
+            alcohol: {
+                name: "Alcohol",
+                type: "Depressant",
+                color: "rgb(234, 179, 8)", // Yellowish
+                duration: [4, 6],
+                risks: { hydration: 8, heat: 5, sleep: 4, neuro: 3 },
+                emergency: ["Vomiting while unconscious", "Respiratory depression"],
+                sleepStrategy: "Expect fragmented sleep. Alcohol helps onset but ruins quality (REM rebound).",
+                content: {
+                    before: [
+                        "<strong>Food Base:</strong> Eat a fatty meal beforehand to slow absorption.",
+                        "<strong>Hydration:</strong> Drink 1 glass of water for every alcoholic drink planned."
+                    ],
+                    during: [
+                        "<strong>1:1 Rule:</strong> Strictly one glass of water for every serving of alcohol.",
+                        "<strong>Avoid Caffeine:</strong> Mixing masks intoxication, leading to higher consumption.",
+                        "<strong>Snacks:</strong> Salty nuts help retain water (alcohol is a diuretic)."
+                    ],
+                    after: [
+                        "<strong>Rehydration:</strong> Drink a full pint of water with electrolytes before bed. This is the single best hangover prevention.",
+                        "<strong>Meds:</strong> Avoid Tylenol/Paracetamol (liver stress). Ibuprofen is safer for headaches *if* stomach is settled."
+                    ]
+                }
+            },
+            weed: {
+                name: "Weed (Cannabis)",
+                type: "Psychoactive",
+                color: "rgb(34, 197, 94)", // Green
+                duration: [2, 4],
+                risks: { hydration: 3, heat: 2, sleep: 2, neuro: 1 },
+                emergency: ["Greening out (Pale, dizzy, nausea) - lay down, elevate legs, sugar."],
+                sleepStrategy: "Suppresses REM sleep. You may feel groggy.",
+                content: {
+                    before: [
+                        "<strong>Environment:</strong> Ensure you have a safe, comfortable place to sit."
+                    ],
+                    during: [
+                        "<strong>Sugar:</strong> If feeling faint or anxious, consume sugar (soda/candy) immediately. Low blood sugar is a common trigger for 'bad trips'.",
+                        "<strong>Hydration:</strong> 'Cotton mouth' is real. Sip water frequently."
+                    ],
+                    after: [
+                        "<strong>Sleep:</strong> Generally aids sleep onset.",
+                        "<strong>Food:</strong> Prepare healthy snacks beforehand to avoid binge-eating junk food (munchies)."
+                    ]
+                }
+            },
+            mdma: {
+                name: "MDMA / Ecstasy",
+                type: "Stimulant/Empathogen",
+                color: "rgb(168, 85, 247)", // Purple
+                duration: [4, 6],
+                risks: { hydration: 6, heat: 9, sleep: 7, neuro: 7 },
+                emergency: ["Heatstroke (hot/dry skin)", "Hyponatremia (water poisoning)", "Jaw clenching"],
+                sleepStrategy: "Sleep will be difficult. Do not redose late. Use melatonin.",
+                content: {
+                    before: [
+                        "<strong>Antioxidants:</strong> Vitamin C and Alpha Lipoic Acid (ALA) 1 hour before to reduce neurotoxicity.",
+                        "<strong>Magnesium:</strong> High bioavailability Magnesium (Glycinate) 1 hour before to prevent jaw clenching."
+                    ],
+                    during: [
+                        "<strong>Water Limit:</strong> CRITICAL. Drink NO MORE than 500ml/hour (active) or 250ml/hour (inactive). MDMA causes water retention.",
+                        "<strong>Cooling:</strong> Take breaks. Overheating is the #1 danger. If you stop sweating, cool down immediately.",
+                        "<strong>Redosing:</strong> Avoid. Increases neurotoxicity significantly without increasing the high."
+                    ],
+                    after: [
+                        "<strong>5-HTP:</strong> DO NOT take 5-HTP until 24 hours after dosing (risk of Serotonin Syndrome).",
+                        "<strong>Recovery:</strong> Vitamin C and rest. Mood drop (Tuesday Blues) is normal; don't make life decisions for 3 days."
+                    ]
+                }
+            },
+            ketamine: {
+                name: "Ketamine",
+                type: "Dissociative",
+                color: "rgb(56, 189, 248)", // Light Blue
+                duration: [1, 2],
+                risks: { hydration: 2, heat: 1, sleep: 2, neuro: 2 }, // Low physical toxicity usually
+                emergency: ["K-Hole (unresponsive)", "Falls/Injury", "Urinary pain"],
+                sleepStrategy: "Short duration allows for sleep soon after, but coordination may remain impaired.",
+                content: {
+                    before: [
+                        "<strong>Empty Stomach:</strong> Don't eat heavy meals 2h before (nausea risk).",
+                        "<strong>No Alcohol:</strong> Extremely dangerous combo (respiratory depression/vomiting)."
+                    ],
+                    during: [
+                        "<strong>Bladder Care:</strong> Spit the drip (if nasal). Drink Green Tea (EGCG) - protective for the bladder.",
+                        "<strong>Movement:</strong> Be careful with dancing; coordination is significantly impaired. Sit down if wobbly."
+                    ],
+                    after: [
+                        "<strong>Safety:</strong> Do not walk home alone. Disorientation persists after the peak.",
+                        "<strong>Hydration:</strong> Moderate water. Green tea extract recommended."
+                    ]
+                }
+            },
+            amp: {
+                name: "Amphetamine/Speed",
+                type: "Stimulant",
+                color: "rgb(239, 68, 68)", // Red
+                duration: [6, 12],
+                risks: { hydration: 7, heat: 7, sleep: 10, neuro: 5 },
+                emergency: ["Heart palpitations", "Paranoia", "Severe insomnia"],
+                sleepStrategy: "Sleep will be impossible for 8-12h. Accept it. Rest body horizontally.",
+                content: {
+                    before: [
+                        "<strong>Meal:</strong> Eat a HUGE nutritious meal. You will not be able to eat for 12 hours.",
+                        "<strong>Magnesium:</strong> Essential pre-load for muscle tension."
+                    ],
+                    during: [
+                        "<strong>Forced Nutrition:</strong> You won't feel hungry. Drink smoothies or protein shakes. You need fuel to burn.",
+                        "<strong>Hydration:</strong> Dry mouth is common. Sip constantly, but track volume (electrolytes vital).",
+                        "<strong>Chewing:</strong> Use gum to save your teeth/tongue."
+                    ],
+                    after: [
+                        "<strong>Wash:</strong> Shower to remove sweat/toxins.",
+                        "<strong>Nose Care:</strong> Saline rinse if insufflated.",
+                        "<strong>Vitamin C:</strong> High dose Vitamin C can speed up excretion of amphetamines via urine, helping sleep onset."
+                    ]
+                }
+            },
+            lsd: {
+                name: "LSD / Acid",
+                type: "Psychedelic",
+                color: "rgb(236, 72, 153)", // Pink
+                duration: [8, 12],
+                risks: { hydration: 4, heat: 3, sleep: 9, neuro: 1 },
+                emergency: ["Panic attack", "Psychosis", "Getting lost"],
+                sleepStrategy: "Very long duration. Plan for the next day to be fully off.",
+                content: {
+                    before: [
+                        "<strong>Set & Setting:</strong> Mental state is more important than physical prep.",
+                        "<strong>Food:</strong> Light meal. Digestion can feel weird on acid."
+                    ],
+                    during: [
+                        "<strong>Reality Checks:</strong> Have a sober friend/sitter.",
+                        "<strong>Hydration:</strong> Easy to forget. Set a timer to drink water.",
+                        "<strong>Sensory Overload:</strong> Have sunglasses/earplugs ready."
+                    ],
+                    after: [
+                        "<strong>Integration:</strong> Write down thoughts. Talking helps.",
+                        "<strong>Rest:</strong> You will be mentally exhausted. Brain requires silence."
+                    ]
+                }
+            },
+            cocaine: { // Mapping 2CB/4MMC generically or adding explicitly. User asked for 2CB, 4MMC, Caffeine.
+                 name: "Caffeine",
+                 type: "Stimulant",
+                 color: "rgb(120, 113, 108)", // Brown
+                 duration: [3, 5],
+                 risks: { hydration: 4, heat: 3, sleep: 5, neuro: 0 },
+                 emergency: ["Jitters", "Anxiety", "Heart rate"],
+                 sleepStrategy: "Half-life is 5-6 hours. Stop intake 8 hours before bed.",
+                 content: {
+                     before: ["L-Theanine can smooth out the jitters."],
+                     during: ["Hydrate. Caffeine is a diuretic.", "Avoid mixing with other stimulants (heart strain)."],
+                     after: ["Magnesium helps with the jittery comedown."]
+                 }
+            },
+            "2cb": {
+                name: "2C-B",
+                type: "Psychedelic",
+                color: "rgb(244, 114, 182)", // Pinkish
+                duration: [4, 6],
+                risks: { hydration: 3, heat: 4, sleep: 4, neuro: 2 },
+                emergency: ["Confusion", "Nausea (common on come-up)"],
+                sleepStrategy: "Easier to sleep after than LSD/MDMA.",
+                content: {
+                    before: [
+                        "<strong>Fast:</strong> Avoid food 3-4 hours before to prevent severe nausea.",
+                        "<strong>Ginger:</strong> Take ginger supplement/tea to settle stomach."
+                    ],
+                    during: [
+                        "<strong>Hydration:</strong> Standard baseline protocols apply.",
+                        "<strong>Alcohol:</strong> Often mixed, but increases dehydration. Keep alcohol low."
+                    ],
+                    after: [
+                        "<strong>Standard:</strong> Follow baseline food/sleep protocols."
+                    ]
+                }
+            },
+            "4mmc": {
+                name: "4-MMC / Mephedrone",
+                type: "Stimulant/Empathogen",
+                color: "rgb(249, 115, 22)", // Orange
+                duration: [2, 4], // Short duration but redosing extends
+                risks: { hydration: 8, heat: 8, sleep: 8, neuro: 6 },
+                emergency: ["Blue knees/extremities (vasoconstriction)", "Heart rate", "Compulsive redosing"],
+                sleepStrategy: "Difficult due to residual stimulation.",
+                content: {
+                    before: [
+                        "<strong>Electrolytes:</strong> Pre-load heavily. You will sweat profusely.",
+                        "<strong>Magnesium:</strong> Essential for vasoconstriction and jaw."
+                    ],
+                    during: [
+                        "<strong>Vasoconstriction:</strong> If knees/fingers turn blue/cold, STOP, warm up, take magnesium.",
+                        "<strong>Hydration:</strong> High demand, but sip electrolytes.",
+                        "<strong>Compulsion:</strong> Set a strict limit on amount available. 'Fiending' is very strong."
+                    ],
+                    after: [
+                        "<strong>Nose Care:</strong> Saline rinse essential.",
+                        "<strong>Food:</strong> Soft food/shakes. Mouth may be sore."
+                    ]
+                }
+            }
+        };
+
+        // --- CHART INITIALIZATION ---
+        
+        // Radar Chart (Risks)
+        const ctxRadar = document.getElementById('riskRadar').getContext('2d');
+        const riskRadar = new Chart(ctxRadar, {
+            type: 'radar',
+            data: {
+                labels: ['Dehydration Risk', 'Overheating Risk', 'Sleep Disruption', 'Neuro/Body Load'],
+                datasets: [
+                    {
+                        label: 'Baseline (Sober)',
+                        data: [2, 3, 1, 0],
+                        fill: true,
+                        backgroundColor: 'rgba(75, 85, 99, 0.2)',
+                        borderColor: 'rgb(75, 85, 99)',
+                        pointBackgroundColor: 'rgb(75, 85, 99)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(75, 85, 99)'
+                    },
+                    {
+                        label: 'Selected State',
+                        data: [2, 3, 1, 0], // Init with sober
+                        fill: true,
+                        backgroundColor: 'rgba(234, 179, 8, 0.2)',
+                        borderColor: 'rgb(234, 179, 8)',
+                        pointBackgroundColor: 'rgb(234, 179, 8)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(234, 179, 8)'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: { color: '#e5e7eb' },
+                        grid: { color: '#e5e7eb' },
+                        pointLabels: { font: { size: 12, weight: '600' }, color: '#374151' },
+                        suggestedMin: 0,
+                        suggestedMax: 10,
+                        ticks: { display: false } // hide numbers on axis
+                    }
+                },
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+
+        // Bar Chart (Duration)
+        const ctxBar = document.getElementById('durationBar').getContext('2d');
+        const durationBar = new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: ['Active Duration (Hours)'],
+                datasets: [{
+                    label: 'Min Hours',
+                    data: [6],
+                    backgroundColor: 'rgba(75, 85, 99, 0.6)',
+                    borderRadius: 4,
+                    barPercentage: 0.5
+                },
+                {
+                    label: 'Max Hours',
+                    data: [8],
+                    backgroundColor: 'rgba(75, 85, 99, 0.3)',
+                    borderRadius: 4,
+                    barPercentage: 0.5
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { beginAtZero: true, max: 14, grid: { display: false } },
+                    y: { grid: { display: false } }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            title: () => 'Active Phase',
+                            label: (ctx) => `${ctx.raw} hours`
+                        }
+                    }
+                }
+            }
+        });
+
+
+        // --- UI LOGIC ---
+
+        const navContainer = document.getElementById('substance-nav');
+        const modeDisplay = document.getElementById('current-mode-display');
+        const contentBefore = document.getElementById('content-before');
+        const contentDuring = document.getElementById('content-during');
+        const contentAfter = document.getElementById('content-after');
+        const emergencySection = document.getElementById('emergency-flags');
+        const emergencyList = document.getElementById('risk-list');
+        const sleepText = document.getElementById('sleep-strategy-text');
+        const introModifier = document.getElementById('intro-modifier');
+        const focusDuring = document.getElementById('focus-during');
+
+        function renderNav() {
+            Object.keys(substanceData).forEach(key => {
+                const sub = substanceData[key];
+                const btn = document.createElement('button');
+                btn.className = `p-3 rounded-lg text-sm font-bold shadow-sm border transition-all hover:shadow-md text-center flex flex-col items-center justify-center gap-1 h-20 ${key === 'sober' ? 'border-stone-800 ring-1 ring-stone-800 bg-white' : 'border-stone-200 bg-white hover:bg-stone-50'}`;
+                btn.onclick = () => loadSubstance(key, btn);
+                
+                // Content
+                const label = document.createElement('span');
+                label.innerText = sub.name.split(" ")[0]; // Short name
+                
+                // Dot indicator
+                const dot = document.createElement('span');
+                dot.className = "w-2 h-2 rounded-full";
+                dot.style.backgroundColor = sub.color;
+
+                btn.appendChild(dot);
+                btn.appendChild(label);
+                navContainer.appendChild(btn);
+            });
+        }
+
+        function loadSubstance(key, btnElement) {
+            const data = substanceData[key];
+            
+            // Update UI State (Buttons)
+            Array.from(navContainer.children).forEach(b => {
+                b.className = "p-3 rounded-lg text-sm font-bold shadow-sm border border-stone-200 bg-white hover:bg-stone-50 text-stone-600 transition-all text-center flex flex-col items-center justify-center gap-1 h-20";
+            });
+            btnElement.className = "p-3 rounded-lg text-sm font-bold shadow-md border-stone-800 ring-1 ring-stone-800 bg-stone-50 text-stone-900 transition-all text-center flex flex-col items-center justify-center gap-1 h-20 transform scale-105";
+
+            // Update Header
+            modeDisplay.innerText = data.name;
+            modeDisplay.style.color = data.color;
+            introModifier.innerText = key === 'sober' 
+                ? "Displaying standard universal practices." 
+                : `Displaying adjustments specifically for ${data.name}.`;
+
+            // Update Text Content
+            // Helper to format list items
+            const createList = (items) => items.map(item => `<li class="flex items-start"><span class="mr-2 mt-1.5 w-1.5 h-1.5 bg-stone-400 rounded-full flex-shrink-0"></span><span class="text-stone-700 text-sm leading-relaxed">${item}</span></li>`).join('');
+
+            contentBefore.innerHTML = createList(data.content.before);
+            contentDuring.innerHTML = createList(data.content.during);
+            contentAfter.innerHTML = createList(data.content.after);
+
+            // Special Focus Text updates
+            if(data.risks.hydration > 6) {
+                focusDuring.innerText = "CRITICAL: Strict hydration monitoring required.";
+                focusDuring.parentElement.className = "mb-4 bg-red-50 p-4 rounded-lg border-l-4 border-red-400";
+            } else if (data.risks.heat > 6) {
+                focusDuring.innerText = "CRITICAL: Watch for overheating. Take frequent cooldown breaks.";
+                focusDuring.parentElement.className = "mb-4 bg-orange-50 p-4 rounded-lg border-l-4 border-orange-400";
+            } else {
+                focusDuring.innerText = key === 'sober' ? "Hydration balance and electrolyte maintenance." : "Maintain baseline safety protocols.";
+                focusDuring.parentElement.className = "mb-4 bg-stone-50 p-4 rounded-lg border-l-4 border-stone-400";
+            }
+
+            sleepText.innerText = data.sleepStrategy;
+
+            // Update Emergency Flags
+            if (data.emergency.length > 0) {
+                emergencySection.classList.remove('hidden');
+                emergencyList.innerHTML = data.emergency.map(e => `<li>${e}</li>`).join('');
+            } else {
+                emergencySection.classList.add('hidden');
+            }
+
+            // Update Charts
+            
+            // Radar
+            const newRiskData = [
+                data.risks.hydration, 
+                data.risks.heat, 
+                data.risks.sleep, 
+                data.risks.neuro
+            ];
+            riskRadar.data.datasets[1].data = newRiskData;
+            riskRadar.data.datasets[1].label = data.name;
+            riskRadar.data.datasets[1].borderColor = data.color;
+            riskRadar.data.datasets[1].backgroundColor = data.color.replace('rgb', 'rgba').replace(')', ', 0.2)');
+            riskRadar.data.datasets[1].pointBackgroundColor = data.color;
+            riskRadar.update();
+
+            // Bar
+            durationBar.data.datasets[0].data = [data.duration[0]];
+            durationBar.data.datasets[1].data = [data.duration[1] - data.duration[0]]; // Stacked logic visual
+            durationBar.data.datasets[0].backgroundColor = data.color.replace('rgb', 'rgba').replace(')', ', 0.8)');
+            durationBar.data.datasets[1].backgroundColor = data.color.replace('rgb', 'rgba').replace(')', ', 0.4)');
+            durationBar.update();
+        }
+
+        // Initialize
+        renderNav();
+        // Trigger click on first button (Sober) to load default state
+        navContainer.children[0].click();
+
+    </script>
+</body>
+</html>

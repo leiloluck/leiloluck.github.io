@@ -1,0 +1,854 @@
+{
+  "sober": {
+    "id": "sober",
+    "name": "Sober / Baseline",
+    "type": "Baseline",
+    "emoji": "🧠",
+    "color": "#78716c",
+    "duration": 0,
+    "visualizer": {
+      "neurotoxicity": 0,
+      "cardiotoxicity": 0,
+      "dehydration": 1,
+      "sleep_deprivation": 2,
+      "impulsivity": 0
+    },
+    "sleep_strategy": "Normal sleep cycle recommended. 9-10 hours pre-event banking.",
+    "phases": {
+      "before": [
+        {
+          "short": "Sleep Banking: 9-10 hours/night for days prior.",
+          "detail": "Research demonstrates that prophylactic sleep extension creates a homeostatic reserve. This reserve mitigates cognitive decline, delayed reaction times, and mood lability when the circadian rhythm is forced past its typical sleep onset window. A 20-90 minute late-afternoon nap also helps."
+        },
+        {
+          "short": "Nutrition: Complex carbs + lean protein, 2-4 hours before.",
+          "detail": "Skeletal muscles rely heavily on glycogen as their primary substrate during moderate-to-high-intensity aerobic activity. Whole grains, brown rice, or quinoa paired with lean proteins ensure gastric emptying is complete before vigorous movement begins, preventing GI distress while maximizing stored energy."
+        },
+        {
+          "short": "Hydration: Pre-hydrate normally.",
+          "detail": "Begin hydrating steadily in the hours before the event. Avoid chugging large volumes at once — steady sipping is more effective at cellular hydration."
+        }
+      ],
+      "during": {
+        "focus": "Hydration balance and electrolyte maintenance.",
+        "items": [
+          {
+            "short": "Hydration: Water + Electrolytes (Na/K). Avoid pure water bloat.",
+            "detail": "Sweat contains 200-700mg sodium/hour. Rapidly consuming pure water without replacing lost solutes dilutes blood sodium, risking exertional hyponatremia — a potentially fatal condition causing headaches, confusion, cramping, and seizures."
+          },
+          {
+            "short": "Nutrition: Simple carbs (fruit, applesauce) for rapid energy.",
+            "detail": "During vigorous dancing, the autonomic nervous system diverts blood away from the GI tract toward muscles and skin. High-fat foods cause bloating and nausea. Fruits provide rapid glucose and fructose directly to working muscles without overburdening the ischemic gut."
+          },
+          {
+            "short": "Avoid: High-fat/protein foods during activity.",
+            "detail": "Dietary fats require prolonged, energy-intensive digestion. Forcing the stomach to process nuts or heavy proteins during exercise leads to severe bloating, nausea, and stomach cramping due to reduced GI blood flow."
+          }
+        ]
+      },
+      "after": [
+        {
+          "short": "Recovery Meal: Slow-digesting protein (casein/yogurt) + complex carb.",
+          "detail": "Consuming 20-40g of casein protein before sleep provides a steady stream of amino acids for overnight muscle protein synthesis. Combining protein with carbohydrates facilitates tryptophan transport across the blood-brain barrier, enhancing serotonin and melatonin production for better sleep."
+        },
+        {
+          "short": "Supplements: Magnesium, 1-2 hours before bed.",
+          "detail": "Magnesium acts as a natural calcium antagonist at the neuromuscular junction — facilitating muscle relaxation. Neurologically, it stimulates GABA receptors and blocks NMDA receptor pores, reducing excitatory neural activity and promoting deeper slow-wave sleep."
+        },
+        {
+          "short": "Hydration: Rehydrate with electrolytes.",
+          "detail": "Replace fluid and sodium lost during the event. A balanced electrolyte drink restores blood plasma volume and cellular hydration more effectively than plain water."
+        }
+      ],
+      "next_morning": [
+        {
+          "short": "Wake Up: Expose eyes to natural sunlight immediately.",
+          "detail": "Remaining in bed past normal waking hours throws peripheral circadian clocks out of alignment with the brain's master clock (suprachiasmatic nucleus), causing severe 'sleep inertia' — intense grogginess, impaired cognition, and depressed mood lasting hours."
+        },
+        {
+          "short": "Nutrition: High protein breakfast + complex carbs.",
+          "detail": "Blood glucose fluctuates wildly after sleep deprivation. Eggs on whole-grain toast stabilize levels. Consume 500ml water before caffeine — caffeine masks fatigue and acts as a mild diuretic, worsening dehydration."
+        },
+        {
+          "short": "Nap: 20-30 min before 3PM. Avoid long sleeping in.",
+          "detail": "A nap of exactly this duration reduces homeostatic sleep pressure and restores alertness without entering deep slow-wave sleep. Waking from slow-wave sleep during the day causes debilitating daytime grogginess."
+        }
+      ]
+    },
+    "risks": [
+      "Exhaustion from prolonged exertion",
+      "Dehydration and electrolyte imbalance",
+      "Sleep deprivation and circadian disruption"
+    ]
+  },
+  "alcohol": {
+    "id": "alcohol",
+    "name": "Alcohol",
+    "type": "Depressant",
+    "emoji": "🍺",
+    "color": "#ef4444",
+    "duration": 4,
+    "visualizer": {
+      "neurotoxicity": 4,
+      "cardiotoxicity": 2,
+      "dehydration": 9,
+      "sleep_deprivation": 8,
+      "impulsivity": 6
+    },
+    "sleep_strategy": "Expect fragmented sleep. Hydrate heavily before bed.",
+    "phases": {
+      "before": [
+        {
+          "short": "Meal: High fat/protein meal to slow absorption.",
+          "detail": "Alcohol absorption is heavily dependent on gastric contents. Consuming alcohol on an empty stomach leads to rapid absorption through the gastric mucosa, causing a dangerous BAC spike. Complex fats and proteins delay gastric emptying, forcing slower absorption through the small intestine."
+        },
+        {
+          "short": "Hydration: Pre-hydrate significantly.",
+          "detail": "Alcohol inhibits ADH (antidiuretic hormone), causing continuous water loss through the kidneys. Starting well-hydrated provides a buffer against the inevitable diuretic effect."
+        }
+      ],
+      "during": {
+        "focus": "Counteracting diuresis (fluid loss).",
+        "items": [
+          {
+            "short": "Rule: 1 glass of water/electrolyte per alcoholic drink.",
+            "detail": "Alcohol suppresses ADH secretion from the pituitary gland, causing kidneys to continuously flush water. Combined with sweating from dancing, this creates two-front fluid loss. A strict 1:1 ratio prevents severe dehydration."
+          },
+          {
+            "short": "Caution: Alcohol suppresses ADH → massive fluid loss.",
+            "detail": "Without ADH, the kidneys cannot reabsorb water. Every alcoholic drink accelerates dehydration. Relying on beer or cocktails for hydration guarantees worsened neuromuscular fatigue and a severe hangover."
+          },
+          {
+            "short": "Avoid: Mixing with other depressants (Ketamine/GHB).",
+            "detail": "Combining CNS depressants amplifies respiratory depression, induces profound motor control loss, and severely increases the risk of unconsciousness. If vomiting occurs while unconscious, the suppressed gag reflex makes aspiration likely."
+          }
+        ]
+      },
+      "after": [
+        {
+          "short": "Hydration: 500ml Water + Electrolytes before bed.",
+          "detail": "Replacing the massive electrolyte deficit (sodium and potassium) is the only effective method for preventing severe headaches and muscle spasms. A comprehensive electrolyte supplement is far more effective than plain water."
+        },
+        {
+          "short": "Food: Skip pre-bed meal if nauseous.",
+          "detail": "If highly intoxicated, the risk of nocturnal vomiting and aspiration outweighs the benefits of a protein meal. Focus entirely on hydration and safe sleep position instead."
+        },
+        {
+          "short": "Position: Sleep on your side if intoxicated.",
+          "detail": "The lateral recovery position ensures airway patency. If vomiting occurs during sleep, gravity prevents aspiration into the lungs — a potentially fatal event."
+        }
+      ],
+      "next_morning": [
+        {
+          "short": "Recovery: Electrolytes + B-Vitamins.",
+          "detail": "Alcohol depletes B-vitamins (especially B1/thiamine and B6) which are critical for nervous system function. Replenishing electrolytes and B-vitamins addresses the primary biochemical deficits causing hangover symptoms."
+        },
+        {
+          "short": "Food: Gentle, bland foods (toast/eggs).",
+          "detail": "The gastric mucosa is irritated from alcohol exposure. Light, easily digestible foods provide necessary glucose and amino acids without further irritating the stomach lining."
+        },
+        {
+          "short": "Avoid: 'Hair of the dog' (more alcohol).",
+          "detail": "Drinking more alcohol merely delays the hangover by re-introducing the depressant. It prolongs liver stress, deepens dehydration, and significantly worsens the eventual comedown."
+        }
+      ]
+    },
+    "risks": [
+      "Severe dehydration from ADH suppression",
+      "REM sleep suppression and fragmentation",
+      "Behavioral disinhibition",
+      "Liver stress and gastric irritation"
+    ]
+  },
+  "cannabis": {
+    "id": "cannabis",
+    "name": "Cannabis",
+    "type": "Psychoactive",
+    "emoji": "🌿",
+    "color": "#84cc16",
+    "duration": 3,
+    "visualizer": {
+      "neurotoxicity": 1,
+      "cardiotoxicity": 3,
+      "dehydration": 3,
+      "sleep_deprivation": 2,
+      "impulsivity": 3
+    },
+    "sleep_strategy": "May help onset, but reduces REM quality.",
+    "phases": {
+      "before": [
+        {
+          "short": "Safety: Check source — avoid synthetic cannabinoids.",
+          "detail": "The illicit cannabis market carries significant risk of adulteration with synthetic cannabinoids sprayed onto CBD flower. Synthetics are full CB1 agonists with unpredictable dose-response curves, frequently leading to severe intoxication, psychosis, and cardiovascular emergencies."
+        },
+        {
+          "short": "Environment: Ensure comfortable setting.",
+          "detail": "Cannabis amplifies environmental stimuli. A safe, familiar setting with trusted people significantly reduces the probability of anxiety or paranoia episodes."
+        }
+      ],
+      "during": {
+        "focus": "Blood pressure management.",
+        "items": [
+          {
+            "short": "Sugar: Keep fruit/juice handy for blood pressure drops.",
+            "detail": "Cannabis is a peripheral vasodilator — it widens blood vessels and increases heart rate. Combined with upright dancing and sweating, this creates high risk for orthostatic hypotension (sudden BP drop when standing), causing dizziness, vision loss, and fainting."
+          },
+          {
+            "short": "Hydration: Sip water for dry mouth.",
+            "detail": "Cannabis reduces saliva production via CB1 receptors in the salivary glands. Steady water sipping alleviates discomfort and maintains baseline hydration."
+          },
+          {
+            "short": "Caution: Avoid mixing with tobacco/alcohol.",
+            "detail": "Cannabis + tobacco amplifies respiratory depression and nausea. Cannabis + alcohol produces the notorious 'spins' — severe vertigo and vomiting from compounded CNS depression and vasodilation."
+          }
+        ]
+      },
+      "after": [
+        {
+          "short": "Munchies: Avoid binging junk food before bed.",
+          "detail": "Cannabis stimulates hypothalamic appetite pathways. But binge-eating processed foods spikes insulin and core body temperature, actively preventing deep restorative sleep."
+        },
+        {
+          "short": "Food: Light protein/carb snack only.",
+          "detail": "A small portion of slow-digesting protein and complex carbohydrates satisfies the appetite while supporting overnight muscle recovery without disrupting sleep architecture."
+        },
+        {
+          "short": "Relaxation: Gentle stretching.",
+          "detail": "Cannabis can cause mild muscle tension. Gentle stretching combined with the drug's natural relaxant properties helps prepare the body for sleep."
+        }
+      ],
+      "next_morning": [
+        {
+          "short": "Grogginess: 'Weed hangover' is real. Hydrate and move.",
+          "detail": "Residual cannabinoids can produce morning fogginess and lethargy. Physical movement and water intake accelerate clearance and help restore alertness."
+        },
+        {
+          "short": "Mental: Expect some brain fog.",
+          "detail": "THC suppresses REM sleep, which is critical for memory consolidation. Expect slower cognitive processing; plan for a lighter workload."
+        }
+      ]
+    },
+    "risks": [
+      "Orthostatic hypotension (faintness/dizziness)",
+      "Anxiety or paranoia episodes",
+      "Adulteration with synthetic cannabinoids"
+    ]
+  },
+  "ketamine": {
+    "id": "ketamine",
+    "name": "Ketamine",
+    "type": "Dissociative",
+    "emoji": "🌀",
+    "color": "#0ea5e9",
+    "duration": 1.5,
+    "visualizer": {
+      "neurotoxicity": 5,
+      "cardiotoxicity": 3,
+      "dehydration": 2,
+      "sleep_deprivation": 3,
+      "impulsivity": 4
+    },
+    "sleep_strategy": "Wait for full offset. Do not mix with depressants.",
+    "phases": {
+      "before": [
+        {
+          "short": "Fasting: No food 90 mins before (aspiration risk).",
+          "detail": "Ketamine alters vestibular function and frequently induces nausea and vomiting. At dissociative doses, the gag reflex is severely suppressed. Vomiting while dissociated can lead to aspiration and asphyxiation."
+        },
+        {
+          "short": "Prep: Crush to fine powder (protect sinuses).",
+          "detail": "Crystalline shards are not absorbed through the nasal mucosa and instead cause severe micro-abrasions, leading to chronic sinus irritation, nosebleeds, and bacterial infections."
+        },
+        {
+          "short": "Safety: Test your substance.",
+          "detail": "Ketamine can be adulterated with research chemicals or other dissociatives with longer durations and different safety profiles. Reagent testing or drug-checking services help verify identity."
+        }
+      ],
+      "during": {
+        "focus": "Physical safety and bladder care.",
+        "items": [
+          {
+            "short": "Hydration: Sip only to thirst. Do NOT over-hydrate.",
+            "detail": "Ketamine metabolites are notoriously toxic to the urothelial cells lining the bladder, causing severe inflammation (ketamine-induced ulcerative cystitis). Over-hydrating places extreme volumetric strain on an already inflamed bladder."
+          },
+          {
+            "short": "Movement: Be careful — pain signals are blocked.",
+            "detail": "Ketamine's anesthetic properties block nociception (pain signaling). Dancing vigorously while anesthetized is dangerous — you cannot feel joint strain, muscle tears, or ligament damage until the drug wears off."
+          },
+          {
+            "short": "Environment: Sit down if wobbling.",
+            "detail": "Ketamine causes severe ataxia (loss of motor control) and spatial disorientation. Falls are the most common injury. If balance feels impaired, sit in a safe, grounded environment immediately."
+          }
+        ]
+      },
+      "after": [
+        {
+          "short": "Environment: Low sensory input (dark/quiet).",
+          "detail": "Coming down from ketamine leaves the user deeply disoriented and vulnerable. A calm, sensory-deprived environment aids psychological reintegration and prevents anxiety."
+        },
+        {
+          "short": "Supplements: Skip Magnesium until next day.",
+          "detail": "Ketamine is itself a powerful NMDA antagonist and muscle relaxant. Taking magnesium (which also acts via NMDA antagonism) immediately post-event is redundant and may compound morning lethargy."
+        },
+        {
+          "short": "Safety: Lateral recovery position if resting.",
+          "detail": "If a user is unresponsive or deeply sedated, the lateral recovery position ensures airway patency. Monitor breathing and never leave an unconscious person on their back."
+        }
+      ],
+      "next_morning": [
+        {
+          "short": "Mental: Integration of experience.",
+          "detail": "Dissociative experiences can be psychologically disorienting. Journaling or talking through the experience with a trusted person helps process and integrate unusual perceptions."
+        },
+        {
+          "short": "Body: Check for bruises or injuries.",
+          "detail": "Due to ketamine's anesthetic properties, injuries sustained during use may go unnoticed. A thorough physical check the next morning can reveal strains, bruises, or injuries that need attention."
+        }
+      ]
+    },
+    "risks": [
+      "Bladder damage (ketamine cystitis)",
+      "Aspiration from vomiting while dissociated",
+      "Physical injury due to anesthesia",
+      "K-Hole / loss of motor control"
+    ]
+  },
+  "mdma": {
+    "id": "mdma",
+    "name": "MDMA",
+    "type": "Empathogen",
+    "emoji": "💎",
+    "color": "#a855f7",
+    "duration": 5,
+    "visualizer": {
+      "neurotoxicity": 8,
+      "cardiotoxicity": 7,
+      "dehydration": 6,
+      "sleep_deprivation": 7,
+      "impulsivity": 5
+    },
+    "sleep_strategy": "Sleep impossible until comedown. Magnesium for jaw clenching.",
+    "phases": {
+      "before": [
+        {
+          "short": "Dose: Max 1.5mg/kg (Men), 1.3mg/kg (Women).",
+          "detail": "Physical risks of MDMA scale exponentially with dosage. Exceeding these thresholds vastly increases severe hyperthermia, neurotoxicity, and bruxism. Weigh your dose precisely."
+        },
+        {
+          "short": "Pre-load: ALA (300mg) + ALCAR (500mg).",
+          "detail": "MDMA metabolism generates highly reactive oxygen species (ROS) that damage serotonergic nerve terminals. Alpha-Lipoic Acid and Acetyl-L-Carnitine help neutralize these free radicals and protect serotonin architecture."
+        },
+        {
+          "short": "Hydration: Electrolyte pre-load.",
+          "detail": "MDMA disrupts fluid balance in complex ways. Starting with optimal electrolyte levels provides a buffer against the drug's effects on ADH and sodium regulation."
+        }
+      ],
+      "during": {
+        "focus": "Thermoregulation and Fluid Balance (Hyponatremia risk).",
+        "items": [
+          {
+            "short": "Fluids: Max 500ml/hr dancing, 250ml/hr resting. MUST contain electrolytes.",
+            "detail": "MDMA induces heavy sweating AND stimulates inappropriate ADH release, trapping water inside the body. Drinking excessive plain water dilutes blood sodium, causing fatal cerebral edema (hyponatremia). Electrolyte solutions maintain blood osmolality."
+          },
+          {
+            "short": "Heat: Take mandatory breaks to cool down.",
+            "detail": "MDMA disrupts the hypothalamic thermostat, causing core body temperature to rise dangerously. Combined with dancing in warm environments, this can trigger exertional heatstroke — a medical emergency with rapid onset."
+          },
+          {
+            "short": "⚠️ Warning: Do NOT drink excessive plain water.",
+            "detail": "This is the single most dangerous mistake with MDMA. The combination of ADH stimulation, heavy sweating, and excessive plain water intake can cause acute hyponatremia — water toxicity that causes fatal brain swelling."
+          }
+        ]
+      },
+      "after": [
+        {
+          "short": "Supplements: Vitamin C (1000mg) + Magnesium Glycinate.",
+          "detail": "Vitamin C continues scavenging free radicals generated by MDMA metabolism. Magnesium Glycinate specifically relieves severe jaw clenching and neuromuscular tension."
+        },
+        {
+          "short": "Food: Liquid nutrition (smoothies) if jaw hurts.",
+          "detail": "Severe bruxism from MDMA can make chewing painful. Protein and carbohydrate smoothies provide identical recovery nutrition in a form that bypasses jaw discomfort."
+        },
+        {
+          "short": "⚠️ NO 5-HTP within 24 hours (Serotonin Syndrome risk).",
+          "detail": "5-HTP is a direct serotonin precursor. If ingested while MDMA is still active, it can trigger Serotonin Syndrome — a potentially fatal autonomic cascade involving hyperthermia, tremors, and seizures."
+        }
+      ],
+      "next_morning": [
+        {
+          "short": "Mood: Expect 'Tuesday Blues' (serotonin dip).",
+          "detail": "MDMA depletes serotonin stores. The mood dip typically peaks 2-3 days after use ('Suicide Tuesday'). This is a temporary neurochemical state, not a permanent change."
+        },
+        {
+          "short": "Recovery: 5-HTP only after 24h+.",
+          "detail": "Once MDMA is fully cleared from the system (24-48 hours), 5-HTP can safely accelerate serotonin replenishment. Take with green tea extract (EGCG) to prevent peripheral conversion."
+        },
+        {
+          "short": "Nutrition: Tryptophan-rich foods (Turkey, Eggs, Cheese).",
+          "detail": "Tryptophan is the amino acid precursor to serotonin. Consuming tryptophan-rich proteins provides the building blocks for natural serotonin regeneration."
+        }
+      ]
+    },
+    "risks": [
+      "Hyponatremia (water toxicity / brain swelling)",
+      "Hyperthermia (exertional heatstroke)",
+      "Serotonin Syndrome (with 5-HTP or SSRIs)",
+      "Neurotoxicity (serotonin terminal damage)"
+    ]
+  },
+  "lsd": {
+    "id": "lsd",
+    "name": "LSD",
+    "type": "Psychedelic",
+    "emoji": "🌈",
+    "color": "#f59e0b",
+    "duration": 12,
+    "visualizer": {
+      "neurotoxicity": 1,
+      "cardiotoxicity": 4,
+      "dehydration": 5,
+      "sleep_deprivation": 10,
+      "impulsivity": 4
+    },
+    "sleep_strategy": "Plan for complete insomnia during effects. Do not fight it.",
+    "phases": {
+      "before": [
+        {
+          "short": "Test: Ehrlich reagent kit (rule out NBOMe).",
+          "detail": "The illicit market frequently substitutes LSD with 25I-NBOMe or DOC — substances that can cause fatal cardiovascular events, seizures, and severe vasoconstriction at sub-milligram doses. An Ehrlich reagent test turns purple for indole compounds (LSD)."
+        },
+        {
+          "short": "Set & Setting: Trusted friends, safe location.",
+          "detail": "LSD profoundly alters sensory perception and cognition for 8-12 hours. The psychological outcome is heavily dependent on the user's mindset ('set') and physical environment ('setting')."
+        },
+        {
+          "short": "Nutrition: Light, healthy meal beforehand.",
+          "detail": "LSD will suppress hunger signals for the entire duration. Eating a balanced meal before ensures the body has adequate fuel for 12+ hours of wakefulness."
+        }
+      ],
+      "during": {
+        "focus": "Psychological grounding and forced calorie intake.",
+        "items": [
+          {
+            "short": "Nutrition: Force fruit/smoothies — hunger signals suppressed.",
+            "detail": "LSD induces intense sympathetic arousal that entirely suppresses hunger and thirst cues. Going 10-12 hours without eating while dancing risks sudden hypoglycemia."
+          },
+          {
+            "short": "Hydration: Set reminders to drink.",
+            "detail": "The sensory overload and cognitive distortion make it easy to forget basic needs. External reminders from friends or phone alarms ensure consistent hydration."
+          },
+          {
+            "short": "Mindset: Change music/lighting if anxious.",
+            "detail": "Anxiety during a psychedelic experience often stems from environmental factors. A simple change of scene — different music, moving outdoors, or adjusting lighting — can rapidly shift the psychological trajectory."
+          }
+        ]
+      },
+      "after": [
+        {
+          "short": "Mindset: Accept wakefulness. Don't force sleep.",
+          "detail": "LSD's binding to 5-HT2A receptors keeps the CNS highly stimulated long after subjective effects diminish. Attempting to force sleep is physiologically impossible and causes severe post-trip anxiety."
+        },
+        {
+          "short": "Activity: Gentle stretching, calming music.",
+          "detail": "Physical tension from sympathetic arousal builds over the 12-hour duration. Gentle stretching releases this tension while calming music aids the transition."
+        },
+        {
+          "short": "Food: Protein + Carbs to restore calorie deficit.",
+          "detail": "After 12+ hours of suppressed appetite, the body is in significant caloric deficit. A protein and carbohydrate meal provides essential amino acids for recovery."
+        }
+      ],
+      "next_morning": [
+        {
+          "short": "Rest: You will be exhausted from the duration.",
+          "detail": "A 12-hour psychedelic experience combined with likely sleep deprivation results in profound fatigue. Plan for a recovery day with minimal obligations."
+        },
+        {
+          "short": "Integration: Journaling or talking through the experience.",
+          "detail": "Psychedelic experiences often surface deep psychological material. Processing these insights through journaling or conversation helps integrate the experience constructively."
+        }
+      ]
+    },
+    "risks": [
+      "Psychological crisis (challenging trip)",
+      "Peripheral vasoconstriction",
+      "Complete insomnia (8-12 hours)",
+      "Severe caloric deficit"
+    ]
+  },
+  "mushrooms": {
+    "id": "mushrooms",
+    "name": "Mushrooms (Psilocybin)",
+    "type": "Psychedelic",
+    "emoji": "🍄",
+    "color": "#10b981",
+    "duration": 6,
+    "visualizer": {
+      "neurotoxicity": 1,
+      "cardiotoxicity": 2,
+      "dehydration": 2,
+      "sleep_deprivation": 4,
+      "impulsivity": 3
+    },
+    "sleep_strategy": "Insomnia likely until effects subside. Rest in darkness.",
+    "phases": {
+      "before": [
+        {
+          "short": "Set & Setting: Critical for preventing challenging trips.",
+          "detail": "Psilocybin amplifies emotions and environmental stimuli. Ensure a positive mindset and a safe, comfortable environment. Have a trusted trip-sitter present if possible."
+        },
+        {
+          "short": "Stomach: Light meal or fasting to reduce nausea.",
+          "detail": "Chitin in mushroom cell walls can cause significant stomach upset. Fasting for 3-4 hours or eating a very light meal helps minimizes this. Ginger tea is highly effective."
+        },
+        {
+          "short": "Dose: Start low (1-2g dried) to gauge potency.",
+          "detail": "Potency varies wildly between species and batches. A standard dose is 1.5-2.5g. 'Heroic' doses (5g+) exponentially increase the risk of psychological crisis and should not be attempted in a recreational setting."
+        }
+      ],
+      "during": {
+        "focus": "Emotional grounding and nausea management.",
+        "items": [
+          {
+            "short": "Nausea: Breathe through the onset (20-60 mins).",
+            "detail": "Nausea is common during the 'come-up'. It typically passes once peak effects are established. Do not fight it; find a comfortable position and breathe deeply."
+          },
+          {
+            "short": "Mindset: 'Let go' — do not fight the experience.",
+            "detail": "Anxiety often arises from resisting the dissolution of ego or control. Surrendering to the flow of the experience, even if challenging, is the safest psychological strategy."
+          },
+          {
+            "short": "Hydration: Sip water comfortably.",
+            "detail": "While not a diuretic, psilocybin can make you forget to drink. Keep water nearby and sip occasionally."
+          }
+        ]
+      },
+      "after": [
+        {
+          "short": "Integration: Gentle reflection.",
+          "detail": "The 'afterglow' period is valuable for processing insights. Low-stimulation activities (journaling, drawing, nature) support integration."
+        },
+        {
+          "short": "Food: Fresh fruit and healthy snacks.",
+          "detail": "Appetite often returns as effects fade. Fresh, unprocessed foods often feel most palatable and nourishing."
+        }
+      ],
+      "next_morning": [
+        {
+          "short": "Mood: Usually elevated 'afterglow'.",
+          "detail": "Psilocybin often leaves a lasting positive mood lift. Use this window to reinforce healthy habits."
+        },
+        {
+          "short": "Rest: No specific hangover, but mind may be tired.",
+          "detail": "Psychological processing is energy-intensive. Allow for a relaxed schedule."
+        }
+      ]
+    },
+    "risks": [
+      "Psychological distress (Bad Trip)",
+      "Nausea and Vomiting",
+      "Accidental poisoning (if foraging)",
+      "Confusion / Disorientation"
+    ]
+  },
+  "cocaine": {
+    "id": "cocaine",
+    "name": "Cocaine",
+    "type": "Stimulant",
+    "emoji": "❄️",
+    "color": "#06b6d4",
+    "duration": 1,
+    "visualizer": {
+      "neurotoxicity": 6,
+      "cardiotoxicity": 9,
+      "dehydration": 5,
+      "sleep_deprivation": 7,
+      "impulsivity": 9
+    },
+    "sleep_strategy": "Stop use 3-4 hours before bed. Sleep very difficult.",
+    "phases": {
+      "before": [
+        {
+          "short": "Test: Fentanyl strips are MANDATORY.",
+          "detail": "Cocaine is frequently adulterated with fentanyl, causing fatal opioid overdoses in users with no tolerance. Testing every batch with fentanyl strips is a non-negotiable safety step."
+        },
+        {
+          "short": "Tools: Use own straw. Never share (Hepatitis C risk).",
+          "detail": "Micro-abrasions in the nasal cavity can transmit blood-borne pathogens like Hepatitis C. Sharing straws or bills is a primary vector for transmission. Use a personal, clean tool."
+        },
+        {
+          "short": "Nasal Care: Saline spray prep.",
+          "detail": "Dry nasal membranes rupture easily. Pre-moistening with saline spray reduces damage and aids absorption."
+        }
+      ],
+      "during": {
+        "focus": "Cardiac monitoring and impulse control.",
+        "items": [
+          {
+            "short": "⚠️ ALCOHOL DANGER: Cocaethylene toxicity.",
+            "detail": "Combining Cocaine + Alcohol forms Cocaethylene in the liver. This metabolite is significantly more cardiotoxic and lethal than cocaine alone, exponentially increasing heart attack leading to sudden death risk."
+          },
+          {
+            "short": "Heart: vasoconstriction is severe.",
+            "detail": "Cocaine constricts blood vessels while spiking heart rate—forcing the heart to pump against high pressure. Chest tightness is a warning sign to stop immediately."
+          },
+          {
+            "short": "Dosing: Chop finely, rinse nose.",
+            "detail": "Large crystals damage tissue and aren't absorbed. Rinse nose with saline every hour to prevent septal performation."
+          }
+        ]
+      },
+      "after": [
+        {
+          "short": "Nasal Care: Neti pot or saline rinse.",
+          "detail": "Thoroughly flushing the sinuses prevents residual caustic chemicals from eating away at the septum overnight."
+        },
+        {
+          "short": "Comedown: Expect anxiety/craving.",
+          "detail": "Cocaine has a sharp, unpleasant crash. Recognize the craving as a chemical signal, not a true need. Don't redose to delay the inevitable."
+        }
+      ],
+      "next_morning": [
+        {
+          "short": "Recovery: Rest and hydration.",
+          "detail": "Dopamine receptors are temporarily downregulated. Expect low mood and irritability. Sleep and time are the only cures."
+        },
+        {
+          "short": "Check: Nasal condition.",
+          "detail": "Inspect for bleeding or scabs. Apply Vitamin E oil to soothe tissue."
+        }
+      ]
+    },
+    "risks": [
+      "Severe Cardiotoxicity (Heart Attack)",
+      "Cocaethylene formation (w/ Alcohol)",
+      "Fentanyl Contamination",
+      "Compulsive Addiction"
+    ]
+  },
+  "amphetamine": {
+    "id": "amphetamine",
+    "name": "Amphetamine",
+    "type": "Stimulant",
+    "emoji": "⚡",
+    "color": "#f97316",
+    "duration": 6,
+    "visualizer": {
+      "neurotoxicity": 6,
+      "cardiotoxicity": 8,
+      "dehydration": 7,
+      "sleep_deprivation": 9,
+      "impulsivity": 7
+    },
+    "sleep_strategy": "Vitamin C to accelerate excretion. Sleep aids often needed.",
+    "phases": {
+      "before": [
+        {
+          "short": "Meal: MASSIVE meal before — you won't eat for 8+ hours.",
+          "detail": "Amphetamines obliterate appetite and make swallowing difficult. A massive, nutritionally dense meal rich in complex carbs and protein is the only reliable way to ensure adequate hepatic glycogen for hours of hyper-active dancing."
+        },
+        {
+          "short": "Nutrients: Magnesium pre-load.",
+          "detail": "Amphetamines cause severe vasoconstriction and muscle tension. Pre-loading magnesium provides a buffer against these effects and supports cardiovascular function."
+        }
+      ],
+      "during": {
+        "focus": "Cardiac safety and core temperature management.",
+        "items": [
+          {
+            "short": "Limits: Mandatory rest breaks every 60 minutes.",
+            "detail": "Amphetamines place intense continuous strain on the cardiovascular system — elevated heart rate, blood pressure, and core temperature. The dopamine flood masks pain and fatigue perception."
+          },
+          {
+            "short": "Nutrition: Force liquid calories (gels/shakes).",
+            "detail": "Solid food is unpalatable on amphetamines. Protein shakes, carbohydrate gels, or smoothies must be forcefully consumed to provide circulating glucose and prevent severe muscle catabolism."
+          },
+          {
+            "short": "⚠️ Warning: Pain signals are masked — don't dance to injury.",
+            "detail": "The massive dopamine flood completely blocks the brain's perception of pain and fatigue. Users can easily sustain joint damage, muscle tears, or exertional heatstroke without any subjective warning signs."
+          }
+        ]
+      },
+      "after": [
+        {
+          "short": "Flush: Vitamin C (1000mg) accelerates excretion.",
+          "detail": "Vitamin C (ascorbic acid) acidifies urine, which exponentially accelerates renal clearance of amphetamines. This shortens the duration of the comedown and helps the body reach a state where sleep is possible."
+        },
+        {
+          "short": "Supplements: Magnesium for muscle tightness.",
+          "detail": "Amphetamine-induced vasoconstriction causes severe muscle cramping and tension. Magnesium directly counteracts this by promoting smooth muscle relaxation."
+        },
+        {
+          "short": "Food: Force yourself to eat.",
+          "detail": "Despite zero appetite, the body is in severe caloric deficit after hours of stimulated activity without food. Even small portions of protein and carbohydrates prevent continued muscle catabolism."
+        }
+      ],
+      "next_morning": [
+        {
+          "short": "Dopamine Dip: Expect lethargy and anhedonia.",
+          "detail": "Amphetamines deplete dopamine stores, resulting in intense lethargy, inability to feel pleasure (anhedonia), and emotional instability. This is a temporary neurochemical deficit."
+        },
+        {
+          "short": "Recovery: L-Tyrosine (dopamine precursor) next day.",
+          "detail": "L-Tyrosine is the amino acid precursor to dopamine. Supplementing the next day provides building blocks for faster dopamine store replenishment."
+        }
+      ]
+    },
+    "risks": [
+      "Severe cardiovascular strain (BP/HR)",
+      "Hyperthermia (masked overheating)",
+      "Exhaustion and physical injury",
+      "Stimulant psychosis (with sleep deprivation)"
+    ]
+  },
+  "caffeine": {
+    "id": "caffeine",
+    "name": "Caffeine",
+    "type": "Stimulant",
+    "emoji": "☕",
+    "color": "#a8a29e",
+    "duration": 5,
+    "visualizer": {
+      "neurotoxicity": 0,
+      "cardiotoxicity": 3,
+      "dehydration": 4,
+      "sleep_deprivation": 6,
+      "impulsivity": 2
+    },
+    "sleep_strategy": "Avoid caffeine less than 6 hours before planned sleep.",
+    "phases": {
+      "before": [
+        {
+          "short": "Timing: Stop intake 6-8 hours before planned sleep.",
+          "detail": "Caffeine has a half-life of 5-7 hours in healthy adults. Consuming 200mg+ late guarantees active concentrations well past dawn, entirely preventing slow-wave sleep required for muscle repair."
+        },
+        {
+          "short": "Hydration: Offset the diuretic effect.",
+          "detail": "Caffeine acts as both a mild diuretic and a peripheral vasoconstrictor. Consistent water intake alongside caffeine prevents compounding dehydration from physical activity."
+        }
+      ],
+      "during": {
+        "focus": "Timing and moderation.",
+        "items": [
+          {
+            "short": "Limit: Under 400mg total (about 4 cups).",
+            "detail": "Above 400mg, caffeine significantly increases the risk of anxiety, tremors, and gastrointestinal distress. Individual tolerance varies, but this is the generally accepted upper safety limit."
+          },
+          {
+            "short": "⚠️ Never mix with other stimulants (cardiac risk).",
+            "detail": "Combining caffeine with MDMA, amphetamines, or cocaine creates synergistic vasoconstrictive and chronotropic effects. This exponentially increases the risk of severe tachycardia and cardiac arrhythmias."
+          },
+          { short: "Hydration: Water with every coffee/energy drink.", detail: "The diuretic effect of caffeine combined with sweat loss from dancing accelerates dehydration. Matching each caffeinated beverage with water maintains fluid balance."
+          }
+        ]
+      },
+            after: [
+        { short: "Sleep: If taken late, accept poor sleep quality.", detail: "Caffeine blocks adenosine receptors — the neurochemical signals that inform the brain of fatigue. If caffeine is still active at bedtime, slow-wave sleep will be severely impaired."
+        },
+        { short: "Relax: L-Theanine can smooth out jitters.", detail: "L-Theanine promotes alpha brain wave activity and has a synergistic calming effect when combined with caffeine, reducing anxiety without blocking alertness."
+        }
+      ],
+            next_morning: [
+        { short: "Delay: Wait 90 mins before first coffee (cortisol reset).", detail: "The cortisol awakening response naturally peaks 30-90 minutes after waking. Consuming caffeine during this window interferes with the natural energy signal and creates dependency."
+        },
+        { short: "Hydration: Water first, then coffee.", detail: "After sleep-deprived nights, the body wakes in a state of mild dehydration. Water and a balanced breakfast resolve the underlying physiological deficit that caffeine merely masks."
+        }
+      ]
+    },
+        risks: [
+      "Insomnia from delayed clearance",
+      "Anxiety and jitters",
+      "Dehydration (diuretic effect)"
+    ]
+  },
+  "2cb": {
+        id: "2cb", name: "2C-B", type: "Psychedelic", emoji: "🔮",
+        color: "#ec4899", duration: 6,
+        visualizer: { neurotoxicity: 2, cardiotoxicity: 4, dehydration: 4, sleep_deprivation: 5, impulsivity: 3
+    },
+        sleep_strategy: "Shorter than LSD. Standard recovery protocol sufficient.",
+        phases: {
+            before: [
+        { short: "Dose: Use milligram scale. 2mg changes everything.", detail: "2C-B has an exceptionally steep dose-response curve. At 5-15mg it's an entactogen; at 20mg+ it becomes an overwhelming psychedelic. A 3mg deviation can shift a manageable state into a crisis. Never 'eyeball' powder."
+        },
+        { short: "Stomach: Empty stomach reduces nausea.", detail: "2C-B is notorious for intense gastrointestinal distress during onset. An empty stomach minimizes nausea and reduces the likelihood of vomiting during the come-up phase."
+        },
+        { short: "Prep: Ginger supplements for nausea.", detail: "Ginger (250-500mg) taken 30 minutes before significantly reduces nausea by acting on serotonin receptors in the GI tract — the same mechanism targeted by pharmaceutical anti-emetics."
+        }
+      ],
+            during: {
+                focus: "Nausea management during onset.",
+                items: [
+          { short: "Onset: Avoid food/heavy drinks for 60-90 mins.", detail: "The onset phase produces intense stomach cramping and nausea. Consuming any solid food or heavy liquids during this window dramatically increases the probability of vomiting."
+          },
+          { short: "Hydration: Standard electrolyte protocol after nausea passes.", detail: "Once peak effects are established and nausea subsides, revert to the baseline hydration protocol — water supplemented with electrolytes at a comfortable pace."
+          },
+          { short: "Vibe: Visuals can be intense; headspace stays clear.", detail: "Unlike LSD or psilocybin, 2C-B typically produces vivid visual effects while maintaining a relatively lucid mental state. Understanding this pattern helps prevent anxiety."
+          }
+        ]
+      },
+            after: [
+        { short: "Recovery: Standard meal + Magnesium.", detail: "2C-B mimics serotonin at the receptor site rather than forcing massive endogenous release (like MDMA). The neurological comedown is significantly milder."
+        },
+        { short: "Note: No 5-HTP needed (no serotonin depletion).", detail: "Unlike MDMA, 2C-B does not deplete serotonin stores. The aggressive supplementation protocol for MDMA comedowns is unnecessary for 2C-B recovery."
+        }
+      ],
+            next_morning: [
+        { short: "Feeling: Usually mild positive 'afterglow'.", detail: "Most users report a gentle, positive mood the day after 2C-B — in stark contrast to MDMA or amphetamine depletion effects."
+        },
+        { short: "Routine: Standard recovery protocol.", detail: "No special supplements or interventions are needed. Follow the sober baseline: hydrate, eat a balanced breakfast, and get sunlight exposure."
+        }
+      ]
+    },
+        risks: [
+      "Nausea and vomiting during onset",
+      "Dosing errors (steep dose-response curve)",
+      "Intense visual overwhelm at higher doses"
+    ]
+  },
+  "4mmc": {
+        id: "4mmc", name: "4-MMC (Meph)", type: "Stimulant/Empathogen", emoji: "💥",
+        color: "#f43f5e", duration: 1,
+        visualizer: { neurotoxicity: 9, cardiotoxicity: 9, dehydration: 7, sleep_deprivation: 8, impulsivity: 10
+    },
+        sleep_strategy: "Very difficult. Must stop redosing hours before planned sleep.",
+        phases: {
+            before: [
+        { short: "Control: Pre-weigh your limit. DO NOT bring a bag.", detail: "The paramount danger of 4-MMC is its profound psychological compulsivity. The euphoric peak dissipates within 45-60 minutes, leaving an overwhelming urge to redose. Physical boundaries — only carrying a pre-measured amount — are the most effective harm reduction strategy."
+        },
+        { short: "Supplements: Antioxidants (ALA, Vit C) pre-load.", detail: "4-MMC generates massive oxidative stress through its action on monoamine transporters. Pre-loading antioxidants provides some neuroprotective buffer against the free radical damage."
+        }
+      ],
+            during: {
+                focus: "Temperature monitoring and resisting compulsive redosing.",
+                items: [
+          { short: "Heat: Monitor temperature obsessively. Cool down every 45 min.", detail: "4-MMC triggers extreme hyperthermia and tachycardia simultaneously. Core body temperature must be actively managed. Taking breaks from the dance floor to shed heat in ventilated areas is mandatory."
+          },
+          { short: "Heart: Vasoconstriction is severe. Watch extremities.", detail: "4-MMC causes severe peripheral vasoconstriction — blood vessels in the fingers, toes, and extremities shrink dramatically. Cold, blue, or numb extremities are warning signs of dangerous cardiovascular stress."
+          },
+          { short: "⚠️ NEVER mix with Alcohol (severe neurotoxicity).", detail: "Research has demonstrated that co-administering 4-MMC with ethanol triggers widespread neuronal deactivation and precipitates severe, long-term neurotoxicity comparable to methamphetamine-induced brain damage."
+          }
+        ]
+      },
+            after: [
+        { short: "Crash: Severe. Dopamine + Serotonin depletion.", detail: "4-MMC simultaneously depletes both serotonin and dopamine — producing severe lethargy, acute anxiety, paranoia, and deep depressive states. This is one of the most toxic comedowns of any common recreational substance."
+        },
+        { short: "Supplements: Strong Antioxidants + Magnesium.", detail: "High doses of Vitamin C and Alpha-Lipoic Acid help clear the massive free radical accumulation. Magnesium counteracts severe vascular constriction and neuromuscular tension."
+        },
+        { short: "Environment: Safe, calm space for comedown.", detail: "The psychological crash can be extreme — anxiety, paranoia, and depression. A dark, quiet, cool environment with trusted people present significantly reduces the severity."
+        }
+      ],
+            next_morning: [
+        { short: "Mood: Expect severe depression and anxiety.", detail: "The dual depletion of serotonin and dopamine produces one of the most severe comedowns of any recreational substance. This is temporary but can last 2-4 days."
+        },
+        { short: "Recovery: 5-HTP (24h later), L-Tyrosine, food.", detail: "5-HTP provides serotonin precursors, L-Tyrosine provides dopamine precursors. Combined with tryptophan-rich proteins and complex carbohydrates, this supports the slow regeneration of both depleted neurotransmitter systems."
+        }
+      ]
+    },
+        risks: [
+      "Compulsive redosing (extremely addictive pattern)",
+      "Severe peripheral vasoconstriction",
+      "Dangerous cardiac stress",
+      "Extreme neurotoxicity (especially with alcohol)"
+    ]
+  }
+}

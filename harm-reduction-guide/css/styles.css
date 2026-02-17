@@ -1,0 +1,67 @@
+/*
+    styles.css — Dark mode styles for Harm Reduction Protocols Dashboard.
+    Handles: transitions, expandable items, scrollbar, and dark chart containers.
+*/
+
+/* ===== Base ===== */
+body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+/* ===== Transitions ===== */
+.card-transition {
+    transition: all 0.3s ease-in-out;
+}
+
+/* ===== Expandable Detail ===== */
+.expandable-detail {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease-in-out, opacity 0.3s ease-in-out;
+    opacity: 0;
+}
+
+.expandable-detail.open {
+    max-height: 500px;
+    opacity: 1;
+}
+
+/* ===== Scrollbar (Dark) ===== */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #111110;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #3f3f3e;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #525251;
+}
+
+/* ===== Chart Container ===== */
+.chart-container {
+    position: relative;
+    width: 100%;
+}
+
+/* ===== Button Focus ===== */
+button:focus {
+    outline: none;
+}
+
+/* ===== Disclaimer Banner ===== */
+.disclaimer-banner {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+/* ===== Selection ===== */
+::selection {
+    background: rgba(255, 255, 255, 0.1);
+}

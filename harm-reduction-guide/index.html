@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!--
+        index.html — Harm Reduction Protocols Dashboard
+        Structure: HTML layout only. All styles in css/styles.css, data in data/protocols.json, logic in js/app.js.
+        Content source: resources/Festival Harm Reduction Guide.md
+    -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Festival Support &amp; Harm Reduction Guide</title>
+    <meta name="description"
+        content="Evidence-based harm reduction guide for physiological maintenance during extended exertion at festivals and events.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body class="bg-[#111110] text-gray-300 font-sans leading-relaxed">
+
+    <!-- Disclaimer Banner -->
+    <div class="disclaimer-banner px-4 py-3 text-center text-sm text-green-300">
+        <span class="mr-1">ℹ️</span>
+        This guide is for <strong>educational and harm reduction purposes only</strong>. It does not endorse substance
+        use.
+        In case of emergency, call <strong>112</strong> / seek professional help immediately.
+    </div>
+
+    <!-- Sticky Header (Hidden by default) -->
+    <div id="sticky-header"
+        class="fixed top-0 left-0 w-full z-50 transform -translate-y-full transition-transform duration-300 shadow-xl backdrop-blur-md bg-[#111110]/90 border-b border-[#2a2a28] flex items-center justify-between px-4 py-3">
+        <div class="flex items-center gap-3">
+            <span id="sticky-emoji" class="text-2xl">💊</span>
+            <div>
+                <h2 id="sticky-name" class="text-base font-bold text-gray-100 leading-tight">Substance</h2>
+                <p id="sticky-type" class="text-xs text-gray-500 leading-tight">Type</p>
+            </div>
+        </div>
+        <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})"
+            class="text-xs bg-[#2a2a28] hover:bg-[#3a3a38] text-gray-300 px-3 py-1.5 rounded transition-colors">
+            ↑ Top
+        </button>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- Header Section -->
+        <header
+            class="mb-10 text-center sm:text-left border-b border-[#2a2a28] pb-6 flex flex-col sm:flex-row justify-between items-center">
+            <div>
+                <h1 class="text-3xl sm:text-4xl font-bold text-gray-100 tracking-tight">Harm Reduction Protocols</h1>
+                <p class="mt-2 text-gray-500 max-w-2xl">
+                    Evidence-based guide for physiological maintenance during extended exertion (dancing/festivals).
+                    Select a context below to view specific protocol adjustments.
+                </p>
+            </div>
+            <div class="mt-4 sm:mt-0 text-right">
+                <div class="text-xs font-mono text-gray-600 uppercase tracking-widest">Current Mode</div>
+                <div id="current-mode-display" class="text-xl font-bold text-gray-100">Sober / Baseline</div>
+            </div>
+        </header>
+
+        <!-- Navigation / Substance Selector -->
+        <nav class="mb-8">
+            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Select Context / Substance 💊
+            </p>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3" id="substance-nav">
+                <!-- Buttons injected via JS -->
+            </div>
+        </nav>
+
+        <!-- Active Substance Header -->
+        <div id="active-substance-header"
+            class="mb-10 p-5 rounded-xl border-2 transition-all duration-300 flex items-center justify-between"
+            style="background:rgba(120,113,108,0.1);border-color:rgba(120,113,108,0.3);">
+            <div class="flex items-center gap-4">
+                <span id="active-substance-emoji" class="text-4xl">🧠</span>
+                <div>
+                    <h2 id="active-substance-name" class="text-2xl font-bold text-gray-100">Sober / Baseline</h2>
+                    <p id="active-substance-type" class="text-sm text-gray-500">Baseline</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+
+            <!-- LEFT COLUMN: The Guide (Timeline) -->
+            <div class="lg:col-span-7 space-y-8">
+
+                <!-- TOP: Risk Analysis (Radar/Levels) -->
+                <section class="card-transition">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center">
+                            <h3 class="text-xl font-bold text-gray-100">Risk Analysis 📊</h3>
+                        </div>
+                        <!-- View Toggle -->
+                        <div class="flex bg-[#2a2a28] rounded-lg p-1">
+                            <button id="view-radar"
+                                class="px-3 py-1 text-xs font-medium rounded-md bg-[#3a3a38] text-white shadow-sm transition-all">Radar
+                                🕸️</button>
+                            <button id="view-histogram"
+                                class="px-3 py-1 text-xs font-medium rounded-md text-gray-400 hover:text-gray-200 transition-all">Levels
+                                📊</button>
+                        </div>
+                    </div>
+                    <!-- Canvas Container -->
+                    <div
+                        class="section-card bg-[#1a1a19] rounded-xl border-2 border-[#2a2a28] overflow-hidden transition-all duration-300 p-6">
+                        <div class="relative h-64 w-full">
+                            <canvas id="riskChart"></canvas>
+                        </div>
+                        <p class="mt-4 text-xs text-center text-gray-600 italic">
+                            Values represent estimated physiological load (Qualitative Scale).
+                        </p>
+                    </div>
+                </section>
+
+                <!-- Introduction Paragraph for Guide Section -->
+                <div class="bg-[#1a1a19] p-6 rounded-xl border border-[#2a2a28]">
+                    <h2 class="text-lg font-bold text-gray-100 mb-2">Protocol Timeline 🕐</h2>
+                    <p class="text-gray-500 text-sm">
+                        This section breaks down the recommended actions into chronological phases.
+                        It answers critical questions regarding nutrition, hydration, and recovery.
+                        <span id="intro-modifier" class="font-semibold text-gray-300">Displaying standard universal
+                            practices.</span>
+                    </p>
+                </div>
+
+                <!-- BEFORE Phase -->
+                <section class="card-transition">
+                    <div class="flex items-center mb-4">
+                        <span
+                            class="section-badge flex items-center justify-center w-8 h-8 rounded-full bg-[#2a2a28] text-gray-400 font-bold text-sm mr-3 transition-all duration-300">1</span>
+                        <h3 class="text-xl font-bold text-gray-100">Preparation (Before) 🧘</h3>
+                    </div>
+                    <div
+                        class="section-card bg-[#1a1a19] rounded-xl border-2 border-[#2a2a28] overflow-hidden transition-all duration-300">
+                        <div class="p-6">
+                            <ul class="space-y-4" id="content-before">
+                                <!-- Content injected via JS -->
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- DURING Phase -->
+                <section class="card-transition">
+                    <div class="flex items-center mb-4">
+                        <span
+                            class="section-badge flex items-center justify-center w-8 h-8 rounded-full bg-[#2a2a28] text-gray-400 font-bold text-sm mr-3 transition-all duration-300">2</span>
+                        <h3 class="text-xl font-bold text-gray-100">Activity (During) 🕺</h3>
+                    </div>
+                    <div
+                        class="section-card bg-[#1a1a19] rounded-xl border-2 border-[#2a2a28] overflow-hidden transition-all duration-300">
+                        <div class="p-6">
+                            <div id="focus-border"
+                                class="mb-4 p-4 rounded-lg border-l-4 border-[#3f3f3e] transition-all duration-300"
+                                style="background:rgba(255,255,255,0.02)">
+                                <h4 class="font-bold text-sm text-gray-400 uppercase mb-1">Critical Focus</h4>
+                                <p id="focus-during" class="text-gray-300 text-sm">Hydration balance and electrolyte
+                                    maintenance.</p>
+                            </div>
+                            <ul class="space-y-4" id="content-during">
+                                <!-- Content injected via JS -->
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- AFTER Phase -->
+                <section class="card-transition">
+                    <div class="flex items-center mb-4">
+                        <span
+                            class="section-badge flex items-center justify-center w-8 h-8 rounded-full bg-[#2a2a28] text-gray-400 font-bold text-sm mr-3 transition-all duration-300">3</span>
+                        <h3 class="text-xl font-bold text-gray-100">Recovery (After) 🛏️</h3>
+                    </div>
+                    <div
+                        class="section-card bg-[#1a1a19] rounded-xl border-2 border-[#2a2a28] overflow-hidden transition-all duration-300">
+                        <div class="p-6">
+                            <ul class="space-y-4" id="content-after">
+                                <!-- Content injected via JS -->
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- NEXT MORNING Phase -->
+                <section class="card-transition">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center">
+                            <span
+                                class="section-badge flex items-center justify-center w-8 h-8 rounded-full bg-[#2a2a28] text-gray-400 font-bold text-sm mr-3 transition-all duration-300">4</span>
+                            <h3 class="text-xl font-bold text-gray-100">Next Morning ☀️</h3>
+                        </div>
+                    </div>
+
+                    <div
+                        class="section-card bg-[#1a1a19] rounded-xl border-2 border-[#2a2a28] overflow-hidden transition-all duration-300">
+                        <div class="p-6">
+                            <ul class="space-y-4" id="content-next-morning">
+                                <!-- Content injected via JS -->
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+
+            <!-- RIGHT COLUMN: Visualization & Data -->
+            <div class="lg:col-span-5 space-y-8">
+
+                <!-- Intro for Data Section -->
+                <div class="bg-[#1a1a19] p-5 rounded-xl border border-[#2a2a28]">
+                    <h2 class="text-base font-bold text-gray-100 mb-2">Physiological Impact Analysis 📊</h2>
+                    <p class="text-gray-500 text-xs">
+                        Visualizing how the current state deviates from a rested baseline. Use this to anticipate risks
+                        like overheating or sleep disruption.
+                    </p>
+                </div>
+
+                <!-- Risk Radar Chart -->
+                <div class="bg-[#1a1a19] p-6 rounded-xl border border-[#2a2a28]">
+                    <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4 text-center">Load Profile
+                    </h3>
+                    <div class="chart-container">
+                        <canvas id="riskRadar"></canvas>
+                    </div>
+                    <p class="mt-4 text-xs text-center text-gray-600 italic">
+                        Values represent estimated physiological load (0-10).
+                    </p>
+                </div>
+
+                <!-- Duration / Timeline Chart -->
+                <div class="bg-[#1a1a19] p-6 rounded-xl border border-[#2a2a28]">
+                    <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4 text-center">Effect
+                        Duration (Hours)</h3>
+                    <div class="chart-container" style="height: 200px;">
+                        <canvas id="durationBar"></canvas>
+                    </div>
+                    <div class="mt-4 text-sm text-gray-400 bg-[#151514] p-3 rounded border border-[#2a2a28]">
+                        <span class="font-bold text-gray-300">Sleep Strategy:</span> <span
+                            id="sleep-strategy-text">Normal sleep cycle recommended.</span>
+                    </div>
+                </div>
+
+                <!-- Emergency Flags (Dynamic) -->
+                <div id="emergency-flags" class="hidden p-6 rounded-xl border"
+                    style="background:rgba(239,68,68,0.06);border-color:rgba(239,68,68,0.2);">
+                    <h3 class="text-red-400 font-bold mb-2 flex items-center">
+                        <span class="text-xl mr-2">⚠️</span> Risk Factors
+                    </h3>
+                    <ul id="risk-list" class="list-disc list-inside text-sm text-red-300/80 space-y-1">
+                        <!-- Injected via JS -->
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="mt-16 border-t border-[#2a2a28] pt-8 text-center text-gray-600 text-xs">
+            <p>This guide is for harm reduction and educational purposes only. In case of medical emergency, seek
+                professional help immediately.</p>
+            <p class="mt-2">Based on established harm reduction guidelines (RollSafe, TripSit, PsychonautWiki).</p>
+        </footer>
+
+    </div>
+
+    <!-- Data and application logic loaded from external files -->
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+
+</body>
+
+</html>

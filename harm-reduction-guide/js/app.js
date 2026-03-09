@@ -6,7 +6,6 @@
 
 // State
 let currentProtocol = 'sober';
-let chartMode = 'radar'; // 'radar' or 'histogram'
 let riskChart = null;
 let durationChart = null;
 
@@ -16,7 +15,6 @@ let navContainer, modeDisplay, introModifier, contentBefore, contentDuring,
     emergencyFlags, riskList, riskCanvas, durationCanvas, activeHeader,
     activeHeaderName, activeHeaderType, activeHeaderEmoji,
     sectionCards, sectionBadges, focusBorderEl;
-let btnViewRadar, btnViewHistogram;
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Cache DOM
@@ -41,9 +39,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     sectionBadges = document.querySelectorAll('.section-badge');
     focusBorderEl = document.getElementById('focus-border');
 
-    // Chart toggle buttons
-    btnViewRadar = document.getElementById('view-radar');
-    btnViewHistogram = document.getElementById('view-histogram');
 
     // Sticky Header Scroll Listener
     window.addEventListener('scroll', () => {
@@ -60,7 +55,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!data) return;
 
     initNavigation();
-    initChartToggle();
     loadProtocol('sober');
 });
 
@@ -91,37 +85,6 @@ function initNavigation() {
     });
 }
 
-function initChartToggle() {
-    btnViewRadar.onclick = () => {
-        if (chartMode !== 'radar') {
-            chartMode = 'radar';
-            updateToggleUI();
-            updateCharts(protocols[currentProtocol]);
-        }
-    };
-
-    btnViewHistogram.onclick = () => {
-        if (chartMode !== 'histogram') {
-            chartMode = 'histogram';
-            updateToggleUI();
-            updateCharts(protocols[currentProtocol]);
-        }
-    };
-}
-
-function updateToggleUI() {
-    const activeClass = "bg-[#3a3a38] text-white shadow-sm";
-    const inactiveClass = "text-gray-400 hover:text-gray-200";
-
-    if (chartMode === 'radar') {
-        btnViewRadar.className = `px-3 py-1 text-xs font-medium rounded-md transition-all ${activeClass}`;
-        btnViewHistogram.className = `px-3 py-1 text-xs font-medium rounded-md transition-all ${inactiveClass}`;
-    } else {
-        btnViewRadar.className = `px-3 py-1 text-xs font-medium rounded-md transition-all ${inactiveClass}`;
-        btnViewHistogram.className = `px-3 py-1 text-xs font-medium rounded-md transition-all ${activeClass}`;
-    }
-}
-
 function applyButtonDefault(btn, color) {
     btn.className = 'p-3 rounded-lg text-sm font-bold transition-all duration-200 border-2 cursor-pointer';
     btn.style.backgroundColor = hexAlpha(color, 0.08);
@@ -137,6 +100,7 @@ function applyButtonActive(btn, color) {
     btn.style.color = color;
     btn.style.boxShadow = `0 0 12px ${hexAlpha(color, 0.3)}`;
 }
+
 
 // --- Load Protocol ---
 function loadProtocol(id) {
@@ -174,11 +138,15 @@ function loadProtocol(id) {
     introModifier.textContent = `Displaying protocols for: ${data.name} (${data.type})`;
     introModifier.style.color = data.color;
 
-    // 4. Render expandable lists
-    renderExpandableList(contentBefore, data.phases.before, data.color);
-    renderExpandableList(contentDuring, data.phases.during.items, data.color);
-    renderExpandableList(contentAfter, data.phases.after, data.color);
-    renderExpandableList(contentNextMorning, data.phases.next_morning, data.color);
+    // 4. Render expandable lists (support both flat arrays and { essential, bonus } objects)
+    renderSection(contentBefore, data.phases.before, data.color);
+    // During: strip focus field, pass remaining structure
+    const duringData = data.phases.during.essential
+        ? { essential: data.phases.during.essential, bonus: data.phases.during.bonus }
+        : data.phases.during.items;
+    renderSection(contentDuring, duringData, data.color);
+    renderSection(contentAfter, data.phases.after, data.color);
+    renderSection(contentNextMorning, data.phases.next_morning, data.color);
 
     // 5. Focus text
     focusDuring.textContent = data.phases.during.focus;
@@ -211,12 +179,48 @@ function loadProtocol(id) {
     updateCharts(data);
 }
 
-// --- Expandable List Rendering ---
-function renderExpandableList(element, items, color) {
-    element.innerHTML = items.map((item, i) => {
+// --- Section Rendering (Essential + Bonus) ---
+function renderSection(element, data, color) {
+    // Support flat arrays (legacy) or { essential, bonus } objects
+    if (Array.isArray(data)) {
+        renderItemList(element, data, color, 'ess');
+        return;
+    }
+    const essentialItems = data.essential || [];
+    const bonusItems = data.bonus || [];
+
+    let html = renderItemListHtml(essentialItems, element.id, color, 'ess');
+
+    if (bonusItems.length > 0) {
+        const bonusId = `bonus-${element.id}`;
+        html += `
+        <li class="mt-3">
+            <button onclick="toggleBonus('${bonusId}')" class="flex items-center gap-2 text-xs font-medium opacity-50 hover:opacity-90 transition-opacity" style="color:${color}">
+                <span class="inline-block w-4 h-[1px] opacity-30" style="background:${color}"></span>
+                <span id="btn-${bonusId}">▸ Additional recommendations</span>
+                <span class="inline-block flex-1 h-[1px] opacity-15" style="background:${color}"></span>
+            </button>
+            <ul id="${bonusId}" class="bonus-section mt-2 space-y-2" style="display:none;">
+                ${renderItemListHtml(bonusItems, element.id, color, 'bon')}
+            </ul>
+        </li>`;
+    }
+
+    element.innerHTML = html;
+}
+
+function renderItemList(element, items, color, prefix) {
+    element.innerHTML = renderItemListHtml(items, element.id, color, prefix);
+}
+
+function renderItemListHtml(items, elementId, color, prefix) {
+    return items.map((item, i) => {
         const shortFormatted = item.short.replace(/^([^:]+):/, '<strong class="text-gray-200">$1:</strong>');
-        const uid = `exp-${element.id}-${i}`;
-        // Use [+] and [-] symbols
+        const uid = `exp-${prefix}-${elementId}-${i}`;
+        const sourcesHtml = item.sources ? `
+            <div class="mt-2 pl-3 flex flex-wrap gap-2">
+                ${item.sources.map(s => `<a href="${s.url}" target="_blank" rel="noopener" class="text-[10px] opacity-50 hover:opacity-90 underline transition-opacity" style="color:${color}">${s.label}</a>`).join('')}
+            </div>` : '';
         return `
         <li class="text-sm text-gray-400">
             <div class="flex items-start">
@@ -228,11 +232,24 @@ function renderExpandableList(element, items, color) {
                     </button>
                     <div id="${uid}" class="expandable-detail">
                         <p class="mt-2 text-xs text-gray-500 leading-relaxed pl-0 border-l-2 pl-3" style="border-color:${hexAlpha(color, 0.3)}">${item.detail}</p>
+                        ${sourcesHtml}
                     </div>
                 </div>
             </div>
         </li>`;
     }).join('');
+}
+
+function toggleBonus(bonusId) {
+    const el = document.getElementById(bonusId);
+    const btn = document.getElementById('btn-' + bonusId);
+    if (el.style.display === 'none') {
+        el.style.display = '';
+        btn.textContent = '▾ Additional recommendations';
+    } else {
+        el.style.display = 'none';
+        btn.textContent = '▸ Additional recommendations';
+    }
 }
 
 function toggleExpand(uid) {
@@ -264,85 +281,35 @@ function updateCharts(data) {
     // Destroy existing chart if type mismatch
     if (riskChart) {
         const currentType = riskChart.config.type;
-        const targetType = chartMode === 'radar' ? 'radar' : 'bar';
-        if (currentType !== targetType) {
+        if (currentType !== 'bar') {
             riskChart.destroy();
             riskChart = null;
         }
     }
 
     if (!riskChart) {
-        // CREATE NEW CHART
-        if (chartMode === 'radar') {
-            createRadarChart(data, labels, scores, darkGridColor, darkLabelColor);
-        } else {
-            createHistogramChart(data, labels, scores, darkGridColor, darkLabelColor);
-        }
+        createHistogramChart(data, labels, scores, darkGridColor, darkLabelColor);
     } else {
         // UPDATE EXISTING CHART
-        if (chartMode === 'radar') {
-            riskChart.data.datasets[0].data = scores;
-            riskChart.data.datasets[0].borderColor = data.color;
-            riskChart.data.datasets[0].backgroundColor = hexAlpha(data.color, 0.2);
-            riskChart.data.datasets[0].pointBackgroundColor = data.color;
-            riskChart.data.datasets[0].label = data.name;
-            riskChart.data.datasets[0].pointHoverBorderColor = data.color;
-        } else {
-            // Update Histogram data & color
-            riskChart.data.datasets[0].data = scores;
-            riskChart.data.datasets[0].backgroundColor = scores.map(getHistogramColor);
-            riskChart.data.datasets[0].borderColor = scores.map(getHistogramColor).map(c => c.replace('0.7)', '1)'));
-            riskChart.data.datasets[0].label = data.name;
-        }
+        riskChart.data.datasets[0].data = scores;
+        riskChart.data.datasets[0].backgroundColor = scores.map(getHistogramColor);
+        riskChart.data.datasets[0].borderColor = scores.map(getHistogramColor).map(c => c.replace('0.7)', '1)'));
+        riskChart.data.datasets[0].label = data.name;
         riskChart.update();
     }
 
-    // Duration Bar (Unchanged)
+    // Duration / Effect Timeline
     updateDurationChart(data, darkGridColor, darkLabelColor);
 }
 
-function createRadarChart(data, labels, scores, gridColor, labelColor) {
-    riskChart = new Chart(riskCanvas, {
-        type: 'radar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: data.name,
-                data: scores,
-                fill: true,
-                backgroundColor: hexAlpha(data.color, 0.2),
-                borderColor: data.color,
-                pointBackgroundColor: data.color,
-                pointBorderColor: '#1a1a19',
-                pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: data.color
-            }]
-        },
-        options: {
-            scales: {
-                r: {
-                    angleLines: { color: gridColor },
-                    grid: { color: gridColor },
-                    pointLabels: {
-                        font: { size: 10, family: 'system-ui, sans-serif' },
-                        color: labelColor
-                    },
-                    ticks: { display: false },
-                    suggestedMin: 0,
-                    suggestedMax: 10
-                }
-            },
-            plugins: { legend: { display: false } },
-            animation: { duration: 400 }
-        }
-    });
-}
+
 
 function getHistogramColor(score) {
-    // Green (0-3), Yellow (4-6), Red (7-10)
-    if (score <= 3) return 'rgba(34, 197, 94, 0.7)'; // green-500
-    if (score <= 6) return 'rgba(234, 179, 8, 0.7)'; // yellow-500
-    return 'rgba(239, 68, 68, 0.7)'; // red-500
+    if (score === 0) return 'rgba(156, 163, 175, 0.7)'; // gray (None)
+    if (score <= 2) return 'rgba(34, 197, 94, 0.7)'; // green (Low)
+    if (score <= 4) return 'rgba(234, 179, 8, 0.7)'; // yellow (Medium)
+    if (score <= 6) return 'rgba(249, 115, 22, 0.7)'; // orange (High)
+    return 'rgba(239, 68, 68, 0.7)'; // red (Very High)
 }
 
 function createHistogramChart(data, labels, scores, gridColor, labelColor) {
@@ -364,20 +331,20 @@ function createHistogramChart(data, labels, scores, gridColor, labelColor) {
             scales: {
                 x: {
                     min: 0,
-                    max: 10,
+                    max: 8,
                     grid: { color: gridColor },
                     ticks: {
                         color: labelColor,
-                        stepSize: 2, // Force strictly even spacing: 0, 2, 4, 6, 8, 10
+                        autoSkip: false,
+                        maxTicksLimit: 6,
+                        stepSize: 2,
                         callback: function (value) {
-                            if (value === 0) return '0 (None)';
-                            if (value === 2) return '2 (Low)';
-                            if (value === 4) return '4';
-                            if (value === 5) return '5 (Mid)';
-                            if (value === 6) return '6';
-                            if (value === 8) return '8 (High)';
-                            if (value === 10) return '10 (Very High)';
-                            return value;
+                            if (value === 0) return 'None';
+                            if (value === 2) return 'Low';
+                            if (value === 4) return 'Medium';
+                            if (value === 6) return 'High';
+                            if (value === 8) return 'Very High';
+                            return '';
                         }
                     }
                 },
@@ -409,11 +376,16 @@ function createHistogramChart(data, labels, scores, gridColor, labelColor) {
 }
 
 function updateDurationChart(data, darkGridColor, darkLabelColor) {
+    // Always destroy and rebuild for phase changes
     if (durationChart) {
-        durationChart.data.datasets[0].data = [data.duration];
-        durationChart.data.datasets[0].backgroundColor = data.color;
-        durationChart.update();
-    } else {
+        durationChart.destroy();
+        durationChart = null;
+    }
+
+    const inputRoutes = data.routes || (data.duration_phases ? [{ name: 'Effect Timeline', phases: data.duration_phases }] : null);
+
+    if (!inputRoutes) {
+        // Fallback: simple single bar using data.duration
         durationChart = new Chart(durationCanvas, {
             type: 'bar',
             data: {
@@ -429,22 +401,111 @@ function updateDurationChart(data, darkGridColor, darkLabelColor) {
             options: {
                 indexAxis: 'y',
                 scales: {
-                    x: {
-                        beginAtZero: true,
-                        max: 14,
-                        grid: { color: darkGridColor },
-                        ticks: { color: darkLabelColor }
-                    },
-                    y: {
-                        grid: { display: false },
-                        display: false
-                    }
+                    x: { beginAtZero: true, max: 14, grid: { color: darkGridColor }, ticks: { color: darkLabelColor } },
+                    y: { grid: { display: false }, display: false }
                 },
                 plugins: { legend: { display: false } },
                 maintainAspectRatio: false
             }
         });
+        return;
     }
+
+    // Multi-phase horizontal stacked bar for multiple routes
+    const phaseOrder = ['onset', 'come_up', 'peak', 'come_down', 'after_effects'];
+    const phaseColors = {
+        onset: 'rgba(156,163,175,0.5)',     // gray
+        come_up: 'rgba(96,165,250,0.6)',    // blue
+        peak: 'rgba(168,85,247,0.7)',       // purple (vibrant)
+        come_down: 'rgba(251,191,36,0.6)',  // amber
+        after_effects: 'rgba(107,114,128,0.4)' // dim gray
+    };
+
+    const phaseLabelsMap = {};
+    const datasets = phaseOrder.map(p => {
+        const widthData = inputRoutes.map(r => {
+            if (r.phases && r.phases[p]) {
+                phaseLabelsMap[p] = r.phases[p].label;
+                return r.phases[p].max;
+            }
+            return 0;
+        });
+
+        return {
+            _phaseKey: p,
+            label: phaseLabelsMap[p] || p,
+            data: widthData,
+            backgroundColor: phaseColors[p],
+            borderWidth: 0, // No border for seamlessly blurred transitions
+            borderRadius: 0, // No gaps
+            barThickness: inputRoutes.length === 1 ? 36 : 24
+        };
+    }).filter(ds => ds.data.some(val => val > 0));
+
+    durationChart = new Chart(durationCanvas, {
+        type: 'bar',
+        data: {
+            labels: inputRoutes.map(r => r.name),
+            datasets: datasets
+        },
+        options: {
+            indexAxis: 'y',
+            scales: {
+                x: {
+                    stacked: true,
+                    beginAtZero: true,
+                    grid: { color: darkGridColor },
+                    ticks: {
+                        color: darkLabelColor,
+                        callback: function (value) { return value + 'h'; }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Hours',
+                        color: darkLabelColor,
+                        font: { size: 11 }
+                    }
+                },
+                y: {
+                    stacked: true,
+                    grid: { display: false },
+                    ticks: {
+                        color: darkLabelColor,
+                        font: { weight: 'bold' }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'bottom',
+                    labels: {
+                        color: darkLabelColor,
+                        font: { size: 10 },
+                        boxWidth: 12,
+                        padding: 8
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            const routeIndex = context.dataIndex;
+                            const dsIndex = context.datasetIndex;
+                            const ds = context.chart.data.datasets[dsIndex];
+                            const phaseKey = ds._phaseKey;
+                            const phase = inputRoutes[routeIndex].phases[phaseKey];
+                            if (phase) {
+                                return `${phase.label}: ${phase.min}–${phase.max} hours`;
+                            }
+                            return ds.label;
+                        }
+                    }
+                }
+            },
+            maintainAspectRatio: false,
+            animation: { duration: 400 }
+        }
+    });
 }
 
 // --- Utilities ---

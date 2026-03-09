@@ -91,19 +91,8 @@
 
                 <!-- TOP: Risk Analysis (Radar/Levels) -->
                 <section class="card-transition">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-center">
-                            <h3 class="text-xl font-bold text-gray-100">Risk Analysis 📊</h3>
-                        </div>
-                        <!-- View Toggle -->
-                        <div class="flex bg-[#2a2a28] rounded-lg p-1">
-                            <button id="view-radar"
-                                class="px-3 py-1 text-xs font-medium rounded-md bg-[#3a3a38] text-white shadow-sm transition-all">Radar
-                                🕸️</button>
-                            <button id="view-histogram"
-                                class="px-3 py-1 text-xs font-medium rounded-md text-gray-400 hover:text-gray-200 transition-all">Levels
-                                📊</button>
-                        </div>
+                    <div class="flex items-center mb-4">
+                        <h3 class="text-xl font-bold text-gray-100">Risk Analysis 📊</h3>
                     </div>
                     <!-- Canvas Container -->
                     <div
@@ -220,25 +209,17 @@
                     </p>
                 </div>
 
-                <!-- Risk Radar Chart -->
-                <div class="bg-[#1a1a19] p-6 rounded-xl border border-[#2a2a28]">
-                    <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4 text-center">Load Profile
-                    </h3>
-                    <div class="chart-container">
-                        <canvas id="riskRadar"></canvas>
-                    </div>
-                    <p class="mt-4 text-xs text-center text-gray-600 italic">
-                        Values represent estimated physiological load (0-10).
-                    </p>
-                </div>
+
 
                 <!-- Duration / Timeline Chart -->
                 <div class="bg-[#1a1a19] p-6 rounded-xl border border-[#2a2a28]">
                     <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4 text-center">Effect
-                        Duration (Hours)</h3>
+                        Timeline (Estimate)</h3>
                     <div class="chart-container" style="height: 200px;">
                         <canvas id="durationBar"></canvas>
                     </div>
+                    <div id="timeline-note" class="mt-2 mb-2 text-[10px] text-gray-600 italic text-center">Estimates
+                        based on PsychonautWiki data.</div>
                     <div class="mt-4 text-sm text-gray-400 bg-[#151514] p-3 rounded border border-[#2a2a28]">
                         <span class="font-bold text-gray-300">Sleep Strategy:</span> <span
                             id="sleep-strategy-text">Normal sleep cycle recommended.</span>

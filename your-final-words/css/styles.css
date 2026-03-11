@@ -29,14 +29,19 @@ h1 {
   font-weight: 700;
   letter-spacing: 0.02em;
   color: var(--white);
+  text-wrap: balance;
 }
 h2 {
   font-size: 1.3rem;
   font-weight: 400;
   letter-spacing: 0.04em;
   color: var(--white);
+  text-wrap: balance;
 }
-p, li { font-size: 1.05rem; }
+p, li { 
+  font-size: 1.05rem; 
+  text-wrap: pretty;
+}
 
 /* ── Layout ───────────────────────────────────────── */
 .container {
@@ -51,26 +56,17 @@ section {
 }
 section:last-of-type { border-bottom: none; }
 
-/* ── Hero ─────────────────────────────────────────── */
+/* ── Hero & Header ─────────────────────────────────── */
 .hero {
-  min-height: 60vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
   text-align: center;
-  padding: 3rem 1.5rem;
+  padding: 4rem 1.5rem 2rem;
   border-bottom: 1px solid var(--border);
 }
-.hero p {
-  margin-top: 1rem;
-  max-width: 540px;
-  color: var(--text-dim);
-  font-size: 1.1rem;
-  line-height: 1.8;
-}
 .hero .cta-group {
-  margin-top: 1.5rem;
+  margin-top: 2rem;
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
@@ -176,6 +172,10 @@ section:last-of-type { border-bottom: none; }
   font-size: 0.95rem;
   text-align: center;
   line-height: 1.6;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+  text-wrap: balance;
 }
 
 /* ── Samples Section ──────────────────────────────── */
@@ -283,6 +283,83 @@ footer {
   text-align: center;
   color: var(--text-dim);
   font-size: 0.82rem;
+  border-top: 1px solid var(--border);
+}
+
+.submit-wrap {
+  margin-bottom: 2rem;
+}
+
+.btn-submit {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0.5rem;
+  font-family: var(--sans);
+  letter-spacing: 0.02em;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.btn-submit:hover {
+  opacity: 1;
+  color: var(--white);
+}
+
+.submit-content {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.4s ease, opacity 0.4s ease, margin 0.4s ease;
+  margin-top: 0;
+  text-align: center;
+  font-size: 1rem;
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.submit-content.expanded {
+  max-height: 400px;
+  opacity: 1;
+  margin-top: 1.5rem;
+}
+
+.submit-link {
+  color: var(--white);
+  text-decoration: underline;
+  transition: opacity 0.2s;
+  display: inline-block;
+}
+.submit-link:hover {
+  opacity: 0.7;
+}
+
+.email-copy-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-copy-icon {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+
+.btn-copy-icon:hover {
+  color: var(--white);
+}
+
+.btn-copy-icon span {
+  font-size: 1.2rem;
 }
 
 /* ── Toast ────────────────────────────────────────── */

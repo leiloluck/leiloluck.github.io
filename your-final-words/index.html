@@ -6,33 +6,25 @@
   <meta name="description" content="Write your fictional final words — a reflective exercise in what you'd leave behind." />
   <meta name="color-scheme" content="dark" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   <link rel="stylesheet" href="css/styles.css" />
   <title>Your Final Words</title>
 </head>
 <body>
 
-  <!-- Hero -->
+  <!-- Header & The Exercise -->
   <header class="hero">
     <h1>Your Final Words</h1>
-    <p id="hero-text"></p>
-    <div class="cta-group">
-      <a href="#write" class="btn">Start Writing</a>
-      <a href="#samples" class="btn">Read Examples</a>
-    </div>
-  </header>
-
-  <!-- The Task -->
-  <section id="task">
-    <div class="container">
-      <h2>The Exercise</h2>
+    
+    <div class="container" style="margin-top: 1.5rem;">
       <p class="task-text" id="task-brief"></p>
       <div class="task-more" id="task-more">
         <h3 class="task-more-heading">Detailed Description</h3>
         <p id="task-details"></p>
       </div>
-      <button class="btn btn-small btn-toggle" id="btn-more" type="button">Show More</button>
+      <button class="btn btn-small btn-toggle" id="btn-more" type="button" style="margin-top: 0.75rem;">Show more</button>
     </div>
-  </section>
+  </header>
 
   <!-- Writing Area -->
   <section id="write">
@@ -48,29 +40,28 @@
         <p class="editor-hint">Your text is automatically saved in your browser. It will still be here if you refresh the page or close the browser. Press clear to truly delete it.</p>
         <div class="editor-actions">
           <button class="btn btn-small" id="btn-clear" type="button">Clear</button>
-          <button class="btn btn-small" id="btn-copy" type="button">Copy to Clipboard</button>
+          <button class="btn btn-small" id="btn-copy" type="button">
+            <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; margin-right: 0.2rem;">content_copy</span>
+            Copy to Clipboard
+          </button>
         </div>
       </div>
     </div>
-  </section>
-
-  <!-- Send It -->
+    <!-- Send It -->
   <section id="send">
     <div class="container" style="text-align:center;">
-      <h2>Pass It On</h2>
-      <div class="send-flow">
-        <span class="icon">✉️</span>
-        <span class="arrow">→</span>
-        <span class="icon">❤️</span>
-      </div>
-      <p class="send-label">Send it to someone you trust — they can pass it on if it’s ever needed.</p>
+      <h2>✉️ Pass It On ❤️</h2>
+      <p class="send-label">Send the finished writing to someone you trust who will pass it on if it is ever needed.</p>
     </div>
+  </section>
+
+  
   </section>
 
   <!-- Sample Texts -->
   <section id="samples">
     <div class="container">
-      <h2>Words from Others</h2>
+      <h2>Final Words from Others</h2>
       <ul class="sample-list" id="sample-list">
         <!-- populated by JS -->
       </ul>
@@ -91,7 +82,15 @@
   <div class="toast" id="toast"></div>
 
   <footer>
-    <div class="container">Take your time. There's no deadline (except the obvious one).</div>
+    <div class="container">
+      <div class="submit-wrap">
+        <button class="btn-submit" id="btn-submit-toggle" type="button">Submit your personal message</button>
+        <div class="submit-content" id="submit-content">
+          <!-- populated from resources/submit.txt -->
+        </div>
+      </div>
+      <div style="opacity: 0.5;">Take your time. There's no deadline (except the obvious one).</div>
+    </div>
   </footer>
 
   <script>
@@ -110,20 +109,21 @@
     const SAMPLES_DIR  = 'resources/samples/';
     const MANIFEST_URL = SAMPLES_DIR + 'manifest.json';
 
-    /* ── Load hero & exercise text from .txt files ──── */
-    fetch('resources/hero.txt')
-      .then(r => r.text())
-      .then(t => { document.getElementById('hero-text').textContent = t.trim(); })
-      .catch(() => {});
-
+    /* ── Load exercise text from .txt files ──── */
     fetch('resources/exercise.txt')
       .then(r => r.text())
-      .then(t => { document.getElementById('task-brief').textContent = t.trim(); })
+      .then(t => { 
+        document.getElementById('task-brief').style.whiteSpace = 'pre-wrap';
+        document.getElementById('task-brief').textContent = t.trim(); 
+      })
       .catch(() => {});
 
     fetch('resources/details.txt')
       .then(r => r.text())
-      .then(t => { document.getElementById('task-details').textContent = t.trim(); })
+      .then(t => { 
+        document.getElementById('task-details').style.whiteSpace = 'pre-wrap';
+        document.getElementById('task-details').textContent = t.trim(); 
+      })
       .catch(() => {});
 
     /* ── Show-more toggle ───────────────────────────── */
@@ -131,7 +131,52 @@
     const taskMore = document.getElementById('task-more');
     btnMore.addEventListener('click', () => {
       const expanded = taskMore.classList.toggle('expanded');
-      btnMore.textContent = expanded ? 'Show Less' : 'Show More';
+      btnMore.textContent = expanded ? 'Show less' : 'Show more';
+    });
+
+    const btnSubmit = document.getElementById('btn-submit-toggle');
+    const submitContent = document.getElementById('submit-content');
+    
+    // Better anti-scraping: Constructing via JS and event-based injection
+    const user = 'leilo.luck';
+    const domain = 'gmail.com';
+    
+    btnSubmit.addEventListener('click', () => {
+      const isExpanding = !submitContent.classList.contains('expanded');
+      
+      if (isExpanding && !submitContent.dataset.loaded) {
+        const fullEmail = `${user}@${domain}`;
+        submitContent.innerHTML = `
+          If you would like to contribute your words to the collection of samples, please send your text to:<br><br>
+          <div class="email-copy-wrap">
+            <a href="mailto:${fullEmail}" class="submit-link" id="email-link">${fullEmail}</a>
+            <button class="btn-copy-icon" id="email-copy-btn" title="Copy to clipboard">
+              <span class="material-symbols-outlined">content_copy</span>
+            </button>
+          </div><br>
+          Include the title you'd like to use and your name (or state if you'd like to be anonymous). Thank you for sharing.
+        `;
+        
+        const emailLink = document.getElementById('email-link');
+        const emailCopyBtn = document.getElementById('email-copy-btn');
+
+        const doCopy = async (e) => {
+          try {
+            await navigator.clipboard.writeText(fullEmail);
+            toast('Email copied to clipboard');
+          } catch {}
+        };
+
+        emailLink.addEventListener('click', doCopy);
+        emailCopyBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          doCopy();
+        });
+
+        submitContent.dataset.loaded = "true";
+      }
+      
+      submitContent.classList.toggle('expanded');
     });
 
     /* ── DOM refs ───────────────────────────────────── */

@@ -4,8 +4,8 @@ A minimalist dark-themed single-page website for a reflective writing exercise. 
 
 ## Structure
 
-- **index.html** — self-contained page (HTML + inline CSS + JS, no build step)
-- **resources/hero.txt** — the subtitle text shown under the title
+- **index.html** — self-contained page (HTML + inline JS, no build step)
+- **css/styles.css** — external stylesheet
 - **resources/exercise.txt** — the brief exercise description (always visible)
 - **resources/details.txt** — extended description hidden behind a "Show More" toggle
 - **resources/samples/manifest.json** — JSON array of sample filenames to display

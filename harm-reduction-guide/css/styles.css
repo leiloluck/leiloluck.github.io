@@ -6,6 +6,8 @@
 /* ===== Base ===== */
 body {
     font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: linear-gradient(to bottom, #181816 0%, #0c0c0b 100%);
+    background-attachment: fixed;
 }
 
 /* ===== Transitions ===== */
@@ -32,7 +34,7 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-    background: #111110;
+    background: #0c0c0b;
 }
 
 ::-webkit-scrollbar-thumb {

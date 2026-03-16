@@ -24,7 +24,7 @@
         <span class="mr-1">ℹ️</span>
         This guide is for <strong>educational and harm reduction purposes only</strong>. It does not endorse substance
         use.
-        In case of emergency, call <strong>112</strong> / seek professional help immediately.
+        In case of emergency, <strong>call your local emergency number</strong> and seek professional help immediately.
     </div>
 
     <!-- Sticky Header (Hidden by default) -->
@@ -72,13 +72,60 @@
 
         <!-- Active Substance Header -->
         <div id="active-substance-header"
-            class="mb-10 p-5 rounded-xl border-2 transition-all duration-300 flex items-center justify-between"
+            class="mb-6 p-5 rounded-xl border-2 transition-all duration-300 flex items-center justify-between"
             style="background:rgba(120,113,108,0.1);border-color:rgba(120,113,108,0.3);">
             <div class="flex items-center gap-4">
                 <span id="active-substance-emoji" class="text-4xl">🧠</span>
                 <div>
                     <h2 id="active-substance-name" class="text-2xl font-bold text-gray-100">Sober / Baseline</h2>
                     <p id="active-substance-type" class="text-sm text-gray-500">Baseline</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dosing Panel (hidden for sober) -->
+        <div id="dosing-panel" class="mb-10 hidden">
+            <div id="dosing-card" class="bg-[#1a1a19] p-6 rounded-xl border-2 border-[#2a2a28] transition-all duration-300">
+                <!-- Route Selector (always visible) -->
+                <div id="route-selector-wrap" class="mb-5">
+                    <p class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2">Route of Administration</p>
+                    <div id="route-buttons" class="flex flex-wrap gap-2">
+                        <!-- Injected via JS -->
+                    </div>
+                </div>
+
+                <!-- Unified Dosing Tier Selector -->
+                <div id="dosing-tiers" class="mb-3">
+                    <p class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2">Dose</p>
+                    <div class="flex gap-1 w-full">
+                        <button id="tier-threshold" onclick="setIntensity('threshold')" class="tier-btn flex-1 rounded-lg py-2 px-1 cursor-pointer transition-all duration-200 border-2 text-center" style="--tier-color:#6b7280;--tier-bg:rgba(107,114,128,0.12)">
+                            <span class="block text-[11px] font-bold leading-tight">Threshold</span>
+                            <span id="val-threshold" class="block text-[10px] mt-0.5 opacity-70">–</span>
+                        </button>
+                        <button id="tier-light" onclick="setIntensity('light')" class="tier-btn flex-[2] rounded-lg py-2 px-1 cursor-pointer transition-all duration-200 border-2 text-center" style="--tier-color:#22c55e;--tier-bg:rgba(34,197,94,0.12)">
+                            <span class="block text-[11px] font-bold leading-tight">Light</span>
+                            <span id="val-light" class="block text-[10px] mt-0.5 opacity-70">–</span>
+                        </button>
+                        <button id="tier-common" onclick="setIntensity('common')" class="tier-btn flex-[2] rounded-lg py-2 px-1 cursor-pointer transition-all duration-200 border-2 text-center" style="--tier-color:#eab308;--tier-bg:rgba(234,179,8,0.12)">
+                            <span class="block text-[11px] font-bold leading-tight">Common</span>
+                            <span id="val-common" class="block text-[10px] mt-0.5 opacity-70">–</span>
+                        </button>
+                        <button id="tier-strong" onclick="setIntensity('strong')" class="tier-btn flex-[2] rounded-lg py-2 px-1 cursor-pointer transition-all duration-200 border-2 text-center" style="--tier-color:#f97316;--tier-bg:rgba(249,115,22,0.12)">
+                            <span class="block text-[11px] font-bold leading-tight">Strong</span>
+                            <span id="val-strong" class="block text-[10px] mt-0.5 opacity-70">–</span>
+                        </button>
+                        <button id="tier-heavy" onclick="setIntensity('heavy')" class="tier-btn flex-1 rounded-lg py-2 px-1 cursor-pointer transition-all duration-200 border-2 text-center" style="--tier-color:#ef4444;--tier-bg:rgba(239,68,68,0.12)">
+                            <span class="block text-[11px] font-bold leading-tight">Heavy</span>
+                            <span id="val-heavy" class="block text-[10px] mt-0.5 opacity-70">–</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Dose Note & Source -->
+                <div id="dose-note" class="text-xs text-gray-500 italic mb-1 hidden"></div>
+                <div id="dose-warning" class="text-xs text-red-400 font-bold mb-1 hidden"></div>
+                <div id="dose-source" class="text-[10px] text-gray-600">
+                    <a id="dose-source-link" href="#" target="_blank" rel="noopener" class="underline hover:text-gray-400 transition-opacity">Source: PsychonautWiki</a>
                 </div>
             </div>
         </div>
@@ -241,9 +288,8 @@
         </div>
 
         <footer class="mt-16 border-t border-[#2a2a28] pt-8 text-center text-gray-600 text-xs">
-            <p>This guide is for harm reduction and educational purposes only. In case of medical emergency, seek
-                professional help immediately.</p>
-            <p class="mt-2">Based on established harm reduction guidelines (RollSafe, TripSit, PsychonautWiki).</p>
+            <p>This guide is for harm reduction and educational purposes only. In case of medical emergency, call your local emergency number and seek professional help immediately.</p>
+            <p class="mt-2">Sources: <a href="https://psychonautwiki.org" target="_blank" class="underline hover:text-gray-400">PsychonautWiki</a>, <a href="https://www.saferparty.ch" target="_blank" class="underline hover:text-gray-400">SaferParty</a>, <a href="https://tripsit.me" target="_blank" class="underline hover:text-gray-400">TripSit</a>, <a href="https://dancesafe.org" target="_blank" class="underline hover:text-gray-400">DanceSafe</a>.</p>
         </footer>
 
     </div>

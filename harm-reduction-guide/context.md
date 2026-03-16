@@ -355,7 +355,7 @@ The overall impression should be: **someone who cares about information design b
 
 Permanently visible at the top of the page, above the sticky header:
 
-> ℹ️ This guide is for **educational and harm reduction purposes only**. It does not endorse substance use. In case of emergency, call **112** / seek professional help immediately.
+> ℹ️ This guide is for **educational and harm reduction purposes only**. It does not endorse substance use. In case of emergency, **call your local emergency number** and seek professional help immediately.
 
 ---
 
@@ -463,10 +463,114 @@ Before publishing any content update:
 
 ---
 
-## 10. Legal & Ethical Notes
+## 10. Dosing Information Architecture
+
+### 10.1 Rationale
+
+Dosing information is among the most safety-critical data on this website. Mis-dosing is one of the leading causes of harm in recreational substance use. Every substance profile must present dosing data prominently, following PsychonautWiki's established tier system.
+
+### 10.2 User Flow: Substance → Route → Intensity → Information
+
+After selecting a substance, the user encounters the following decision sequence **before** seeing the protocol timeline:
+
+1. **Route of Administration** — Presented as a row of buttons with emoji icons, sorted by most common method first. The most common route is selected by default.
+   - Example: Alcohol → only "Oral 🍺" (one option, pre-selected)
+   - Example: 2C-B → "Oral 💊" (default) | "Insufflated 👃"
+   - Example: Cannabis → "Smoked 🚬" (default) | "Oral (Edible) 🍪"
+   - Example: Ketamine → "Insufflated 👃" (default) | "Oral 💊" | "Intramuscular 💉"
+
+2. **Dosing Intensity** — A set of 3 prominent buttons below the route selector:
+   - **Light** — Subtle effects, minimal risk
+   - **Common** — Standard recreational dose (selected by default)
+   - **Strong** — Intense effects, elevated risk
+
+   Below these buttons, a **graduated scale** displays the full dosing range from Threshold through Light → Common → Strong → Heavy, with the currently selected range highlighted. This scale always links to PsychonautWiki's dosing guide for the substance.
+
+3. **Dosing Display** — Shows the specific dose range in milligrams (or micrograms for LSD) for the selected route + intensity combination. Includes units appropriate to the substance.
+
+### 10.3 Adaptive Information Display
+
+The selected route and intensity combination modulates:
+
+- **Effect Timeline** — Duration phases adjust to match the selected route (e.g., oral cannabis has much longer onset than smoked).
+- **Risk Analysis** — Physiological strain values adjust with intensity:
+  - Light: baseline risk values (may be reduced from common)
+  - Common: standard risk values (default display)
+  - Strong: elevated risk values with additional warnings
+- **Warnings** — High-dose warnings appear automatically when "Strong" is selected for high-risk substances (e.g., MDMA >150 mg triggers explicit neurotoxicity warnings).
+- **Protocol Tips** — The textual harm reduction advice remains the same across intensities (the advice is relevant regardless of dose), but critical warnings may be emphasised differently.
+
+### 10.4 Dosing Data Model
+
+Each substance's data object includes a `dosing` property keyed by route:
+
+```json
+{
+  "dosing": {
+    "Oral": {
+      "unit": "mg",
+      "threshold": 30,
+      "light": { "min": 40, "max": 75 },
+      "common": { "min": 75, "max": 140 },
+      "strong": { "min": 140, "max": 180 },
+      "heavy": 180,
+      "note": "Max recommended: 1.5 mg/kg (men), 1.3 mg/kg (women)",
+      "source": "https://psychonautwiki.org/wiki/MDMA"
+    }
+  }
+}
+```
+
+- `unit` — Display unit (mg, µg, g, etc.)
+- `threshold` — Minimum perceivable dose
+- `light`, `common`, `strong` — Objects with `min`/`max` ranges
+- `heavy` — Threshold above which effects become dangerously intense
+- `note` — Optional safety annotation
+- `source` — Direct link to PsychonautWiki dosing page
+
+### 10.5 Route Emoji Convention
+
+| Route | Emoji | Display Name |
+|---|---|---|
+| Oral | 💊 | Oral |
+| Oral (drinking) | 🍺 | Drinking |
+| Oral (edible) | 🍪 | Oral (Edible) |
+| Smoked | 🚬 | Smoked |
+| Insufflated | 👃 | Insufflated |
+| Sublingual | 👅 | Sublingual |
+| Intramuscular | 💉 | Intramuscular |
+
+### 10.6 Visual Design of Dosing Panel
+
+The dosing panel sits between the Active Substance Header and the Risk Analysis chart. It is a distinct card with the substance accent colour tinting. The layout is:
+
+```
+┌─────────────────────────────────────────┐
+│  Route:  [🚬 Smoked] [🍪 Edible]       │
+│                                         │
+│  Intensity: [Light] [●Common] [Strong]  │
+│                                         │
+│  ┌─────────────────────────────────┐    │
+│  │ Threshold │ Light │Common│Strong│Heavy│
+│  │    1mg    │ 2-4mg │4-10mg│10-25│25+mg│
+│  └─────────────────────────────────┘    │
+│  Source: PsychonautWiki — Cannabis ↗    │
+└─────────────────────────────────────────┘
+```
+
+The graduated scale uses colour coding:
+- Threshold: Gray
+- Light: Green
+- Common: Yellow
+- Strong: Orange
+- Heavy: Red
+
+---
+
+## 11. Legal & Ethical Notes
 
 - This service does **not** provide medical advice. It provides general harm reduction information.
-- The emergency number **112** (European standard) is prominently displayed.
+- The emergency instruction directs users to **call their local emergency number** (e.g., 112 in Europe, 911 in North America, 999 in the UK, 000 in Australia).
 - No user data is collected. No analytics. No cookies. No tracking.
 - All source material is attributed and linked.
 - The service does not facilitate the purchase, sale, or distribution of controlled substances.

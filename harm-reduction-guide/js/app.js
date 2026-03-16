@@ -8,13 +8,17 @@
 let currentProtocol = 'sober';
 let riskChart = null;
 let durationChart = null;
+let currentIntensity = 'common';
+let currentRouteIndex = 0;
 
 // DOM refs (assigned after DOMContentLoaded)
 let navContainer, modeDisplay, introModifier, contentBefore, contentDuring,
     focusDuring, contentAfter, contentNextMorning, sleepStrategyText,
     emergencyFlags, riskList, riskCanvas, durationCanvas, activeHeader,
     activeHeaderName, activeHeaderType, activeHeaderEmoji,
-    sectionCards, sectionBadges, focusBorderEl;
+    sectionCards, sectionBadges, focusBorderEl,
+    dosingPanel, dosingCard, routeButtons,
+    doseNote, doseWarning, doseSourceLink;
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Cache DOM
@@ -38,6 +42,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     sectionCards = document.querySelectorAll('.section-card');
     sectionBadges = document.querySelectorAll('.section-badge');
     focusBorderEl = document.getElementById('focus-border');
+
+    // Dosing panel DOM refs
+    dosingPanel = document.getElementById('dosing-panel');
+    dosingCard = document.getElementById('dosing-card');
+    routeButtons = document.getElementById('route-buttons');
+    doseNote = document.getElementById('dose-note');
+    doseWarning = document.getElementById('dose-warning');
+    doseSourceLink = document.getElementById('dose-source-link');
 
 
     // Sticky Header Scroll Listener
@@ -125,6 +137,11 @@ function loadProtocol(id) {
     activeHeader.style.borderColor = hexAlpha(data.color, 0.3);
     activeHeaderName.style.color = data.color;
 
+    // 2a. Dosing panel
+    currentRouteIndex = 0;
+    currentIntensity = 'common';
+    renderDosingPanel(data);
+
     // 2b. Sticky Header Update
     document.getElementById('sticky-name').textContent = data.name;
     document.getElementById('sticky-type').textContent = data.type;
@@ -175,8 +192,144 @@ function loadProtocol(id) {
         riskList.innerHTML = data.risks.map(r => `<li>${r}</li>`).join('');
     }
 
-    // 8. Charts
+    // 8. Charts (use route-adjusted durations)
     updateCharts(data);
+}
+
+// --- Dosing Panel ---
+function renderDosingPanel(data) {
+    if (!data.dosing || data.id === 'sober') {
+        dosingPanel.classList.add('hidden');
+        return;
+    }
+    dosingPanel.classList.remove('hidden');
+    dosingCard.style.borderColor = hexAlpha(data.color, 0.3);
+
+    // Build route buttons (always visible, even for single routes)
+    const routeNames = Object.keys(data.dosing);
+    const defaultIdx = data.routes ? data.routes.findIndex(r => r.isDefault) : 0;
+    currentRouteIndex = defaultIdx >= 0 ? defaultIdx : 0;
+
+    routeButtons.innerHTML = routeNames.map((name, i) => {
+        const route = data.routes ? data.routes.find(r => r.name === name) : null;
+        const emoji = route && route.emoji ? route.emoji : '💊';
+        const label = route && route.displayName ? route.displayName : name;
+        return `<button class="route-btn" data-route="${i}" onclick="setRoute(${i})">${emoji} ${label}</button>`;
+    }).join('');
+
+    updateDosingDisplay(data);
+}
+
+function updateDosingDisplay(data) {
+    if (!data.dosing) return;
+    const color = data.color;
+    const routeNames = Object.keys(data.dosing);
+    const routeName = routeNames[currentRouteIndex] || routeNames[0];
+    const dose = data.dosing[routeName];
+    if (!dose) return;
+
+    const unit = dose.unit || 'mg';
+
+    // Update route button states
+    routeButtons.querySelectorAll('.route-btn').forEach((btn, i) => {
+        if (i === currentRouteIndex) {
+            btn.style.backgroundColor = hexAlpha(color, 0.2);
+            btn.style.borderColor = color;
+            btn.style.color = color;
+        } else {
+            btn.style.backgroundColor = 'rgba(255,255,255,0.04)';
+            btn.style.borderColor = 'rgba(255,255,255,0.12)';
+            btn.style.color = 'rgba(255,255,255,0.5)';
+        }
+    });
+
+    // Populate tier button values
+    document.getElementById('val-threshold').textContent = dose.threshold != null ? `${dose.threshold} ${unit}` : '–';
+    document.getElementById('val-light').textContent = dose.light ? `${dose.light.min}–${dose.light.max} ${unit}` : '–';
+    document.getElementById('val-common').textContent = dose.common ? `${dose.common.min}–${dose.common.max} ${unit}` : '–';
+    document.getElementById('val-strong').textContent = dose.strong ? `${dose.strong.min}–${dose.strong.max} ${unit}` : '–';
+    document.getElementById('val-heavy').textContent = dose.heavy != null ? `${dose.heavy}+ ${unit}` : '–';
+
+    // Highlight selected tier button
+    const tiers = ['threshold', 'light', 'common', 'strong', 'heavy'];
+    tiers.forEach(lvl => {
+        const btn = document.getElementById('tier-' + lvl);
+        if (!btn) return;
+        const tierColor = getComputedStyle(btn).getPropertyValue('--tier-color').trim();
+        if (lvl === currentIntensity) {
+            btn.style.backgroundColor = hexAlpha(tierColor || color, 0.25);
+            btn.style.borderColor = tierColor || color;
+            btn.style.color = tierColor || color;
+            btn.style.boxShadow = `0 0 12px ${hexAlpha(tierColor || color, 0.2)}`;
+            btn.style.transform = 'scale(1.04)';
+        } else {
+            btn.style.backgroundColor = 'var(--tier-bg)';
+            btn.style.borderColor = 'rgba(255,255,255,0.08)';
+            btn.style.color = 'rgba(255,255,255,0.4)';
+            btn.style.boxShadow = 'none';
+            btn.style.transform = 'scale(1)';
+        }
+    });
+
+    // Dose note
+    if (dose.note) {
+        doseNote.textContent = dose.note;
+        doseNote.classList.remove('hidden');
+    } else {
+        doseNote.classList.add('hidden');
+    }
+
+    // High-dose warning for strong + heavy
+    if (currentIntensity === 'strong' || currentIntensity === 'heavy') {
+        const warnings = {
+            mdma: '⚠️ Doses above 150 mg exponentially increase neurotoxicity risk without additional euphoria.',
+            cocaine: '⚠️ High doses significantly increase risk of cardiac events and compulsive redosing.',
+            amphetamine: '⚠️ High doses dramatically increase cardiovascular strain and hyperthermia risk.',
+            '4mmc': '⚠️ Higher doses dramatically increase compulsive redosing urge and neurotoxicity.',
+            '2cb': '⚠️ At this dose range, effects become overwhelming. Ensure safe environment.',
+            ketamine: '⚠️ High doses approach the "k-hole" — full dissociation. Never use alone.',
+            lsd: '⚠️ High doses dramatically increase risk of challenging experiences. Set & setting critical.',
+            alcohol: '⚠️ High doses severely impair judgment and motor control. Risk of aspiration if vomiting.'
+        };
+        if (warnings[data.id]) {
+            doseWarning.textContent = warnings[data.id];
+            doseWarning.classList.remove('hidden');
+        } else {
+            doseWarning.classList.add('hidden');
+        }
+    } else {
+        doseWarning.classList.add('hidden');
+    }
+
+    // Source link
+    if (dose.source) {
+        doseSourceLink.href = dose.source;
+        doseSourceLink.textContent = `Source: PsychonautWiki — ${data.name} dosing`;
+        doseSourceLink.parentElement.classList.remove('hidden');
+    }
+}
+
+function setRoute(index) {
+    currentRouteIndex = index;
+    const data = protocols[currentProtocol];
+    updateDosingDisplay(data);
+    updateCharts(data);
+}
+
+function setIntensity(level) {
+    currentIntensity = level;
+    const data = protocols[currentProtocol];
+    updateDosingDisplay(data);
+    updateCharts(data);
+}
+
+// Intensity multipliers for risk visualization
+function getIntensityMultiplier() {
+    if (currentIntensity === 'threshold') return 0.35;
+    if (currentIntensity === 'light') return 0.65;
+    if (currentIntensity === 'strong') return 1.25;
+    if (currentIntensity === 'heavy') return 1.5;
+    return 1.0; // common
 }
 
 // --- Section Rendering (Essential + Bonus) ---
@@ -266,12 +419,13 @@ function toggleExpand(uid) {
 
 // --- Charts (Dark Mode) ---
 function updateCharts(data) {
+    const multiplier = getIntensityMultiplier();
     const scores = [
-        data.visualizer.neurotoxicity,
-        data.visualizer.cardiotoxicity,
-        data.visualizer.dehydration,
-        data.visualizer.sleep_deprivation,
-        data.visualizer.impulsivity
+        Math.min(8, Math.round(data.visualizer.neurotoxicity * multiplier)),
+        Math.min(8, Math.round(data.visualizer.cardiotoxicity * multiplier)),
+        Math.min(8, Math.round(data.visualizer.dehydration * multiplier)),
+        Math.min(8, Math.round(data.visualizer.sleep_deprivation * multiplier)),
+        Math.min(8, Math.round(data.visualizer.impulsivity * multiplier))
     ];
 
     const labels = ['Neurotoxicity', 'Cardiotoxicity', 'Dehydration', 'Sleep Loss', 'Impulsivity'];
@@ -361,10 +515,10 @@ function createHistogramChart(data, labels, scores, gridColor, labelColor) {
                             const v = context.raw;
                             let t = 'None';
                             if (v > 0) t = 'Low';
-                            if (v >= 4) t = 'Moderate';
-                            if (v >= 7) t = 'High';
-                            if (v >= 9) t = 'Very High';
-                            return `${t} (${v}/10)`;
+                            if (v > 2) t = 'Moderate';
+                            if (v > 4) t = 'High';
+                            if (v > 6) t = 'Very High';
+                            return `${t} (${v}/8)`;
                         }
                     }
                 }
@@ -382,7 +536,14 @@ function updateDurationChart(data, darkGridColor, darkLabelColor) {
         durationChart = null;
     }
 
-    const inputRoutes = data.routes || (data.duration_phases ? [{ name: 'Effect Timeline', phases: data.duration_phases }] : null);
+    const allRoutes = data.routes || (data.duration_phases ? [{ name: 'Effect Timeline', phases: data.duration_phases }] : null);
+
+    // Filter to only the selected route when multiple routes exist
+    let inputRoutes = allRoutes;
+    if (allRoutes && allRoutes.length > 1) {
+        const idx = Math.min(currentRouteIndex, allRoutes.length - 1);
+        inputRoutes = [allRoutes[idx]];
+    }
 
     if (!inputRoutes) {
         // Fallback: simple single bar using data.duration
@@ -438,7 +599,7 @@ function updateDurationChart(data, darkGridColor, darkLabelColor) {
             backgroundColor: phaseColors[p],
             borderWidth: 0, // No border for seamlessly blurred transitions
             borderRadius: 0, // No gaps
-            barThickness: inputRoutes.length === 1 ? 36 : 24
+            barThickness: 36
         };
     }).filter(ds => ds.data.some(val => val > 0));
 

@@ -83,9 +83,12 @@ const _inlineProtocols = {
     alcohol: {
         id: "alcohol", name: "Alcohol", type: "Depressant", emoji: "🍺",
         color: "#ef4444", duration: 4,
+        dosing: {
+            "Oral": { unit: "g ethanol (1 drink ≈ 10 g)", threshold: 10, light: { min: 10, max: 20 }, common: { min: 20, max: 30 }, strong: { min: 30, max: 40 }, heavy: 40, source: "https://psychonautwiki.org/wiki/Alcohol" }
+        },
         routes: [
             {
-                name: "Oral",
+                name: "Oral", displayName: "Drinking", emoji: "🍺", isDefault: true,
                 phases: {
                     onset: { min: 0.25, max: 0.5, label: "Onset" },
                     come_up: { min: 0.25, max: 0.5, label: "Come-up" },
@@ -95,12 +98,12 @@ const _inlineProtocols = {
                 }
             }
         ],
-        visualizer: { neurotoxicity: 4, cardiotoxicity: 2, dehydration: 8, sleep_deprivation: 8, impulsivity: 6 },
+        visualizer: { neurotoxicity: 4, cardiotoxicity: 3, dehydration: 8, sleep_deprivation: 7, impulsivity: 6 },
         sleep_strategy: "Expect fragmented sleep. Hydrate before bed.",
         phases: {
             before: {
                 essential: [
-                    { short: "Meal: Eat a substantial meal with fat and protein before drinking.", detail: "Alcohol absorption depends heavily on stomach contents. Drinking on an empty stomach causes rapid absorption through the gastric mucosa, producing a dangerous blood alcohol spike. Fats and proteins delay gastric emptying, forcing slower absorption.", sources: [{ label: "PsychonautWiki — Alcohol", url: "https://psychonautwiki.org/wiki/Alcohol" }] }
+                    { short: "Meal: Eat a substantial meal with fat and protein before drinking.", detail: "Alcohol absorption depends heavily on stomach contents. Drinking on an empty stomach causes rapid absorption through the gastric mucosa, producing a dangerous blood alcohol spike. Fats and proteins delay gastric emptying, forcing slower absorption.", sources: [{ label: "PsychonautWiki — Alcohol", url: "https://psychonautwiki.org/wiki/Alcohol" }, { label: "SaferParty — Alkohol", url: "https://www.saferparty.ch/substanzen/alkohol" }] }
                 ],
                 bonus: [
                     { short: "Hydration: Pre-hydrate to offset diuretic effects.", detail: "Alcohol inhibits ADH (antidiuretic hormone), causing continuous water loss through the kidneys. Starting well-hydrated provides a buffer against the inevitable fluid loss." }
@@ -127,7 +130,7 @@ const _inlineProtocols = {
             },
             next_morning: {
                 essential: [
-                    { short: "Recovery: Electrolytes and B-vitamins.", detail: "Alcohol depletes B-vitamins (especially B1/thiamine and B6), which are critical for nervous system function. Replenishing electrolytes and B-vitamins addresses the primary biochemical deficits causing hangover symptoms.", sources: [{ label: "PsychonautWiki — Alcohol", url: "https://psychonautwiki.org/wiki/Alcohol" }] },
+                    { short: "Recovery: Electrolytes and B-vitamins.", detail: "Alcohol depletes B-vitamins (especially B1/thiamine and B6), which are critical for nervous system function. Replenishing electrolytes and B-vitamins addresses the primary biochemical deficits causing hangover symptoms.", sources: [{ label: "PsychonautWiki — Alcohol", url: "https://psychonautwiki.org/wiki/Alcohol" }, { label: "DanceSafe — Alcohol", url: "https://dancesafe.org/alcohol/" }] },
                     { short: "Food: Light, easily digestible foods (toast, eggs).", detail: "The gastric mucosa is irritated from alcohol exposure. Light foods provide necessary glucose and amino acids without further irritating the stomach lining." }
                 ],
                 bonus: [
@@ -140,29 +143,33 @@ const _inlineProtocols = {
     cannabis: {
         id: "cannabis", name: "Cannabis", type: "Depressant/Psychedelic", emoji: "🌿",
         color: "#22c55e", duration: 4,
+        dosing: {
+            "Smoked": { unit: "mg THC", threshold: 1, light: { min: 2, max: 4 }, common: { min: 4, max: 10 }, strong: { min: 10, max: 25 }, heavy: 25, source: "https://psychonautwiki.org/wiki/Cannabis" },
+            "Oral (Edible)": { unit: "mg THC", threshold: 1, light: { min: 2.5, max: 5 }, common: { min: 5, max: 15 }, strong: { min: 15, max: 30 }, heavy: 30, source: "https://psychonautwiki.org/wiki/Cannabis" }
+        },
         routes: [
             {
-                name: "Smoked",
+                name: "Smoked", displayName: "Smoked", emoji: "🚬", isDefault: true,
                 phases: {
                     onset: { min: 0, max: 0.17, label: "Onset" },
                     come_up: { min: 0.08, max: 0.17, label: "Come-up" },
-                    peak: { min: 1, max: 2, label: "Peak" },
-                    come_down: { min: 1, max: 2, label: "Come-down" },
-                    after_effects: { min: 2, max: 24, label: "After-effects" }
+                    peak: { min: 0.25, max: 0.75, label: "Peak" },
+                    come_down: { min: 0.5, max: 1.5, label: "Come-down" },
+                    after_effects: { min: 0.75, max: 3, label: "After-effects" }
                 }
             },
             {
-                name: "Oral (Edible)",
+                name: "Oral (Edible)", displayName: "Edible", emoji: "🍪",
                 phases: {
-                    onset: { min: 0.5, max: 2, label: "Onset" },
+                    onset: { min: 0.5, max: 1.5, label: "Onset" },
                     come_up: { min: 0.5, max: 1, label: "Come-up" },
-                    peak: { min: 2, max: 5, label: "Peak" },
-                    come_down: { min: 1, max: 4, label: "Come-down" },
+                    peak: { min: 1, max: 3, label: "Peak" },
+                    come_down: { min: 1, max: 3, label: "Come-down" },
                     after_effects: { min: 6, max: 24, label: "After-effects" }
                 }
             }
         ],
-        visualizer: { neurotoxicity: 0, cardiotoxicity: 2, dehydration: 4, sleep_deprivation: 4, impulsivity: 4 },
+        visualizer: { neurotoxicity: 1, cardiotoxicity: 2, dehydration: 2, sleep_deprivation: 3, impulsivity: 3 },
         sleep_strategy: "May help sleep onset, but reduces REM quality.",
         phases: {
             before: {
@@ -174,8 +181,8 @@ const _inlineProtocols = {
             during: {
                 focus: "Blood pressure management.",
                 essential: [
-                    { short: "Blood sugar: Keep fruit or juice available for blood pressure drops.", detail: "Cannabis is a peripheral vasodilator — it widens blood vessels and increases heart rate. Combined with standing and sweating, this creates high risk for orthostatic hypotension (sudden blood pressure drop), causing dizziness and fainting." },
-                    { short: "Caution: Avoid mixing with tobacco or alcohol.", detail: "Cannabis + tobacco amplifies respiratory depression and nausea. Cannabis + alcohol compounds CNS depression and vasodilation, often causing severe vertigo and vomiting." }
+                    { short: "Blood sugar: Keep fruit or juice available for blood pressure drops.", detail: "Cannabis is a peripheral vasodilator — it widens blood vessels and increases heart rate. Combined with standing and sweating, this creates high risk for orthostatic hypotension (sudden blood pressure drop), causing dizziness and fainting.", sources: [{ label: "PsychonautWiki — Cannabis", url: "https://psychonautwiki.org/wiki/Cannabis" }, { label: "SaferParty — Cannabis", url: "https://www.saferparty.ch/substanzen/cannabis" }] },
+                    { short: "Caution: Avoid mixing with tobacco or alcohol.", detail: "Cannabis + tobacco amplifies respiratory depression and nausea. Cannabis + alcohol compounds CNS depression and vasodilation, often causing severe vertigo and vomiting.", sources: [{ label: "SaferParty — Cannabis", url: "https://www.saferparty.ch/substanzen/cannabis" }, { label: "TripSit — Cannabis", url: "https://drugs.tripsit.me/cannabis" }] }
                 ],
                 bonus: [
                     { short: "Hydration: Sip water regularly to manage dry mouth.", detail: "Cannabis reduces saliva production via CB1 receptors in the salivary glands. Steady water sipping alleviates discomfort and maintains baseline hydration." }
@@ -204,19 +211,33 @@ const _inlineProtocols = {
     ketamine: {
         id: "ketamine", name: "Ketamine", type: "Dissociative", emoji: "🐴",
         color: "#c084fc", duration: 1.5,
+        dosing: {
+            "Insufflated": { unit: "mg", threshold: 5, light: { min: 10, max: 30 }, common: { min: 30, max: 75 }, strong: { min: 75, max: 150 }, heavy: 150, source: "https://psychonautwiki.org/wiki/Ketamine" },
+            "Oral": { unit: "mg", threshold: 50, light: { min: 50, max: 100 }, common: { min: 100, max: 300 }, strong: { min: 300, max: 450 }, heavy: 450, note: "Low oral bioavailability (~17–20%). Much higher doses needed.", source: "https://psychonautwiki.org/wiki/Ketamine" }
+        },
         routes: [
             {
-                name: "Insufflated",
+                name: "Insufflated", displayName: "Snorted", emoji: "👃", isDefault: true,
                 phases: {
-                    onset: { min: 0.08, max: 0.25, label: "Onset" },
-                    come_up: { min: 0.17, max: 0.33, label: "Come-up" },
-                    peak: { min: 0.75, max: 1, label: "Peak" },
+                    onset: { min: 0.03, max: 0.08, label: "Onset" },
+                    come_up: { min: 0.08, max: 0.25, label: "Come-up" },
+                    peak: { min: 0.25, max: 0.75, label: "Peak" },
                     come_down: { min: 0.5, max: 1, label: "Come-down" },
-                    after_effects: { min: 1, max: 3, label: "After-effects" }
+                    after_effects: { min: 4, max: 12, label: "After-effects" }
+                }
+            },
+            {
+                name: "Oral", displayName: "Swallowed", emoji: "💊",
+                phases: {
+                    onset: { min: 0.25, max: 0.33, label: "Onset" },
+                    come_up: { min: 0.25, max: 0.5, label: "Come-up" },
+                    peak: { min: 0.75, max: 1.5, label: "Peak" },
+                    come_down: { min: 1, max: 2, label: "Come-down" },
+                    after_effects: { min: 4, max: 8, label: "After-effects" }
                 }
             }
         ],
-        visualizer: { neurotoxicity: 2, cardiotoxicity: 2, dehydration: 2, sleep_deprivation: 2, impulsivity: 4 },
+        visualizer: { neurotoxicity: 3, cardiotoxicity: 2, dehydration: 2, sleep_deprivation: 3, impulsivity: 4 },
         sleep_strategy: "Wait for full offset. Do not mix with depressants.",
         phases: {
             before: {
@@ -259,9 +280,12 @@ const _inlineProtocols = {
     lsd: {
         id: "lsd", name: "LSD", type: "Psychedelic", emoji: "🌈",
         color: "#f59e0b", duration: 12,
+        dosing: {
+            "Sublingual": { unit: "µg", threshold: 15, light: { min: 25, max: 75 }, common: { min: 75, max: 150 }, strong: { min: 150, max: 300 }, heavy: 300, source: "https://psychonautwiki.org/wiki/LSD" }
+        },
         routes: [
             {
-                name: "Sublingual",
+                name: "Sublingual", displayName: "Sublingual", emoji: "👅", isDefault: true,
                 phases: {
                     onset: { min: 0.25, max: 0.5, label: "Onset" },
                     come_up: { min: 0.75, max: 1.5, label: "Come-up" },
@@ -271,7 +295,7 @@ const _inlineProtocols = {
                 }
             }
         ],
-        visualizer: { neurotoxicity: 0, cardiotoxicity: 4, dehydration: 4, sleep_deprivation: 8, impulsivity: 4 },
+        visualizer: { neurotoxicity: 0, cardiotoxicity: 3, dehydration: 4, sleep_deprivation: 8, impulsivity: 3 },
         sleep_strategy: "Plan for complete insomnia during effects. Do not fight it.",
         phases: {
             before: {
@@ -316,9 +340,12 @@ const _inlineProtocols = {
     mushrooms: {
         id: "mushrooms", name: "Mushrooms (Psilocybin)", type: "Psychedelic", emoji: "🍄",
         color: "#10b981", duration: 6,
+        dosing: {
+            "Oral": { unit: "g dried (P. cubensis)", threshold: 0.25, light: { min: 0.5, max: 1 }, common: { min: 1, max: 2.5 }, strong: { min: 2.5, max: 5 }, heavy: 5, source: "https://psychonautwiki.org/wiki/Psilocybin_mushrooms" }
+        },
         routes: [
             {
-                name: "Oral",
+                name: "Oral", displayName: "Eaten", emoji: "🍄", isDefault: true,
                 phases: {
                     onset: { min: 0.33, max: 1, label: "Onset" },
                     come_up: { min: 0.25, max: 0.5, label: "Come-up" },
@@ -372,9 +399,12 @@ const _inlineProtocols = {
     cocaine: {
         id: "cocaine", name: "Cocaine", type: "Stimulant", emoji: "❄️",
         color: "#06b6d4", duration: 1,
+        dosing: {
+            "Insufflated": { unit: "mg", threshold: 5, light: { min: 10, max: 30 }, common: { min: 30, max: 60 }, strong: { min: 60, max: 90 }, heavy: 90, source: "https://psychonautwiki.org/wiki/Cocaine" }
+        },
         routes: [
             {
-                name: "Insufflated",
+                name: "Insufflated", displayName: "Snorted", emoji: "👃", isDefault: true,
                 phases: {
                     onset: { min: 0.02, max: 0.17, label: "Onset" },
                     come_up: { min: 0.08, max: 0.25, label: "Come-up" },
@@ -384,7 +414,7 @@ const _inlineProtocols = {
                 }
             }
         ],
-        visualizer: { neurotoxicity: 6, cardiotoxicity: 8, dehydration: 4, sleep_deprivation: 6, impulsivity: 8 },
+        visualizer: { neurotoxicity: 5, cardiotoxicity: 8, dehydration: 4, sleep_deprivation: 6, impulsivity: 8 },
         sleep_strategy: "Stop use 3–4 hours before bed. Sleep is very difficult.",
         phases: {
             before: {
@@ -428,21 +458,25 @@ const _inlineProtocols = {
     amphetamine: {
         id: "amphetamine", name: "Amphetamine", type: "Stimulant", emoji: "⚡",
         color: "#f97316", duration: 6,
+        dosing: {
+            "Oral": { unit: "mg", threshold: 3, light: { min: 5, max: 15 }, common: { min: 15, max: 30 }, strong: { min: 30, max: 50 }, heavy: 50, note: "Street 'speed' purity varies widely. Use drug-checking services.", source: "https://psychonautwiki.org/wiki/Amphetamine" },
+            "Insufflated": { unit: "mg", threshold: 2, light: { min: 3, max: 10 }, common: { min: 10, max: 25 }, strong: { min: 25, max: 40 }, heavy: 40, source: "https://psychonautwiki.org/wiki/Amphetamine" }
+        },
         routes: [
             {
-                name: "Oral",
+                name: "Oral", displayName: "Swallowed", emoji: "💊", isDefault: true,
                 phases: {
-                    onset: { min: 0.33, max: 1, label: "Onset" },
-                    come_up: { min: 0.25, max: 0.5, label: "Come-up" },
-                    peak: { min: 2, max: 4, label: "Peak" },
-                    come_down: { min: 1, max: 2, label: "Come-down" },
-                    after_effects: { min: 2, max: 12, label: "After-effects" }
+                    onset: { min: 0.25, max: 0.5, label: "Onset" },
+                    come_up: { min: 0.5, max: 1, label: "Come-up" },
+                    peak: { min: 2.5, max: 4, label: "Peak" },
+                    come_down: { min: 2, max: 3, label: "Come-down" },
+                    after_effects: { min: 6, max: 24, label: "After-effects" }
                 }
             },
             {
-                name: "Insufflated",
+                name: "Insufflated", displayName: "Snorted", emoji: "👃",
                 phases: {
-                    onset: { min: 0.08, max: 0.17, label: "Onset" },
+                    onset: { min: 0.03, max: 0.17, label: "Onset" },
                     come_up: { min: 0.08, max: 0.25, label: "Come-up" },
                     peak: { min: 2, max: 4, label: "Peak" },
                     come_down: { min: 1, max: 2, label: "Come-down" },
@@ -450,7 +484,7 @@ const _inlineProtocols = {
                 }
             }
         ],
-        visualizer: { neurotoxicity: 6, cardiotoxicity: 8, dehydration: 6, sleep_deprivation: 8, impulsivity: 6 },
+        visualizer: { neurotoxicity: 5, cardiotoxicity: 7, dehydration: 6, sleep_deprivation: 8, impulsivity: 6 },
         sleep_strategy: "Vitamin C may accelerate excretion. Sleep aids often needed.",
         phases: {
             before: {
@@ -464,7 +498,7 @@ const _inlineProtocols = {
             during: {
                 focus: "Cardiac safety and core temperature management.",
                 essential: [
-                    { short: "Rest: Mandatory breaks every 60 minutes.", detail: "Amphetamines place intense continuous strain on the cardiovascular system — elevated heart rate, blood pressure, and core temperature. The dopamine flood masks pain and fatigue perception." },
+                    { short: "Rest: Mandatory breaks every 60 minutes.", detail: "Amphetamines place intense continuous strain on the cardiovascular system — elevated heart rate, blood pressure, and core temperature. The dopamine flood masks pain and fatigue perception.", sources: [{ label: "PsychonautWiki — Amphetamine", url: "https://psychonautwiki.org/wiki/Amphetamine" }, { label: "SaferParty — Amphetamin", url: "https://www.saferparty.ch/substanzen/amphetamin" }] },
                     { short: "⚠️ Pain signals are masked — do not push through injury.", detail: "The dopamine flood completely blocks pain and fatigue perception. Users can sustain joint damage, muscle tears, or exertional heatstroke without any subjective warning signs.", sources: [{ label: "PsychonautWiki — Amphetamine", url: "https://psychonautwiki.org/wiki/Amphetamine" }, { label: "SaferParty — Amphetamin", url: "https://www.saferparty.ch/substanzen/amphetamin" }] }
                 ],
                 bonus: [
@@ -494,24 +528,27 @@ const _inlineProtocols = {
     mdma: {
         id: "mdma", name: "MDMA", type: "Empathogen", emoji: "💖",
         color: "#ec4899", duration: 4.5,
+        dosing: {
+            "Oral": { unit: "mg", threshold: 30, light: { min: 40, max: 75 }, common: { min: 75, max: 140 }, strong: { min: 140, max: 180 }, heavy: 180, note: "Max: 1.5 mg/kg (men), 1.3 mg/kg (women). Effects plateau at ~125–150 mg; higher doses increase toxicity, not euphoria.", source: "https://psychonautwiki.org/wiki/MDMA" }
+        },
         routes: [
             {
-                name: "Oral",
+                name: "Oral", displayName: "Swallowed", emoji: "💊", isDefault: true,
                 phases: {
-                    onset: { min: 0.33, max: 1, label: "Onset" },
-                    come_up: { min: 0.33, max: 0.5, label: "Come-up" },
-                    peak: { min: 3, max: 4, label: "Peak" },
-                    come_down: { min: 1, max: 2, label: "Come-down" },
-                    after_effects: { min: 2, max: 72, label: "After-effects" }
+                    onset: { min: 0.5, max: 1, label: "Onset" },
+                    come_up: { min: 0.25, max: 0.5, label: "Come-up" },
+                    peak: { min: 1.5, max: 2.5, label: "Peak" },
+                    come_down: { min: 1, max: 1.5, label: "Come-down" },
+                    after_effects: { min: 12, max: 48, label: "After-effects" }
                 }
             }
         ],
-        visualizer: { neurotoxicity: 6, cardiotoxicity: 6, dehydration: 8, sleep_deprivation: 6, impulsivity: 6 },
+        visualizer: { neurotoxicity: 7, cardiotoxicity: 6, dehydration: 7, sleep_deprivation: 6, impulsivity: 5 },
         sleep_strategy: "Usually possible 6+ hours after last dose. Melatonin helps.",
         phases: {
             before: {
                 essential: [
-                    { short: "⚠️ Dose: Practice the 1.5 mg/kg rule. Avoid exceeding 150 mg.", detail: "The neurobehavioral effect plateaus around 125–150 mg. Exceeding this does not increase empathy or euphoria, but exponentially increases amphetamine-like stimulation, jaw clenching (bruxism), and neurotoxicity.", sources: [{ label: "DanceSafe — MDMA", url: "https://dancesafe.org/mdma/" }] }
+                    { short: "⚠️ Dose: Practice the 1.5 mg/kg rule. Avoid exceeding 150 mg.", detail: "The neurobehavioral effect plateaus around 125–150 mg. Exceeding this does not increase empathy or euphoria, but exponentially increases amphetamine-like stimulation, jaw clenching (bruxism), and neurotoxicity.", sources: [{ label: "DanceSafe — MDMA", url: "https://dancesafe.org/mdma/" }, { label: "SaferParty — MDMA", url: "https://www.saferparty.ch/substanzen/mdma" }, { label: "PsychonautWiki — MDMA", url: "https://psychonautwiki.org/wiki/MDMA" }] }
                 ],
                 bonus: [
                     { short: "Supplements: ALA and ALCAR 1 hour before.", detail: "MDMA metabolism produces free radicals that damage serotonin terminals. Antioxidants like Alpha-Lipoic Acid (ALA) and Acetyl-L-Carnitine (ALCAR) provide neuroprotective buffering against oxidative stress.", sources: [{ label: "PsychonautWiki — MDMA", url: "https://psychonautwiki.org/wiki/MDMA" }] }
@@ -520,7 +557,7 @@ const _inlineProtocols = {
             during: {
                 focus: "Regulating core temperature and water intake.",
                 essential: [
-                    { short: "Hydration limit: 250 ml (1 cup) per hour if resting, 500 ml if active.", detail: "MDMA promotes the release of antidiuretic hormone (ADH), completely halting urination. Drinking excess water dilutes blood sodium rapidly, leading to MDMA-associated hyponatremia. This condition causes brain swelling and is the primary cause of MDMA-related fatalities among females.", sources: [{ label: "TripSit — MDMA", url: "https://drugs.tripsit.me/mdma" }, { label: "DanceSafe — MDMA", url: "https://dancesafe.org/mdma/" }] },
+                    { short: "Hydration limit: 250 ml (1 cup) per hour if resting, 500 ml if active.", detail: "MDMA promotes the release of antidiuretic hormone (ADH), completely halting urination. Drinking excess water dilutes blood sodium rapidly, leading to MDMA-associated hyponatremia. This condition causes brain swelling and is the primary cause of MDMA-related fatalities among females.", sources: [{ label: "TripSit — MDMA", url: "https://drugs.tripsit.me/mdma" }, { label: "DanceSafe — MDMA", url: "https://dancesafe.org/mdma/" }, { label: "PsychonautWiki — MDMA", url: "https://psychonautwiki.org/wiki/MDMA" }] },
                     { short: "Heat: Take cooling breaks every hour.", detail: "MDMA impairs the body's thermoregulatory center. When combined with crowded spaces and dancing, core body temperatures can reach dangerous levels (hyperthermia), which simultaneously multiplies neurotoxicity." }
                 ],
                 bonus: [
@@ -550,9 +587,12 @@ const _inlineProtocols = {
     caffeine: {
         id: "caffeine", name: "Caffeine", type: "Stimulant", emoji: "☕",
         color: "#a8a29e", duration: 5,
+        dosing: {
+            "Oral": { unit: "mg", threshold: 10, light: { min: 20, max: 100 }, common: { min: 100, max: 300 }, strong: { min: 300, max: 500 }, heavy: 500, note: "1 cup coffee ≈ 90–200 mg. Max recommended: 400 mg/day.", source: "https://psychonautwiki.org/wiki/Caffeine" }
+        },
         routes: [
             {
-                name: "Oral",
+                name: "Oral", displayName: "Drinking", emoji: "☕", isDefault: true,
                 phases: {
                     onset: { min: 0.08, max: 0.17, label: "Onset" },
                     come_up: { min: 0.25, max: 0.5, label: "Come-up" },
@@ -562,7 +602,7 @@ const _inlineProtocols = {
                 }
             }
         ],
-        visualizer: { neurotoxicity: 0, cardiotoxicity: 2, dehydration: 4, sleep_deprivation: 6, impulsivity: 2 },
+        visualizer: { neurotoxicity: 0, cardiotoxicity: 2, dehydration: 3, sleep_deprivation: 6, impulsivity: 1 },
         sleep_strategy: "Avoid caffeine less than 6 hours before planned sleep.",
         phases: {
             before: {
@@ -576,8 +616,8 @@ const _inlineProtocols = {
             during: {
                 focus: "Timing and moderation.",
                 essential: [
-                    { short: "Limit: Under 400 mg total (approximately 4 cups).", detail: "Above 400 mg, caffeine significantly increases the risk of anxiety, tremors, and gastrointestinal distress. Individual tolerance varies, but this is the generally accepted upper safety limit." },
-                    { short: "⚠️ Never mix with other stimulants (cardiac risk).", detail: "Combining caffeine with MDMA, amphetamines, or cocaine creates synergistic vasoconstrictive and chronotropic effects. This exponentially increases the risk of severe tachycardia and cardiac arrhythmias." }
+                    { short: "Limit: Under 400 mg total (approximately 4 cups).", detail: "Above 400 mg, caffeine significantly increases the risk of anxiety, tremors, and gastrointestinal distress. Individual tolerance varies, but this is the generally accepted upper safety limit.", sources: [{ label: "PsychonautWiki — Caffeine", url: "https://psychonautwiki.org/wiki/Caffeine" }, { label: "SaferParty — Koffein", url: "https://www.saferparty.ch/substanzen/koffein" }] },
+                    { short: "⚠️ Never mix with other stimulants (cardiac risk).", detail: "Combining caffeine with MDMA, amphetamines, or cocaine creates synergistic vasoconstrictive and chronotropic effects. This exponentially increases the risk of severe tachycardia and cardiac arrhythmias.", sources: [{ label: "SaferParty — Koffein", url: "https://www.saferparty.ch/substanzen/koffein" }, { label: "TripSit — Caffeine", url: "https://drugs.tripsit.me/caffeine" }] }
                 ],
                 bonus: [
                     { short: "Hydration: Water with every caffeinated drink.", detail: "The diuretic effect of caffeine combined with sweat loss accelerates dehydration. Matching each caffeinated beverage with water maintains fluid balance." }
@@ -605,9 +645,13 @@ const _inlineProtocols = {
     "2cb": {
         id: "2cb", name: "2C-B", type: "Psychedelic", emoji: "🔮",
         color: "#ec4899", duration: 6,
+        dosing: {
+            "Oral": { unit: "mg", threshold: 2, light: { min: 5, max: 15 }, common: { min: 15, max: 25 }, strong: { min: 25, max: 35 }, heavy: 35, note: "Extremely steep dose-response curve. Use a milligram scale. Never estimate by eye.", source: "https://psychonautwiki.org/wiki/2C-B" },
+            "Insufflated": { unit: "mg", threshold: 1, light: { min: 2, max: 5 }, common: { min: 5, max: 10 }, strong: { min: 10, max: 15 }, heavy: 15, note: "Extremely painful to insufflate. Not recommended.", source: "https://psychonautwiki.org/wiki/2C-B" }
+        },
         routes: [
             {
-                name: "Oral",
+                name: "Oral", displayName: "Swallowed", emoji: "💊", isDefault: true,
                 phases: {
                     onset: { min: 0.33, max: 1, label: "Onset" },
                     come_up: { min: 0.25, max: 0.5, label: "Come-up" },
@@ -617,17 +661,17 @@ const _inlineProtocols = {
                 }
             },
             {
-                name: "Insufflated",
+                name: "Insufflated", displayName: "Snorted", emoji: "👃",
                 phases: {
-                    onset: { min: 0.08, max: 0.17, label: "Onset" },
-                    come_up: { min: 0.17, max: 0.33, label: "Come-up" },
-                    peak: { min: 1, max: 2, label: "Peak" },
+                    onset: { min: 0.02, max: 0.08, label: "Onset" },
+                    come_up: { min: 0.08, max: 0.25, label: "Come-up" },
+                    peak: { min: 0.5, max: 1, label: "Peak" },
                     come_down: { min: 0.5, max: 1, label: "Come-down" },
-                    after_effects: { min: 1, max: 3, label: "After-effects" }
+                    after_effects: { min: 2, max: 4, label: "After-effects" }
                 }
             }
         ],
-        visualizer: { neurotoxicity: 2, cardiotoxicity: 4, dehydration: 4, sleep_deprivation: 4, impulsivity: 2 },
+        visualizer: { neurotoxicity: 1, cardiotoxicity: 3, dehydration: 3, sleep_deprivation: 4, impulsivity: 2 },
         sleep_strategy: "Shorter than LSD. Standard recovery protocol sufficient.",
         phases: {
             before: {
@@ -671,9 +715,13 @@ const _inlineProtocols = {
     "4mmc": {
         id: "4mmc", name: "4-MMC (Mephedrone)", type: "Stimulant/Empathogen", emoji: "💥",
         color: "#f43f5e", duration: 1,
+        dosing: {
+            "Insufflated": { unit: "mg", threshold: 15, light: { min: 25, max: 75 }, common: { min: 75, max: 125 }, strong: { min: 125, max: 175 }, heavy: 175, note: "Extremely compulsive. Pre-weigh your total limit.", source: "https://psychonautwiki.org/wiki/Mephedrone" },
+            "Oral": { unit: "mg", threshold: 50, light: { min: 50, max: 100 }, common: { min: 100, max: 200 }, strong: { min: 200, max: 250 }, heavy: 250, source: "https://psychonautwiki.org/wiki/Mephedrone" }
+        },
         routes: [
             {
-                name: "Insufflated",
+                name: "Insufflated", displayName: "Snorted", emoji: "👃", isDefault: true,
                 phases: {
                     onset: { min: 0.02, max: 0.08, label: "Onset" },
                     come_up: { min: 0.08, max: 0.25, label: "Come-up" },
@@ -683,7 +731,7 @@ const _inlineProtocols = {
                 }
             },
             {
-                name: "Oral",
+                name: "Oral", displayName: "Swallowed", emoji: "💊",
                 phases: {
                     onset: { min: 0.25, max: 0.5, label: "Onset" },
                     come_up: { min: 0.17, max: 0.33, label: "Come-up" },
@@ -693,7 +741,7 @@ const _inlineProtocols = {
                 }
             }
         ],
-        visualizer: { neurotoxicity: 8, cardiotoxicity: 8, dehydration: 6, sleep_deprivation: 8, impulsivity: 8 },
+        visualizer: { neurotoxicity: 8, cardiotoxicity: 8, dehydration: 6, sleep_deprivation: 7, impulsivity: 8 },
         sleep_strategy: "Very difficult. Stop redosing hours before planned sleep.",
         phases: {
             before: {

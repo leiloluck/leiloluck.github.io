@@ -271,7 +271,7 @@ const _inlineProtocols = {
                     { short: "Body: Check for bruises or injuries.", detail: "Due to ketamine's anesthetic properties, injuries sustained during use may go unnoticed. A thorough physical check the next morning can reveal strains, bruises, or injuries that need attention." }
                 ],
                 bonus: [
-                    { short: "Mental: Consider journaling or reflecting on the experience.", detail: "Dissociative experiences can be psychologically disorienting. Processing unusual perceptions through journaling or conversation with a trusted person helps integration." }
+                    { short: "Rest: Allow a full recovery day. Avoid redosing.", detail: "Residual dissociation, cognitive impairment, and disorientation are common the day after. Ketamine's effects on memory consolidation and spatial perception can persist well past the active window." }
                 ]
             }
         },
@@ -331,7 +331,7 @@ const _inlineProtocols = {
                     { short: "Rest: Plan for a full recovery day.", detail: "A 12-hour psychedelic experience combined with sleep deprivation results in profound fatigue. Plan for a recovery day with minimal obligations." }
                 ],
                 bonus: [
-                    { short: "Integration: Journaling or talking through the experience.", detail: "Psychedelic experiences often surface deep psychological material. Processing these insights through journaling or conversation helps integrate the experience constructively." }
+                    { short: "Afterglow: Expect residual visual effects and altered cognition for up to 24 hours.", detail: "LSD's long-acting serotonergic effects can persist well beyond the subjective peak. Residual perceptual changes (mild HPPD-like effects), cognitive reorganisation, and mood fluctuations are common on the recovery day. Avoid demanding cognitive or social tasks." }
                 ]
             }
         },
@@ -379,7 +379,7 @@ const _inlineProtocols = {
             },
             after: {
                 essential: [
-                    { short: "Integration: Gentle reflection in a calm environment.", detail: "The afterglow period is valuable for processing insights. Low-stimulation activities (journaling, nature, drawing) support integration." }
+                    { short: "Environment: Low stimulation. Allow the experience to settle.", detail: "The afterglow period involves continued serotonergic activity and reduced cognitive filtering. A quiet environment with minimal demands — walking outside, calm music, light food — allows the body and mind to return to baseline without unnecessary stress." }
                 ],
                 bonus: [
                     { short: "Food: Fresh fruit and healthy snacks.", detail: "Appetite often returns as effects fade. Fresh, unprocessed foods often feel most palatable and nourishing." }
@@ -529,7 +529,8 @@ const _inlineProtocols = {
         id: "mdma", name: "MDMA", type: "Empathogen", emoji: "💖",
         color: "#ec4899", duration: 4.5,
         dosing: {
-            "Oral": { unit: "mg", threshold: 30, light: { min: 40, max: 75 }, common: { min: 75, max: 140 }, strong: { min: 140, max: 180 }, heavy: 180, note: "Max: 1.5 mg/kg (men), 1.3 mg/kg (women). Effects plateau at ~125–150 mg; higher doses increase toxicity, not euphoria.", source: "https://psychonautwiki.org/wiki/MDMA" }
+            "Oral": { unit: "mg", threshold: 30, light: { min: 40, max: 75 }, common: { min: 75, max: 140 }, strong: { min: 140, max: 180 }, heavy: 180, note: "Max: 1.5 mg/kg (men), 1.3 mg/kg (women). Effects plateau at ~125–150 mg; higher doses increase toxicity, not euphoria.", source: "https://psychonautwiki.org/wiki/MDMA" },
+            "Insufflated": { unit: "mg", threshold: 15, light: { min: 20, max: 37 }, common: { min: 37, max: 70 }, strong: { min: 70, max: 90 }, heavy: 90, note: "Dose at approximately half the oral amount. Described as very unpleasant and causes nasal tissue irritation. Not recommended.", source: "https://www.saferparty.ch/substanzen/mdma" }
         },
         routes: [
             {
@@ -539,6 +540,16 @@ const _inlineProtocols = {
                     come_up: { min: 0.25, max: 0.5, label: "Come-up" },
                     peak: { min: 1.5, max: 2.5, label: "Peak" },
                     come_down: { min: 1, max: 1.5, label: "Come-down" },
+                    after_effects: { min: 12, max: 48, label: "After-effects" }
+                }
+            },
+            {
+                name: "Insufflated", displayName: "Snorted", emoji: "👃",
+                phases: {
+                    onset: { min: 0.05, max: 0.15, label: "Onset" },
+                    come_up: { min: 0.15, max: 0.33, label: "Come-up" },
+                    peak: { min: 1, max: 2, label: "Peak" },
+                    come_down: { min: 0.75, max: 1.25, label: "Come-down" },
                     after_effects: { min: 12, max: 48, label: "After-effects" }
                 }
             }

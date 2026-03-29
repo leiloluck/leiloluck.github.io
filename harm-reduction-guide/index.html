@@ -87,11 +87,20 @@
         <div id="dosing-panel" class="mb-10 hidden">
             <div id="dosing-card" class="bg-[#1a1a19] p-6 rounded-xl border-2 border-[#2a2a28] transition-all duration-300">
                 <!-- Route Selector (always visible) -->
-                <div id="route-selector-wrap" class="mb-5">
+                <div id="route-selector-wrap" class="mb-4">
                     <p class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2">Route of Administration</p>
                     <div id="route-buttons" class="flex flex-wrap gap-2">
                         <!-- Injected via JS -->
                     </div>
+                </div>
+
+                <!-- Effect Timeline (compact, below route selector) -->
+                <div id="effect-timeline-wrap" class="mb-5 pb-5 border-b border-[#2a2a28]">
+                    <p class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-3 text-center">Effect Timeline (Estimate)</p>
+                    <div style="height: 80px; position: relative;">
+                        <canvas id="durationBar"></canvas>
+                    </div>
+                    <div id="timeline-note" class="mt-1 text-[10px] text-gray-600 italic text-center">Estimates based on PsychonautWiki data.</div>
                 </div>
 
                 <!-- Unified Dosing Tier Selector -->
@@ -131,15 +140,12 @@
         </div>
 
         <!-- Main Content Layout -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <div class="space-y-8">
 
-            <!-- LEFT COLUMN: The Guide (Timeline) -->
-            <div class="lg:col-span-7 space-y-8">
-
-                <!-- TOP: Risk Analysis (Radar/Levels) -->
+                <!-- TOP: Estimated Risk Profile -->
                 <section class="card-transition">
                     <div class="flex items-center mb-4">
-                        <h3 class="text-xl font-bold text-gray-100">Risk Analysis 📊</h3>
+                        <h3 class="text-xl font-bold text-gray-100">Estimated Risk Profile 📊</h3>
                     </div>
                     <!-- Canvas Container -->
                     <div
@@ -147,11 +153,23 @@
                         <div class="relative h-64 w-full">
                             <canvas id="riskChart"></canvas>
                         </div>
-                        <p class="mt-4 text-xs text-center text-gray-600 italic">
+                        <div id="dose-display-text" class="hidden mt-3 text-xs text-center font-semibold tracking-wide"></div>
+                        <p class="mt-2 text-xs text-center text-gray-600 italic">
                             Values represent estimated physiological load (Qualitative Scale).
                         </p>
                     </div>
                 </section>
+
+                <!-- Common Risks (amber, hidden for sober) -->
+                <div id="emergency-flags" class="hidden p-5 rounded-xl border"
+                    style="background:rgba(234,179,8,0.06);border-color:rgba(234,179,8,0.2);">
+                    <h3 class="font-bold mb-2 text-sm" style="color:rgba(234,179,8,0.85)">
+                        Common Risks
+                    </h3>
+                    <ul id="risk-list" class="list-disc list-inside text-sm space-y-1" style="color:rgba(234,179,8,0.65)">
+                        <!-- Injected via JS -->
+                    </ul>
+                </div>
 
                 <!-- Introduction Paragraph for Guide Section -->
                 <div class="bg-[#1a1a19] p-6 rounded-xl border border-[#2a2a28]">
@@ -242,49 +260,6 @@
                     </div>
                 </section>
 
-            </div>
-
-            <!-- RIGHT COLUMN: Visualization & Data -->
-            <div class="lg:col-span-5 space-y-8">
-
-                <!-- Intro for Data Section -->
-                <div class="bg-[#1a1a19] p-5 rounded-xl border border-[#2a2a28]">
-                    <h2 class="text-base font-bold text-gray-100 mb-2">Physiological Impact Analysis 📊</h2>
-                    <p class="text-gray-500 text-xs">
-                        Visualizing how the current state deviates from a rested baseline. Use this to anticipate risks
-                        like overheating or sleep disruption.
-                    </p>
-                </div>
-
-
-
-                <!-- Duration / Timeline Chart -->
-                <div class="bg-[#1a1a19] p-6 rounded-xl border border-[#2a2a28]">
-                    <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4 text-center">Effect
-                        Timeline (Estimate)</h3>
-                    <div class="chart-container" style="height: 200px;">
-                        <canvas id="durationBar"></canvas>
-                    </div>
-                    <div id="timeline-note" class="mt-2 mb-2 text-[10px] text-gray-600 italic text-center">Estimates
-                        based on PsychonautWiki data.</div>
-                    <div class="mt-4 text-sm text-gray-400 bg-[#151514] p-3 rounded border border-[#2a2a28]">
-                        <span class="font-bold text-gray-300">Sleep Strategy:</span> <span
-                            id="sleep-strategy-text">Normal sleep cycle recommended.</span>
-                    </div>
-                </div>
-
-                <!-- Emergency Flags (Dynamic) -->
-                <div id="emergency-flags" class="hidden p-6 rounded-xl border"
-                    style="background:rgba(239,68,68,0.06);border-color:rgba(239,68,68,0.2);">
-                    <h3 class="text-red-400 font-bold mb-2 flex items-center">
-                        <span class="text-xl mr-2">⚠️</span> Risk Factors
-                    </h3>
-                    <ul id="risk-list" class="list-disc list-inside text-sm text-red-300/80 space-y-1">
-                        <!-- Injected via JS -->
-                    </ul>
-                </div>
-
-            </div>
         </div>
 
         <footer class="mt-16 border-t border-[#2a2a28] pt-8 text-center text-gray-600 text-xs">

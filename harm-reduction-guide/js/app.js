@@ -13,12 +13,12 @@ let currentRouteIndex = 0;
 
 // DOM refs (assigned after DOMContentLoaded)
 let navContainer, modeDisplay, introModifier, contentBefore, contentDuring,
-    focusDuring, contentAfter, contentNextMorning, sleepStrategyText,
+    focusDuring, contentAfter, contentNextMorning,
     emergencyFlags, riskList, riskCanvas, durationCanvas, activeHeader,
     activeHeaderName, activeHeaderType, activeHeaderEmoji,
     sectionCards, sectionBadges, focusBorderEl,
     dosingPanel, dosingCard, routeButtons,
-    doseNote, doseWarning, doseSourceLink;
+    doseNote, doseWarning, doseSourceLink, doseDisplayText;
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Cache DOM
@@ -30,7 +30,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     focusDuring = document.getElementById('focus-during');
     contentAfter = document.getElementById('content-after');
     contentNextMorning = document.getElementById('content-next-morning');
-    sleepStrategyText = document.getElementById('sleep-strategy-text');
     emergencyFlags = document.getElementById('emergency-flags');
     riskList = document.getElementById('risk-list');
     riskCanvas = document.getElementById('riskChart').getContext('2d');
@@ -50,6 +49,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     doseNote = document.getElementById('dose-note');
     doseWarning = document.getElementById('dose-warning');
     doseSourceLink = document.getElementById('dose-source-link');
+    doseDisplayText = document.getElementById('dose-display-text');
 
 
     // Sticky Header Scroll Listener
@@ -167,7 +167,6 @@ function loadProtocol(id) {
 
     // 5. Focus text
     focusDuring.textContent = data.phases.during.focus;
-    sleepStrategyText.textContent = data.sleep_strategy;
 
     // 6. Color-themed section borders
     sectionCards.forEach(card => {
@@ -185,21 +184,21 @@ function loadProtocol(id) {
     // 7. Risks
     if (id === 'sober') {
         emergencyFlags.classList.add('hidden');
+        if (doseDisplayText) doseDisplayText.classList.add('hidden');
     } else {
         emergencyFlags.classList.remove('hidden');
-        emergencyFlags.style.backgroundColor = hexAlpha('#ef4444', 0.06);
-        emergencyFlags.style.borderColor = hexAlpha('#ef4444', 0.2);
         riskList.innerHTML = data.risks.map(r => `<li>${r}</li>`).join('');
     }
 
     // 8. Charts (use route-adjusted durations)
-    updateCharts(data);
+    updateCharts(data, id === 'sober');
 }
 
 // --- Dosing Panel ---
 function renderDosingPanel(data) {
     if (!data.dosing || data.id === 'sober') {
         dosingPanel.classList.add('hidden');
+        if (durationChart) { durationChart.destroy(); durationChart = null; }
         return;
     }
     dosingPanel.classList.remove('hidden');
@@ -270,6 +269,20 @@ function updateDosingDisplay(data) {
             btn.style.transform = 'scale(1)';
         }
     });
+
+    // Dose display text (below risk profile chart)
+    if (doseDisplayText) {
+        const tierColors = { threshold: '#6b7280', light: '#22c55e', common: '#eab308', strong: '#f97316', heavy: '#ef4444' };
+        const tierLabels = { threshold: 'Threshold', light: 'Light', common: 'Common', strong: 'Strong', heavy: 'Heavy' };
+        let doseRange = '–';
+        if (currentIntensity === 'threshold' && dose.threshold != null) doseRange = `${dose.threshold} ${unit}`;
+        else if (currentIntensity === 'heavy' && dose.heavy != null) doseRange = `${dose.heavy}+ ${unit}`;
+        else if (dose[currentIntensity]) doseRange = `${dose[currentIntensity].min}–${dose[currentIntensity].max} ${unit}`;
+        const tierColor = tierColors[currentIntensity] || color;
+        doseDisplayText.textContent = `DOSE: ${tierLabels[currentIntensity]} · ${doseRange}`;
+        doseDisplayText.style.color = tierColor;
+        doseDisplayText.classList.remove('hidden');
+    }
 
     // Dose note
     if (dose.note) {
@@ -418,7 +431,7 @@ function toggleExpand(uid) {
 }
 
 // --- Charts (Dark Mode) ---
-function updateCharts(data) {
+function updateCharts(data, skipDuration = false) {
     const multiplier = getIntensityMultiplier();
     const scores = [
         Math.min(8, Math.round(data.visualizer.neurotoxicity * multiplier)),
@@ -453,7 +466,7 @@ function updateCharts(data) {
     }
 
     // Duration / Effect Timeline
-    updateDurationChart(data, darkGridColor, darkLabelColor);
+    if (!skipDuration) updateDurationChart(data, darkGridColor, darkLabelColor);
 }
 
 
@@ -637,16 +650,7 @@ function updateDurationChart(data, darkGridColor, darkLabelColor) {
                 }
             },
             plugins: {
-                legend: {
-                    display: true,
-                    position: 'bottom',
-                    labels: {
-                        color: darkLabelColor,
-                        font: { size: 10 },
-                        boxWidth: 12,
-                        padding: 8
-                    }
-                },
+                legend: { display: false },
                 tooltip: {
                     callbacks: {
                         label: function (context) {

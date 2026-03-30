@@ -4,6 +4,9 @@
     Depends on: data.js (must be loaded first), Chart.js CDN, Tailwind CDN.
 */
 
+// Display order (by European prevalence in festival/nightlife contexts)
+const SUBSTANCE_ORDER = ['sober', 'alcohol', 'caffeine', 'cannabis', 'mdma', 'cocaine', 'amphetamine', 'ketamine', 'lsd', 'mushrooms', '2cb', '4mmc'];
+
 // State
 let currentProtocol = 'sober';
 let riskChart = null;
@@ -72,7 +75,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // --- Navigation ---
 function initNavigation() {
-    Object.values(protocols).forEach(proto => {
+    SUBSTANCE_ORDER.forEach(id => {
+        const proto = protocols[id];
+        if (!proto) return;
         const btn = document.createElement('button');
         btn.innerHTML = `<span class="text-base mr-1">${proto.emoji}</span> ${proto.name}`;
         btn.dataset.id = proto.id;

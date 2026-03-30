@@ -210,7 +210,7 @@ const _inlineProtocols = {
     },
     ketamine: {
         id: "ketamine", name: "Ketamine", type: "Dissociative", emoji: "🐴",
-        color: "#c084fc", duration: 1.5,
+        color: "#9333ea", duration: 1.5,
         dosing: {
             "Insufflated": { unit: "mg", threshold: 5, light: { min: 10, max: 30 }, common: { min: 30, max: 75 }, strong: { min: 75, max: 150 }, heavy: 150, source: "https://psychonautwiki.org/wiki/Ketamine" },
             "Oral": { unit: "mg", threshold: 50, light: { min: 50, max: 100 }, common: { min: 100, max: 300 }, strong: { min: 300, max: 450 }, heavy: 450, note: "Low oral bioavailability (~17–20%). Much higher doses needed.", source: "https://psychonautwiki.org/wiki/Ketamine" }
@@ -279,7 +279,7 @@ const _inlineProtocols = {
     },
     lsd: {
         id: "lsd", name: "LSD", type: "Psychedelic", emoji: "🌈",
-        color: "#f59e0b", duration: 12,
+        color: "#06b6d4", duration: 12,
         dosing: {
             "Sublingual": { unit: "µg", threshold: 15, light: { min: 25, max: 75 }, common: { min: 75, max: 150 }, strong: { min: 150, max: 300 }, heavy: 300, source: "https://psychonautwiki.org/wiki/LSD" }
         },
@@ -339,7 +339,7 @@ const _inlineProtocols = {
     },
     mushrooms: {
         id: "mushrooms", name: "Mushrooms (Psilocybin)", type: "Psychedelic", emoji: "🍄",
-        color: "#10b981", duration: 6,
+        color: "#a16207", duration: 6,
         dosing: {
             "Oral": { unit: "g dried (P. cubensis)", threshold: 0.25, light: { min: 0.5, max: 1 }, common: { min: 1, max: 2.5 }, strong: { min: 2.5, max: 5 }, heavy: 5, source: "https://psychonautwiki.org/wiki/Psilocybin_mushrooms" }
         },
@@ -398,7 +398,7 @@ const _inlineProtocols = {
     },
     cocaine: {
         id: "cocaine", name: "Cocaine", type: "Stimulant", emoji: "❄️",
-        color: "#06b6d4", duration: 1,
+        color: "#94a3b8", duration: 1,
         dosing: {
             "Insufflated": { unit: "mg", threshold: 5, light: { min: 10, max: 30 }, common: { min: 30, max: 60 }, strong: { min: 60, max: 90 }, heavy: 90, source: "https://psychonautwiki.org/wiki/Cocaine" }
         },
@@ -527,7 +527,7 @@ const _inlineProtocols = {
     },
     mdma: {
         id: "mdma", name: "MDMA", type: "Empathogen", emoji: "💖",
-        color: "#ec4899", duration: 4.5,
+        color: "#2563eb", duration: 4.5,
         dosing: {
             "Oral": { unit: "mg", threshold: 30, light: { min: 40, max: 75 }, common: { min: 75, max: 140 }, strong: { min: 140, max: 180 }, heavy: 180, note: "Max: 1.5 mg/kg (men), 1.3 mg/kg (women). Effects plateau at ~125–150 mg; higher doses increase toxicity, not euphoria.", source: "https://psychonautwiki.org/wiki/MDMA" },
             "Insufflated": { unit: "mg", threshold: 15, light: { min: 20, max: 37 }, common: { min: 37, max: 70 }, strong: { min: 70, max: 90 }, heavy: 90, note: "Dose at approximately half the oral amount. Described as very unpleasant and causes nasal tissue irritation. Not recommended.", source: "https://www.saferparty.ch/substanzen/mdma" }
@@ -597,7 +597,7 @@ const _inlineProtocols = {
     },
     caffeine: {
         id: "caffeine", name: "Caffeine", type: "Stimulant", emoji: "☕",
-        color: "#a8a29e", duration: 5,
+        color: "#ca8a04", duration: 5,
         dosing: {
             "Oral": { unit: "mg", threshold: 10, light: { min: 20, max: 100 }, common: { min: 100, max: 300 }, strong: { min: 300, max: 500 }, heavy: 500, note: "1 cup coffee ≈ 90–200 mg. Max recommended: 400 mg/day.", source: "https://psychonautwiki.org/wiki/Caffeine" }
         },
@@ -725,7 +725,7 @@ const _inlineProtocols = {
     },
     "4mmc": {
         id: "4mmc", name: "4-MMC (Mephedrone)", type: "Stimulant/Empathogen", emoji: "💥",
-        color: "#f43f5e", duration: 1,
+        color: "#d946ef", duration: 1,
         dosing: {
             "Insufflated": { unit: "mg", threshold: 15, light: { min: 25, max: 75 }, common: { min: 75, max: 125 }, strong: { min: 125, max: 175 }, heavy: 175, note: "Extremely compulsive. Pre-weigh your total limit.", source: "https://psychonautwiki.org/wiki/Mephedrone" },
             "Oral": { unit: "mg", threshold: 50, light: { min: 50, max: 100 }, common: { min: 100, max: 200 }, strong: { min: 200, max: 250 }, heavy: 250, source: "https://psychonautwiki.org/wiki/Mephedrone" }

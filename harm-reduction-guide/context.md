@@ -94,16 +94,16 @@ The navigation buttons in the substance selector are ordered as follows:
 |---|---|---|---|---|---|---|
 | 0 | `sober` | Sober / Baseline | Baseline | 🧠 | `#78716c` (warm gray) | Always first. The default. |
 | 1 | `alcohol` | Alcohol | Depressant | 🍺 | `#ef4444` (red) | Most widely used substance in Europe by a large margin |
-| 2 | `caffeine` | Caffeine | Stimulant | ☕ | `#a8a29e` (stone) | Ubiquitous, frequently combined, often underestimated |
-| 3 | `cannabis` | Cannabis | Depressant/Psychedelic | 🌿 | `#22c55e` / `#84cc16` (green) | Most commonly used illicit substance in Europe |
-| 4 | `mdma` | MDMA | Empathogen | 💖 / 💎 | `#ec4899` / `#a855f7` (pink/purple) | Most common empathogen in European nightlife |
-| 5 | `cocaine` | Cocaine | Stimulant | ❄️ | `#06b6d4` (cyan) | Rising prevalence across Europe, particularly Western |
+| 2 | `caffeine` | Caffeine | Stimulant | ☕ | `#ca8a04` (amber-gold, coffee) | Ubiquitous, frequently combined, often underestimated |
+| 3 | `cannabis` | Cannabis | Depressant/Psychedelic | 🌿 | `#22c55e` (green) | Most commonly used illicit substance in Europe |
+| 4 | `mdma` | MDMA | Empathogen | 💖 | `#2563eb` (blue) | Most common empathogen in European nightlife |
+| 5 | `cocaine` | Cocaine | Stimulant | ❄️ | `#94a3b8` (icy silver) | Rising prevalence across Europe, particularly Western |
 | 6 | `amphetamine` | Amphetamine (Speed) | Stimulant | ⚡ | `#f97316` (orange) | High prevalence especially in Central/Northern Europe |
-| 7 | `ketamine` | Ketamine | Dissociative | 🐴 / 🌀 | `#c084fc` / `#0ea5e9` (purple/sky) | Rapidly growing in European nightlife contexts |
-| 8 | `lsd` | LSD | Psychedelic | 🌈 | `#f59e0b` (amber) | Established psychedelic in festival/rave settings |
-| 9 | `mushrooms` | Mushrooms (Psilocybin) | Psychedelic | 🍄 | `#10b981` (emerald) | Growing in popularity; shorter and milder than LSD |
+| 7 | `ketamine` | Ketamine | Dissociative | 🐴 | `#9333ea` (deep purple) | Rapidly growing in European nightlife contexts |
+| 8 | `lsd` | LSD | Psychedelic | 🌈 | `#06b6d4` (cyan) | Established psychedelic in festival/rave settings |
+| 9 | `mushrooms` | Mushrooms (Psilocybin) | Psychedelic | 🍄 | `#a16207` (earthy brown) | Growing in popularity; shorter and milder than LSD |
 | 10 | `2cb` | 2C-B | Psychedelic | 🔮 | `#ec4899` (pink) | Niche but increasingly common in European club scene |
-| 11 | `4mmc` | 4-MMC (Mephedrone) | Stimulant/Empathogen | 💥 | `#f43f5e` (rose) | Regional surge, high-risk profile, compulsive redosing |
+| 11 | `4mmc` | 4-MMC (Mephedrone) | Stimulant/Empathogen | 💥 | `#d946ef` (fuchsia) | Regional surge, high-risk profile, compulsive redosing |
 
 ### 3.3 Future Additions (Considered)
 

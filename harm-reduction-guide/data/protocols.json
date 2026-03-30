@@ -519,7 +519,7 @@
     "name": "Ketamine",
     "type": "Dissociative",
     "emoji": "🐴",
-    "color": "#c084fc",
+    "color": "#9333ea",
     "duration": 1.5,
     "dosing": {
       "Insufflated": {
@@ -736,7 +736,7 @@
     "name": "LSD",
     "type": "Psychedelic",
     "emoji": "🌈",
-    "color": "#f59e0b",
+    "color": "#06b6d4",
     "duration": 12,
     "dosing": {
       "Sublingual": {
@@ -894,7 +894,7 @@
     "name": "Mushrooms (Psilocybin)",
     "type": "Psychedelic",
     "emoji": "🍄",
-    "color": "#10b981",
+    "color": "#a16207",
     "duration": 6,
     "dosing": {
       "Oral": {
@@ -1044,7 +1044,7 @@
     "name": "Cocaine",
     "type": "Stimulant",
     "emoji": "❄️",
-    "color": "#06b6d4",
+    "color": "#94a3b8",
     "duration": 1,
     "dosing": {
       "Insufflated": {
@@ -1433,7 +1433,7 @@
     "name": "MDMA",
     "type": "Empathogen",
     "emoji": "💖",
-    "color": "#ec4899",
+    "color": "#2563eb",
     "duration": 4.5,
     "dosing": {
       "Oral": {
@@ -1663,7 +1663,7 @@
     "name": "Caffeine",
     "type": "Stimulant",
     "emoji": "☕",
-    "color": "#a8a29e",
+    "color": "#ca8a04",
     "duration": 5,
     "dosing": {
       "Oral": {
@@ -2028,7 +2028,7 @@
     "name": "4-MMC (Mephedrone)",
     "type": "Stimulant/Empathogen",
     "emoji": "💥",
-    "color": "#f43f5e",
+    "color": "#d946ef",
     "duration": 1,
     "dosing": {
       "Insufflated": {

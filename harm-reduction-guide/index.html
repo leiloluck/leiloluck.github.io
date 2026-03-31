@@ -12,12 +12,30 @@
     <title>Festival Support &amp; Harm Reduction Guide</title>
     <meta name="description"
         content="Evidence-based harm reduction guide for physiological maintenance during extended exertion at festivals and events.">
+
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0d0d0c">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HarmReduction">
+    <link rel="apple-touch-icon" href="icons/icon.svg">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="css/styles.css">
 </head>
 
 <body class="text-gray-300 font-sans leading-relaxed">
+
+    <!-- Version / Install strip -->
+    <div class="flex items-center justify-end gap-2 px-4 py-1.5 border-b border-[#2a2a28]" style="background:rgba(0,0,0,0.25)">
+        <span id="app-version" class="text-[11px] font-mono text-gray-600 tracking-wider"></span>
+        <button id="install-btn" onclick="handleInstallBtn()"
+            class="hidden text-[11px] font-mono border border-[#3a3a38] text-gray-400 hover:text-gray-200 hover:border-gray-400 px-2 py-0.5 transition-colors">
+        </button>
+    </div>
 
     <!-- Disclaimer Banner -->
     <div class="disclaimer-banner px-4 py-3 text-center text-sm text-green-300">
@@ -38,7 +56,7 @@
             </div>
         </div>
         <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})"
-            class="text-xs bg-[#2a2a28] hover:bg-[#3a3a38] text-gray-300 px-3 py-1.5 rounded transition-colors">
+            class="text-xs bg-[#2a2a28] hover:bg-[#3a3a38] text-gray-300 px-3 py-1.5 transition-colors border border-[#3a3a38]">
             ↑ Top
         </button>
     </div>
@@ -65,14 +83,14 @@
         <nav class="mb-8">
             <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Select Context / Substance 💊
             </p>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3" id="substance-nav">
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2" id="substance-nav">
                 <!-- Buttons injected via JS -->
             </div>
         </nav>
 
         <!-- Active Substance Header -->
         <div id="active-substance-header"
-            class="mb-6 p-5 rounded-xl border-2 transition-all duration-300 flex items-center justify-between"
+            class="mb-6 p-5 border-2 transition-all duration-300 flex items-center justify-between"
             style="background:rgba(120,113,108,0.1);border-color:rgba(120,113,108,0.3);">
             <div class="flex items-center gap-4">
                 <span id="active-substance-emoji" class="text-4xl">🧠</span>
@@ -83,9 +101,26 @@
             </div>
         </div>
 
+        <!-- Sober Context Panel (shown only for sober/baseline) -->
+        <div id="sober-context-panel" class="mb-10 hidden">
+            <div class="bg-[#1a1a19] p-6 border-2 border-[#2a2a28]">
+                <p class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-3">Context</p>
+                <p class="text-sm text-gray-400 leading-relaxed">
+                    This protocol applies to a <strong class="text-gray-200">long night out</strong> without any substance — typically 4–12+ hours of dancing and sustained physical exertion in warm, crowded environments with disrupted or absent sleep. Even fully sober, this is a significant physiological load.
+                </p>
+                <div class="mt-4 flex gap-4 text-[11px] text-gray-600 font-mono uppercase tracking-wider">
+                    <span>Exertion · 4–12+ h</span>
+                    <span>·</span>
+                    <span>Heat exposure · High</span>
+                    <span>·</span>
+                    <span>Sleep impact · Moderate–High</span>
+                </div>
+            </div>
+        </div>
+
         <!-- Dosing Panel (hidden for sober) -->
         <div id="dosing-panel" class="mb-10 hidden">
-            <div id="dosing-card" class="bg-[#1a1a19] p-6 rounded-xl border-2 border-[#2a2a28] transition-all duration-300">
+            <div id="dosing-card" class="bg-[#1a1a19] p-6 border-2 border-[#2a2a28] transition-all duration-300">
                 <!-- Route Selector (always visible) -->
                 <div id="route-selector-wrap" class="mb-4">
                     <p class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2">Route of Administration</p>
@@ -101,29 +136,31 @@
                         <canvas id="durationBar"></canvas>
                     </div>
                     <div id="timeline-note" class="mt-1 text-[10px] text-gray-600 italic text-center">Estimates based on PsychonautWiki data.</div>
+                    <!-- Phase duration legend — injected by JS -->
+                    <div id="timeline-legend"></div>
                 </div>
 
                 <!-- Unified Dosing Tier Selector -->
                 <div id="dosing-tiers" class="mb-3">
                     <p class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2">Dose</p>
                     <div class="flex gap-1 w-full">
-                        <button id="tier-threshold" onclick="setIntensity('threshold')" class="tier-btn flex-1 rounded-lg py-2 px-1 cursor-pointer transition-all duration-200 border-2 text-center" style="--tier-color:#6b7280;--tier-bg:rgba(107,114,128,0.12)">
+                        <button id="tier-threshold" onclick="setIntensity('threshold')" class="tier-btn flex-1 py-2 px-1 cursor-pointer transition-all duration-200 border-2 text-center" style="--tier-color:#6b7280;--tier-bg:rgba(107,114,128,0.12)">
                             <span class="block text-[11px] font-bold leading-tight">Threshold</span>
                             <span id="val-threshold" class="block text-[10px] mt-0.5 opacity-70">–</span>
                         </button>
-                        <button id="tier-light" onclick="setIntensity('light')" class="tier-btn flex-[2] rounded-lg py-2 px-1 cursor-pointer transition-all duration-200 border-2 text-center" style="--tier-color:#22c55e;--tier-bg:rgba(34,197,94,0.12)">
+                        <button id="tier-light" onclick="setIntensity('light')" class="tier-btn flex-[2] py-2 px-1 cursor-pointer transition-all duration-200 border-2 text-center" style="--tier-color:#22c55e;--tier-bg:rgba(34,197,94,0.12)">
                             <span class="block text-[11px] font-bold leading-tight">Light</span>
                             <span id="val-light" class="block text-[10px] mt-0.5 opacity-70">–</span>
                         </button>
-                        <button id="tier-common" onclick="setIntensity('common')" class="tier-btn flex-[2] rounded-lg py-2 px-1 cursor-pointer transition-all duration-200 border-2 text-center" style="--tier-color:#eab308;--tier-bg:rgba(234,179,8,0.12)">
+                        <button id="tier-common" onclick="setIntensity('common')" class="tier-btn flex-[2] py-2 px-1 cursor-pointer transition-all duration-200 border-2 text-center" style="--tier-color:#eab308;--tier-bg:rgba(234,179,8,0.12)">
                             <span class="block text-[11px] font-bold leading-tight">Common</span>
                             <span id="val-common" class="block text-[10px] mt-0.5 opacity-70">–</span>
                         </button>
-                        <button id="tier-strong" onclick="setIntensity('strong')" class="tier-btn flex-[2] rounded-lg py-2 px-1 cursor-pointer transition-all duration-200 border-2 text-center" style="--tier-color:#f97316;--tier-bg:rgba(249,115,22,0.12)">
+                        <button id="tier-strong" onclick="setIntensity('strong')" class="tier-btn flex-[2] py-2 px-1 cursor-pointer transition-all duration-200 border-2 text-center" style="--tier-color:#f97316;--tier-bg:rgba(249,115,22,0.12)">
                             <span class="block text-[11px] font-bold leading-tight">Strong</span>
                             <span id="val-strong" class="block text-[10px] mt-0.5 opacity-70">–</span>
                         </button>
-                        <button id="tier-heavy" onclick="setIntensity('heavy')" class="tier-btn flex-1 rounded-lg py-2 px-1 cursor-pointer transition-all duration-200 border-2 text-center" style="--tier-color:#ef4444;--tier-bg:rgba(239,68,68,0.12)">
+                        <button id="tier-heavy" onclick="setIntensity('heavy')" class="tier-btn flex-1 py-2 px-1 cursor-pointer transition-all duration-200 border-2 text-center" style="--tier-color:#ef4444;--tier-bg:rgba(239,68,68,0.12)">
                             <span class="block text-[11px] font-bold leading-tight">Heavy</span>
                             <span id="val-heavy" class="block text-[10px] mt-0.5 opacity-70">–</span>
                         </button>
@@ -149,7 +186,7 @@
                     </div>
                     <!-- Canvas Container -->
                     <div
-                        class="section-card bg-[#1a1a19] rounded-xl border-2 border-[#2a2a28] overflow-hidden transition-all duration-300 p-6">
+                        class="section-card bg-[#1a1a19] border-2 border-[#2a2a28] overflow-hidden transition-all duration-300 p-6">
                         <div class="relative h-64 w-full">
                             <canvas id="riskChart"></canvas>
                         </div>
@@ -161,7 +198,7 @@
                 </section>
 
                 <!-- Common Risks (amber, hidden for sober) -->
-                <div id="emergency-flags" class="hidden p-5 rounded-xl border"
+                <div id="emergency-flags" class="hidden p-5 border"
                     style="background:rgba(234,179,8,0.06);border-color:rgba(234,179,8,0.2);">
                     <h3 class="font-bold mb-2 text-sm" style="color:rgba(234,179,8,0.85)">
                         Common Risks
@@ -172,7 +209,7 @@
                 </div>
 
                 <!-- Introduction Paragraph for Guide Section -->
-                <div class="bg-[#1a1a19] p-6 rounded-xl border border-[#2a2a28]">
+                <div class="bg-[#1a1a19] p-6 border border-[#2a2a28]">
                     <h2 class="text-lg font-bold text-gray-100 mb-2">Protocol Timeline 🕐</h2>
                     <p class="text-gray-500 text-sm">
                         This section breaks down the recommended actions into chronological phases.
@@ -190,7 +227,7 @@
                         <h3 class="text-xl font-bold text-gray-100">Preparation (Before) 🧘</h3>
                     </div>
                     <div
-                        class="section-card bg-[#1a1a19] rounded-xl border-2 border-[#2a2a28] overflow-hidden transition-all duration-300">
+                        class="section-card bg-[#1a1a19] border-2 border-[#2a2a28] overflow-hidden transition-all duration-300">
                         <div class="p-6">
                             <ul class="space-y-4" id="content-before">
                                 <!-- Content injected via JS -->
@@ -207,10 +244,10 @@
                         <h3 class="text-xl font-bold text-gray-100">Activity (During) 🕺</h3>
                     </div>
                     <div
-                        class="section-card bg-[#1a1a19] rounded-xl border-2 border-[#2a2a28] overflow-hidden transition-all duration-300">
+                        class="section-card bg-[#1a1a19] border-2 border-[#2a2a28] overflow-hidden transition-all duration-300">
                         <div class="p-6">
                             <div id="focus-border"
-                                class="mb-4 p-4 rounded-lg border-l-4 border-[#3f3f3e] transition-all duration-300"
+                                class="mb-4 p-4 border-l-4 border-[#3f3f3e] transition-all duration-300"
                                 style="background:rgba(255,255,255,0.02)">
                                 <h4 class="font-bold text-sm text-gray-400 uppercase mb-1">Critical Focus</h4>
                                 <p id="focus-during" class="text-gray-300 text-sm">Hydration balance and electrolyte
@@ -231,7 +268,7 @@
                         <h3 class="text-xl font-bold text-gray-100">Recovery (After) 🛏️</h3>
                     </div>
                     <div
-                        class="section-card bg-[#1a1a19] rounded-xl border-2 border-[#2a2a28] overflow-hidden transition-all duration-300">
+                        class="section-card bg-[#1a1a19] border-2 border-[#2a2a28] overflow-hidden transition-all duration-300">
                         <div class="p-6">
                             <ul class="space-y-4" id="content-after">
                                 <!-- Content injected via JS -->
@@ -251,7 +288,7 @@
                     </div>
 
                     <div
-                        class="section-card bg-[#1a1a19] rounded-xl border-2 border-[#2a2a28] overflow-hidden transition-all duration-300">
+                        class="section-card bg-[#1a1a19] border-2 border-[#2a2a28] overflow-hidden transition-all duration-300">
                         <div class="p-6">
                             <ul class="space-y-4" id="content-next-morning">
                                 <!-- Content injected via JS -->
@@ -272,6 +309,78 @@
     <!-- Data and application logic loaded from external files -->
     <script src="js/data.js"></script>
     <script src="js/app.js"></script>
+
+    <!-- PWA: service worker registration + install/update button logic -->
+    <script>
+        const APP_VERSION = 'v26.03';
+        let deferredInstallPrompt = null;
+
+        // Show version
+        document.getElementById('app-version').textContent = APP_VERSION;
+
+        const installBtn = document.getElementById('install-btn');
+
+        // Detect if already running as installed PWA
+        const isStandalone =
+            window.matchMedia('(display-mode: standalone)').matches ||
+            window.navigator.standalone === true ||
+            localStorage.getItem('pwa-installed') === '1';
+
+        if (isStandalone) {
+            showAsUpdate();
+        }
+
+        // Android Chrome install prompt
+        window.addEventListener('beforeinstallprompt', e => {
+            e.preventDefault();
+            deferredInstallPrompt = e;
+            if (!isStandalone) showAsInstall();
+        });
+
+        window.addEventListener('appinstalled', () => {
+            localStorage.setItem('pwa-installed', '1');
+            deferredInstallPrompt = null;
+            showAsUpdate();
+        });
+
+        function showAsInstall() {
+            installBtn.textContent = 'Install';
+            installBtn.classList.remove('hidden');
+        }
+
+        function showAsUpdate() {
+            installBtn.textContent = 'Update';
+            installBtn.classList.remove('hidden');
+        }
+
+        async function handleInstallBtn() {
+            if (deferredInstallPrompt) {
+                // Native install (Android)
+                deferredInstallPrompt.prompt();
+                const result = await deferredInstallPrompt.userChoice;
+                deferredInstallPrompt = null;
+                if (result.outcome === 'accepted') showAsUpdate();
+            } else {
+                // Update: clear all caches and reload for fresh content
+                if ('caches' in window) {
+                    const keys = await caches.keys();
+                    await Promise.all(keys.map(k => caches.delete(k)));
+                }
+                if ('serviceWorker' in navigator) {
+                    const regs = await navigator.serviceWorker.getRegistrations();
+                    await Promise.all(regs.map(r => r.unregister()));
+                }
+                window.location.reload();
+            }
+        }
+
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js').catch(err => {
+                console.warn('SW registration failed:', err);
+            });
+        }
+    </script>
 
 </body>
 

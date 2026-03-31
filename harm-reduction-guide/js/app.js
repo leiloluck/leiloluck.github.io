@@ -1,6 +1,7 @@
 /*
     app.js — Application logic for Harm Reduction Protocols Dashboard.
-    Handles: Navigation, content rendering, expandable items, color theming, Chart.js config (dark mode).
+    Handles: Navigation, content rendering, expandable items, color theming, Chart.js config (dark mode),
+             scroll-reactive OKLCH background gradient, effect timeline legend.
     Depends on: data.js (must be loaded first), Chart.js CDN, Tailwind CDN.
 */
 
@@ -13,6 +14,7 @@ let riskChart = null;
 let durationChart = null;
 let currentIntensity = 'common';
 let currentRouteIndex = 0;
+let _durationRoutes = null; // current routes used in duration chart (for tooltip access)
 
 // DOM refs (assigned after DOMContentLoaded)
 let navContainer, modeDisplay, introModifier, contentBefore, contentDuring,
@@ -54,7 +56,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     doseSourceLink = document.getElementById('dose-source-link');
     doseDisplayText = document.getElementById('dose-display-text');
 
-
     // Sticky Header Scroll Listener
     window.addEventListener('scroll', () => {
         const stickyHeader = document.getElementById('sticky-header');
@@ -82,13 +83,13 @@ function initNavigation() {
         btn.innerHTML = `<span class="text-base mr-1">${proto.emoji}</span> ${proto.name}`;
         btn.dataset.id = proto.id;
 
-        // Default: subtle pre-colored tint
         applyButtonDefault(btn, proto.color);
 
         btn.onmouseenter = () => {
             if (btn.dataset.id !== currentProtocol) {
-                btn.style.backgroundColor = hexAlpha(proto.color, 0.2);
-                btn.style.borderColor = hexAlpha(proto.color, 0.5);
+                btn.style.backgroundColor = hexAlpha(proto.color, 0.22);
+                btn.style.borderColor = hexAlpha(proto.color, 0.7);
+                btn.style.color = proto.color;
             }
         };
         btn.onmouseleave = () => {
@@ -103,19 +104,19 @@ function initNavigation() {
 }
 
 function applyButtonDefault(btn, color) {
-    btn.className = 'p-3 rounded-lg text-sm font-bold transition-all duration-200 border-2 cursor-pointer';
-    btn.style.backgroundColor = hexAlpha(color, 0.08);
-    btn.style.borderColor = hexAlpha(color, 0.25);
-    btn.style.color = hexAlpha(color, 0.7);
+    btn.className = 'p-3 text-sm font-bold transition-all duration-200 border-2 cursor-pointer';
+    btn.style.backgroundColor = hexAlpha(color, 0.1);
+    btn.style.borderColor = hexAlpha(color, 0.45);
+    btn.style.color = hexAlpha(color, 0.85);
     btn.style.boxShadow = 'none';
 }
 
 function applyButtonActive(btn, color) {
-    btn.className = 'p-3 rounded-lg text-sm font-bold transition-all duration-200 border-2 cursor-pointer';
-    btn.style.backgroundColor = hexAlpha(color, 0.2);
+    btn.className = 'p-3 text-sm font-bold transition-all duration-200 border-2 cursor-pointer nav-btn-active';
+    btn.style.backgroundColor = hexAlpha(color, 0.22);
     btn.style.borderColor = color;
     btn.style.color = color;
-    btn.style.boxShadow = `0 0 12px ${hexAlpha(color, 0.3)}`;
+    btn.style.boxShadow = `0 0 18px ${hexAlpha(color, 0.4)}, inset 0 0 0 1px ${hexAlpha(color, 0.15)}`;
 }
 
 
@@ -139,7 +140,7 @@ function loadProtocol(id) {
     activeHeaderType.textContent = data.type;
     activeHeaderEmoji.textContent = data.emoji;
     activeHeader.style.backgroundColor = hexAlpha(data.color, 0.1);
-    activeHeader.style.borderColor = hexAlpha(data.color, 0.3);
+    activeHeader.style.borderColor = hexAlpha(data.color, 0.35);
     activeHeaderName.style.color = data.color;
 
     // 2a. Dosing panel
@@ -162,7 +163,6 @@ function loadProtocol(id) {
 
     // 4. Render expandable lists (support both flat arrays and { essential, bonus } objects)
     renderSection(contentBefore, data.phases.before, data.color);
-    // During: strip focus field, pass remaining structure
     const duringData = data.phases.during.essential
         ? { essential: data.phases.during.essential, bonus: data.phases.during.bonus }
         : data.phases.during.items;
@@ -178,7 +178,7 @@ function loadProtocol(id) {
         card.style.borderColor = hexAlpha(data.color, 0.3);
     });
     sectionBadges.forEach(badge => {
-        badge.style.backgroundColor = hexAlpha(data.color, 0.15);
+        badge.style.backgroundColor = hexAlpha(data.color, 0.18);
         badge.style.color = data.color;
     });
     if (focusBorderEl) {
@@ -186,16 +186,19 @@ function loadProtocol(id) {
         focusBorderEl.style.backgroundColor = hexAlpha(data.color, 0.05);
     }
 
-    // 7. Risks
+    // 7. Risks + sober context panel
+    const soberPanel = document.getElementById('sober-context-panel');
     if (id === 'sober') {
         emergencyFlags.classList.add('hidden');
         if (doseDisplayText) doseDisplayText.classList.add('hidden');
+        if (soberPanel) soberPanel.classList.remove('hidden');
     } else {
         emergencyFlags.classList.remove('hidden');
         riskList.innerHTML = data.risks.map(r => `<li>${r}</li>`).join('');
+        if (soberPanel) soberPanel.classList.add('hidden');
     }
 
-    // 8. Charts (use route-adjusted durations)
+    // 8. Charts
     updateCharts(data, id === 'sober');
 }
 
@@ -204,12 +207,12 @@ function renderDosingPanel(data) {
     if (!data.dosing || data.id === 'sober') {
         dosingPanel.classList.add('hidden');
         if (durationChart) { durationChart.destroy(); durationChart = null; }
+        renderTimelineLegend(null);
         return;
     }
     dosingPanel.classList.remove('hidden');
-    dosingCard.style.borderColor = hexAlpha(data.color, 0.3);
+    dosingCard.style.borderColor = hexAlpha(data.color, 0.35);
 
-    // Build route buttons (always visible, even for single routes)
     const routeNames = Object.keys(data.dosing);
     const defaultIdx = data.routes ? data.routes.findIndex(r => r.isDefault) : 0;
     currentRouteIndex = defaultIdx >= 0 ? defaultIdx : 0;
@@ -242,8 +245,8 @@ function updateDosingDisplay(data) {
             btn.style.color = color;
         } else {
             btn.style.backgroundColor = 'rgba(255,255,255,0.04)';
-            btn.style.borderColor = 'rgba(255,255,255,0.12)';
-            btn.style.color = 'rgba(255,255,255,0.5)';
+            btn.style.borderColor = 'rgba(255,255,255,0.15)';
+            btn.style.color = 'rgba(255,255,255,0.55)';
         }
     });
 
@@ -268,7 +271,7 @@ function updateDosingDisplay(data) {
             btn.style.transform = 'scale(1.04)';
         } else {
             btn.style.backgroundColor = 'var(--tier-bg)';
-            btn.style.borderColor = 'rgba(255,255,255,0.08)';
+            btn.style.borderColor = 'rgba(255,255,255,0.1)';
             btn.style.color = 'rgba(255,255,255,0.4)';
             btn.style.boxShadow = 'none';
             btn.style.transform = 'scale(1)';
@@ -352,7 +355,6 @@ function getIntensityMultiplier() {
 
 // --- Section Rendering (Essential + Bonus) ---
 function renderSection(element, data, color) {
-    // Support flat arrays (legacy) or { essential, bonus } objects
     if (Array.isArray(data)) {
         renderItemList(element, data, color, 'ess');
         return;
@@ -447,10 +449,9 @@ function updateCharts(data, skipDuration = false) {
     ];
 
     const labels = ['Neurotoxicity', 'Cardiotoxicity', 'Dehydration', 'Sleep Loss', 'Impulsivity'];
-    const darkGridColor = 'rgba(255,255,255,0.08)';
-    const darkLabelColor = '#a1a1aa'; // zinc-400
+    const darkGridColor = 'rgba(255,255,255,0.06)';
+    const darkLabelColor = '#71717a'; // zinc-500
 
-    // Destroy existing chart if type mismatch
     if (riskChart) {
         const currentType = riskChart.config.type;
         if (currentType !== 'bar') {
@@ -462,7 +463,6 @@ function updateCharts(data, skipDuration = false) {
     if (!riskChart) {
         createHistogramChart(data, labels, scores, darkGridColor, darkLabelColor);
     } else {
-        // UPDATE EXISTING CHART
         riskChart.data.datasets[0].data = scores;
         riskChart.data.datasets[0].backgroundColor = scores.map(getHistogramColor);
         riskChart.data.datasets[0].borderColor = scores.map(getHistogramColor).map(c => c.replace('0.7)', '1)'));
@@ -470,18 +470,15 @@ function updateCharts(data, skipDuration = false) {
         riskChart.update();
     }
 
-    // Duration / Effect Timeline
     if (!skipDuration) updateDurationChart(data, darkGridColor, darkLabelColor);
 }
 
-
-
 function getHistogramColor(score) {
-    if (score === 0) return 'rgba(156, 163, 175, 0.7)'; // gray (None)
-    if (score <= 2) return 'rgba(34, 197, 94, 0.7)'; // green (Low)
-    if (score <= 4) return 'rgba(234, 179, 8, 0.7)'; // yellow (Medium)
-    if (score <= 6) return 'rgba(249, 115, 22, 0.7)'; // orange (High)
-    return 'rgba(239, 68, 68, 0.7)'; // red (Very High)
+    if (score === 0) return 'rgba(156, 163, 175, 0.7)'; // gray
+    if (score <= 2) return 'rgba(34, 197, 94, 0.7)';    // green
+    if (score <= 4) return 'rgba(234, 179, 8, 0.7)';    // yellow
+    if (score <= 6) return 'rgba(249, 115, 22, 0.7)';   // orange
+    return 'rgba(239, 68, 68, 0.7)';                    // red
 }
 
 function createHistogramChart(data, labels, scores, gridColor, labelColor) {
@@ -495,11 +492,11 @@ function createHistogramChart(data, labels, scores, gridColor, labelColor) {
                 backgroundColor: scores.map(getHistogramColor),
                 borderColor: scores.map(getHistogramColor).map(c => c.replace('0.7)', '1)')),
                 borderWidth: 1,
-                borderRadius: 4
+                borderRadius: 0
             }]
         },
         options: {
-            indexAxis: 'y', // Horizontal bars for better readability of text
+            indexAxis: 'y',
             scales: {
                 x: {
                     min: 0,
@@ -547,85 +544,69 @@ function createHistogramChart(data, labels, scores, gridColor, labelColor) {
     });
 }
 
-function updateDurationChart(data, darkGridColor, darkLabelColor) {
-    // Always destroy and rebuild for phase changes
-    if (durationChart) {
-        durationChart.destroy();
-        durationChart = null;
-    }
+// Phase display metadata
+const PHASE_ORDER = ['onset', 'come_up', 'peak', 'come_down', 'after_effects'];
+const PHASE_COLORS = {
+    onset:        'rgba(156,163,175,0.55)',
+    come_up:      'rgba(96,165,250,0.65)',
+    peak:         'rgba(168,85,247,0.75)',
+    come_down:    'rgba(251,191,36,0.65)',
+    after_effects:'rgba(107,114,128,0.45)'
+};
+const PHASE_NAMES = {
+    onset:        'Onset',
+    come_up:      'Come-up',
+    peak:         'Peak',
+    come_down:    'Come-down',
+    after_effects:'After-effects'
+};
 
+function updateDurationChart(data, darkGridColor, darkLabelColor) {
     const allRoutes = data.routes || (data.duration_phases ? [{ name: 'Effect Timeline', phases: data.duration_phases }] : null);
 
-    // Filter to only the selected route when multiple routes exist
     let inputRoutes = allRoutes;
     if (allRoutes && allRoutes.length > 1) {
         const idx = Math.min(currentRouteIndex, allRoutes.length - 1);
         inputRoutes = [allRoutes[idx]];
     }
 
-    if (!inputRoutes) {
-        // Fallback: simple single bar using data.duration
-        durationChart = new Chart(durationCanvas, {
-            type: 'bar',
-            data: {
-                labels: ['Active Duration'],
-                datasets: [{
-                    label: 'Hours',
-                    data: [data.duration],
-                    backgroundColor: data.color,
-                    borderRadius: 4,
-                    barThickness: 40
-                }]
-            },
-            options: {
-                indexAxis: 'y',
-                scales: {
-                    x: { beginAtZero: true, max: 14, grid: { color: darkGridColor }, ticks: { color: darkLabelColor } },
-                    y: { grid: { display: false }, display: false }
-                },
-                plugins: { legend: { display: false } },
-                maintainAspectRatio: false
-            }
-        });
+    if (!inputRoutes || inputRoutes.every(r => !r.phases)) {
+        if (durationChart) { durationChart.destroy(); durationChart = null; }
+        renderTimelineLegend(null);
         return;
     }
 
-    // Multi-phase horizontal stacked bar for multiple routes
-    const phaseOrder = ['onset', 'come_up', 'peak', 'come_down', 'after_effects'];
-    const phaseColors = {
-        onset: 'rgba(156,163,175,0.5)',     // gray
-        come_up: 'rgba(96,165,250,0.6)',    // blue
-        peak: 'rgba(168,85,247,0.7)',       // purple (vibrant)
-        come_down: 'rgba(251,191,36,0.6)',  // amber
-        after_effects: 'rgba(107,114,128,0.4)' // dim gray
-    };
+    _durationRoutes = inputRoutes;
+    const newLabels = inputRoutes.map(r => r.name);
 
-    const phaseLabelsMap = {};
-    const datasets = phaseOrder.map(p => {
-        const widthData = inputRoutes.map(r => {
-            if (r.phases && r.phases[p]) {
-                phaseLabelsMap[p] = r.phases[p].label;
-                return r.phases[p].max;
-            }
-            return 0;
+    // Always keep all 5 phase datasets (0 = invisible segment, allows smooth morphing)
+    const newDatasets = PHASE_ORDER.map(p => ({
+        _phaseKey: p,
+        label: PHASE_NAMES[p],
+        data: inputRoutes.map(r => r.phases && r.phases[p] ? r.phases[p].max : 0),
+        backgroundColor: PHASE_COLORS[p],
+        borderWidth: 0,
+        borderRadius: 0,
+        barThickness: 36
+    }));
+
+    if (durationChart) {
+        // Update in place — smooth morph, no restart animation
+        durationChart.data.labels = newLabels;
+        PHASE_ORDER.forEach((p, i) => {
+            durationChart.data.datasets[i].data = newDatasets[i].data;
         });
+        durationChart.update({ duration: 350, easing: 'easeInOutQuart' });
+        renderTimelineLegend(inputRoutes);
+        return;
+    }
 
-        return {
-            _phaseKey: p,
-            label: phaseLabelsMap[p] || p,
-            data: widthData,
-            backgroundColor: phaseColors[p],
-            borderWidth: 0, // No border for seamlessly blurred transitions
-            borderRadius: 0, // No gaps
-            barThickness: 36
-        };
-    }).filter(ds => ds.data.some(val => val > 0));
-
+    // Create new chart
     durationChart = new Chart(durationCanvas, {
         type: 'bar',
         data: {
-            labels: inputRoutes.map(r => r.name),
-            datasets: datasets
+            labels: newLabels,
+            datasets: newDatasets
         },
         options: {
             indexAxis: 'y',
@@ -636,7 +617,7 @@ function updateDurationChart(data, darkGridColor, darkLabelColor) {
                     grid: { color: darkGridColor },
                     ticks: {
                         color: darkLabelColor,
-                        callback: function (value) { return value + 'h'; }
+                        callback: v => v + 'h'
                     },
                     title: {
                         display: true,
@@ -659,15 +640,15 @@ function updateDurationChart(data, darkGridColor, darkLabelColor) {
                 tooltip: {
                     callbacks: {
                         label: function (context) {
-                            const routeIndex = context.dataIndex;
-                            const dsIndex = context.datasetIndex;
-                            const ds = context.chart.data.datasets[dsIndex];
-                            const phaseKey = ds._phaseKey;
-                            const phase = inputRoutes[routeIndex].phases[phaseKey];
-                            if (phase) {
-                                return `${phase.label}: ${phase.min}–${phase.max} hours`;
+                            const routes = _durationRoutes;
+                            if (!routes) return '';
+                            const phaseKey = PHASE_ORDER[context.datasetIndex];
+                            const route = routes[context.dataIndex];
+                            if (route && route.phases && route.phases[phaseKey]) {
+                                const phase = route.phases[phaseKey];
+                                return `${PHASE_NAMES[phaseKey]}: ${formatPhaseDuration(phase.min)}–${formatPhaseDuration(phase.max)}`;
                             }
-                            return ds.label;
+                            return '';
                         }
                     }
                 }
@@ -676,11 +657,53 @@ function updateDurationChart(data, darkGridColor, darkLabelColor) {
             animation: { duration: 400 }
         }
     });
+    renderTimelineLegend(inputRoutes);
+}
+
+// --- Timeline Phase Legend ---
+function renderTimelineLegend(inputRoutes) {
+    const el = document.getElementById('timeline-legend');
+    if (!el) return;
+
+    if (!inputRoutes || inputRoutes.length === 0) {
+        el.innerHTML = '';
+        return;
+    }
+
+    const route = inputRoutes[0];
+    if (!route.phases) {
+        el.innerHTML = '';
+        return;
+    }
+
+    const items = PHASE_ORDER
+        .filter(p => route.phases[p] && route.phases[p].max > 0)
+        .map(p => {
+            const phase = route.phases[p];
+            const minStr = formatPhaseDuration(phase.min);
+            const maxStr = formatPhaseDuration(phase.max);
+            const dur = (phase.min === 0 || phase.min == null) ? `~${maxStr}` : `${minStr}–${maxStr}`;
+            return `<span class="legend-item" style="color:${PHASE_COLORS[p]}">
+                <span class="legend-swatch" style="background:${PHASE_COLORS[p]}"></span>
+                ${PHASE_NAMES[p]} · ${dur}
+            </span>`;
+        });
+
+    el.innerHTML = items.join('');
+}
+
+function formatPhaseDuration(hours) {
+    if (hours == null || hours === 0) return '0';
+    if (hours < 1) {
+        const mins = Math.round(hours * 60);
+        return `${mins} min`;
+    }
+    if (hours === Math.floor(hours)) return `${hours}h`;
+    return `${hours}h`;
 }
 
 // --- Utilities ---
 function hexAlpha(hex, alpha) {
-    // Convert hex to rgba
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);
     const b = parseInt(hex.slice(5, 7), 16);

@@ -256,23 +256,24 @@ After scrolling 300px, a slim fixed bar slides down from the top edge. It contai
 #### Footer
 A quiet footer with a `border-t` separator. Two lines of muted text repeating the disclaimer and citing source organisations. No links, no logos — just attribution.
 
-### 5.3 Background — Subtle Vertical Gradient
+### 5.3 Background — Scroll-Reactive OKLCH Hue Gradient
 
-The page background is not a flat colour. It uses a **subtle vertical gradient** that gives the page a sense of depth and grounds the reader's sense of scroll position:
+The page background is a **scroll-reactive oklch gradient** managed entirely by JavaScript. As the user scrolls, the background hue cycles through the color wheel from red-orange (top) to blue (bottom):
 
-- **Top:** `#181816` — a slightly warmer, lighter charcoal. Feels like early dusk.
-- **Bottom:** `#0c0c0b` — near-black. Feels like deep night.
+- **Top of page:** `oklch(7–11% 0.038 25°)` — deep red-orange tint
+- **Mid-scroll:** passes through orange → green → cyan
+- **Bottom of page:** `oklch(7–11% 0.038 265°)` — deep blue tint
 
-The gradient is implemented as a `min-height: 100vh` linear gradient on the `<body>` element:
+The gradient covers a 240° hue arc and updates on every scroll frame via `requestAnimationFrame`. The luminance stays between 7–11% — dark enough to never compete with content, vivid enough to give the page environmental depth and a sense of scroll position.
 
-```css
-background: linear-gradient(to bottom, #181816 0%, #0c0c0b 100%);
-background-attachment: fixed;
+The implementation in `js/app.js` (`initScrollGradient`):
+```javascript
+const centerHue = 25 + progress * 240;
+document.body.style.background =
+    `linear-gradient(to bottom, oklch(7% 0.04 ${h0}), oklch(11% 0.038 ${h1}), oklch(7% 0.04 ${h2}))`;
 ```
 
-The `background-attachment: fixed` ensures the gradient is tied to the viewport, not the scroll position — the top of the screen always feels slightly lighter regardless of how far the reader has scrolled. This creates a subtle environmental "lighting" effect, as if the page exists under a dim overhead source.
-
-All card and section backgrounds remain at their existing values (`#1a1a19`, `#151514`), which now sit naturally within the gradient range rather than floating on a flat plane.
+Cards and sections remain at fixed dark backgrounds (`#1a1a19`, `#151514`) so they float above the gradient.
 
 ### 5.4 Colour System
 

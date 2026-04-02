@@ -6,7 +6,7 @@
 */
 
 // Display order (by European prevalence in festival/nightlife contexts)
-const SUBSTANCE_ORDER = ['sober', 'alcohol', 'caffeine', 'cannabis', 'mdma', 'cocaine', 'amphetamine', 'ketamine', 'lsd', 'mushrooms', '2cb', '4mmc'];
+const SUBSTANCE_ORDER = ['sober', 'alcohol', 'caffeine', 'cannabis', 'mdma', 'cocaine', 'amphetamine', 'ketamine', 'lsd', 'mushrooms', '2cb', '4mmc', 'ghb', 'heroin', 'methamphetamine'];
 
 // State
 let currentProtocol = 'sober';
@@ -76,12 +76,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // --- Navigation ---
 function initNavigation() {
+    const activeCount = SUBSTANCE_ORDER.filter(id => protocols[id]).length;
+    const isOdd = activeCount % 2 !== 0;
+
     SUBSTANCE_ORDER.forEach(id => {
         const proto = protocols[id];
         if (!proto) return;
         const btn = document.createElement('button');
         btn.innerHTML = `<span class="text-base mr-1">${proto.emoji}</span> ${proto.name}`;
         btn.dataset.id = proto.id;
+
+        // If odd total count, sober button spans full width on mobile (2-col grid)
+        if (isOdd && id === 'sober') {
+            btn.dataset.wide = '1';
+        }
 
         applyButtonDefault(btn, proto.color);
 
@@ -105,6 +113,7 @@ function initNavigation() {
 
 function applyButtonDefault(btn, color) {
     btn.className = 'p-3 text-sm font-bold transition-all duration-200 border-2 cursor-pointer';
+    if (btn.dataset.wide) btn.className += ' col-span-2 sm:col-span-1';
     btn.style.backgroundColor = hexAlpha(color, 0.1);
     btn.style.borderColor = hexAlpha(color, 0.45);
     btn.style.color = hexAlpha(color, 0.85);
@@ -113,6 +122,7 @@ function applyButtonDefault(btn, color) {
 
 function applyButtonActive(btn, color) {
     btn.className = 'p-3 text-sm font-bold transition-all duration-200 border-2 cursor-pointer nav-btn-active';
+    if (btn.dataset.wide) btn.className += ' col-span-2 sm:col-span-1';
     btn.style.backgroundColor = hexAlpha(color, 0.22);
     btn.style.borderColor = color;
     btn.style.color = color;

@@ -790,5 +790,223 @@ const _inlineProtocols = {
             }
         },
         risks: ["Compulsive redosing (extremely addictive pattern)", "Severe peripheral vasoconstriction", "Dangerous cardiac stress", "Extreme neurotoxicity (especially with alcohol)"]
+    },
+    ghb: {
+        id: "ghb", name: "GHB / GBL", type: "Depressant", emoji: "💧",
+        color: "#64748b", duration: 3,
+        dosing: {
+            "Oral": { unit: "mL (concentrate varies 250–500 mg/mL; see critical note)", threshold: 0.5, light: { min: 1, max: 1.5 }, common: { min: 1.5, max: 2.5 }, strong: { min: 2.5, max: 3 }, heavy: 3, note: "⚠️ CRITICAL: Purity and concentration vary wildly across batches (average ~377 mg/mL but wide variation). Dose nearly impossible to estimate. Start conservatively with new batches.", source: "https://www.jellinek.nl/en/alcohol-drugs-behavior/ghb/" }
+        },
+        routes: [
+            {
+                name: "Oral", displayName: "Drinking", emoji: "💧", isDefault: true,
+                phases: {
+                    onset: { min: 0.08, max: 0.5, label: "Onset" },
+                    come_up: { min: 0.17, max: 0.33, label: "Come-up" },
+                    peak: { min: 0.75, max: 1.5, label: "Peak" },
+                    come_down: { min: 0.75, max: 1.5, label: "Come-down" },
+                    after_effects: { min: 3, max: 8, label: "After-effects" }
+                }
+            }
+        ],
+        visualizer: { neurotoxicity: 4, cardiotoxicity: 5, dehydration: 2, sleep_deprivation: 2, impulsivity: 6 },
+        sleep_strategy: "Sudden, involuntary sleep onset. Prevent aspiration by using recovery position with sober companion.",
+        phases: {
+            before: {
+                essential: [
+                    { short: "⚠️ CRITICAL DANGER: GHB/GBL has an EXTREMELY NARROW therapeutic window. The difference between a recreational dose and a fatal overdose is often a single milliliter or less.", detail: "GHB/GBL is a CNS depressant with a margin measured in drops. Loss of consciousness occurs from ~3 grams, but purity varies so dramatically (ranging from 200–600 mg/mL) that visual estimation is effectively impossible. A dose that feels like 1 mL might actually contain 200 mg or 600 mg. This is not a substance to experiment with.", sources: [{ label: "Jellinek — GHB", url: "https://www.jellinek.nl/en/alcohol-drugs-behavior/ghb/" }, { label: "checkit! Wien — GHB/GBL", url: "https://checkit.wien/substanz/ghb-gbl/" }] },
+                    { short: "⚠️ Never use with alcohol or any other depressants (benzodiazepines, opioids, CBD, pregabalin, etc.).", detail: "GHB combined with other CNS depressants causes catastrophic respiratory depression. Even small GHB doses + alcohol → unconsciousness. If vomiting occurs while unconscious, aspiration (choking) is likely fatal. This combination is the leading cause of GHB-related deaths.", sources: [{ label: "Jellinek — GHB", url: "https://www.jellinek.nl/en/alcohol-drugs-behavior/ghb/" }, { label: "checkit! Wien — GHB/GBL", url: "https://checkit.wien/substanz/ghb-gbl/" }] },
+                    { short: "Measurement: Use a calibrated vial or syringe. Never eyeball. Start low with any new batch.", detail: "The only harm reduction approach is strict measurement discipline. Visual estimation fails with GHB. Use a marked syringe (0.1 mL precision) and always start conservatively with a new batch to assess its actual concentration.", sources: [{ label: "Jellinek — GHB", url: "https://www.jellinek.nl/en/alcohol-drugs-behavior/ghb/" }] }
+                ],
+                bonus: []
+            },
+            during: {
+                focus: "Preventing overdose and respiratory arrest.",
+                essential: [
+                    { short: "⚠️ Overdose signs → CALL EMERGENCY IMMEDIATELY: Loss of consciousness, irregular or stopped breathing, choking, seizure-like movements.", detail: "GHB overdose manifests as sudden unconsciousness and respiratory suppression. Because the drug suppresses the gag reflex, vomiting during unconsciousness is silent — the person aspirates into their lungs. This is fatal without immediate medical intervention. Call emergency services (112) immediately if someone stops responding or breathing becomes irregular.", sources: [{ label: "Jellinek — GHB", url: "https://www.jellinek.nl/en/alcohol-drugs-behavior/ghb/" }] },
+                    { short: "⚠️ NO REDOSING if subjective effects fade. Effects wear off while GHB is still in the bloodstream.", detail: "GHB subjective effects dissipate within 2–3 hours, but the drug remains active in the blood much longer. Redosing at the same dose increases total blood concentration exponentially → overdose. This is the pattern leading to most GHB hospitalizations.", sources: [{ label: "Jellinek — GHB", url: "https://www.jellinek.nl/en/alcohol-drugs-behavior/ghb/" }] },
+                    { short: "Sober companions: MANDATORY. Someone must stay alert and watch.", detail: "A sober person must remain conscious and aware of everyone using GHB. They need to: monitor breathing, prevent additional doses, watch for overdose signs, and call emergency services if anything seems wrong. Never use GHB alone or without a completely sober, trained watcher." }
+                ],
+                bonus: [
+                    { short: "Hydration: Non-alcoholic beverages only. Max 0.5L/hour.", detail: "GHB itself causes some fluid retention. Over-hydration + GHB + dancing can increase hyponatremia risk. Keep hydration moderate." }
+                ]
+            },
+            after: {
+                essential: [
+                    { short: "⚠️ Expect involuntary sleep. Use recovery position (on your side).", detail: "Sleep onset on GHB is often sudden and involuntary — users may pass out despite intending to stay awake. Ensure you're in a recovery position (on your left side) so that if vomiting occurs, gravity prevents aspiration into the lungs.", sources: [{ label: "checkit! Wien — GHB/GBL", url: "https://checkit.wien/substanz/ghb-gbl/" }] },
+                    { short: "⚠️ If regular use: Dependence can develop after just weeks.", detail: "Physical and psychological dependence develops rapidly with repeated GHB use. Withdrawal is severe: anxiety, panic, insomnia (persisting for days), trembling, nausea, delirium with hallucinations. Withdrawal MUST occur under medical supervision. Do not attempt to quit suddenly.", sources: [{ label: "Jellinek — GHB", url: "https://www.jellinek.nl/en/alcohol-drugs-behavior/ghb/" }, { label: "checkit! Wien — GHB/GBL", url: "https://checkit.wien/substanz/ghb-gbl/" }] }
+                ],
+                bonus: []
+            },
+            next_morning: {
+                essential: [
+                    { short: "Recovery: Electrolytes and normal nutrition.", detail: "GHB leaves the system relatively quickly, but sleep disruption and the intensity of the experience create fatigue. Rehydrate with electrolyte drinks and resume normal eating." }
+                ],
+                bonus: []
+            }
+        },
+        risks: ["EXTREMELY narrow therapeutic window — overdose possible with minimal dose increase", "Respiratory arrest and death (especially with alcohol or depressants)", "Choking/aspiration during unconsciousness", "Sudden involuntary sleep onset", "Rapid dependence (physical and psychological)", "Severe withdrawal requiring medical supervision", "Memory loss (anterograde amnesia)"]
+    },
+    heroin: {
+        id: "heroin", name: "Heroin (Diamorphine)", type: "Opioid", emoji: "🩸",
+        color: "#7c3aed", duration: 4,
+        dosing: {
+            "Smoked": { unit: "mg (street purity ~15–45%; adjust accordingly)", threshold: 5, light: { min: 5, max: 10 }, common: { min: 10, max: 20 }, strong: { min: 20, max: 30 }, heavy: 30, note: "⚠️ Street purity varies wildly (10–72%). Always start with a tiny test dose from any new batch. Lethal dose for opioid-naive individuals: ~30 mg pure diamorphine IV, ~60 mg pure by other routes.", source: "https://wiki.tripsit.me/wiki/Heroin" },
+            "Insufflated": { unit: "mg (street purity ~15–45%)", threshold: 5, light: { min: 5, max: 10 }, common: { min: 10, max: 20 }, strong: { min: 20, max: 30 }, heavy: 30, note: "Causes nasal mucosa and septum damage. Use personal, rounded-tip tubes. Rinse nasal passages after use.", source: "https://www.saferparty.ch/substanzen/heroin" }
+        },
+        routes: [
+            {
+                name: "Smoked", displayName: "Smoked (foil)", emoji: "🚬", isDefault: true,
+                phases: {
+                    onset: { min: 0.005, max: 0.017, label: "Onset" },
+                    come_up: { min: 0.05, max: 0.17, label: "Come-up" },
+                    peak: { min: 0.5, max: 1, label: "Peak" },
+                    come_down: { min: 1.5, max: 3, label: "Come-down" },
+                    after_effects: { min: 3, max: 8, label: "After-effects" }
+                }
+            },
+            {
+                name: "Insufflated", displayName: "Snorted", emoji: "👃",
+                phases: {
+                    onset: { min: 0.03, max: 0.08, label: "Onset" },
+                    come_up: { min: 0.08, max: 0.25, label: "Come-up" },
+                    peak: { min: 0.5, max: 1.5, label: "Peak" },
+                    come_down: { min: 1.5, max: 3, label: "Come-down" },
+                    after_effects: { min: 3, max: 8, label: "After-effects" }
+                }
+            }
+        ],
+        visualizer: { neurotoxicity: 2, cardiotoxicity: 3, dehydration: 2, sleep_deprivation: 1, impulsivity: 7 },
+        sleep_strategy: "Heroin induces sedation and sleep. Place the person in recovery position to prevent aspiration. Never leave someone nodding off unmonitored.",
+        phases: {
+            before: {
+                essential: [
+                    { short: "⚠️ LETHAL OVERDOSE RISK: Street purity varies 10–72%. Any new batch, source, or period of abstinence (even 2 days) dramatically changes overdose threshold.", detail: "Heroin purity is wildly inconsistent. Average street purity in Germany is ~18.7% but ranges from 10–72%. Pharmaceutical-grade diamorphine is approximately 5× more potent than typical street heroin. After even brief periods of abstinence (2–5 days), opioid tolerance diminishes nearly completely — returning to a previous dose after a break is the single most common cause of fatal heroin overdose.", sources: [{ label: "Drugchecking Berlin — Heroin", url: "https://drugchecking.berlin/substanzen/diamorphin-heroin" }, { label: "SaferParty — Heroin", url: "https://www.saferparty.ch/substanzen/heroin" }] },
+                    { short: "⚠️ Never use alone. Have naloxone (Narcan) available and ensure companions know how to use it.", detail: "Naloxone is an opioid antagonist that reverses respiratory depression within seconds. It is available as a nasal spray (prescription required in some countries). Every person present should know the signs of overdose (blue lips, slow/stopped breathing, unresponsiveness) and how to administer naloxone. Supervised consumption facilities offer the safest environment where available.", sources: [{ label: "Drugchecking Berlin — Heroin", url: "https://drugchecking.berlin/substanzen/diamorphin-heroin" }, { label: "TripSit — Heroin", url: "https://wiki.tripsit.me/wiki/Heroin" }] },
+                    { short: "⚠️ Never combine with alcohol, benzodiazepines, GHB/GBL, ketamine, or other depressants.", detail: "Combining opioids with any other CNS depressant causes synergistic respiratory depression that rapidly leads to unconsciousness, aspiration, and death. This is the leading cause of opioid-related fatalities worldwide. Even small amounts of alcohol with heroin can be fatal.", sources: [{ label: "TripSit — Drug Combinations", url: "https://combo.tripsit.me" }, { label: "checkit! Wien — Heroin", url: "https://checkit.wien/substanz/heroin/" }, { label: "SaferParty — Heroin", url: "https://www.saferparty.ch/substanzen/heroin" }] },
+                    { short: "Test dose: Always start with a tiny amount from any new batch.", detail: "Use drug-checking services where available. With any new source or batch, start with a fraction of what you would normally use. Purity fluctuations mean a dose that was safe last week may be lethal today. Do not rely on dosing advice from regular users — their tolerance creates lethal doses for those without it.", sources: [{ label: "SaferParty — Heroin", url: "https://www.saferparty.ch/substanzen/heroin" }, { label: "Drugchecking Berlin — Heroin", url: "https://drugchecking.berlin/substanzen/diamorphin-heroin" }] }
+                ],
+                bonus: [
+                    { short: "Route: Smoking (foil) is significantly safer than injection.", detail: "Smoking produces a slower onset and lower peak blood concentration than injection, substantially reducing overdose risk. Injection carries additional risks: vein collapse, abscesses, endocarditis, and blood-borne infections (HIV, Hepatitis C). If injecting, use sterile equipment exclusively and never share needles, water, or filters.", sources: [{ label: "Drugchecking Berlin — Heroin", url: "https://drugchecking.berlin/substanzen/diamorphin-heroin" }] },
+                    { short: "Smoking equipment: Use uncoated aluminium foil and personal tubes. Do not share.", detail: "Sharing smoking tubes transmits Hepatitis C and herpes. Use only uncoated aluminium foil (food-grade). Each person should have their own tube with a smooth, rounded tip to prevent oral cuts.", sources: [{ label: "checkit! Wien — Heroin", url: "https://checkit.wien/substanz/heroin/" }] }
+                ]
+            },
+            during: {
+                focus: "Preventing respiratory arrest and aspiration.",
+                essential: [
+                    { short: "⚠️ OVERDOSE: Blue lips/fingertips, slow or stopped breathing, unresponsiveness → CALL 112 IMMEDIATELY. Administer naloxone if available.", detail: "Opioid overdose causes life-threatening respiratory depression. Breathing slows to 2–4 breaths per minute or stops entirely. Blue-tinted cold skin, blood pressure collapse, pinpoint pupils, and unresponsiveness are emergency signs. Place the person in recovery position, call emergency services, and administer naloxone nasal spray if available. Naloxone wears off faster than heroin — the person may relapse into overdose and need repeated doses.", sources: [{ label: "Drugchecking Berlin — Heroin", url: "https://drugchecking.berlin/substanzen/diamorphin-heroin" }, { label: "checkit! Wien — Heroin", url: "https://checkit.wien/substanz/heroin/" }] },
+                    { short: "⚠️ Speedball danger: Never combine heroin with cocaine or stimulants.", detail: "Stimulants increase respiration rate, masking the respiratory depression caused by opioids. When the stimulant wears off first, the full opioid dose may suddenly overwhelm the respiratory system, causing delayed fatal respiratory arrest. This combination causes extreme cardiovascular strain.", sources: [{ label: "TripSit — Drug Combinations", url: "https://combo.tripsit.me" }, { label: "SaferParty — Heroin", url: "https://www.saferparty.ch/substanzen/heroin" }] },
+                    { short: "Nausea: Vomiting is common. Stay upright or in recovery position.", detail: "Heroin commonly causes nausea and vomiting, especially at higher doses or in opioid-naive users. If someone is sedated and vomiting, the suppressed gag reflex means aspiration (inhaling vomit) is a severe risk. Always ensure they are on their side in the recovery position." }
+                ],
+                bonus: [
+                    { short: "Avoid operating machinery, driving, or swimming.", detail: "Heroin severely impairs coordination, reaction time, and consciousness. The sedative effects can cause sudden loss of consciousness (\"nodding\") without warning." }
+                ]
+            },
+            after: {
+                essential: [
+                    { short: "⚠️ Recovery position: If sedated, place on their side. Monitor breathing continuously.", detail: "Opioid-induced sedation combined with nausea creates a high aspiration risk. The person must be placed on their side (recovery position) and breathing must be monitored continuously. Never leave someone nodding off alone.", sources: [{ label: "Drugchecking Berlin — Heroin", url: "https://drugchecking.berlin/substanzen/diamorphin-heroin" }] },
+                    { short: "⚠️ Dependence: Physical dependence develops rapidly with regular use. Withdrawal begins 8–12 hours after last dose.", detail: "Regular multi-week use causes tolerance, requiring increased amounts. Withdrawal symptoms include sweating, chills, runny eyes/nose, vomiting, diarrhea, severe muscle cramps, insomnia, and extreme anxiety. Medical supervision for withdrawal is strongly recommended.", sources: [{ label: "SaferParty — Heroin", url: "https://www.saferparty.ch/substanzen/heroin" }, { label: "checkit! Wien — Heroin", url: "https://checkit.wien/substanz/heroin/" }] }
+                ],
+                bonus: [
+                    { short: "Hydration and light nutrition when alert.", detail: "Once the user is alert and oriented, rehydrate with water or electrolyte drinks. Heroin suppresses appetite and causes constipation — light, easily digestible meals support recovery." }
+                ]
+            },
+            next_morning: {
+                essential: [
+                    { short: "Do not redose to avoid withdrawal. Maintain consumption breaks of multiple days.", detail: "The desire to avoid withdrawal symptoms drives compulsive use patterns. Each additional use deepens physical dependence. Maintaining breaks of multiple days between uses significantly reduces dependence risk, though this remains a harm reduction measure — no pattern of heroin use is safe.", sources: [{ label: "SaferParty — Heroin", url: "https://www.saferparty.ch/substanzen/heroin" }] }
+                ],
+                bonus: [
+                    { short: "Recovery: Rehydrate, eat balanced meals, prioritise sleep.", detail: "Heroin disrupts normal appetite, hydration, and bowel function. Fibre-rich foods help counter constipation. Rest and normal sleep cycles support physical recovery." }
+                ]
+            }
+        },
+        risks: ["Fatal respiratory depression (especially with other depressants)", "Aspiration (choking on vomit while unconscious)", "Extreme overdose risk after tolerance break (even 2 days)", "Wildly variable street purity (10–72%)", "Rapid physical and psychological dependence", "Severe withdrawal requiring medical supervision", "Blood-borne infections from shared equipment (HIV, Hepatitis C)"]
+    },
+    methamphetamine: {
+        id: "methamphetamine", name: "Methamphetamine", type: "Stimulant", emoji: "💎",
+        color: "#0ea5e9", duration: 12,
+        dosing: {
+            "Oral": { unit: "mg", threshold: 5, light: { min: 5, max: 10 }, common: { min: 10, max: 25 }, strong: { min: 25, max: 50 }, heavy: 50, note: "Oral is the safest route. Full stomach delays absorption. Crystal purity averages ~98% — much more potent than street amphetamine.", source: "https://www.saferparty.ch/substanzen/methamphetamin" },
+            "Insufflated": { unit: "mg", threshold: 5, light: { min: 5, max: 10 }, common: { min: 10, max: 30 }, strong: { min: 30, max: 50 }, heavy: 50, note: "Causes severe nasal mucosa damage. Use personal rounded-tip tubes. Do not share equipment.", source: "https://www.saferparty.ch/substanzen/methamphetamin" },
+            "Smoked": { unit: "mg", threshold: 5, light: { min: 5, max: 10 }, common: { min: 10, max: 20 }, strong: { min: 20, max: 60 }, heavy: 60, note: "Smoking causes lung damage and elevated cancer risk. Rapid onset increases addiction potential.", source: "https://psychonautwiki.org/wiki/Methamphetamine" }
+        },
+        routes: [
+            {
+                name: "Oral", displayName: "Swallowed", emoji: "💊", isDefault: true,
+                phases: {
+                    onset: { min: 0.5, max: 2, label: "Onset" },
+                    come_up: { min: 0.5, max: 1, label: "Come-up" },
+                    peak: { min: 3, max: 6, label: "Peak" },
+                    come_down: { min: 3, max: 6, label: "Come-down" },
+                    after_effects: { min: 12, max: 70, label: "After-effects" }
+                }
+            },
+            {
+                name: "Insufflated", displayName: "Snorted", emoji: "👃",
+                phases: {
+                    onset: { min: 0.02, max: 0.08, label: "Onset" },
+                    come_up: { min: 0.17, max: 0.5, label: "Come-up" },
+                    peak: { min: 2, max: 5, label: "Peak" },
+                    come_down: { min: 3, max: 6, label: "Come-down" },
+                    after_effects: { min: 12, max: 70, label: "After-effects" }
+                }
+            },
+            {
+                name: "Smoked", displayName: "Smoked", emoji: "🚬",
+                phases: {
+                    onset: { min: 0.001, max: 0.03, label: "Onset" },
+                    come_up: { min: 0.08, max: 0.25, label: "Come-up" },
+                    peak: { min: 1, max: 3, label: "Peak" },
+                    come_down: { min: 3, max: 6, label: "Come-down" },
+                    after_effects: { min: 12, max: 70, label: "After-effects" }
+                }
+            }
+        ],
+        visualizer: { neurotoxicity: 8, cardiotoxicity: 8, dehydration: 7, sleep_deprivation: 8, impulsivity: 8 },
+        sleep_strategy: "Sleep may be impossible for 12–30+ hours. Do not redose to delay the comedown. Plan adequate recovery time. Benzodiazepines should NOT be used as sleep aids without medical supervision.",
+        phases: {
+            before: {
+                essential: [
+                    { short: "⚠️ EXTREMELY HIGH ADDICTION POTENTIAL: Methamphetamine produces one of the strongest psychological dependencies of any recreational substance.", detail: "Methamphetamine triggers simultaneous massive release of dopamine, noradrenaline, and serotonin, producing intense euphoria that the brain rapidly becomes dependent on. Very high addiction potential with both psychological and physical withdrawal symptoms. Space sessions at least 4 weeks apart to reduce (but not eliminate) dependence risk.", sources: [{ label: "SaferParty — Methamphetamine", url: "https://www.saferparty.ch/substanzen/methamphetamin" }, { label: "Drugchecking Berlin — Crystal", url: "https://drugchecking.berlin/substanzen/methamphetamin-crystal" }] },
+                    { short: "Crystal purity averages ~98%. This is NOT the same as street amphetamine (speed) — doses are far lower.", detail: "Crystal methamphetamine hydrochloride has a median purity of ~98.1%, compared to street amphetamine which is typically 10–30% pure. A dose of methamphetamine that looks similar to a speed dose can be 3–10× more pharmacologically active. Never apply amphetamine dosing knowledge to methamphetamine.", sources: [{ label: "Drugchecking Berlin — Crystal", url: "https://drugchecking.berlin/substanzen/methamphetamin-crystal" }] },
+                    { short: "Eat a balanced meal before use. Supplement with vitamins C, D and minerals (iron, calcium, magnesium).", detail: "Methamphetamine suppresses hunger, thirst, and pain perception for 6–30+ hours. The body continues to burn calories and deplete nutrients throughout. Pre-loading with balanced nutrition and supplements mitigates the severe nutritional depletion that contributes to the harsh comedown.", sources: [{ label: "SaferParty — Methamphetamine", url: "https://www.saferparty.ch/substanzen/methamphetamin" }] }
+                ],
+                bonus: [
+                    { short: "Use drug-checking services where available. Start with a small test dose.", detail: "While crystal meth purity is typically high, adulterants and substitution do occur. Drug checking confirms identity and purity. Always start with a fraction of the intended dose from a new batch." },
+                    { short: "Plan your time: Set a hard stop time and recovery period before you start.", detail: "The most dangerous pattern with methamphetamine is extending sessions to delay the comedown. Decide in advance when you will stop and ensure you have at least 24–48 hours of recovery time scheduled afterward." }
+                ]
+            },
+            during: {
+                focus: "Cardiovascular monitoring, hydration, and preventing compulsive redosing.",
+                essential: [
+                    { short: "⚠️ EMERGENCY: Chest pain, severe headache, seizures, extreme confusion, or body temperature >39°C → CALL 112 IMMEDIATELY.", detail: "Methamphetamine overdose can cause fatal pulmonary oedema, cerebral haemorrhage, cardiac arrhythmias, acute heart failure, and severe hyperthermia. These are medical emergencies requiring immediate intervention. Stroke and sudden cardiac death can occur even in young, healthy users.", sources: [{ label: "SaferParty — Methamphetamine", url: "https://www.saferparty.ch/substanzen/methamphetamin" }, { label: "checkit! Wien — Methamphetamine", url: "https://checkit.wien/substanz/methamphetamin/" }] },
+                    { short: "Do not redose. Methamphetamine lasts 6–30 hours. Redosing dramatically increases toxicity and addiction risk.", detail: "Methamphetamine is slowly metabolised by the body. Each redose adds to the total circulating dose without the previous amount being cleared. This compounds cardiovascular strain, neurotoxicity, and hyperthermia exponentially. The compulsion to redose is itself a primary danger.", sources: [{ label: "SaferParty — Methamphetamine", url: "https://www.saferparty.ch/substanzen/methamphetamin" }] },
+                    { short: "Hydration: Drink non-alcoholic fluids with electrolytes. Max 0.5L/hour.", detail: "Methamphetamine causes dehydration through elevated body temperature, vasoconstriction, and suppressed thirst. Drink steadily but avoid over-hydration. Electrolyte drinks replace sodium lost through sweating.", sources: [{ label: "checkit! Wien — Methamphetamine", url: "https://checkit.wien/substanz/methamphetamin/" }] },
+                    { short: "⚠️ Never combine with alcohol — masks overdose symptoms and causes severe organ strain.", detail: "Alcohol masks the stimulant effects, encouraging higher doses of both substances. The combination causes extreme cardiovascular stress, liver toxicity, and dramatically increases risk of aggressive/violent behaviour. When the stimulant wears off, the full sedative load of the alcohol hits — risking respiratory depression and aspiration.", sources: [{ label: "SaferParty — Methamphetamine", url: "https://www.saferparty.ch/substanzen/methamphetamin" }, { label: "Drugchecking Berlin — Crystal", url: "https://drugchecking.berlin/substanzen/methamphetamin-crystal" }] }
+                ],
+                bonus: [
+                    { short: "Take cooling breaks. Eat light foods and fruits even if not hungry.", detail: "Methamphetamine elevates core body temperature and suppresses appetite. Active cooling (moving to ventilated areas, cold water on wrists) and forcing light meals maintain blood sugar and prevent dangerous hyperthermia." },
+                    { short: "⚠️ Drug interaction: SSRIs/SNRIs (fluoxetine, sertraline, paroxetine, duloxetine, bupropion) dangerously potentiate methamphetamine.", detail: "These medications inhibit the CYP2D6 liver enzyme responsible for metabolising methamphetamine, causing dangerously elevated and prolonged blood concentrations. If you are taking any psychiatric medication, consult a doctor before use.", sources: [{ label: "Drugchecking Berlin — Crystal", url: "https://drugchecking.berlin/substanzen/methamphetamin-crystal" }] }
+                ]
+            },
+            after: {
+                essential: [
+                    { short: "Crash: Expect severe depression, exhaustion, irritability, and intense hunger (24–72 hours).", detail: "The methamphetamine comedown is one of the most severe of any stimulant. Massive dopamine depletion produces profound depression, anxiety, and exhaustion. Irritability, concentration problems, and insomnia may persist for days. This is temporary and will resolve — do not redose to manage the comedown.", sources: [{ label: "Drugchecking Berlin — Crystal", url: "https://drugchecking.berlin/substanzen/methamphetamin-crystal" }, { label: "checkit! Wien — Methamphetamine", url: "https://checkit.wien/substanz/methamphetamin/" }] },
+                    { short: "Environment: Dark, quiet, safe space. Trusted companions.", detail: "Post-methamphetamine states can include paranoia, anxiety, and agitation. A calm, controlled environment with trusted people reduces psychological distress and prevents risky behaviour during the comedown." }
+                ],
+                bonus: [
+                    { short: "Supplements: Vitamin C, magnesium, balanced meals with protein and carbohydrates.", detail: "Vitamin C supports dopamine synthesis recovery and may accelerate methamphetamine excretion. Magnesium counteracts vasoconstriction and muscle tension. Protein-rich meals provide amino acid precursors for neurotransmitter replenishment." }
+                ]
+            },
+            next_morning: {
+                essential: [
+                    { short: "Recovery takes days, not hours. Do not use stimulants to function. Rest is mandatory.", detail: "The brain requires extended time to replenish depleted dopamine, noradrenaline, and serotonin stores. Using caffeine or other stimulants to push through the comedown delays recovery and compounds neurotoxicity. Plan for 24–48+ hours of rest and reduced function.", sources: [{ label: "SaferParty — Methamphetamine", url: "https://www.saferparty.ch/substanzen/methamphetamin" }] }
+                ],
+                bonus: [
+                    { short: "Mental health: If anxiety, paranoia, or suicidal thoughts persist beyond 72 hours, seek professional help.", detail: "Methamphetamine use can trigger substance-induced psychosis including paranoia, delusions, and hallucinations. If psychiatric symptoms persist beyond the expected comedown window (2–4 days), this may indicate a more serious reaction requiring medical attention.", sources: [{ label: "checkit! Wien — Methamphetamine", url: "https://checkit.wien/substanz/methamphetamin/" }, { label: "SaferParty — Methamphetamine", url: "https://www.saferparty.ch/substanzen/methamphetamin" }] }
+                ]
+            }
+        },
+        risks: ["Fatal cardiovascular events (stroke, heart attack, arrhythmia)", "Severe hyperthermia", "Substance-induced psychosis (paranoia, hallucinations)", "One of the highest addiction potentials of any recreational substance", "Extreme neurotoxicity and suspected irreversible brain changes", "Severe comedown lasting 2–4 days (depression, anxiety, exhaustion)", "Significantly elevated Parkinson's disease risk with chronic use"]
     }
 };

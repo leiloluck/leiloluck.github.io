@@ -104,12 +104,18 @@ The navigation buttons in the substance selector are ordered as follows:
 | 9 | `mushrooms` | Mushrooms (Psilocybin) | Psychedelic | 🍄 | `#a16207` (earthy brown) | Growing in popularity; shorter and milder than LSD |
 | 10 | `2cb` | 2C-B | Psychedelic | 🔮 | `#ec4899` (pink) | Niche but increasingly common in European club scene |
 | 11 | `4mmc` | 4-MMC (Mephedrone) | Stimulant/Empathogen | 💥 | `#d946ef` (fuchsia) | Regional surge, high-risk profile, compulsive redosing |
+| 12 | `ghb` | GHB / GBL | Depressant | 💧 | `#64748b` (slate) | Growing prevalence; extremely narrow therapeutic index, critical to cover |
+| 13 | `heroin` | Heroin (Diamorphine) | Opioid | 🩸 | `#7c3aed` (violet) | Opioid crisis context; critical overdose/naloxone education |
+| 14 | `methamphetamine` | Methamphetamine | Stimulant | 💎 | `#0ea5e9` (sky blue) | Growing European prevalence; extreme neurotoxicity and addiction potential |
 
 ### 3.3 Future Additions (Considered)
 
-- **GHB/GBL** — Growing European prevalence, extremely narrow therapeutic index, critical to cover.
 - **Nitrous Oxide (N₂O)** — Common at festivals, risks often underestimated (B12 depletion, hypoxia).
 - **Benzodiazepines** — Relevant for combination risks and recovery contexts.
+
+### 3.4 Navigation Layout Note
+
+When the total number of substance buttons is **odd**, the Sober / Baseline button spans full width on the 2-column mobile grid (`col-span-2 sm:col-span-1`), ensuring no orphaned button on the last row.
 
 ---
 

@@ -99,13 +99,13 @@ The navigation buttons in the substance selector are ordered as follows:
 | 4 | `mdma` | MDMA | Empathogen | 💖 | `#2563eb` (blue) | Most common empathogen in European nightlife |
 | 5 | `cocaine` | Cocaine | Stimulant | ❄️ | `#94a3b8` (icy silver) | Rising prevalence across Europe, particularly Western |
 | 6 | `amphetamine` | Amphetamine (Speed) | Stimulant | ⚡ | `#f97316` (orange) | High prevalence especially in Central/Northern Europe |
-| 7 | `ketamine` | Ketamine | Dissociative | 🐴 | `#9333ea` (deep purple) | Rapidly growing in European nightlife contexts |
+| 7 | `ketamine` | Ketamine | Dissociative | 🐴 | `#14b8a6` (teal) | Rapidly growing in European nightlife contexts |
 | 8 | `lsd` | LSD | Psychedelic | 🌈 | `#06b6d4` (cyan) | Established psychedelic in festival/rave settings |
 | 9 | `mushrooms` | Mushrooms (Psilocybin) | Psychedelic | 🍄 | `#a16207` (earthy brown) | Growing in popularity; shorter and milder than LSD |
 | 10 | `2cb` | 2C-B | Psychedelic | 🔮 | `#ec4899` (pink) | Niche but increasingly common in European club scene |
 | 11 | `4mmc` | 4-MMC (Mephedrone) | Stimulant/Empathogen | 💥 | `#d946ef` (fuchsia) | Regional surge, high-risk profile, compulsive redosing |
 | 12 | `ghb` | GHB / GBL | Depressant | 💧 | `#64748b` (slate) | Growing prevalence; extremely narrow therapeutic index, critical to cover |
-| 13 | `heroin` | Heroin (Diamorphine) | Opioid | 🩸 | `#7c3aed` (violet) | Opioid crisis context; critical overdose/naloxone education |
+| 13 | `heroin` | Heroin (Diamorphine) | Opioid | 🩸 | `#dc2626` (crimson) | Opioid crisis context; critical overdose/naloxone education |
 | 14 | `methamphetamine` | Methamphetamine | Stimulant | 💎 | `#0ea5e9` (sky blue) | Growing European prevalence; extreme neurotoxicity and addiction potential |
 
 ### 3.3 Future Additions (Considered)

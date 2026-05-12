@@ -30,7 +30,8 @@
 <body class="text-gray-300 font-sans leading-relaxed">
 
     <!-- Version / Install strip -->
-    <div class="flex items-center justify-end gap-2 px-4 py-1.5 border-b border-[#2a2a28]" style="background:rgba(0,0,0,0.25)">
+    <div class="flex items-center justify-end gap-2 px-4 py-1.5 border-b border-[#2a2a28]"
+        style="background:rgba(0,0,0,0.25)">
         <span id="app-version" class="text-[11px] font-mono text-gray-600 tracking-wider"></span>
         <button id="install-btn" onclick="handleInstallBtn()"
             class="hidden text-[11px] font-mono border border-[#3a3a38] text-gray-400 hover:text-gray-200 hover:border-gray-400 px-2 py-0.5 transition-colors">
@@ -56,8 +57,9 @@
             </div>
         </div>
         <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})"
-            class="text-xs bg-[#2a2a28] hover:bg-[#3a3a38] text-gray-300 px-3 py-1.5 transition-colors border border-[#3a3a38]">
-            ↑ Top
+            class="text-gray-500 hover:text-gray-200 px-2 py-1 transition-colors opacity-50 hover:opacity-100"
+            title="Back to top">
+            <span style="display:inline-block;transform:rotate(-90deg);font-size:1.1rem;line-height:1">›</span>
         </button>
     </div>
 
@@ -76,6 +78,7 @@
             <div class="mt-4 sm:mt-0 text-right">
                 <div class="text-xs font-mono text-gray-600 uppercase tracking-widest">Current Mode</div>
                 <div id="current-mode-display" class="text-xl font-bold text-gray-100">Sober / Baseline</div>
+                <div id="current-dose-display" class="text-xs font-mono text-gray-500 mt-1 tracking-wide"></div>
             </div>
         </header>
 
@@ -106,7 +109,10 @@
             <div class="bg-[#1a1a19] p-6 border-2 border-[#2a2a28]">
                 <p class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-3">Context</p>
                 <p class="text-sm text-gray-400 leading-relaxed">
-                    This protocol applies to a <strong class="text-gray-200">long night out</strong> without any substance — typically 4–12+ hours of dancing and sustained physical exertion in warm, crowded environments with disrupted or absent sleep. Even fully sober, this is a significant physiological load.
+                    This protocol applies to a <strong class="text-gray-200">long night out</strong> without any
+                    substance — typically 4–12+ hours of dancing and sustained physical exertion in warm, crowded
+                    environments with disrupted or absent sleep. Even fully sober, this is a significant physiological
+                    load.
                 </p>
                 <div class="mt-4 flex gap-4 text-[11px] text-gray-600 font-mono uppercase tracking-wider">
                     <span>Exertion · 4–12+ h</span>
@@ -123,7 +129,8 @@
             <div id="dosing-card" class="bg-[#1a1a19] p-6 border-2 border-[#2a2a28] transition-all duration-300">
                 <!-- Route Selector (always visible) -->
                 <div id="route-selector-wrap" class="mb-4">
-                    <p class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2">Route of Administration</p>
+                    <p class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2">Route of
+                        Administration</p>
                     <div id="route-buttons" class="flex flex-wrap gap-2">
                         <!-- Injected via JS -->
                     </div>
@@ -131,11 +138,13 @@
 
                 <!-- Effect Timeline (compact, below route selector) -->
                 <div id="effect-timeline-wrap" class="mb-5 pb-5 border-b border-[#2a2a28]">
-                    <p class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-3 text-center">Effect Timeline (Estimate)</p>
+                    <p class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-3 text-center">Effect
+                        Timeline (Estimate)</p>
                     <div style="height: 80px; position: relative;">
                         <canvas id="durationBar"></canvas>
                     </div>
-                    <div id="timeline-note" class="mt-1 text-[10px] text-gray-600 italic text-center">Estimates based on PsychonautWiki data.</div>
+                    <div id="timeline-note" class="mt-1 text-[10px] text-gray-600 italic text-center">Estimates based on
+                        PsychonautWiki data.</div>
                     <!-- Phase duration legend — injected by JS -->
                     <div id="timeline-legend"></div>
                 </div>
@@ -144,23 +153,33 @@
                 <div id="dosing-tiers" class="mb-3">
                     <p class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2">Dose</p>
                     <div class="flex gap-1 w-full">
-                        <button id="tier-threshold" onclick="setIntensity('threshold')" class="tier-btn flex-1 py-2 px-1 cursor-pointer transition-all duration-200 border-2 text-center" style="--tier-color:#6b7280;--tier-bg:rgba(107,114,128,0.12)">
+                        <button id="tier-threshold" onclick="setIntensity('threshold')"
+                            class="tier-btn flex-1 py-2 px-1 cursor-pointer transition-all duration-200 border-2 text-center"
+                            style="--tier-color:#6b7280;--tier-bg:rgba(107,114,128,0.12)">
                             <span class="block text-[11px] font-bold leading-tight">Threshold</span>
                             <span id="val-threshold" class="block text-[10px] mt-0.5 opacity-70">–</span>
                         </button>
-                        <button id="tier-light" onclick="setIntensity('light')" class="tier-btn flex-[2] py-2 px-1 cursor-pointer transition-all duration-200 border-2 text-center" style="--tier-color:#22c55e;--tier-bg:rgba(34,197,94,0.12)">
+                        <button id="tier-light" onclick="setIntensity('light')"
+                            class="tier-btn flex-[2] py-2 px-1 cursor-pointer transition-all duration-200 border-2 text-center"
+                            style="--tier-color:#22c55e;--tier-bg:rgba(34,197,94,0.12)">
                             <span class="block text-[11px] font-bold leading-tight">Light</span>
                             <span id="val-light" class="block text-[10px] mt-0.5 opacity-70">–</span>
                         </button>
-                        <button id="tier-common" onclick="setIntensity('common')" class="tier-btn flex-[2] py-2 px-1 cursor-pointer transition-all duration-200 border-2 text-center" style="--tier-color:#eab308;--tier-bg:rgba(234,179,8,0.12)">
+                        <button id="tier-common" onclick="setIntensity('common')"
+                            class="tier-btn flex-[2] py-2 px-1 cursor-pointer transition-all duration-200 border-2 text-center"
+                            style="--tier-color:#eab308;--tier-bg:rgba(234,179,8,0.12)">
                             <span class="block text-[11px] font-bold leading-tight">Common</span>
                             <span id="val-common" class="block text-[10px] mt-0.5 opacity-70">–</span>
                         </button>
-                        <button id="tier-strong" onclick="setIntensity('strong')" class="tier-btn flex-[2] py-2 px-1 cursor-pointer transition-all duration-200 border-2 text-center" style="--tier-color:#f97316;--tier-bg:rgba(249,115,22,0.12)">
+                        <button id="tier-strong" onclick="setIntensity('strong')"
+                            class="tier-btn flex-[2] py-2 px-1 cursor-pointer transition-all duration-200 border-2 text-center"
+                            style="--tier-color:#f97316;--tier-bg:rgba(249,115,22,0.12)">
                             <span class="block text-[11px] font-bold leading-tight">Strong</span>
                             <span id="val-strong" class="block text-[10px] mt-0.5 opacity-70">–</span>
                         </button>
-                        <button id="tier-heavy" onclick="setIntensity('heavy')" class="tier-btn flex-1 py-2 px-1 cursor-pointer transition-all duration-200 border-2 text-center" style="--tier-color:#ef4444;--tier-bg:rgba(239,68,68,0.12)">
+                        <button id="tier-heavy" onclick="setIntensity('heavy')"
+                            class="tier-btn flex-1 py-2 px-1 cursor-pointer transition-all duration-200 border-2 text-center"
+                            style="--tier-color:#ef4444;--tier-bg:rgba(239,68,68,0.12)">
                             <span class="block text-[11px] font-bold leading-tight">Heavy</span>
                             <span id="val-heavy" class="block text-[10px] mt-0.5 opacity-70">–</span>
                         </button>
@@ -171,14 +190,27 @@
                 <div id="dose-note" class="text-xs text-gray-500 italic mb-1 hidden"></div>
                 <div id="dose-warning" class="text-xs text-red-400 font-bold mb-1 hidden"></div>
                 <div id="dose-source" class="text-[10px] text-gray-600">
-                    <a id="dose-source-link" href="#" target="_blank" rel="noopener" class="underline hover:text-gray-400 transition-opacity">Source: PsychonautWiki</a>
+                    <a id="dose-source-link" href="#" target="_blank" rel="noopener"
+                        class="underline hover:text-gray-400 transition-opacity">Source: PsychonautWiki</a>
                 </div>
             </div>
         </div>
 
         <!-- Main Content Layout -->
-        <div class="space-y-8">
+        <div class="relative">
 
+            <!-- Tabs Navigation -->
+            <div id="main-tabs" class="flex items-end mb-0 z-20 relative gap-1 px-2 hide-scrollbar overflow-x-auto sm:px-4">
+                <button onclick="switchTab('tab-risk')" id="btn-tab-risk" class="tab-btn flex-1 max-w-[150px] py-3 px-2 sm:px-4 text-[13px] sm:text-sm font-bold transition-all rounded-t-xl z-20 relative translate-y-[1px] shadow-[0_-4px_15px_rgba(0,0,0,0.3)] border-b-transparent">Risk Profile</button>
+                <button onclick="switchTab('tab-protocol')" id="btn-tab-protocol" class="tab-btn flex-1 max-w-[150px] py-3 px-2 sm:px-4 text-[13px] sm:text-sm font-bold transition-all bg-[#0a0a0a] text-gray-500 rounded-t-xl hover:bg-[#111] hover:text-gray-300 z-10 relative opacity-70 hover:opacity-100">Protocol</button>
+                <button onclick="switchTab('tab-combos')" id="btn-tab-combos" class="tab-btn flex-1 max-w-[150px] py-3 px-2 sm:px-4 text-[13px] sm:text-sm font-bold transition-all bg-[#0a0a0a] text-gray-500 rounded-t-xl hover:bg-[#111] hover:text-gray-300 z-10 relative opacity-70 hover:opacity-100">Combinations</button>
+            </div>
+
+            <!-- Folder Body Wrapper -->
+            <div id="tab-folder-body" class="border rounded-b-xl rounded-tr-xl p-3 sm:p-6 shadow-2xl relative z-10 mb-8 min-h-[400px]" style="transition: all 0.3s ease;">
+
+            <!-- TAB CONTENT: Risk Profile -->
+            <div id="tab-risk" class="tab-content space-y-8 block">
                 <!-- TOP: Estimated Risk Profile -->
                 <section class="card-transition">
                     <div class="flex items-center mb-4">
@@ -190,7 +222,8 @@
                         <div class="relative h-64 w-full">
                             <canvas id="riskChart"></canvas>
                         </div>
-                        <div id="dose-display-text" class="hidden mt-3 text-xs text-center font-semibold tracking-wide"></div>
+                        <div id="dose-display-text" class="hidden mt-3 text-xs text-center font-semibold tracking-wide">
+                        </div>
                         <p class="mt-2 text-xs text-center text-gray-600 italic">
                             Values represent estimated physiological load (Qualitative Scale).
                         </p>
@@ -203,11 +236,40 @@
                     <h3 class="font-bold mb-2 text-sm" style="color:rgba(234,179,8,0.85)">
                         Common Risks
                     </h3>
-                    <ul id="risk-list" class="list-disc list-inside text-sm space-y-1" style="color:rgba(234,179,8,0.65)">
+                    <ul id="risk-list" class="list-disc list-inside text-sm space-y-1"
+                        style="color:rgba(234,179,8,0.65)">
                         <!-- Injected via JS -->
                     </ul>
                 </div>
 
+            </div>
+
+            <!-- TAB CONTENT: Combinations -->
+            <div id="tab-combos" class="tab-content space-y-8 hidden">
+                <!-- Drug Combinations Section (hidden for sober) -->
+                <section id="combos-section" class="card-transition hidden">
+                    <div class="flex items-center mb-4">
+                        <h3 class="text-xl font-bold text-gray-100">Drug Combinations ⚗️</h3>
+                    </div>
+                    <div
+                        class="section-card bg-[#1a1a19] border-2 border-[#2a2a28] overflow-hidden transition-all duration-300">
+                        <div class="p-6">
+                            <p class="text-xs text-gray-500 mb-4">
+                                Interaction data from <a href="https://combo.tripsit.me" target="_blank" rel="noopener"
+                                    class="underline hover:text-gray-400">TripSit Drug Combination Chart</a>.
+                                This is a quick reference — always do additional research for your specific situation.
+                            </p>
+                            <div id="combos-list">
+                                <!-- Injected via JS -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+
+            <!-- TAB CONTENT: Protocol -->
+            <div id="tab-protocol" class="tab-content space-y-8 hidden">
                 <!-- Introduction Paragraph for Guide Section -->
                 <div class="bg-[#1a1a19] p-6 border border-[#2a2a28]">
                     <h2 class="text-lg font-bold text-gray-100 mb-2">Protocol Timeline 🕐</h2>
@@ -297,22 +359,29 @@
                     </div>
                 </section>
 
+            </div> <!-- End Folder Body Wrapper -->
         </div>
 
         <footer class="mt-16 border-t border-[#2a2a28] pt-8 text-center text-gray-600 text-xs">
-            <p>This guide is for harm reduction and educational purposes only. In case of medical emergency, call your local emergency number and seek professional help immediately.</p>
-            <p class="mt-2">Sources: <a href="https://psychonautwiki.org" target="_blank" class="underline hover:text-gray-400">PsychonautWiki</a>, <a href="https://www.saferparty.ch" target="_blank" class="underline hover:text-gray-400">SaferParty</a>, <a href="https://tripsit.me" target="_blank" class="underline hover:text-gray-400">TripSit</a>, <a href="https://dancesafe.org" target="_blank" class="underline hover:text-gray-400">DanceSafe</a>.</p>
+            <p>This guide is for harm reduction and educational purposes only. In case of medical emergency, call your
+                local emergency number and seek professional help immediately.</p>
+            <p class="mt-2">Sources: <a href="https://psychonautwiki.org" target="_blank"
+                    class="underline hover:text-gray-400">PsychonautWiki</a>, <a href="https://www.saferparty.ch"
+                    target="_blank" class="underline hover:text-gray-400">SaferParty</a>, <a href="https://tripsit.me"
+                    target="_blank" class="underline hover:text-gray-400">TripSit</a>, <a href="https://dancesafe.org"
+                    target="_blank" class="underline hover:text-gray-400">DanceSafe</a>.</p>
         </footer>
 
     </div>
 
     <!-- Data and application logic loaded from external files -->
+    <script src="js/comboData.js"></script>
     <script src="js/data.js"></script>
     <script src="js/app.js"></script>
 
     <!-- PWA: service worker registration + install/update button logic -->
     <script>
-        const APP_VERSION = 'v26.03';
+        const APP_VERSION = 'v26.04';
         let deferredInstallPrompt = null;
 
         // Show version

@@ -4,7 +4,7 @@
     On "Update": all caches are cleared by the page before reloading — no logic needed here.
 */
 
-const VERSION = 'v26.03';
+const VERSION = 'v26.04';
 const CACHE = `harm-reduction-${VERSION}`;
 
 // Local files to pre-cache on install
@@ -14,7 +14,9 @@ const PRECACHE = [
     './css/styles.css',
     './js/app.js',
     './js/data.js',
+    './js/comboData.js',
     './data/protocols.json',
+    './resources/tripsit-combo/combos.json',
     './manifest.json',
     './icons/icon.svg',
 ];

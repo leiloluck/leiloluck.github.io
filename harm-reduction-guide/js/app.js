@@ -15,6 +15,7 @@ let durationChart = null;
 let currentIntensity = 'common';
 let currentRouteIndex = 0;
 let _durationRoutes = null; // current routes used in duration chart (for tooltip access)
+let currentTab = 'tab-risk';
 
 // DOM refs (assigned after DOMContentLoaded)
 let navContainer, modeDisplay, introModifier, contentBefore, contentDuring,
@@ -70,6 +71,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const data = await loadProtocolData();
     if (!data) return;
 
+    // Load combo data (non-blocking — combos are supplementary)
+    await loadComboData();
+
     initNavigation();
     loadProtocol('sober');
 });
@@ -95,9 +99,11 @@ function initNavigation() {
 
         btn.onmouseenter = () => {
             if (btn.dataset.id !== currentProtocol) {
-                btn.style.backgroundColor = hexAlpha(proto.color, 0.22);
+                btn.style.backgroundColor = hexAlpha(proto.color, 0.2);
                 btn.style.borderColor = hexAlpha(proto.color, 0.7);
                 btn.style.color = proto.color;
+                btn.style.boxShadow = `0 4px 0 ${hexAlpha(proto.color, 0.6)}, 0 8px 18px ${hexAlpha(proto.color, 0.12)}`;
+                btn.style.transform = 'translateY(0)';
             }
         };
         btn.onmouseleave = () => {
@@ -111,22 +117,103 @@ function initNavigation() {
     });
 }
 
+// --- Folder Themes ---
+const FOLDER_THEMES = {
+    'tab-risk': {
+        bg: '#33110b', // Deep poppy red
+        border: '#662211',
+        text: '#ff8a66'
+    },
+    'tab-protocol': {
+        bg: '#0d1b2a', // Deep poppy blue
+        border: '#1a365d',
+        text: '#66ccff'
+    },
+    'tab-combos': {
+        bg: '#250d30', // Deep poppy purple
+        border: '#4a1b60',
+        text: '#d18aef'
+    }
+};
+
+// Tab order for slide direction
+const TAB_ORDER = ['tab-risk', 'tab-protocol', 'tab-combos'];
+
+// --- Tabs ---
+window.switchTab = function(tabId) {
+    const newIndex = TAB_ORDER.indexOf(tabId);
+    const oldIndex = TAB_ORDER.indexOf(currentTab);
+    const shouldAnimate = oldIndex !== newIndex && oldIndex >= 0;
+    const goingRight = newIndex > oldIndex;
+
+    currentTab = tabId;
+    const theme = FOLDER_THEMES[tabId];
+
+    // Hide all tab contents completely
+    document.querySelectorAll('.tab-content').forEach(el => {
+        el.style.display = 'none';
+        el.classList.add('hidden');
+        el.classList.remove('block');
+        el.classList.remove('tab-slide-in-right', 'tab-slide-in-left');
+    });
+
+    // Show target tab content with slide animation
+    const target = document.getElementById(tabId);
+    if (target) {
+        target.style.display = 'block';
+        target.classList.remove('hidden');
+        target.classList.add('block');
+        if (shouldAnimate) {
+            target.classList.add(goingRight ? 'tab-slide-in-right' : 'tab-slide-in-left');
+        }
+    }
+
+    // Update the folder body background and border
+    const folderBody = document.getElementById('tab-folder-body');
+    if (folderBody) {
+        folderBody.style.background = `linear-gradient(to bottom, ${theme.bg} 0%, rgba(13,13,12,0) 100%)`;
+        folderBody.style.borderColor = theme.border;
+        folderBody.style.borderBottomColor = 'transparent';
+    }
+
+    // Update tab buttons for "folder" styling
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        if (btn.id === 'btn-' + tabId) {
+            // Active Folder Tab
+            btn.className = 'tab-btn flex-1 max-w-[150px] py-3 px-2 sm:px-4 text-[13px] sm:text-sm font-bold transition-all rounded-t-xl z-20 relative translate-y-[1px] shadow-[0_-4px_15px_rgba(0,0,0,0.3)]';
+            btn.style.backgroundColor = theme.bg;
+            btn.style.borderColor = theme.border;
+            btn.style.borderBottomColor = 'transparent';
+            btn.style.color = theme.text;
+        } else {
+            // Inactive Tab
+            btn.className = 'tab-btn flex-1 max-w-[150px] py-3 px-2 sm:px-4 text-[13px] sm:text-sm font-bold transition-all bg-[#0a0a0a] text-gray-500 rounded-t-xl hover:bg-[#111] hover:text-gray-300 z-10 relative opacity-70 hover:opacity-100';
+            btn.style.backgroundColor = '#050505';
+            btn.style.borderColor = 'transparent';
+            btn.style.borderBottomColor = theme.border; // Sits on top of the active folder body
+            btn.style.color = '#71717a';
+        }
+    });
+};
+
 function applyButtonDefault(btn, color) {
-    btn.className = 'p-3 text-sm font-bold transition-all duration-200 border-2 cursor-pointer';
+    btn.className = 'p-3 text-sm font-bold transition-all duration-150 border-2 cursor-pointer rounded-xl';
     if (btn.dataset.wide) btn.className += ' col-span-2 sm:col-span-1';
     btn.style.backgroundColor = hexAlpha(color, 0.1);
     btn.style.borderColor = hexAlpha(color, 0.45);
     btn.style.color = hexAlpha(color, 0.85);
-    btn.style.boxShadow = 'none';
+    btn.style.boxShadow = `0 4px 0 ${hexAlpha(color, 0.5)}, 0 6px 16px ${hexAlpha(color, 0.08)}`;
+    btn.style.transform = 'translateY(0)';
 }
 
 function applyButtonActive(btn, color) {
-    btn.className = 'p-3 text-sm font-bold transition-all duration-200 border-2 cursor-pointer nav-btn-active';
+    btn.className = 'p-3 text-sm font-bold transition-all duration-150 border-2 cursor-pointer rounded-xl nav-btn-active';
     if (btn.dataset.wide) btn.className += ' col-span-2 sm:col-span-1';
-    btn.style.backgroundColor = hexAlpha(color, 0.22);
+    btn.style.backgroundColor = hexAlpha(color, 0.25);
     btn.style.borderColor = color;
     btn.style.color = color;
-    btn.style.boxShadow = `0 0 18px ${hexAlpha(color, 0.4)}, inset 0 0 0 1px ${hexAlpha(color, 0.15)}`;
+    btn.style.boxShadow = `0 4px 0 ${hexAlpha(color, 0.5)}, 0 0 18px ${hexAlpha(color, 0.4)}, 0 0 40px ${hexAlpha(color, 0.15)}`;
+    btn.style.transform = 'translateY(0)';
 }
 
 
@@ -152,6 +239,9 @@ function loadProtocol(id) {
     activeHeader.style.backgroundColor = hexAlpha(data.color, 0.1);
     activeHeader.style.borderColor = hexAlpha(data.color, 0.35);
     activeHeaderName.style.color = data.color;
+
+    // 2a. Tabs Update (keep current tab, apply color)
+    switchTab(currentTab);
 
     // 2a. Dosing panel
     currentRouteIndex = 0;
@@ -210,6 +300,9 @@ function loadProtocol(id) {
 
     // 8. Charts
     updateCharts(data, id === 'sober');
+
+    // 9. Drug Combinations
+    renderCombosSection(data);
 }
 
 // --- Dosing Panel ---
@@ -218,6 +311,8 @@ function renderDosingPanel(data) {
         dosingPanel.classList.add('hidden');
         if (durationChart) { durationChart.destroy(); durationChart = null; }
         renderTimelineLegend(null);
+        const headerDoseEl = document.getElementById('current-dose-display');
+        if (headerDoseEl) headerDoseEl.textContent = '';
         return;
     }
     dosingPanel.classList.remove('hidden');
@@ -253,10 +348,14 @@ function updateDosingDisplay(data) {
             btn.style.backgroundColor = hexAlpha(color, 0.2);
             btn.style.borderColor = color;
             btn.style.color = color;
+            btn.style.boxShadow = `0 4px 0 ${hexAlpha(color, 0.5)}, 0 0 14px ${hexAlpha(color, 0.4)}`;
+            btn.style.transform = 'translateY(0)';
         } else {
-            btn.style.backgroundColor = 'rgba(255,255,255,0.04)';
-            btn.style.borderColor = 'rgba(255,255,255,0.15)';
-            btn.style.color = 'rgba(255,255,255,0.55)';
+            btn.style.backgroundColor = 'rgba(255,255,255,0.06)';
+            btn.style.borderColor = 'rgba(255,255,255,0.18)';
+            btn.style.color = 'rgba(255,255,255,0.6)';
+            btn.style.boxShadow = '0 4px 0 rgba(0,0,0,0.45)';
+            btn.style.transform = 'translateY(0)';
         }
     });
 
@@ -277,14 +376,14 @@ function updateDosingDisplay(data) {
             btn.style.backgroundColor = hexAlpha(tierColor || color, 0.25);
             btn.style.borderColor = tierColor || color;
             btn.style.color = tierColor || color;
-            btn.style.boxShadow = `0 0 12px ${hexAlpha(tierColor || color, 0.2)}`;
-            btn.style.transform = 'scale(1.04)';
+            btn.style.boxShadow = `0 4px 0 ${hexAlpha(tierColor || color, 0.5)}, 0 0 14px ${hexAlpha(tierColor || color, 0.4)}`;
+            btn.style.transform = 'translateY(0)';
         } else {
             btn.style.backgroundColor = 'var(--tier-bg)';
             btn.style.borderColor = 'rgba(255,255,255,0.1)';
             btn.style.color = 'rgba(255,255,255,0.4)';
-            btn.style.boxShadow = 'none';
-            btn.style.transform = 'scale(1)';
+            btn.style.boxShadow = '0 4px 0 rgba(0,0,0,0.45)';
+            btn.style.transform = 'translateY(0)';
         }
     });
 
@@ -337,6 +436,18 @@ function updateDosingDisplay(data) {
         doseSourceLink.href = dose.source;
         doseSourceLink.textContent = `Source: PsychonautWiki — ${data.name} dosing`;
         doseSourceLink.parentElement.classList.remove('hidden');
+    }
+
+    // Header dose display
+    const headerDoseEl = document.getElementById('current-dose-display');
+    if (headerDoseEl) {
+        const tierLabels = { threshold: 'Threshold', light: 'Light', common: 'Common', strong: 'Strong', heavy: 'Heavy' };
+        let doseStr = '';
+        if (currentIntensity === 'threshold' && dose.threshold != null) doseStr = `${dose.threshold} ${unit}`;
+        else if (currentIntensity === 'heavy' && dose.heavy != null) doseStr = `${dose.heavy}+ ${unit}`;
+        else if (dose[currentIntensity]) doseStr = `${dose[currentIntensity].min}–${dose[currentIntensity].max} ${unit}`;
+        headerDoseEl.textContent = doseStr ? `${routeName} · ${tierLabels[currentIntensity]} · ${doseStr}` : '';
+        headerDoseEl.style.color = hexAlpha(color, 0.65);
     }
 }
 
@@ -445,6 +556,85 @@ function toggleExpand(uid) {
         el.classList.add('open');
         btn.textContent = '[-]';
     }
+}
+
+// --- Drug Combinations Section ---
+function renderCombosSection(data) {
+    const section = document.getElementById('combos-section');
+    const list = document.getElementById('combos-list');
+
+    if (!section || !list) return;
+
+    if (data.id === 'sober' || !comboData) {
+        section.classList.add('hidden');
+        return;
+    }
+
+    const combos = getSubstanceCombos(data.id);
+    if (combos.length === 0) {
+        section.classList.add('hidden');
+        return;
+    }
+
+    section.classList.remove('hidden');
+
+    // Apply substance color to section card border
+    const card = section.querySelector('.section-card');
+    if (card) card.style.borderColor = hexAlpha(data.color, 0.3);
+
+    let html = '';
+    let lastGroup = null;
+
+    combos.forEach((combo, i) => {
+        const risk = combo.riskInfo;
+
+        // Group header when risk level changes
+        if (risk.order !== lastGroup) {
+            lastGroup = risk.order;
+            html += `<div class="combo-group-header">${RISK_GROUP_HEADERS[risk.order] || ''}</div>`;
+        }
+
+        const uid = `combo-${data.id}-${i}`;
+        const hasDetail = combo.note || (combo.sources && combo.sources.length > 0);
+        const nameColor = combo.displayColor || '#d1d5db';
+
+        // Source links HTML
+        let sourcesHtml = '';
+        if (combo.sources && combo.sources.length > 0) {
+            sourcesHtml = `<div class="mt-2 pl-3 flex flex-wrap gap-x-3 gap-y-1">`
+                + combo.sources.map(s => {
+                    const label = s.title || s.author || 'Source';
+                    return `<a href="${s.url}" target="_blank" rel="noopener" class="text-[10px] opacity-50 hover:opacity-90 underline transition-opacity" style="color:${data.color}">${label}</a>`;
+                }).join('')
+                + `</div>`;
+        }
+        sourcesHtml += `<div class="mt-1 pl-3"><a href="https://combo.tripsit.me" target="_blank" rel="noopener" class="text-[10px] opacity-30 hover:opacity-60 underline transition-opacity" style="color:${data.color}">TripSit Drug Combination Chart</a></div>`;
+
+        html += `
+        <div class="combo-item" style="border-left:3px solid ${risk.color};background:${hexAlpha(risk.color, 0.04)}">
+            <div class="flex items-start justify-between gap-2">
+                <div class="flex items-center gap-2 flex-wrap min-w-0">
+                    <span class="combo-badge" style="color:${risk.color}">${risk.icon} ${risk.label}</span>
+                    <span class="text-gray-600">·</span>
+                    <span class="text-sm">
+                        ${combo.displayEmoji}
+                        <span class="font-semibold" style="color:${nameColor}">${combo.displayName}</span>
+                    </span>
+                </div>
+                ${hasDetail ? `
+                <button onclick="toggleExpand('${uid}')" class="ml-2 text-xs opacity-60 hover:opacity-100 transition-opacity font-mono flex-shrink-0" style="color:${data.color}">
+                    <span id="btn-${uid}">[+]</span>
+                </button>` : ''}
+            </div>
+            ${hasDetail ? `
+            <div id="${uid}" class="expandable-detail">
+                ${combo.note ? `<p class="mt-2 text-xs text-gray-500 leading-relaxed pl-3 border-l-2" style="border-color:${hexAlpha(risk.color, 0.3)}">${combo.note}</p>` : ''}
+                ${sourcesHtml}
+            </div>` : ''}
+        </div>`;
+    });
+
+    list.innerHTML = html;
 }
 
 // --- Charts (Dark Mode) ---
@@ -557,18 +747,18 @@ function createHistogramChart(data, labels, scores, gridColor, labelColor) {
 // Phase display metadata
 const PHASE_ORDER = ['onset', 'come_up', 'peak', 'come_down', 'after_effects'];
 const PHASE_COLORS = {
-    onset:        'rgba(156,163,175,0.55)',
-    come_up:      'rgba(96,165,250,0.65)',
-    peak:         'rgba(168,85,247,0.75)',
-    come_down:    'rgba(251,191,36,0.65)',
-    after_effects:'rgba(107,114,128,0.45)'
+    onset: 'rgba(156,163,175,0.55)',
+    come_up: 'rgba(96,165,250,0.65)',
+    peak: 'rgba(168,85,247,0.75)',
+    come_down: 'rgba(251,191,36,0.65)',
+    after_effects: 'rgba(107,114,128,0.45)'
 };
 const PHASE_NAMES = {
-    onset:        'Onset',
-    come_up:      'Come-up',
-    peak:         'Peak',
-    come_down:    'Come-down',
-    after_effects:'After-effects'
+    onset: 'Onset',
+    come_up: 'Come-up',
+    peak: 'Peak',
+    come_down: 'Come-down',
+    after_effects: 'After-effects'
 };
 
 function updateDurationChart(data, darkGridColor, darkLabelColor) {

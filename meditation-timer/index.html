@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<!-- index.html — Meditation Timer
+     Minimalist timed meditation with ambient audio fade in/out.
+     PWA: installable, offline-capable, Media Session API for lock screen. -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Meditation Timer</title>
+
+  <!-- Content Security Policy — no inline scripts/styles, same-origin only -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'">
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#c9934a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Meditate">
+  <!-- PNG required for iOS home screen icon (SVG not supported) -->
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<main class="app">
+
+  <!-- Header -->
+  <header class="header">
+    <h1>Meditation Timer</h1>
+    <p>breathe</p>
+  </header>
+
+  <!-- Countdown (always visible; shows selected duration when idle) -->
+  <section class="countdown-section">
+    <div class="countdown" id="countdown">15:00</div>
+    <p class="duration-label" id="duration-label">15 min</p>
+    <p class="status" id="status"></p>
+  </section>
+
+  <!-- Play / Pause / Reset -->
+  <section class="play-section">
+    <div class="play-controls">
+      <button class="btn-play" id="btn-play">Begin</button>
+      <button class="btn-reset hidden" id="btn-reset">Reset</button>
+    </div>
+  </section>
+
+  <!-- Sound selection -->
+  <section class="section">
+    <p class="section-label">Sound</p>
+    <div class="btn-group" id="sound-group"></div>
+  </section>
+
+  <!-- Duration selection -->
+  <section class="section">
+    <p class="section-label">Duration</p>
+    <div class="btn-group" id="duration-group"></div>
+  </section>
+
+  <!-- Footer: install + offline + version -->
+  <footer class="footer">
+    <button class="btn-small hidden" id="install-btn"></button>
+    <button class="btn-small hidden" id="offline-btn">Download for offline</button>
+    <span class="version">v12.05.26</span>
+  </footer>
+
+</main>
+
+<script src="js/app.js"></script>
+
+</body>
+</html>

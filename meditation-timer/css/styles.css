@@ -1,0 +1,278 @@
+/* styles.css — Meditation Timer
+   Warm dark palette, single screen layout (100dvh), no scroll. */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg:        #120e0a;
+  --surface:   #1e1710;
+  --border:    #3a2e22;
+  --accent:    #c9934a;
+  --accent-dim:#7a5a30;
+  --accent-bg: rgba(201, 147, 74, 0.15);
+  --text:      #f0e2cc;
+  --muted:     #8a7060;
+  --fade:      180ms ease;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  background: linear-gradient(to bottom right, #3d2900 0%, #000000 100%);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 15px;
+  line-height: 1.4;
+  /* Fill exactly the visible screen */
+  height: 100dvh;
+  height: 100vh; /* fallback */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 20px;
+}
+
+/* ── App shell: one full-height column ── */
+
+.app {
+  width: 100%;
+  max-width: 420px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  /* Respect notch / home indicator */
+  padding-top: max(env(safe-area-inset-top, 0px), 18px);
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 14px);
+}
+
+/* ── Header ── */
+
+.header {
+  text-align: center;
+  padding-bottom: 4px;
+  flex-shrink: 0;
+}
+
+.header h1 {
+  font-size: 17px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: var(--text);
+}
+
+.header p {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.18em;
+  margin-top: 2px;
+}
+
+/* ── Countdown (middle, flexible height) ── */
+
+.countdown-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 80px;
+}
+
+.countdown {
+  font-size: 72px;
+  font-weight: 200;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.duration-label {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  min-height: 14px;
+  text-align: center;
+  opacity: 0.5;
+}
+
+.status {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  min-height: 14px;
+  text-align: center;
+}
+
+/* ── Play button ── */
+
+.play-section {
+  flex-shrink: 0;
+  padding-bottom: 20px;
+}
+
+.play-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-play {
+  flex: 1;
+  padding: 14px;
+  font-size: 15px;
+  letter-spacing: 0.1em;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background var(--fade), color var(--fade);
+}
+
+.btn-play:hover:not(:disabled) {
+  background: var(--accent-bg);
+}
+
+.btn-play:disabled {
+  border-color: var(--border);
+  color: var(--muted);
+  cursor: default;
+}
+
+.btn-reset {
+  padding: 14px 20px;
+  font-size: 15px;
+  letter-spacing: 0.1em;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color var(--fade), color var(--fade);
+}
+
+.btn-reset:hover {
+  border-color: var(--accent-dim);
+  color: var(--text);
+}
+
+/* ── Section ── */
+
+.section {
+  flex-shrink: 0;
+  margin-bottom: 14px;
+}
+
+.section-label {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 7px;
+}
+
+/* ── Button group ── */
+
+.btn-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.btn {
+  flex: 1 1 auto;
+  min-width: 60px;
+  padding: 9px 10px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color var(--fade), color var(--fade), background var(--fade);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.btn:hover:not(:disabled) {
+  border-color: var(--accent-dim);
+  color: var(--text);
+}
+
+/* Selected: solid amber background for clear visibility */
+.btn.selected {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.btn.selected:hover:not(:disabled) {
+  background: rgba(201, 147, 74, 0.25);
+}
+
+.btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* ── Footer ── */
+
+.footer {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-top: 4px;
+}
+
+.btn-small {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 10px;
+  font-family: inherit;
+  padding: 4px 9px;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: border-color var(--fade), color var(--fade);
+}
+
+.btn-small:hover:not(:disabled) {
+  border-color: var(--muted);
+  color: var(--text);
+}
+
+.btn-small:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.version {
+  font-size: 10px;
+  color: var(--muted);
+  opacity: 0.35;
+  letter-spacing: 0.04em;
+}
+
+/* ── Very small screens ── */
+
+@media (max-height: 600px) {
+  .countdown { font-size: 52px; }
+  .play-section { padding-bottom: 14px; }
+  .section { margin-bottom: 10px; }
+}

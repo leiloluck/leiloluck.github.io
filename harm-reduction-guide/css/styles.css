@@ -1,10 +1,15 @@
 /*
     styles.css — Dark mode styles for Harm Reduction Protocols Dashboard.
     Handles: transitions, expandable items, scrollbar, dark chart containers.
-    Design: Sharp-cornered, high-contrast, OKLCH color palette. Background gradient managed by JS (scroll-reactive).
+    Design: Sharp-cornered, high-contrast, OKLCH color palette.
 */
 
-/* ===== Base ===== */
+/* ===== CSS Custom Properties ===== */
+:root {
+    --accent-color: #78716c;
+}
+
+/* ===== Animated Background ===== */
 html {
     min-height: 100%;
     background: linear-gradient(
@@ -15,11 +20,37 @@ html {
         oklch(5% 0.015 255) 75%,
         oklch(2% 0.005 250) 100%
     );
+    background-size: 100% 200%;
+    animation: bgShift 30s ease-in-out infinite alternate;
+    position: relative;
+}
+
+/* Subtle color accent overlay — fades in when a substance is selected */
+html::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 10%, var(--accent-color) 0%, transparent 65%);
+    opacity: 0;
+    transition: opacity 1.8s ease;
+    pointer-events: none;
+    z-index: 0;
+}
+
+html.accent-active::before {
+    opacity: 0.13;
+}
+
+@keyframes bgShift {
+    0%   { background-position: 0% 0%; }
+    100% { background-position: 0% 100%; }
 }
 
 body {
     font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
     background: transparent;
+    position: relative;
+    z-index: 1;
 }
 
 /* ===== Transitions ===== */
@@ -186,7 +217,7 @@ button:focus {
     left: -70%;
     width: 50%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+    background: linear-gradient(90deg, transparent, rgba(0,0,0,0.06), transparent);
     animation: navBtnSweep 3s ease-in-out infinite;
     pointer-events: none;
 }
@@ -200,7 +231,7 @@ button:focus {
 
 @keyframes navBtnPulse {
     0%, 100% { filter: brightness(1); }
-    50%       { filter: brightness(1.15); }
+    50%       { filter: brightness(0.94); }
 }
 
 /* ===== Drug Combinations ===== */

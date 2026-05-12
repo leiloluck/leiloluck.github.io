@@ -210,7 +210,7 @@ const _inlineProtocols = {
     },
     ketamine: {
         id: "ketamine", name: "Ketamine", type: "Dissociative", emoji: "🐴",
-        color: "#9333ea", duration: 1.5,
+        color: "#14b8a6", duration: 1.5,
         dosing: {
             "Insufflated": { unit: "mg", threshold: 5, light: { min: 10, max: 30 }, common: { min: 30, max: 75 }, strong: { min: 75, max: 150 }, heavy: 150, source: "https://psychonautwiki.org/wiki/Ketamine" },
             "Oral": { unit: "mg", threshold: 50, light: { min: 50, max: 100 }, common: { min: 100, max: 300 }, strong: { min: 300, max: 450 }, heavy: 450, note: "Low oral bioavailability (~17–20%). Much higher doses needed.", source: "https://psychonautwiki.org/wiki/Ketamine" }
@@ -849,7 +849,7 @@ const _inlineProtocols = {
     },
     heroin: {
         id: "heroin", name: "Heroin (Diamorphine)", type: "Opioid", emoji: "🩸",
-        color: "#7c3aed", duration: 4,
+        color: "#dc2626", duration: 4,
         dosing: {
             "Smoked": { unit: "mg (street purity ~15–45%; adjust accordingly)", threshold: 5, light: { min: 5, max: 10 }, common: { min: 10, max: 20 }, strong: { min: 20, max: 30 }, heavy: 30, note: "⚠️ Street purity varies wildly (10–72%). Always start with a tiny test dose from any new batch. Lethal dose for opioid-naive individuals: ~30 mg pure diamorphine IV, ~60 mg pure by other routes.", source: "https://wiki.tripsit.me/wiki/Heroin" },
             "Insufflated": { unit: "mg (street purity ~15–45%)", threshold: 5, light: { min: 5, max: 10 }, common: { min: 10, max: 20 }, strong: { min: 20, max: 30 }, heavy: 30, note: "Causes nasal mucosa and septum damage. Use personal, rounded-tip tubes. Rinse nasal passages after use.", source: "https://www.saferparty.ch/substanzen/heroin" }

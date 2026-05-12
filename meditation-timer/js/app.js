@@ -55,6 +55,9 @@ let gainNode    = null;
 let audioEl     = null;
 let mediaSource = null;
 
+let dongAudio1  = null;
+let dongAudio2  = null;
+
 function ensureAudio() {
   if (audioEl) return;
 
@@ -63,6 +66,11 @@ function ensureAudio() {
   audioEl.src = selectedSound.file;
   audioEl.loop = selectedSound.type === 'loop';
   audioEl.preload = 'metadata';
+
+  dongAudio1 = new Audio('./resources/Single bowl sound.mp3');
+  dongAudio1.preload = 'auto';
+  dongAudio2 = new Audio('./resources/Single bowl sound.mp3');
+  dongAudio2.preload = 'auto';
 
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   mediaSource = audioCtx.createMediaElementSource(audioEl);
@@ -261,6 +269,17 @@ function onSessionEnd() {
   clearTimeout(fadeOutTimeout);
   clearTimeout(intervalBeatTimeout);
   state = 'finishing';
+
+  if (dongAudio1) {
+    dongAudio1.currentTime = 0;
+    dongAudio1.play().catch(() => {});
+  }
+  setTimeout(() => {
+    if (dongAudio2) {
+      dongAudio2.currentTime = 0;
+      dongAudio2.play().catch(() => {});
+    }
+  }, 4000);
 
   // Fade-out ramp is already running via scheduleUnfadeOut. Wait for it, then clean up.
   const fades = scaledFades(sessionDurationMs);

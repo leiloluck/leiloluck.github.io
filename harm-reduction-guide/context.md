@@ -84,29 +84,29 @@ The `/resources/` directory contains the raw reference material organised by sou
 
 ### 3.1 Selection Criteria
 
-Substances are selected based on **prevalence of recreational use in Europe**, sourced from the EMCDDA (European Monitoring Centre for Drugs and Drug Addiction) European Drug Report and related surveys. The focus is on substances most commonly encountered at festivals, nightlife events, and social gatherings in European settings.
+Substances are selected based on **prevalence of recreational use in Europe**, sourced from the EMCDDA European Drug Report. The navigation order follows a pharmacological gradient — from stimulating through psychedelic/dissociative to sedating — so that adjacent buttons share similar effect profiles. Colours are assigned by drug class: warm tones (amber→orange→red) for stimulants, pink/fuchsia for empathogens, cool blues/purples for psychedelics, teal for dissociatives, green for cannabis, blue/indigo for depressants, and crimson for opioids.
 
-### 3.2 Current Substance Order (by European prevalence)
+### 3.2 Current Substance Order (by pharmacological class)
 
-The navigation buttons in the substance selector are ordered as follows:
+Substances are ordered to form a pharmacological gradient — from stimulating upward through psychedelic and dissociative to sedating downward. This creates an intuitive visual spectrum where neighboring buttons share similar effect profiles and colour families.
 
-| # | ID | Name | Type | Emoji | Colour | Rationale |
+| # | ID | Name | Type | Emoji | Colour | Class Theme |
 |---|---|---|---|---|---|---|
-| 0 | `sober` | Sober / Baseline | Baseline | 🧠 | `#78716c` (warm gray) | Always first. The default. |
-| 1 | `alcohol` | Alcohol | Depressant | 🍺 | `#ef4444` (red) | Most widely used substance in Europe by a large margin |
-| 2 | `caffeine` | Caffeine | Stimulant | ☕ | `#ca8a04` (amber-gold, coffee) | Ubiquitous, frequently combined, often underestimated |
-| 3 | `cannabis` | Cannabis | Depressant/Psychedelic | 🌿 | `#22c55e` (green) | Most commonly used illicit substance in Europe |
-| 4 | `mdma` | MDMA | Empathogen | 💖 | `#2563eb` (blue) | Most common empathogen in European nightlife |
-| 5 | `cocaine` | Cocaine | Stimulant | ❄️ | `#94a3b8` (icy silver) | Rising prevalence across Europe, particularly Western |
-| 6 | `amphetamine` | Amphetamine (Speed) | Stimulant | ⚡ | `#f97316` (orange) | High prevalence especially in Central/Northern Europe |
-| 7 | `ketamine` | Ketamine | Dissociative | 🐴 | `#14b8a6` (teal) | Rapidly growing in European nightlife contexts |
-| 8 | `lsd` | LSD | Psychedelic | 🌈 | `#06b6d4` (cyan) | Established psychedelic in festival/rave settings |
-| 9 | `mushrooms` | Mushrooms (Psilocybin) | Psychedelic | 🍄 | `#a16207` (earthy brown) | Growing in popularity; shorter and milder than LSD |
-| 10 | `2cb` | 2C-B | Psychedelic | 🔮 | `#ec4899` (pink) | Niche but increasingly common in European club scene |
-| 11 | `4mmc` | 4-MMC (Mephedrone) | Stimulant/Empathogen | 💥 | `#d946ef` (fuchsia) | Regional surge, high-risk profile, compulsive redosing |
-| 12 | `ghb` | GHB / GBL | Depressant | 💧 | `#64748b` (slate) | Growing prevalence; extremely narrow therapeutic index, critical to cover |
-| 13 | `heroin` | Heroin (Diamorphine) | Opioid | 🩸 | `#dc2626` (crimson) | Opioid crisis context; critical overdose/naloxone education |
-| 14 | `methamphetamine` | Methamphetamine | Stimulant | 💎 | `#0ea5e9` (sky blue) | Growing European prevalence; extreme neurotoxicity and addiction potential |
+| 0 | `sober` | Sober / Baseline | Baseline | 🧠 | `#78716c` (warm gray) | Neutral — always first |
+| 1 | `caffeine` | Caffeine | Stimulant | ☕ | `#ca8a04` (amber) | Stimulants: warm amber→red |
+| 2 | `cocaine` | Cocaine | Stimulant | ❄️ | `#d97706` (warm amber) | |
+| 3 | `amphetamine` | Amphetamine (Speed) | Stimulant | ⚡ | `#f97316` (orange) | |
+| 4 | `methamphetamine` | Methamphetamine | Stimulant | 💎 | `#ef4444` (red) | Most extreme stimulant |
+| 5 | `mdma` | MDMA | Empathogen | 💖 | `#ec4899` (pink) | Empathogens: pink/fuchsia |
+| 6 | `4mmc` | 4-MMC (Mephedrone) | Stimulant/Empathogen | 💥 | `#d946ef` (fuchsia) | |
+| 7 | `lsd` | LSD | Psychedelic | 🌈 | `#06b6d4` (cyan) | Psychedelics: cool blues/purples |
+| 8 | `mushrooms` | Mushrooms (Psilocybin) | Psychedelic | 🍄 | `#8b5cf6` (violet) | |
+| 9 | `2cb` | 2C-B | Psychedelic | 🔮 | `#a855f7` (orchid) | |
+| 10 | `ketamine` | Ketamine | Dissociative | 🐴 | `#14b8a6` (teal) | Dissociative — between psychedelics & depressants |
+| 11 | `cannabis` | Cannabis | Depressant/Psychedelic | 🌿 | `#22c55e` (green) | Transitional — unique green |
+| 12 | `alcohol` | Alcohol | Depressant | 🍺 | `#3b82f6` (blue) | Depressants: cool blues |
+| 13 | `ghb` | GHB / GBL | Depressant | 💧 | `#6366f1` (indigo) | |
+| 14 | `heroin` | Heroin (Diamorphine) | Opioid | 🩸 | `#dc2626` (crimson) | Opioid — warning red |
 
 ### 3.3 Future Additions (Considered)
 

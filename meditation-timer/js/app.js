@@ -57,6 +57,7 @@ let mediaSource = null;
 
 let dongAudio1  = null;
 let dongAudio2  = null;
+let dongAudio3  = null;
 
 function ensureAudio() {
   if (audioEl) return;
@@ -71,6 +72,8 @@ function ensureAudio() {
   dongAudio1.preload = 'auto';
   dongAudio2 = new Audio('./resources/Single bowl sound.mp3');
   dongAudio2.preload = 'auto';
+  dongAudio3 = new Audio('./resources/Single bowl sound.mp3');
+  dongAudio3.preload = 'auto';
 
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   mediaSource = audioCtx.createMediaElementSource(audioEl);
@@ -270,6 +273,9 @@ function onSessionEnd() {
   clearTimeout(intervalBeatTimeout);
   state = 'finishing';
 
+  document.body.classList.add('session-complete');
+
+  // Triple bell — all three within one second
   if (dongAudio1) {
     dongAudio1.currentTime = 0;
     dongAudio1.play().catch(() => {});
@@ -279,10 +285,16 @@ function onSessionEnd() {
       dongAudio2.currentTime = 0;
       dongAudio2.play().catch(() => {});
     }
-  }, 4000);
+  }, 400);
+  setTimeout(() => {
+    if (dongAudio3) {
+      dongAudio3.currentTime = 0;
+      dongAudio3.play().catch(() => {});
+    }
+  }, 800);
 
-  // Fade-out ramp is already running via scheduleUnfadeOut. Wait for it, then clean up.
-  const fades = scaledFades(sessionDurationMs);
+  // Fade-out ramp is already running via scheduleUnfadeOut.
+  // Clean up sooner after the bells finish.
   setTimeout(() => {
     if (audioEl) audioEl.pause();
     if (gainNode) {
@@ -291,9 +303,10 @@ function onSessionEnd() {
     }
     navigator.mediaSession && (navigator.mediaSession.playbackState = 'none');
     resetUI();
+    document.body.classList.remove('session-complete');
     setStatus('session complete');
     setTimeout(() => setStatus(''), 3000);
-  }, fades.out * 1000 + 300);
+  }, 3500);
 }
 
 // ── Gain helpers ─────────────────────────────────────────────────────────────
@@ -404,6 +417,7 @@ function resetUI() {
   state = 'idle';
   elapsedMs = 0;
   startTimestamp = null;
+  document.body.classList.remove('session-complete');
   showIdleCountdown();
   setPlayBtn('play');
 }

@@ -5,8 +5,8 @@
     Depends on: data.js (must be loaded first), Chart.js CDN, Tailwind CDN.
 */
 
-// Display order (by European prevalence in festival/nightlife contexts)
-const SUBSTANCE_ORDER = ['sober', 'alcohol', 'caffeine', 'cannabis', 'mdma', 'cocaine', 'amphetamine', 'ketamine', 'lsd', 'mushrooms', '2cb', '4mmc', 'ghb', 'heroin', 'methamphetamine'];
+// Display order by pharmacological class (stimulants → empathogens → psychedelics → dissociatives → depressants → opioids)
+const SUBSTANCE_ORDER = ['sober', 'caffeine', 'cocaine', 'amphetamine', 'methamphetamine', 'mdma', '4mmc', 'lsd', 'mushrooms', '2cb', 'ketamine', 'cannabis', 'alcohol', 'ghb', 'heroin'];
 
 // State
 let currentProtocol = 'sober';
@@ -99,10 +99,10 @@ function initNavigation() {
 
         btn.onmouseenter = () => {
             if (btn.dataset.id !== currentProtocol) {
-                btn.style.backgroundColor = '#f5f5f5';
-                btn.style.borderColor = hexAlpha(proto.color, 0.85);
-                btn.style.color = '#1a1a1a';
-                btn.style.boxShadow = `0 4px 0 ${hexAlpha(proto.color, 0.25)}, 0 8px 20px ${hexAlpha(proto.color, 0.15)}`;
+                btn.style.backgroundColor = hexAlpha(proto.color, 0.2);
+                btn.style.borderColor = hexAlpha(proto.color, 0.7);
+                btn.style.color = proto.color;
+                btn.style.boxShadow = `0 4px 0 ${hexAlpha(proto.color, 0.6)}, 0 8px 18px ${hexAlpha(proto.color, 0.12)}`;
                 btn.style.transform = 'translateY(0)';
             }
         };
@@ -199,20 +199,20 @@ window.switchTab = function(tabId) {
 function applyButtonDefault(btn, color) {
     btn.className = 'p-3 text-sm font-bold transition-all duration-150 border-2 cursor-pointer rounded-xl';
     if (btn.dataset.wide) btn.className += ' col-span-2 sm:col-span-1';
-    btn.style.backgroundColor = '#ffffff';
-    btn.style.borderColor = hexAlpha(color, 0.6);
-    btn.style.color = '#1a1a1a';
-    btn.style.boxShadow = `0 4px 0 rgba(0,0,0,0.08), 0 6px 16px rgba(0,0,0,0.04)`;
+    btn.style.backgroundColor = hexAlpha(color, 0.1);
+    btn.style.borderColor = hexAlpha(color, 0.45);
+    btn.style.color = hexAlpha(color, 0.85);
+    btn.style.boxShadow = `0 4px 0 ${hexAlpha(color, 0.5)}, 0 6px 16px ${hexAlpha(color, 0.08)}`;
     btn.style.transform = 'translateY(0)';
 }
 
 function applyButtonActive(btn, color) {
     btn.className = 'p-3 text-sm font-bold transition-all duration-150 border-2 cursor-pointer rounded-xl nav-btn-active';
     if (btn.dataset.wide) btn.className += ' col-span-2 sm:col-span-1';
-    btn.style.backgroundColor = '#ffffff';
+    btn.style.backgroundColor = hexAlpha(color, 0.25);
     btn.style.borderColor = color;
-    btn.style.color = '#1a1a1a';
-    btn.style.boxShadow = `0 4px 0 ${hexAlpha(color, 0.35)}, 0 0 24px ${hexAlpha(color, 0.5)}, 0 0 48px ${hexAlpha(color, 0.2)}`;
+    btn.style.color = color;
+    btn.style.boxShadow = `0 4px 0 ${hexAlpha(color, 0.5)}, 0 0 18px ${hexAlpha(color, 0.4)}, 0 0 40px ${hexAlpha(color, 0.15)}`;
     btn.style.transform = 'translateY(0)';
 }
 

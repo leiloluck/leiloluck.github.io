@@ -6,7 +6,7 @@
 
 'use strict';
 
-const VERSION = 'v3';
+const VERSION = 'v4';
 const CACHE   = `meditation-timer-${VERSION}`;
 
 const PRECACHE = [
@@ -57,21 +57,21 @@ self.addEventListener('fetch', event => {
   event.respondWith(serveShell(request));
 });
 
-// Cache-first for app shell
+// Stale-while-revalidate for app shell
 async function serveShell(request) {
-  const cached = await caches.match(request);
-  if (cached) return cached;
+  const cache = await caches.open(CACHE);
+  const cachedResponse = await cache.match(request);
 
-  try {
-    const response = await fetch(request);
-    if (response.status === 200) {
-      const cache = await caches.open(CACHE);
-      cache.put(request, response.clone());
+  const fetchPromise = fetch(request).then((networkResponse) => {
+    if (networkResponse.status === 200) {
+      cache.put(request, networkResponse.clone());
     }
-    return response;
-  } catch {
-    return new Response('Offline — content not cached.', { status: 503 });
-  }
+    return networkResponse;
+  }).catch(() => {
+    // Ignore offline errors
+  });
+
+  return cachedResponse || fetchPromise || new Response('Offline — content not cached.', { status: 503 });
 }
 
 // Audio strategy:

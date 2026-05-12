@@ -20,7 +20,7 @@
 }
 
 html {
-  height: 100%;
+  min-height: 100%;
 }
 
 body {
@@ -32,7 +32,6 @@ body {
   /* Fill exactly the visible screen */
   min-height: 100vh; /* fallback */
   min-height: 100dvh;
-  overflow-y: auto;
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
@@ -88,7 +87,7 @@ body {
 }
 
 .countdown {
-  font-size: 72px;
+  font-size: clamp(72px, 18vw, 144px);
   font-weight: 200;
   letter-spacing: 0.04em;
   color: var(--text);
@@ -111,6 +110,15 @@ body {
   letter-spacing: 0.1em;
   min-height: 14px;
   text-align: center;
+}
+
+.bell-hint {
+  font-size: 10px;
+  color: var(--muted);
+  opacity: 0.35;
+  letter-spacing: 0.06em;
+  text-align: center;
+  min-height: 13px;
 }
 
 /* ── Play button ── */
@@ -270,10 +278,41 @@ body {
   letter-spacing: 0.04em;
 }
 
+/* ── Session complete reward ── */
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    135deg,
+    #3d2900 0%,
+    #7a4a10 25%,
+    #3d2900 50%,
+    #1a1000 75%,
+    #000000 100%
+  );
+  background-size: 300% 300%;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+  pointer-events: none;
+}
+
+body.session-complete::before {
+  opacity: 1;
+  animation: rewardGradient 4s ease-in-out infinite;
+}
+
+@keyframes rewardGradient {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+
 /* ── Very small screens ── */
 
 @media (max-height: 600px) {
-  .countdown { font-size: 52px; }
+  .countdown { font-size: clamp(52px, 12vw, 80px); }
   .play-section { padding-bottom: 14px; }
   .section { margin-bottom: 10px; }
 }

@@ -82,7 +82,7 @@ const _inlineProtocols = {
     },
     alcohol: {
         id: "alcohol", name: "Alcohol", type: "Depressant", emoji: "🍺",
-        color: "#ef4444", duration: 4,
+        color: "#3b82f6", duration: 4,
         dosing: {
             "Oral": { unit: "g ethanol (1 drink ≈ 10 g)", threshold: 10, light: { min: 10, max: 20 }, common: { min: 20, max: 30 }, strong: { min: 30, max: 40 }, heavy: 40, source: "https://psychonautwiki.org/wiki/Alcohol" }
         },
@@ -339,7 +339,7 @@ const _inlineProtocols = {
     },
     mushrooms: {
         id: "mushrooms", name: "Mushrooms (Psilocybin)", type: "Psychedelic", emoji: "🍄",
-        color: "#a16207", duration: 6,
+        color: "#8b5cf6", duration: 6,
         dosing: {
             "Oral": { unit: "g dried (P. cubensis)", threshold: 0.25, light: { min: 0.5, max: 1 }, common: { min: 1, max: 2.5 }, strong: { min: 2.5, max: 5 }, heavy: 5, source: "https://psychonautwiki.org/wiki/Psilocybin_mushrooms" }
         },
@@ -398,7 +398,7 @@ const _inlineProtocols = {
     },
     cocaine: {
         id: "cocaine", name: "Cocaine", type: "Stimulant", emoji: "❄️",
-        color: "#94a3b8", duration: 1,
+        color: "#d97706", duration: 1,
         dosing: {
             "Insufflated": { unit: "mg", threshold: 5, light: { min: 10, max: 30 }, common: { min: 30, max: 60 }, strong: { min: 60, max: 90 }, heavy: 90, source: "https://psychonautwiki.org/wiki/Cocaine" }
         },
@@ -527,7 +527,7 @@ const _inlineProtocols = {
     },
     mdma: {
         id: "mdma", name: "MDMA", type: "Empathogen", emoji: "💖",
-        color: "#2563eb", duration: 4.5,
+        color: "#ec4899", duration: 4.5,
         dosing: {
             "Oral": { unit: "mg", threshold: 30, light: { min: 40, max: 75 }, common: { min: 75, max: 140 }, strong: { min: 140, max: 180 }, heavy: 180, note: "Max: 1.5 mg/kg (men), 1.3 mg/kg (women). Effects plateau at ~125–150 mg; higher doses increase toxicity, not euphoria.", source: "https://psychonautwiki.org/wiki/MDMA" },
             "Insufflated": { unit: "mg", threshold: 15, light: { min: 20, max: 37 }, common: { min: 37, max: 70 }, strong: { min: 70, max: 90 }, heavy: 90, note: "Dose at approximately half the oral amount. Described as very unpleasant and causes nasal tissue irritation. Not recommended.", source: "https://www.saferparty.ch/substanzen/mdma" }
@@ -655,7 +655,7 @@ const _inlineProtocols = {
     },
     "2cb": {
         id: "2cb", name: "2C-B", type: "Psychedelic", emoji: "🔮",
-        color: "#ec4899", duration: 6,
+        color: "#a855f7", duration: 6,
         dosing: {
             "Oral": { unit: "mg", threshold: 2, light: { min: 5, max: 15 }, common: { min: 15, max: 25 }, strong: { min: 25, max: 35 }, heavy: 35, note: "Extremely steep dose-response curve. Use a milligram scale. Never estimate by eye.", source: "https://psychonautwiki.org/wiki/2C-B" },
             "Insufflated": { unit: "mg", threshold: 1, light: { min: 2, max: 5 }, common: { min: 5, max: 10 }, strong: { min: 10, max: 15 }, heavy: 15, note: "Extremely painful to insufflate. Not recommended.", source: "https://psychonautwiki.org/wiki/2C-B" }
@@ -793,7 +793,7 @@ const _inlineProtocols = {
     },
     ghb: {
         id: "ghb", name: "GHB / GBL", type: "Depressant", emoji: "💧",
-        color: "#64748b", duration: 3,
+        color: "#6366f1", duration: 3,
         dosing: {
             "Oral": { unit: "mL (concentrate varies 250–500 mg/mL; see critical note)", threshold: 0.5, light: { min: 1, max: 1.5 }, common: { min: 1.5, max: 2.5 }, strong: { min: 2.5, max: 3 }, heavy: 3, note: "⚠️ CRITICAL: Purity and concentration vary wildly across batches (average ~377 mg/mL but wide variation). Dose nearly impossible to estimate. Start conservatively with new batches.", source: "https://www.jellinek.nl/en/alcohol-drugs-behavior/ghb/" }
         },
@@ -924,7 +924,7 @@ const _inlineProtocols = {
     },
     methamphetamine: {
         id: "methamphetamine", name: "Methamphetamine", type: "Stimulant", emoji: "💎",
-        color: "#0ea5e9", duration: 12,
+        color: "#ef4444", duration: 12,
         dosing: {
             "Oral": { unit: "mg", threshold: 5, light: { min: 5, max: 10 }, common: { min: 10, max: 25 }, strong: { min: 25, max: 50 }, heavy: 50, note: "Oral is the safest route. Full stomach delays absorption. Crystal purity averages ~98% — much more potent than street amphetamine.", source: "https://www.saferparty.ch/substanzen/methamphetamin" },
             "Insufflated": { unit: "mg", threshold: 5, light: { min: 5, max: 10 }, common: { min: 10, max: 30 }, strong: { min: 30, max: 50 }, heavy: 50, note: "Causes severe nasal mucosa damage. Use personal rounded-tip tubes. Do not share equipment.", source: "https://www.saferparty.ch/substanzen/methamphetamin" },

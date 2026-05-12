@@ -110,7 +110,7 @@
     "name": "Alcohol",
     "type": "Depressant",
     "emoji": "🍺",
-    "color": "#ef4444",
+    "color": "#3b82f6",
     "duration": 4,
     "dosing": {
       "Oral": {
@@ -519,7 +519,7 @@
     "name": "Ketamine",
     "type": "Dissociative",
     "emoji": "🐴",
-    "color": "#9333ea",
+    "color": "#14b8a6",
     "duration": 1.5,
     "dosing": {
       "Insufflated": {
@@ -898,7 +898,7 @@
     "name": "Mushrooms (Psilocybin)",
     "type": "Psychedelic",
     "emoji": "🍄",
-    "color": "#a16207",
+    "color": "#8b5cf6",
     "duration": 6,
     "dosing": {
       "Oral": {
@@ -1048,7 +1048,7 @@
     "name": "Cocaine",
     "type": "Stimulant",
     "emoji": "❄️",
-    "color": "#94a3b8",
+    "color": "#d97706",
     "duration": 1,
     "dosing": {
       "Insufflated": {
@@ -1437,7 +1437,7 @@
     "name": "MDMA",
     "type": "Empathogen",
     "emoji": "💖",
-    "color": "#2563eb",
+    "color": "#ec4899",
     "duration": 4.5,
     "dosing": {
       "Oral": {
@@ -1895,7 +1895,7 @@
     "name": "2C-B",
     "type": "Psychedelic",
     "emoji": "🔮",
-    "color": "#ec4899",
+    "color": "#a855f7",
     "duration": 6,
     "dosing": {
       "Oral": {
@@ -2299,7 +2299,7 @@
     "name": "GHB / GBL",
     "type": "Depressant",
     "emoji": "💧",
-    "color": "#64748b",
+    "color": "#6366f1",
     "duration": 3,
     "dosing": {
       "Oral": {
@@ -2498,7 +2498,7 @@
     "name": "Heroin (Diamorphine)",
     "type": "Opioid",
     "emoji": "🩸",
-    "color": "#7c3aed",
+    "color": "#dc2626",
     "duration": 4,
     "dosing": {
       "Smoked": {
@@ -2815,7 +2815,7 @@
     "name": "Methamphetamine",
     "type": "Stimulant",
     "emoji": "💎",
-    "color": "#0ea5e9",
+    "color": "#ef4444",
     "duration": 12,
     "dosing": {
       "Oral": {

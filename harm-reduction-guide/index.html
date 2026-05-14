@@ -381,7 +381,7 @@
 
     <!-- PWA: service worker registration + install/update button logic -->
     <script>
-        const APP_VERSION = 'v26.04';
+        const APP_VERSION = 'v14.05.26';
         let deferredInstallPrompt = null;
 
         // Show version
@@ -443,10 +443,17 @@
             }
         }
 
-        // Register service worker
+        // Register service worker and auto-reload when a new version takes over
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js').catch(err => {
                 console.warn('SW registration failed:', err);
+            });
+
+            // When a new SW activates (skipWaiting fires), reload once to serve fresh files.
+            // hadController guards against reloading on the very first install (no prior controller).
+            const hadController = !!navigator.serviceWorker.controller;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (hadController) window.location.reload();
             });
         }
     </script>

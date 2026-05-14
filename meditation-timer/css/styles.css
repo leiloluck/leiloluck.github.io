@@ -45,7 +45,8 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  overflow-y: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
 }
 
 /* ── App shell: one full-height column ── */
@@ -56,56 +57,55 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: clamp(6px, 1dvh, 10px);
   /* Respect notch / home indicator */
-  padding-top: max(env(safe-area-inset-top, 0px), 18px);
-  padding-bottom: max(env(safe-area-inset-bottom, 0px), 14px);
+  padding-top: max(env(safe-area-inset-top, 0px), 12px);
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 10px);
   padding-left: var(--page-pad-x);
   padding-right: var(--page-pad-x);
   min-height: 100vh;
   min-height: 100dvh;
-  max-height: 100vh;
-  max-height: 100dvh;
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* ── Header ── */
 
 .header {
   text-align: center;
-  padding-bottom: var(--header-gap);
+  padding-bottom: 0;
   flex-shrink: 0;
 }
 
 .header h1 {
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 400;
   letter-spacing: 0.08em;
   color: var(--text);
 }
 
 .header p {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--muted);
   letter-spacing: 0.18em;
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 /* ── Countdown (middle, flexible height) ── */
 
 .countdown-section {
-  flex: 1;
+  flex: 0 1 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: clamp(4px, 0.8dvh, 6px);
-  min-height: 0;
-  padding: clamp(4px, 1dvh, 10px) 0;
+  gap: clamp(3px, 0.7dvh, 5px);
+  min-height: clamp(118px, 20dvh, 180px);
+  padding: clamp(2px, 0.6dvh, 6px) 0;
 }
 
 .countdown {
-  font-size: clamp(54px, min(15vw, 12dvh), 144px);
+  font-size: clamp(48px, min(14vw, 10dvh), 132px);
   font-weight: 200;
   letter-spacing: 0.04em;
   color: var(--text);
@@ -114,7 +114,7 @@ body {
 }
 
 .duration-label {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--muted);
   letter-spacing: 0.08em;
   min-height: 14px;
@@ -123,7 +123,7 @@ body {
 }
 
 .status {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--muted);
   letter-spacing: 0.1em;
   min-height: 14px;
@@ -143,7 +143,7 @@ body {
 
 .play-section {
   flex-shrink: 0;
-  padding-bottom: clamp(10px, 2dvh, 20px);
+  padding-bottom: clamp(4px, 0.8dvh, 10px);
 }
 
 .play-controls {
@@ -195,7 +195,7 @@ body {
 
 .section {
   flex-shrink: 0;
-  margin-bottom: var(--section-gap);
+  margin-bottom: clamp(4px, 0.8dvh, 8px);
 }
 
 .section-label {
@@ -203,7 +203,7 @@ body {
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--muted);
-  margin-bottom: clamp(5px, 0.8dvh, 7px);
+  margin-bottom: clamp(3px, 0.5dvh, 5px);
 }
 
 /* ── Button group ── */
@@ -225,7 +225,7 @@ body {
 }
 
 #duration-group {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 #duration-group .btn {
@@ -243,7 +243,7 @@ body {
 .btn-detail {
   display: block;
   margin-top: 2px;
-  font-size: 11px;
+  font-size: 10px;
   opacity: 0.55;
   font-weight: 400;
 }
@@ -251,11 +251,11 @@ body {
 .btn {
   flex: 1 1 auto;
   min-width: 60px;
-  padding: var(--button-pad-y) var(--button-pad-x);
+  padding: clamp(7px, 1dvh, 8px) clamp(8px, 2vw, 9px);
   background: transparent;
   border: 1px solid var(--border);
   color: var(--muted);
-  font-size: clamp(12px, 1.7dvh, 13px);
+  font-size: clamp(11px, 1.55dvh, 12px);
   font-family: inherit;
   cursor: pointer;
   transition: border-color var(--fade), color var(--fade), background var(--fade);
@@ -292,9 +292,9 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   flex-wrap: wrap;
-  padding-top: var(--footer-pad-top);
+  padding-top: 0;
 }
 
 .btn-small {
@@ -303,7 +303,7 @@ body {
   color: var(--muted);
   font-size: 10px;
   font-family: inherit;
-  padding: 4px 9px;
+  padding: 4px 8px;
   cursor: pointer;
   letter-spacing: 0.04em;
   transition: border-color var(--fade), color var(--fade);
@@ -509,11 +509,15 @@ body.session-complete::before {
 
 @media (max-height: 600px) {
   .app {
-    padding-top: max(env(safe-area-inset-top, 0px), 12px);
-    padding-bottom: max(env(safe-area-inset-bottom, 0px), 10px);
+    padding-top: max(env(safe-area-inset-top, 0px), 10px);
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 8px);
   }
 
-  .countdown { font-size: clamp(46px, min(13vw, 10dvh), 72px); }
+  .countdown-section {
+    min-height: clamp(120px, 22dvh, 180px);
+  }
+
+  .countdown { font-size: clamp(42px, min(12vw, 8dvh), 64px); }
   .bell-hint,
   .duration-label,
   .status,
@@ -525,9 +529,37 @@ body.session-complete::before {
 }
 
 @media (max-width: 420px) {
+  .app {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
   #duration-group .btn,
   #sound-group .btn {
     min-width: 0;
+  }
+
+  .countdown-section {
+    min-height: clamp(96px, 16dvh, 132px);
+    justify-content: flex-start;
+  }
+
+  .countdown {
+    font-size: clamp(40px, min(11vw, 7dvh), 56px);
+  }
+
+  .duration-label,
+  .status,
+  .bell-hint,
+  .btn-detail,
+  .section-label,
+  .version,
+  .btn-small {
+    font-size: 9px;
+  }
+
+  .play-section {
+    padding-bottom: 2px;
   }
 
   .custom-modal {

@@ -357,11 +357,29 @@ function setMediaSession() {
 const CUSTOM_KEY = 'meditation-custom-min';
 
 function loadCustomTime() {
-  return parseInt(localStorage.getItem(CUSTOM_KEY), 10) || null;
+  const savedMin = parseInt(localStorage.getItem(CUSTOM_KEY), 10);
+  if (!savedMin || savedMin < 1 || savedMin > 180) return null;
+  return savedMin;
 }
 
 function saveCustomTime(min) {
   localStorage.setItem(CUSTOM_KEY, String(min));
+}
+
+function isPresetDuration(min) {
+  return PRESETS.includes(min);
+}
+
+function getSelectableCustomTime() {
+  const savedMin = loadCustomTime();
+  return savedMin && !isPresetDuration(savedMin) ? savedMin : null;
+}
+
+function setSelectedDuration(min) {
+  if (state !== 'idle') stopSession();
+  selectedMinutes = min;
+  renderDurations();
+  showIdleCountdown();
 }
 
 // ── UI helpers ───────────────────────────────────────────────────────────────
@@ -376,6 +394,7 @@ const elDurationGroup = document.getElementById('duration-group');
 const elInstallBtn    = document.getElementById('install-btn');
 const elOfflineBtn    = document.getElementById('offline-btn');
 const elCustomModalLayer = document.getElementById('custom-modal-layer');
+const elCustomModal = document.getElementById('custom-modal');
 const elCustomModalDismiss = document.getElementById('custom-modal-dismiss');
 const elCustomDurationForm = document.getElementById('custom-duration-form');
 const elCustomDurationValue = document.getElementById('custom-duration-value');
@@ -473,13 +492,9 @@ function renderDurations() {
   PRESETS.forEach(min => {
     const btn = document.createElement('button');
     btn.className = 'btn' + (min === selectedMinutes ? ' selected' : '');
+    btn.type = 'button';
     btn.textContent = `${min} min`;
-    btn.addEventListener('click', () => {
-      if (state !== 'idle') stopSession();
-      selectedMinutes = min;
-      renderDurations();
-      showIdleCountdown();
-    });
+    btn.addEventListener('click', () => setSelectedDuration(min));
     elDurationGroup.appendChild(btn);
   });
 
@@ -488,16 +503,17 @@ function renderDurations() {
 
 function appendCustomBtn() {
   const savedMin = loadCustomTime();
-  const isCustomSelected = savedMin && !PRESETS.includes(savedMin) && selectedMinutes === savedMin;
+  const selectableCustomMin = getSelectableCustomTime();
+  const isCustomSelected = selectableCustomMin && selectedMinutes === selectableCustomMin;
 
-  if (savedMin) {
+  if (selectableCustomMin) {
     const selectBtn = document.createElement('button');
     selectBtn.className = 'btn' + (isCustomSelected ? ' selected' : '');
     selectBtn.type = 'button';
     selectBtn.dataset.custom = 'saved';
 
     const label = document.createElement('span');
-    label.textContent = `${savedMin} min`;
+    label.textContent = `${selectableCustomMin} min`;
     selectBtn.appendChild(label);
 
     const sub = document.createElement('span');
@@ -505,12 +521,7 @@ function appendCustomBtn() {
     sub.textContent = 'Custom';
     selectBtn.appendChild(sub);
 
-    selectBtn.addEventListener('click', () => {
-      if (state !== 'idle') stopSession();
-      selectedMinutes = savedMin;
-      renderDurations();
-      showIdleCountdown();
-    });
+    selectBtn.addEventListener('click', () => setSelectedDuration(selectableCustomMin));
 
     elDurationGroup.appendChild(selectBtn);
   }
@@ -538,13 +549,14 @@ function appendCustomBtn() {
 }
 
 function openCustomTimeModal(currentMin) {
-  const activeCustomMin = !PRESETS.includes(selectedMinutes) ? selectedMinutes : currentMin;
+  const activeCustomMin = !isPresetDuration(selectedMinutes) ? selectedMinutes : currentMin;
 
   customDurationDraft = activeCustomMin ? String(activeCustomMin) : '';
   elCustomDurationError.textContent = '';
   renderCustomDurationDisplay();
   elCustomModalLayer.classList.remove('hidden');
   document.body.classList.add('modal-open');
+  requestAnimationFrame(() => elCustomModal.focus());
 }
 
 function closeCustomTimeModal() {

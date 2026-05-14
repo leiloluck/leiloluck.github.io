@@ -17,6 +17,15 @@
   --text:      #f0e2cc;
   --muted:     #8a7060;
   --fade:      180ms ease;
+  --page-pad-x: clamp(14px, 4vw, 20px);
+  --header-gap: clamp(2px, 0.5dvh, 4px);
+  --section-gap: clamp(8px, 1.4dvh, 14px);
+  --control-gap: clamp(6px, 1dvh, 8px);
+  --play-pad-y: clamp(11px, 1.6dvh, 14px);
+  --play-pad-x: clamp(16px, 3vw, 20px);
+  --button-pad-y: clamp(8px, 1.2dvh, 9px);
+  --button-pad-x: clamp(9px, 2.5vw, 10px);
+  --footer-pad-top: clamp(2px, 0.5dvh, 4px);
 }
 
 html {
@@ -36,7 +45,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0 20px;
+  overflow-y: hidden;
 }
 
 /* ── App shell: one full-height column ── */
@@ -47,16 +56,24 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   /* Respect notch / home indicator */
   padding-top: max(env(safe-area-inset-top, 0px), 18px);
   padding-bottom: max(env(safe-area-inset-bottom, 0px), 14px);
+  padding-left: var(--page-pad-x);
+  padding-right: var(--page-pad-x);
+  min-height: 100vh;
+  min-height: 100dvh;
+  max-height: 100vh;
+  max-height: 100dvh;
+  overflow: hidden;
 }
 
 /* ── Header ── */
 
 .header {
   text-align: center;
-  padding-bottom: 4px;
+  padding-bottom: var(--header-gap);
   flex-shrink: 0;
 }
 
@@ -82,12 +99,13 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  min-height: 80px;
+  gap: clamp(4px, 0.8dvh, 6px);
+  min-height: 0;
+  padding: clamp(4px, 1dvh, 10px) 0;
 }
 
 .countdown {
-  font-size: clamp(72px, 18vw, 144px);
+  font-size: clamp(54px, min(15vw, 12dvh), 144px);
   font-weight: 200;
   letter-spacing: 0.04em;
   color: var(--text);
@@ -125,18 +143,18 @@ body {
 
 .play-section {
   flex-shrink: 0;
-  padding-bottom: 20px;
+  padding-bottom: clamp(10px, 2dvh, 20px);
 }
 
 .play-controls {
   display: flex;
-  gap: 8px;
+  gap: var(--control-gap);
 }
 
 .btn-play {
   flex: 1;
-  padding: 14px;
-  font-size: 15px;
+  padding: var(--play-pad-y) var(--play-pad-x);
+  font-size: clamp(14px, 1.9dvh, 15px);
   letter-spacing: 0.1em;
   border: 1px solid var(--accent);
   color: var(--accent);
@@ -157,8 +175,8 @@ body {
 }
 
 .btn-reset {
-  padding: 14px 20px;
-  font-size: 15px;
+  padding: var(--play-pad-y) var(--play-pad-x);
+  font-size: clamp(14px, 1.9dvh, 15px);
   letter-spacing: 0.1em;
   border: 1px solid var(--border);
   color: var(--muted);
@@ -177,7 +195,7 @@ body {
 
 .section {
   flex-shrink: 0;
-  margin-bottom: 14px;
+  margin-bottom: var(--section-gap);
 }
 
 .section-label {
@@ -185,7 +203,7 @@ body {
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--muted);
-  margin-bottom: 7px;
+  margin-bottom: clamp(5px, 0.8dvh, 7px);
 }
 
 /* ── Button group ── */
@@ -193,17 +211,42 @@ body {
 .btn-group {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--control-gap);
+}
+
+#sound-group,
+#duration-group {
+  display: grid;
+  width: 100%;
+}
+
+#sound-group {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+#duration-group {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+#sound-group .btn {
+  min-width: 0;
+  white-space: normal;
+  line-height: 1.2;
+}
+
+#sound-group .btn span {
+  display: block;
+  margin-top: 2px;
 }
 
 .btn {
   flex: 1 1 auto;
   min-width: 60px;
-  padding: 9px 10px;
+  padding: var(--button-pad-y) var(--button-pad-x);
   background: transparent;
   border: 1px solid var(--border);
   color: var(--muted);
-  font-size: 13px;
+  font-size: clamp(12px, 1.7dvh, 13px);
   font-family: inherit;
   cursor: pointer;
   transition: border-color var(--fade), color var(--fade), background var(--fade);
@@ -242,7 +285,7 @@ body {
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
-  padding-top: 4px;
+  padding-top: var(--footer-pad-top);
 }
 
 .btn-small {
@@ -312,7 +355,45 @@ body.session-complete::before {
 /* ── Very small screens ── */
 
 @media (max-height: 600px) {
-  .countdown { font-size: clamp(52px, 12vw, 80px); }
-  .play-section { padding-bottom: 14px; }
-  .section { margin-bottom: 10px; }
+  .app {
+    padding-top: max(env(safe-area-inset-top, 0px), 12px);
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 10px);
+  }
+
+  .countdown { font-size: clamp(46px, min(13vw, 10dvh), 72px); }
+  .bell-hint,
+  .duration-label,
+  .status,
+  .version,
+  .btn-small,
+  .section-label {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 420px) {
+  #duration-group {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  #duration-group .btn,
+  #sound-group .btn {
+    min-width: 0;
+  }
+}
+
+@media (min-height: 900px) {
+  .app {
+    max-width: 460px;
+  }
+
+  .countdown-section {
+    padding: clamp(12px, 2dvh, 20px) 0;
+  }
+
+  .btn,
+  .btn-play,
+  .btn-reset {
+    min-height: 48px;
+  }
 }

@@ -378,9 +378,12 @@ const elOfflineBtn    = document.getElementById('offline-btn');
 const elCustomModalLayer = document.getElementById('custom-modal-layer');
 const elCustomModalDismiss = document.getElementById('custom-modal-dismiss');
 const elCustomDurationForm = document.getElementById('custom-duration-form');
-const elCustomDurationInput = document.getElementById('custom-duration-input');
+const elCustomDurationValue = document.getElementById('custom-duration-value');
 const elCustomDurationError = document.getElementById('custom-duration-error');
 const elCustomDurationCancel = document.getElementById('custom-duration-cancel');
+const elCustomKeypad = document.querySelector('.custom-keypad');
+
+let customDurationDraft = '';
 
 function updateCountdown(ms) {
   const total = Math.ceil(ms / 1000);
@@ -487,42 +490,61 @@ function appendCustomBtn() {
   const savedMin = loadCustomTime();
   const isCustomSelected = savedMin && !PRESETS.includes(savedMin) && selectedMinutes === savedMin;
 
-  const btn = document.createElement('button');
-  btn.className = 'btn' + (isCustomSelected ? ' selected' : '');
-  btn.type = 'button';
-  btn.dataset.custom = 'true';
-
-  const label = document.createElement('span');
-  label.textContent = 'Custom';
-  btn.appendChild(label);
-
   if (savedMin) {
+    const selectBtn = document.createElement('button');
+    selectBtn.className = 'btn' + (isCustomSelected ? ' selected' : '');
+    selectBtn.type = 'button';
+    selectBtn.dataset.custom = 'saved';
+
+    const label = document.createElement('span');
+    label.textContent = `${savedMin} min`;
+    selectBtn.appendChild(label);
+
     const sub = document.createElement('span');
     sub.className = 'btn-detail';
-    sub.textContent = `${savedMin} min`;
-    btn.appendChild(sub);
+    sub.textContent = 'Custom';
+    selectBtn.appendChild(sub);
+
+    selectBtn.addEventListener('click', () => {
+      if (state !== 'idle') stopSession();
+      selectedMinutes = savedMin;
+      renderDurations();
+      showIdleCountdown();
+    });
+
+    elDurationGroup.appendChild(selectBtn);
   }
 
-  btn.addEventListener('click', () => {
+  const editBtn = document.createElement('button');
+  editBtn.className = 'btn';
+  editBtn.type = 'button';
+  editBtn.dataset.custom = 'edit';
+
+  const editLabel = document.createElement('span');
+  editLabel.textContent = 'Custom';
+  editBtn.appendChild(editLabel);
+
+  const editSub = document.createElement('span');
+  editSub.className = 'btn-detail';
+  editSub.textContent = savedMin ? 'Update time' : 'Create time';
+  editBtn.appendChild(editSub);
+
+  editBtn.addEventListener('click', () => {
     if (state !== 'idle') stopSession();
     openCustomTimeModal(savedMin);
   });
 
-  elDurationGroup.appendChild(btn);
+  elDurationGroup.appendChild(editBtn);
 }
 
 function openCustomTimeModal(currentMin) {
   const activeCustomMin = !PRESETS.includes(selectedMinutes) ? selectedMinutes : currentMin;
 
-  elCustomDurationInput.value = activeCustomMin ? String(activeCustomMin) : '';
+  customDurationDraft = activeCustomMin ? String(activeCustomMin) : '';
   elCustomDurationError.textContent = '';
+  renderCustomDurationDisplay();
   elCustomModalLayer.classList.remove('hidden');
   document.body.classList.add('modal-open');
-
-  requestAnimationFrame(() => {
-    elCustomDurationInput.focus();
-    elCustomDurationInput.select();
-  });
 }
 
 function closeCustomTimeModal() {
@@ -531,13 +553,37 @@ function closeCustomTimeModal() {
   elCustomDurationError.textContent = '';
 }
 
+function renderCustomDurationDisplay() {
+  elCustomDurationValue.textContent = customDurationDraft || '--';
+}
+
+function applyCustomKey(key) {
+  if (customDurationDraft.length >= 3) return;
+
+  if (customDurationDraft === '0') {
+    customDurationDraft = key;
+  } else {
+    customDurationDraft += key;
+  }
+
+  renderCustomDurationDisplay();
+}
+
+function clearCustomDraft() {
+  customDurationDraft = '';
+  renderCustomDurationDisplay();
+}
+
+function backspaceCustomDraft() {
+  customDurationDraft = customDurationDraft.slice(0, -1);
+  renderCustomDurationDisplay();
+}
+
 function submitCustomTime() {
-  const val = parseInt(elCustomDurationInput.value, 10);
+  const val = parseInt(customDurationDraft, 10);
 
   if (!val || val < 1 || val > 180) {
     elCustomDurationError.textContent = 'Enter a whole number between 1 and 180.';
-    elCustomDurationInput.focus();
-    elCustomDurationInput.select();
     return;
   }
 
@@ -553,12 +599,60 @@ elCustomDurationForm.addEventListener('submit', event => {
   submitCustomTime();
 });
 
+elCustomKeypad.addEventListener('click', event => {
+  const target = event.target.closest('button');
+  if (!target) return;
+
+  elCustomDurationError.textContent = '';
+
+  if (target.dataset.key) {
+    applyCustomKey(target.dataset.key);
+    return;
+  }
+
+  if (target.dataset.action === 'clear') {
+    clearCustomDraft();
+    return;
+  }
+
+  if (target.dataset.action === 'backspace') {
+    backspaceCustomDraft();
+  }
+});
+
 elCustomDurationCancel.addEventListener('click', closeCustomTimeModal);
 elCustomModalDismiss.addEventListener('click', closeCustomTimeModal);
 
 document.addEventListener('keydown', event => {
-  if (event.key === 'Escape' && !elCustomModalLayer.classList.contains('hidden')) {
+  if (elCustomModalLayer.classList.contains('hidden')) return;
+
+  if (event.key === 'Escape') {
     closeCustomTimeModal();
+    return;
+  }
+
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    submitCustomTime();
+    return;
+  }
+
+  if (/^[0-9]$/.test(event.key)) {
+    event.preventDefault();
+    elCustomDurationError.textContent = '';
+    applyCustomKey(event.key);
+    return;
+  }
+
+  if (event.key === 'Backspace') {
+    event.preventDefault();
+    backspaceCustomDraft();
+    return;
+  }
+
+  if (event.key === 'Delete') {
+    event.preventDefault();
+    clearCustomDraft();
   }
 });
 

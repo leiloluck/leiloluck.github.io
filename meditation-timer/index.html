@@ -79,20 +79,26 @@
     <p class="custom-modal-copy">Choose any duration between 1 and 180 minutes.</p>
 
     <form class="custom-modal-form" id="custom-duration-form" novalidate>
-      <label class="custom-modal-label" for="custom-duration-input">Minutes</label>
+      <p class="custom-modal-label">Minutes</p>
 
-      <div class="custom-input-wrap">
-        <input
-          class="custom-input"
-          id="custom-duration-input"
-          type="number"
-          inputmode="numeric"
-          min="1"
-          max="180"
-          step="1"
-          placeholder="12"
-        >
+      <div class="custom-input-wrap custom-display" id="custom-duration-display" aria-live="polite" aria-atomic="true">
+        <span class="custom-input" id="custom-duration-value">12</span>
         <span class="custom-input-unit">min</span>
+      </div>
+
+      <div class="custom-keypad" aria-label="Custom duration number pad">
+        <button type="button" class="custom-keypad-btn" data-key="1">1</button>
+        <button type="button" class="custom-keypad-btn" data-key="2">2</button>
+        <button type="button" class="custom-keypad-btn" data-key="3">3</button>
+        <button type="button" class="custom-keypad-btn" data-key="4">4</button>
+        <button type="button" class="custom-keypad-btn" data-key="5">5</button>
+        <button type="button" class="custom-keypad-btn" data-key="6">6</button>
+        <button type="button" class="custom-keypad-btn" data-key="7">7</button>
+        <button type="button" class="custom-keypad-btn" data-key="8">8</button>
+        <button type="button" class="custom-keypad-btn" data-key="9">9</button>
+        <button type="button" class="custom-keypad-btn custom-keypad-btn-muted" data-action="clear">Clear</button>
+        <button type="button" class="custom-keypad-btn" data-key="0">0</button>
+        <button type="button" class="custom-keypad-btn custom-keypad-btn-muted" data-action="backspace">Delete</button>
       </div>
 
       <p class="custom-modal-error" id="custom-duration-error"></p>

@@ -225,7 +225,7 @@ body {
 }
 
 #duration-group {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 #sound-group .btn {
@@ -234,9 +234,12 @@ body {
   line-height: 1.2;
 }
 
-#sound-group .btn span {
+.btn-detail {
   display: block;
   margin-top: 2px;
+  font-size: 11px;
+  opacity: 0.55;
+  font-weight: 400;
 }
 
 .btn {
@@ -321,6 +324,120 @@ body {
   letter-spacing: 0.04em;
 }
 
+body.modal-open {
+  overflow: hidden;
+}
+
+.modal-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+}
+
+.custom-modal {
+  position: relative;
+  width: min(100%, 360px);
+  border: 1px solid rgba(201, 147, 74, 0.32);
+  background:
+    radial-gradient(circle at top, rgba(201, 147, 74, 0.18), transparent 52%),
+    linear-gradient(180deg, rgba(30, 23, 16, 0.98), rgba(12, 9, 6, 0.98));
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.45);
+  padding: 20px;
+}
+
+.custom-modal-kicker {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+.custom-modal h2 {
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1.1;
+  margin-bottom: 10px;
+}
+
+.custom-modal-copy {
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.custom-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.custom-modal-label {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.custom-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(201, 147, 74, 0.3);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 12px 14px;
+}
+
+.custom-input {
+  width: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 28px;
+  font-variant-numeric: tabular-nums;
+}
+
+.custom-input::placeholder {
+  color: rgba(240, 226, 204, 0.22);
+}
+
+.custom-input-unit {
+  color: var(--accent);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.custom-modal-error {
+  min-height: 18px;
+  color: #e2ad78;
+  font-size: 12px;
+}
+
+.custom-modal-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.custom-modal-btn {
+  width: 100%;
+}
+
 /* ── Session complete reward ── */
 
 body::before {
@@ -372,13 +489,17 @@ body.session-complete::before {
 }
 
 @media (max-width: 420px) {
-  #duration-group {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
   #duration-group .btn,
   #sound-group .btn {
     min-width: 0;
+  }
+
+  .custom-modal {
+    padding: 18px;
+  }
+
+  .custom-modal h2 {
+    font-size: 21px;
   }
 }
 

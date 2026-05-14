@@ -12,15 +12,15 @@
 const SOUNDS = [
   {
     id: 'bowls',
-    label: 'Tibetan Singing Bowls',
-    sub: 'Long interval',
+    label: 'Soundtrack',
+    sub: 'continuous track',
     file: './resources/bowls long interval.mp3',
     type: 'loop',
   },
   {
     id: 'bowl-bell',
-    label: 'Intervall',
-    sub: '1 min bell',
+    label: 'Interval bell',
+    sub: 'every 1 min',
     file: './resources/Single bowl sound.mp3',
     type: 'interval',
     intervalMs: 60000,
@@ -375,6 +375,12 @@ const elSoundGroup    = document.getElementById('sound-group');
 const elDurationGroup = document.getElementById('duration-group');
 const elInstallBtn    = document.getElementById('install-btn');
 const elOfflineBtn    = document.getElementById('offline-btn');
+const elCustomModalLayer = document.getElementById('custom-modal-layer');
+const elCustomModalDismiss = document.getElementById('custom-modal-dismiss');
+const elCustomDurationForm = document.getElementById('custom-duration-form');
+const elCustomDurationInput = document.getElementById('custom-duration-input');
+const elCustomDurationError = document.getElementById('custom-duration-error');
+const elCustomDurationCancel = document.getElementById('custom-duration-cancel');
 
 function updateCountdown(ms) {
   const total = Math.ceil(ms / 1000);
@@ -429,11 +435,17 @@ function renderSounds() {
   SOUNDS.forEach(sound => {
     const btn = document.createElement('button');
     btn.className = 'btn' + (sound === selectedSound ? ' selected' : '');
-    btn.textContent = sound.label;
+    btn.type = 'button';
+
+    const label = document.createElement('span');
+    label.textContent = sound.label;
+    btn.appendChild(label);
+
     const sub = document.createElement('span');
-    sub.style.cssText = 'opacity:0.5;font-size:11px';
-    sub.textContent = ' ' + sound.sub;
+    sub.className = 'btn-detail';
+    sub.textContent = sound.sub;
     btn.appendChild(sub);
+
     btn.addEventListener('click', () => {
       if (state !== 'idle') stopSession();
       selectedSound = sound;
@@ -477,32 +489,78 @@ function appendCustomBtn() {
 
   const btn = document.createElement('button');
   btn.className = 'btn' + (isCustomSelected ? ' selected' : '');
+  btn.type = 'button';
   btn.dataset.custom = 'true';
-  btn.textContent = savedMin && !PRESETS.includes(savedMin) ? `${savedMin} min` : 'Custom';
+
+  const label = document.createElement('span');
+  label.textContent = 'Custom';
+  btn.appendChild(label);
+
+  if (savedMin) {
+    const sub = document.createElement('span');
+    sub.className = 'btn-detail';
+    sub.textContent = `${savedMin} min`;
+    btn.appendChild(sub);
+  }
 
   btn.addEventListener('click', () => {
     if (state !== 'idle') stopSession();
-    promptCustomTime(savedMin);
+    openCustomTimeModal(savedMin);
   });
 
   elDurationGroup.appendChild(btn);
 }
 
-function promptCustomTime(currentMin) {
-  const raw = window.prompt(
-    'Enter duration in minutes (1–180):',
-    currentMin ? String(currentMin) : ''
-  );
-  if (raw === null) return;
+function openCustomTimeModal(currentMin) {
+  const activeCustomMin = !PRESETS.includes(selectedMinutes) ? selectedMinutes : currentMin;
 
-  const val = parseInt(raw, 10);
-  if (!val || val < 1 || val > 180) return;
+  elCustomDurationInput.value = activeCustomMin ? String(activeCustomMin) : '';
+  elCustomDurationError.textContent = '';
+  elCustomModalLayer.classList.remove('hidden');
+  document.body.classList.add('modal-open');
+
+  requestAnimationFrame(() => {
+    elCustomDurationInput.focus();
+    elCustomDurationInput.select();
+  });
+}
+
+function closeCustomTimeModal() {
+  elCustomModalLayer.classList.add('hidden');
+  document.body.classList.remove('modal-open');
+  elCustomDurationError.textContent = '';
+}
+
+function submitCustomTime() {
+  const val = parseInt(elCustomDurationInput.value, 10);
+
+  if (!val || val < 1 || val > 180) {
+    elCustomDurationError.textContent = 'Enter a whole number between 1 and 180.';
+    elCustomDurationInput.focus();
+    elCustomDurationInput.select();
+    return;
+  }
 
   saveCustomTime(val);
   selectedMinutes = val;
   renderDurations();
   showIdleCountdown();
+  closeCustomTimeModal();
 }
+
+elCustomDurationForm.addEventListener('submit', event => {
+  event.preventDefault();
+  submitCustomTime();
+});
+
+elCustomDurationCancel.addEventListener('click', closeCustomTimeModal);
+elCustomModalDismiss.addEventListener('click', closeCustomTimeModal);
+
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && !elCustomModalLayer.classList.contains('hidden')) {
+    closeCustomTimeModal();
+  }
+});
 
 // ── Play button handler ──────────────────────────────────────────────────────
 

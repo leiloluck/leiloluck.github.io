@@ -2,7 +2,7 @@
 
 A minimalist meditation timer PWA. The user selects a sound and a duration; audio fades in at the start and fades out at the end. Installable, offline-capable.
 
-**Version:** v12.05.26
+**Version:** V14
 
 ---
 

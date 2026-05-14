@@ -228,6 +228,12 @@ body {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+#duration-group .btn {
+  min-width: 0;
+  white-space: normal;
+  line-height: 1.2;
+}
+
 #sound-group .btn {
   min-width: 0;
   white-space: normal;
@@ -400,6 +406,11 @@ body.modal-open {
   padding: 12px 14px;
 }
 
+.custom-display {
+  justify-content: space-between;
+  min-height: 68px;
+}
+
 .custom-input {
   width: 100%;
   border: 0;
@@ -411,14 +422,39 @@ body.modal-open {
   font-variant-numeric: tabular-nums;
 }
 
-.custom-input::placeholder {
-  color: rgba(240, 226, 204, 0.22);
-}
-
 .custom-input-unit {
   color: var(--accent);
   font-size: 12px;
   letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.custom-keypad {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.custom-keypad-btn {
+  min-height: 54px;
+  border: 1px solid rgba(201, 147, 74, 0.2);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  font: inherit;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background var(--fade), border-color var(--fade), color var(--fade);
+}
+
+.custom-keypad-btn:hover {
+  border-color: var(--accent-dim);
+  background: rgba(201, 147, 74, 0.08);
+}
+
+.custom-keypad-btn-muted {
+  color: var(--muted);
+  font-size: 13px;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 

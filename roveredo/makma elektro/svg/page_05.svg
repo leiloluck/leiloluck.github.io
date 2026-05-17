@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10051 7118" width="10051" height="7118">
+    <image href="../img/page_05.jpg" x="0" y="0" width="10051" height="7118" opacity="0.6" />
+
+    <style>
+        .wall { stroke: #64748b; stroke-width: 25; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .wall-thin { stroke: #94a3b8; stroke-width: 15; fill: none; stroke-dasharray: 40 40; }
+        .wire { stroke: #0284c7; stroke-width: 25; fill: none; stroke-linecap: round; }
+        .symbol { stroke: #0284c7; stroke-width: 20; fill: none; stroke-linecap: round; }
+        .text { font-family: 'Inter', sans-serif; font-size: 180px; fill: #0f172a; font-weight: 600; }
+        .text-sm { font-family: 'Inter', sans-serif; font-size: 140px; fill: #0f172a; }
+        .node { fill: #facc15; stroke: #ca8a04; stroke-width: 15; }
+        .junction { fill: #fff; stroke: #0284c7; stroke-width: 15; }
+    </style>
+
+    <!-- Title -->
+    <text x="8000" y="800" class="text" font-size="300">EMPORE</text>
+
+    <!-- Room Outline -->
+    <!-- Left wall -->
+    <path class="wall" d="M 2000 1000 L 2000 6000" />
+    <!-- Angled right wall -->
+    <path class="wall" d="M 2000 1000 L 8000 2000 L 7500 6000 L 2000 6000" />
+
+    <!-- Left Wall Controls -->
+    <!-- Point C -->
+    <circle cx="2000" cy="3000" r="40" class="node" />
+    <text x="1700" y="3000" class="text" font-size="250">C</text>
+
+    <!-- Switch Cluster C -->
+    <circle cx="2200" cy="3000" r="50" class="symbol" />
+    <circle cx="2200" cy="3150" r="50" class="symbol" />
+    
+    <!-- Point B -->
+    <circle cx="2000" cy="5000" r="40" class="node" />
+    <text x="1700" y="5000" class="text" font-size="250">B</text>
+    <path class="wire" d="M 2000 5000 L 2000 3000" />
+
+    <!-- Central Connections D1 & D2 -->
+    <circle cx="4500" cy="3500" r="40" class="node" />
+    <text x="4300" y="3400" class="text">D1</text>
+    
+    <circle cx="5000" cy="3500" r="40" class="node" />
+    <text x="5100" y="3400" class="text">D2</text>
+
+    <!-- Wire from D2 to Venti -->
+    <path class="wire" d="M 5000 3500 L 5000 4500" />
+    <text x="5100" y="4600" class="text">Venti</text>
+
+    <!-- Wiring to Kitchen -->
+    <path class="wire" d="M 4500 3500 L 7000 3500" />
+    
+    <!-- Kitchen Appliances and Sockets -->
+    <!-- Kühlschrank -->
+    <text x="7000" y="3000" class="text">Kühlschrank</text>
+    <circle cx="7000" cy="3200" r="50" class="symbol" />
+    <text x="7100" y="3200" class="text">Y 2</text>
+
+    <!-- Herd -->
+    <text x="7000" y="4500" class="text">Herd</text>
+    <circle cx="7000" cy="4300" r="50" class="symbol" />
+    <text x="7100" y="4300" class="text">Y 2</text>
+
+    <!-- General Power -->
+    <circle cx="6500" cy="2500" r="50" class="symbol" />
+    <text x="6600" y="2500" class="text">Y 2</text>
+</svg>

@@ -1,0 +1,401 @@
+html_content = """<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elektro Schemata Viewer</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: #1e293b;
+            --text-color: #f8fafc;
+            --accent: #38bdf8;
+            --line-color: #0284c7;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 320px;
+            background-color: var(--panel-bg);
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #334155;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+            z-index: 100;
+        }
+
+        .nav-section {
+            padding: 24px 0;
+            border-bottom: 1px solid #334155;
+        }
+
+        .sidebar h1 {
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0 24px;
+            margin-top: 0;
+            margin-bottom: 24px;
+            color: var(--accent);
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            padding: 16px 24px;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover { background-color: #334155; }
+        .nav-btn.active {
+            background-color: #334155;
+            border-left: 4px solid var(--accent);
+            color: var(--accent);
+        }
+
+        .desc-section {
+            padding: 24px;
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .desc-panel { display: none; }
+        .desc-panel.active { display: block; animation: fadeIn 0.3s; }
+        .desc-panel h3 { margin-top: 0; color: var(--accent); font-size: 1.2rem; border-bottom: 1px solid #334155; padding-bottom: 12px; }
+        .desc-panel p { font-size: 0.95rem; line-height: 1.6; color: #cbd5e1; }
+
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .toolbar {
+            height: 70px;
+            background-color: var(--panel-bg);
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            padding: 0 32px;
+            justify-content: space-between;
+        }
+
+        .toolbar h2 { margin: 0; font-size: 1.4rem; font-weight: 600; }
+
+        .toggle-btn {
+            background-color: transparent;
+            color: var(--text-color);
+            border: 2px solid var(--accent);
+            padding: 10px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .toggle-btn:hover { background-color: rgba(56, 189, 248, 0.1); }
+        .toggle-btn.active { background-color: var(--accent); color: #0f172a; }
+
+        .viewer {
+            flex: 1;
+            position: relative;
+            overflow: auto;
+            background: radial-gradient(circle at center, #94a3b8 0%, #64748b 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .page-wrapper {
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            background: #fff;
+            display: none;
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .page-wrapper.active { display: inline-block; }
+
+        .original-img {
+            display: block;
+            max-width: 100%;
+            max-height: calc(100vh - 110px);
+            width: auto;
+            height: auto;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .original-img.show { opacity: 0.6; }
+
+        .digital-layer {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 20;
+            pointer-events: none;
+            mix-blend-mode: multiply;
+        }
+
+        svg { width: 100%; height: 100%; display: block; }
+        
+        /* Styles based on exact dimensions (approx 8000x6000) */
+        .wall { stroke: #64748b; stroke-width: 25; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .wire { stroke: #0284c7; stroke-width: 25; fill: none; stroke-linecap: round; }
+        .symbol { stroke: #0284c7; stroke-width: 20; fill: none; stroke-linecap: round; }
+        .text { font-family: 'Inter', sans-serif; font-size: 180px; fill: #0f172a; font-weight: 600; }
+        .text-sm { font-family: 'Inter', sans-serif; font-size: 140px; fill: #0f172a; }
+        .node { fill: #facc15; stroke: #ca8a04; stroke-width: 15; }
+        .junction { fill: #fff; stroke: #0284c7; stroke-width: 15; }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .digital-layer-html {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 20;
+            padding: 5%; box-sizing: border-box; color: #0f172a; pointer-events: none;
+        }
+        .mat-list { list-style: none; padding: 0; }
+        .mat-list li { border-bottom: 1px solid #cbd5e1; padding: 1.5vh 0; display: flex; justify-content: space-between; font-size: 1.8vh; }
+        .color-dot { display: inline-block; width: 1.5vh; height: 1.5vh; border-radius: 50%; margin-right: 8px; border: 1px solid #000; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="nav-section">
+            <h1>Schemata</h1>
+            <button class="nav-btn active" data-target="page1">Material Liste</button>
+            <button class="nav-btn" data-target="page2">Bad / Lager / Büro</button>
+            <button class="nav-btn" data-target="page3">Hauptraum</button>
+            <button class="nav-btn" data-target="page4">Eingang</button>
+            <button class="nav-btn" data-target="page5">Empore</button>
+        </div>
+        <div class="desc-section">
+            <div id="desc-page1" class="desc-panel active">
+                <h3>Material Liste</h3>
+                <p>Materialliste für die Elektroinstallation, inklusive Leitungen, Dosen und Klemmen. Farbcodes für die Verkabelung sind unten aufgeführt.</p>
+            </div>
+            <div id="desc-page2" class="desc-panel">
+                <h3>Bad / Lager / Büro</h3>
+                <p>Installationsplan mit zentralem Verteiler D1/D2, Waschmaschinenanschluss, Boiler-Schalter und Nassraum-Steckdosen.</p>
+            </div>
+            <div id="desc-page3" class="desc-panel">
+                <h3>Hauptraum</h3>
+                <p>3D-Darstellung des Hauptraums mit Positionen der Deckenleuchten und den Referenzknoten A und B.</p>
+            </div>
+            <div id="desc-page4" class="desc-panel">
+                <h3>Eingang</h3>
+                <p>Außenbeleuchtung am Eingangsbereich, verbunden über Referenzpunkt A. Wandlampe und Außenlampe (X1).</p>
+            </div>
+            <div id="desc-page5" class="desc-panel">
+                <h3>Empore</h3>
+                <p>Elektroplan für die Empore. Anschlüsse für Ventilator, Kühlschrank und Herd. Verbindung über die Knoten B und C.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="main">
+        <div class="toolbar">
+            <h2 id="current-title">Material Liste</h2>
+            <button id="overlay-btn" class="toggle-btn">Zeichnung Einblenden</button>
+        </div>
+        
+        <div class="viewer">
+            
+            <!-- PAGE 1 (6598x9465) -->
+            <div class="page-wrapper active" id="page1">
+                <img src="page_01.jpg" class="original-img show">
+                <div class="digital-layer-html">
+                    <h2 style="font-size: 3vh;">MATERIAL LISTE ELEKTRO</h2>
+                    <ul class="mat-list">
+                        <li><strong>KIR ROHR M 20 + BRIDEN</strong> <span>100m</span></li>
+                        <li><strong>Waco klemmen 3er/5er</strong> <span>200 Stk / 100 Stk</span></li>
+                        <li><strong>DOSEN T13 2fach 1 mal geschaltet</strong> <span>17 Stk</span></li>
+                        <li><strong>Dosen T13 2fach</strong> <span>15 Stk</span></li>
+                        <li><strong>Schalter S3 2fach</strong> <span>2 Stk</span></li>
+                        <li><strong>Schalter S3/S0</strong> <span>4 Stk</span></li>
+                        <li><strong>1 Dose Aussen S x T13 (Nass)</strong> <span>1 Stk</span></li>
+                        <li><strong>Abzweigdosen nicht zu klein</strong> <span>20 Stk</span></li>
+                    </ul>
+                    <div style="margin-top: 4vh;">
+                        <ul class="mat-list">
+                            <li><span><i class="color-dot" style="background: linear-gradient(90deg, #4ade80 50%, #facc15 50%);"></i> Erde</span> <span>grün / gelb</span></li>
+                            <li><span><i class="color-dot" style="background: #38bdf8;"></i> Null</span> <span>blau</span></li>
+                            <li><span><i class="color-dot" style="background: #a16207;"></i> Phase</span> <span>braun</span></li>
+                            <li><span><i class="color-dot" style="background: #ffffff;"></i> gesch. Phase</span> <span>weiss / orange</span></li>
+                            <li><span><i class="color-dot" style="background: #f472b6;"></i> Schema 3</span> <span>rosa / hellgrün</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- PAGE 2 (8861x6234) -->
+            <div class="page-wrapper" id="page2">
+                <img src="page_02.jpg" class="original-img">
+                <div class="digital-layer">
+                    <svg viewBox="0 0 8861 6234">
+                        <path class="wall" d="M 3400 450 L 4350 400 L 4250 1250 L 5150 1250 L 6150 1850 L 6250 2750 L 4100 3250" />
+                        <path class="wall" d="M 4100 3250 L 4050 4050" />
+                        <path class="wall" d="M 4050 4050 L 5900 4050 L 5950 4950 L 4100 4900 Z" />
+                        <path class="wall" d="M 5900 4050 L 5550 3000" />
+
+                        <path class="wire" d="M 3350 3350 L 4100 3300" />
+                        <path class="wire" d="M 3700 600 L 4350 400 L 4250 1250 L 4200 3250" />
+                        <path class="wire" d="M 4450 3250 L 4550 3000" />
+                        <path class="wire" d="M 4650 3250 L 4950 3050" />
+                        <path class="wire" d="M 4950 3050 L 5200 2300" />
+                        <path class="wire" d="M 4700 3350 L 5300 3600" />
+                        <path class="wire" d="M 4750 3300 L 5650 3100" />
+                        <path class="wire" d="M 4750 3300 L 6150 3050" />
+                        <path class="wire" d="M 4100 3300 L 3800 3400 L 3650 4200" />
+                        <path class="wire" d="M 4150 3350 L 3900 3450 L 3650 4550" />
+                        <path class="wire" d="M 4250 3350 L 4250 4850" />
+                        <path class="wire" d="M 3650 4550 L 4100 4600 L 5100 4400" />
+
+                        <circle cx="3350" cy="3350" r="40" class="node" />
+                        <text x="3100" y="3400" class="text">C</text>
+
+                        <rect x="4100" y="3250" width="650" height="100" class="junction" />
+                        <text x="4350" y="3330" class="text">Z</text>
+
+                        <circle cx="4550" cy="3000" r="30" class="node" />
+                        <text x="4300" y="2900" class="text">D2</text>
+                        <circle cx="4950" cy="3050" r="30" class="node" />
+                        <text x="4800" y="2950" class="text">D1</text>
+
+                        <circle cx="3700" cy="600" r="50" class="symbol" />
+                        <path class="symbol" d="M 3700 550 L 3700 450 M 3650 450 L 3750 450" />
+                        <text x="3900" y="650" class="text">Y2</text>
+
+                        <path class="symbol" d="M 5100 2200 L 5300 2400 M 5100 2400 L 5300 2200" />
+                        <path class="symbol" d="M 5200 3500 L 5400 3700 M 5200 3700 L 5400 3500" />
+
+                        <circle cx="5650" cy="3100" r="50" class="symbol" />
+                        <path class="symbol" d="M 5650 3050 L 5650 2950 M 5600 2950 L 5700 2950" />
+                        <text x="5750" y="3050" class="text">Y2</text>
+
+                        <circle cx="6150" cy="3050" r="50" class="symbol" />
+                        <path class="symbol" d="M 6150 3000 L 6150 2900 M 6100 2900 L 6200 2900" />
+                        <text x="6300" y="3200" class="text">Y3 Nass</text>
+
+                        <circle cx="3650" cy="4200" r="50" class="symbol" />
+                        <text x="2800" y="4100" class="text">Boiler</text>
+                        <text x="2800" y="4300" class="text">schalter</text>
+
+                        <circle cx="3650" cy="4550" r="50" class="symbol" />
+                        <text x="2800" y="4600" class="text">schalter</text>
+                        <text x="3100" y="4800" class="text">WM</text>
+
+                        <path class="symbol" d="M 5000 4300 L 5200 4500 M 5000 4500 L 5200 4300" />
+                        <text x="5300" y="4550" class="text-sm">WASCHMASCHINE</text>
+
+                        <circle cx="4250" cy="4850" r="50" class="symbol" />
+                        <path class="symbol" d="M 4250 4900 L 4250 5000 M 4200 5000 L 4300 5000" />
+                        <text x="4400" y="4900" class="text">Y2</text>
+                        <text x="4200" y="5200" class="text">1P geschaltet</text>
+
+                        <text x="6300" y="750" class="text" font-size="250">BAD</text>
+                        <text x="6300" y="1050" class="text" font-size="250">LAGER</text>
+                        <text x="6300" y="1350" class="text" font-size="250">BÜRO</text>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- PAGE 3 (9398x6408) -->
+            <div class="page-wrapper" id="page3">
+                <img src="page_03.jpg" class="original-img">
+                <div class="digital-layer">
+                    <svg viewBox="0 0 9398 6408">
+                        <text x="4000" y="500" class="text" font-size="300">HAUPTRAUM</text>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- PAGE 4 (10059x7033) -->
+            <div class="page-wrapper" id="page4">
+                <img src="page_04.jpg" class="original-img">
+                <div class="digital-layer">
+                    <svg viewBox="0 0 10059 7033">
+                        <text x="7000" y="1000" class="text" font-size="300">EINGANG</text>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- PAGE 5 (10051x7118) -->
+            <div class="page-wrapper" id="page5">
+                <img src="page_05.jpg" class="original-img">
+                <div class="digital-layer">
+                    <svg viewBox="0 0 10051 7118">
+                        <text x="7000" y="1500" class="text" font-size="300">EMPORE</text>
+                    </svg>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const navBtns = document.querySelectorAll('.nav-btn');
+        const pages = document.querySelectorAll('.page-wrapper');
+        const descPanels = document.querySelectorAll('.desc-panel');
+        const overlayBtn = document.getElementById('overlay-btn');
+        const titleEl = document.getElementById('current-title');
+        
+        let overlayActive = true; 
+
+        navBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                navBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                titleEl.textContent = btn.textContent.trim();
+                
+                const targetId = btn.getAttribute('data-target');
+                pages.forEach(p => p.classList.remove('active'));
+                document.getElementById(targetId).classList.add('active');
+                
+                descPanels.forEach(p => p.classList.remove('active'));
+                document.getElementById('desc-' + targetId).classList.add('active');
+            });
+        });
+
+        overlayBtn.addEventListener('click', () => {
+            overlayActive = !overlayActive;
+            if(overlayActive) {
+                overlayBtn.classList.add('active');
+                overlayBtn.textContent = 'Zeichnung Ausblenden';
+                document.querySelectorAll('.original-img').forEach(img => img.classList.add('show'));
+            } else {
+                overlayBtn.classList.remove('active');
+                overlayBtn.textContent = 'Zeichnung Einblenden';
+                document.querySelectorAll('.original-img').forEach(img => img.classList.remove('show'));
+            }
+        });
+        
+        // init
+        overlayBtn.classList.add('active');
+        overlayBtn.textContent = 'Zeichnung Ausblenden';
+    </script>
+</body>
+</html>
+"""
+with open("index.html", "w") as f:
+    f.write(html_content)

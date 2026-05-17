@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10059 7033" width="10059" height="7033">
+    <image href="../img/page_04.jpg" x="0" y="0" width="10059" height="7033" opacity="0.6" />
+
+    <style>
+        .wall { stroke: #64748b; stroke-width: 25; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .wall-thin { stroke: #94a3b8; stroke-width: 15; fill: none; stroke-dasharray: 40 40; }
+        .wire { stroke: #0284c7; stroke-width: 25; fill: none; stroke-linecap: round; }
+        .symbol { stroke: #0284c7; stroke-width: 20; fill: none; stroke-linecap: round; }
+        .text { font-family: 'Inter', sans-serif; font-size: 180px; fill: #0f172a; font-weight: 600; }
+        .text-sm { font-family: 'Inter', sans-serif; font-size: 140px; fill: #0f172a; }
+        .node { fill: #facc15; stroke: #ca8a04; stroke-width: 15; }
+        .junction { fill: #fff; stroke: #0284c7; stroke-width: 15; }
+    </style>
+
+    <!-- Title -->
+    <text x="7500" y="800" class="text" font-size="300">EINGANG</text>
+
+    <!-- Structure outlines -> rough estimate, iterate to adjust -->
+    <path class="wall" d="M 5000 3500 L 7000 3500 L 7000 5000" />
+    <path class="wall" d="M 7000 3500 Q 8000 3000 8500 4500" /> <!-- Curved Eingang area -->
+    
+    <!-- Reference Point A -->
+    <text x="6800" y="3800" class="text" font-size="250">A</text>
+    <circle cx="7000" cy="3500" r="40" class="node" />
+
+    <!-- Y2 Switch -->
+    <circle cx="7200" cy="3400" r="50" class="symbol" />
+    <path class="symbol" d="M 7200 3350 L 7200 3250 M 7150 3250 L 7250 3250" />
+    <text x="7300" y="3400" class="text">Y 2</text>
+
+    <!-- Wires -->
+    <path class="wire" d="M 7000 3500 L 8000 2000" />
+    <path class="wire" d="M 7000 3500 L 9000 3500" />
+
+    <!-- Wandlampe -->
+    <circle cx="8000" cy="2000" r="40" class="junction" />
+    <text x="8100" y="2000" class="text">XI WANDLAMPE</text>
+
+    <!-- Aussenlampe -->
+    <circle cx="9000" cy="3500" r="40" class="junction" />
+    <text x="9100" y="3500" class="text">XI AUSSENLAMPE</text>
+
+</svg>

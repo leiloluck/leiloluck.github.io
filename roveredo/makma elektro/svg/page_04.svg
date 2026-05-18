@@ -1,43 +1,66 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10059 7033" width="10059" height="7033">
-
-
     <style>
-        .wall { stroke: #64748b; stroke-width: 25; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-        .wall-thin { stroke: #94a3b8; stroke-width: 15; fill: none; stroke-dasharray: 40 40; }
-        .wire { stroke: #0284c7; stroke-width: 25; fill: none; stroke-linecap: round; }
-        .symbol { stroke: #0284c7; stroke-width: 20; fill: none; stroke-linecap: round; }
-        .text { font-family: 'Inter', sans-serif; font-size: 180px; fill: #0f172a; font-weight: 600; }
-        .text-sm { font-family: 'Inter', sans-serif; font-size: 140px; fill: #0f172a; }
-        .node { fill: #facc15; stroke: #ca8a04; stroke-width: 15; }
-        .junction { fill: #fff; stroke: #0284c7; stroke-width: 15; }
+        .line { stroke: #6b7280; stroke-width: 14; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .thin { stroke: #b1b5be; stroke-width: 8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .symbol { stroke: #52525b; stroke-width: 12; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .text { font-family: "Avenir Next", "Helvetica Neue", sans-serif; font-size: 122px; fill: #52525b; }
+        .title { font-family: "Avenir Next", "Helvetica Neue", sans-serif; font-size: 182px; fill: #4b5563; letter-spacing: 5px; }
+        .dot-yellow { fill: #f6d84c; }
+        .dot-gray { fill: #a1a1aa; }
+        .sq { stroke: #7c818d; stroke-width: 10; fill: none; }
     </style>
 
-    <!-- Title -->
-    <text x="7500" y="800" class="text" font-size="300">EINGANG</text>
+    <rect width="10059" height="7033" fill="#ffffff"/>
+    <text x="6695" y="1020" class="title">EINGANG</text>
 
-    <!-- Structure outlines -> rough estimate, iterate to adjust -->
-    <path class="wall" d="M 5000 3500 L 7000 3500 L 7000 5000" />
-    <path class="wall" d="M 7000 3500 Q 8000 3000 8500 4500" /> <!-- Curved Eingang area -->
-    
-    <!-- Reference Point A -->
-    <text x="6800" y="3800" class="text" font-size="250">A</text>
-    <circle cx="7000" cy="3500" r="40" class="node" />
+    <path class="line" d="M 2040 2020 L 2575 1290"/>
+    <path class="line" d="M 2085 3080 L 2085 5550"/>
+    <path class="line" d="M 2085 5550 L 4700 5555"/>
+    <path class="line" d="M 2080 2760 L 4700 2760"/>
+    <path class="line" d="M 4680 2760 L 4680 5550"/>
+    <path class="line" d="M 4680 5550 L 5700 6220"/>
+    <path class="line" d="M 2085 5550 L 1420 6280"/>
+    <path class="thin" d="M 3340 5540 Q 3620 6070 3900 6460"/>
+    <path class="thin" d="M 4290 5535 Q 4515 6000 4780 6350"/>
 
-    <!-- Y2 Switch -->
-    <circle cx="7200" cy="3400" r="50" class="symbol" />
-    <path class="symbol" d="M 7200 3350 L 7200 3250 M 7150 3250 L 7250 3250" />
-    <text x="7300" y="3400" class="text">Y 2</text>
+    <path class="line" d="M 4690 2760 Q 5670 2890 6075 3175"/>
+    <path class="line" d="M 4695 2935 Q 5545 3100 6060 3495"/>
+    <path class="line" d="M 5215 3045 L 6885 4705"/>
+    <path class="thin" d="M 5205 3470 Q 5730 4175 6170 4770"/>
+    <path class="thin" d="M 4775 3235 Q 5255 3800 5620 4305"/>
+    <path class="line" d="M 6045 3505 L 7280 3445"/>
+    <path class="line" d="M 6065 3190 L 7325 2520"/>
+    <path class="thin" d="M 6030 3195 L 6880 2785"/>
 
-    <!-- Wires -->
-    <path class="wire" d="M 7000 3500 L 8000 2000" />
-    <path class="wire" d="M 7000 3500 L 9000 3500" />
+    <rect x="5365" y="1565" width="112" height="126" class="sq"/>
+    <path class="line" d="M 5430 1690 L 5420 2015"/>
+    <text x="5195" y="1265" class="title">A</text>
 
-    <!-- Wandlampe -->
-    <circle cx="8000" cy="2000" r="40" class="junction" />
-    <text x="8100" y="2000" class="text">XI WANDLAMPE</text>
+    <circle cx="5140" cy="2795" r="40" class="dot-yellow"/>
+    <circle cx="4970" cy="3075" r="40" class="dot-gray"/>
+    <circle cx="7585" cy="3260" r="40" class="dot-gray"/>
 
-    <!-- Aussenlampe -->
-    <circle cx="9000" cy="3500" r="40" class="junction" />
-    <text x="9100" y="3500" class="text">XI AUSSENLAMPE</text>
+    <path class="symbol" d="M 5050 2575 L 5140 2640"/>
+    <path class="symbol" d="M 5125 2710 L 5200 2775"/>
+    <path class="symbol" d="M 4975 2915 L 5090 2995"/>
+    <circle cx="5315" cy="2940" r="76" class="symbol"/>
+    <path class="symbol" d="M 5370 2885 L 5460 2825"/>
+    <text x="5520" y="2980" class="title">Y2</text>
 
+    <path class="symbol" d="M 7310 3400 L 7445 3250"/>
+    <path class="symbol" d="M 7315 3255 L 7440 3395"/>
+    <text x="7690" y="3510" class="title">WANDLAMPE</text>
+    <text x="7090" y="3520" class="title">XI</text>
+
+    <path class="symbol" d="M 7090 4550 L 7225 4400"/>
+    <path class="symbol" d="M 7095 4405 L 7220 4545"/>
+    <path class="symbol" d="M 7235 4715 L 7235 5100"/>
+    <path class="symbol" d="M 7235 5100 L 7430 4960"/>
+    <path class="symbol" d="M 7235 5100 L 7465 5120"/>
+    <path class="symbol" d="M 7235 5100 L 7405 5215"/>
+    <text x="7515" y="4585" class="title">AUSSENLAMPE</text>
+    <text x="6990" y="4600" class="title">XI</text>
+
+    <text x="4705" y="4340" class="title">Eingang</text>
+    <path class="thin" d="M 4760 3700 Q 5200 3825 5600 4365"/>
 </svg>

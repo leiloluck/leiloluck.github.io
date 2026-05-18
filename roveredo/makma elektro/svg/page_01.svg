@@ -1,0 +1,153 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6598 9465" width="6598" height="9465">
+    <style>
+        .rule {
+            stroke: #8a8f9a;
+            stroke-width: 10;
+            fill: none;
+            stroke-linecap: round;
+        }
+
+        .box {
+            stroke: #8a8f9a;
+            stroke-width: 9;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .title {
+            font-family: "Avenir Next", "Helvetica Neue", sans-serif;
+            font-size: 118px;
+            fill: #6f7380;
+            letter-spacing: 6px;
+        }
+
+        .text {
+            font-family: "Avenir Next", "Helvetica Neue", sans-serif;
+            font-size: 84px;
+            fill: #767b88;
+        }
+
+        .text-sm {
+            font-family: "Avenir Next", "Helvetica Neue", sans-serif;
+            font-size: 68px;
+            fill: #7f8591;
+        }
+    </style>
+
+    <rect width="6598" height="9465" fill="#ffffff"/>
+
+    <path class="rule" d="M 340 405 L 6260 405"/>
+    <text x="540" y="690" class="title">MATERIAL LISTE</text>
+    <text x="3070" y="690" class="title">ELEKTRO</text>
+
+    <text x="420" y="1200" class="title">KIR ROHR M 20</text>
+    <text x="3710" y="1200" class="title">100 m</text>
+    <text x="5300" y="1180" class="title">Waco</text>
+    <text x="5640" y="1180" class="title">klemmen</text>
+    <text x="460" y="1610" class="title">+ BRIDEN</text>
+    <text x="5350" y="1550" class="title">3er / 5er</text>
+    <text x="5280" y="1950" class="title">200 stk</text>
+    <text x="5900" y="1950" class="title">100 stk</text>
+    <path class="rule" d="M 360 2115 L 1020 2115"/>
+    <path class="rule" d="M 4900 930 L 4900 2030"/>
+
+    <path class="rule" d="M 350 2370 L 6230 2370"/>
+    <text x="430" y="2870" class="title">DOSEN</text>
+    <text x="1750" y="2860" class="title">T13</text>
+    <text x="2490" y="2860" class="title">2fach</text>
+    <text x="4070" y="2860" class="title">1 mal geschaltet</text>
+    <text x="440" y="3385" class="title">17</text>
+    <path class="rule" d="M 430 3095 L 700 3210 L 560 3385"/>
+    <text x="710" y="3385" class="title">stk</text>
+
+    <path class="rule" d="M 355 3890 L 6240 3890"/>
+    <path class="rule" d="M 4720 2405 L 4720 3880"/>
+    <text x="420" y="4285" class="title">Dosen</text>
+    <text x="1700" y="4285" class="title">T13</text>
+    <text x="2540" y="4285" class="title">2fach</text>
+    <text x="5200" y="4300" class="title">Schrauben</text>
+    <text x="470" y="4790" class="title">15</text>
+    <path class="rule" d="M 455 4600 L 640 4705 L 590 4795"/>
+    <text x="695" y="4790" class="title">stk</text>
+
+    <path class="rule" d="M 355 5105 L 6240 5105"/>
+    <path class="rule" d="M 4730 3900 L 4730 5105"/>
+    <text x="410" y="5525" class="title">schalter</text>
+    <text x="2190" y="5525" class="title">S3</text>
+    <text x="2930" y="5525" class="title">2fach</text>
+    <text x="445" y="6040" class="title">2 stk</text>
+    <text x="4305" y="5730" class="text">schalter</text>
+    <text x="4980" y="5510" class="text">Waschmaschine</text>
+    <text x="5000" y="5710" class="text">Nass? ein Sicherung?</text>
+    <text x="5030" y="5910" class="text">Boiler direkt anschluss</text>
+    <text x="4920" y="6220" class="text">Kabel</text>
+    <text x="4880" y="6430" class="text">Schalteranschlussdose</text>
+    <path class="rule" d="M 5180 5480 L 4760 5690 L 4735 6200"/>
+    <path class="rule" d="M 5425 5900 L 5850 6120 L 5660 6345"/>
+
+    <path class="rule" d="M 355 6470 L 6240 6470"/>
+    <path class="rule" d="M 4720 5115 L 4720 6460"/>
+    <text x="400" y="6905" class="title">schaltw.</text>
+    <text x="1770" y="6885" class="title">S3 / S0</text>
+    <text x="430" y="7390" class="title">4 B Stk</text>
+    <text x="3975" y="7040" class="title">Lage Bad Durchgang</text>
+    <path class="rule" d="M 4510 6630 L 6280 6630"/>
+
+    <path class="rule" d="M 355 7865 L 6240 7865"/>
+    <path class="rule" d="M 5250 6480 L 5250 7865"/>
+    <text x="430" y="7320" class="title"></text>
+    <text x="470" y="7340" class="title"></text>
+    <text x="430" y="7170" class="title"></text>
+    <text x="460" y="7315" class="title"></text>
+    <text x="460" y="7190" class="title"></text>
+    <text x="430" y="7215" class="title"></text>
+    <text x="440" y="7210" class="title"></text>
+    <text x="470" y="7220" class="title"></text>
+    <text x="470" y="7235" class="title"></text>
+    <text x="430" y="7215" class="title"></text>
+    <text x="430" y="7195" class="title"></text>
+    <text x="450" y="7175" class="title"></text>
+    <text x="440" y="7115" class="title"></text>
+    <text x="460" y="7115" class="title"></text>
+    <text x="430" y="7120" class="title"></text>
+    <text x="450" y="7135" class="title"></text>
+    <text x="470" y="7150" class="title"></text>
+    <text x="480" y="7140" class="title"></text>
+    <text x="480" y="7180" class="title"></text>
+    <text x="460" y="7145" class="title"></text>
+    <text x="470" y="7165" class="title"></text>
+    <text x="455" y="7170" class="title"></text>
+    <text x="480" y="7190" class="title"></text>
+    <text x="470" y="7200" class="title"></text>
+    <text x="460" y="7190" class="title"></text>
+    <text x="450" y="7205" class="title"></text>
+    <text x="455" y="7070" class="title">1 Dose Aussen S x T13</text>
+    <text x="1360" y="7340" class="title">Nass</text>
+    <text x="5470" y="7315" class="title">Aussen</text>
+    <text x="5480" y="7530" class="title">steckdose</text>
+
+    <path class="rule" d="M 355 8715 L 6240 8715"/>
+    <path class="rule" d="M 5230 7870 L 5230 8715"/>
+    <text x="385" y="8290" class="title">Abzweigdosen</text>
+    <text x="2250" y="8290" class="title">nicht zu klein</text>
+    <text x="860" y="8680" class="title">20 stk</text>
+    <text x="5470" y="8250" class="title">LAMPEN</text>
+    <text x="5450" y="8480" class="title">3 Decke</text>
+    <text x="5445" y="8690" class="title">1 Aussen</text>
+
+    <path class="rule" d="M 355 9340 L 6240 9340"/>
+    <text x="420" y="9035" class="title">T Draht</text>
+    <text x="440" y="9250" class="text">Erde</text>
+    <text x="960" y="9250" class="text">grün / gelb</text>
+    <text x="440" y="9450" class="text">Null</text>
+    <text x="930" y="9450" class="text">blau</text>
+    <text x="420" y="9625" class="text">Phase</text>
+    <text x="930" y="9625" class="text">braun</text>
+    <text x="3030" y="9060" class="title">ged. Phase</text>
+    <text x="4750" y="9060" class="title">weiss</text>
+    <text x="4720" y="9245" class="title">orange</text>
+    <text x="3030" y="9495" class="title">schema 3</text>
+    <text x="4750" y="9495" class="title">rosa / hellgrün</text>
+    <path class="rule" d="M 356 8850 L 1200 8850"/>
+</svg>

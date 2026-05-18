@@ -1,66 +1,102 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10051 7118" width="10051" height="7118">
-
-
     <style>
-        .wall { stroke: #64748b; stroke-width: 25; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-        .wall-thin { stroke: #94a3b8; stroke-width: 15; fill: none; stroke-dasharray: 40 40; }
-        .wire { stroke: #0284c7; stroke-width: 25; fill: none; stroke-linecap: round; }
-        .symbol { stroke: #0284c7; stroke-width: 20; fill: none; stroke-linecap: round; }
-        .text { font-family: 'Inter', sans-serif; font-size: 180px; fill: #0f172a; font-weight: 600; }
-        .text-sm { font-family: 'Inter', sans-serif; font-size: 140px; fill: #0f172a; }
-        .node { fill: #facc15; stroke: #ca8a04; stroke-width: 15; }
-        .junction { fill: #fff; stroke: #0284c7; stroke-width: 15; }
+        .line { stroke: #6b7280; stroke-width: 14; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .thin { stroke: #b1b5be; stroke-width: 8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .symbol { stroke: #52525b; stroke-width: 12; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .text { font-family: "Avenir Next", "Helvetica Neue", sans-serif; font-size: 122px; fill: #52525b; }
+        .title { font-family: "Avenir Next", "Helvetica Neue", sans-serif; font-size: 186px; fill: #4b5563; letter-spacing: 5px; }
+        .dot-yellow { fill: #f6d84c; }
+        .dot-gray { fill: #a1a1aa; }
+        .sq { stroke: #7c818d; stroke-width: 10; fill: none; }
     </style>
 
-    <!-- Title -->
-    <text x="8000" y="800" class="text" font-size="300">EMPORE</text>
+    <rect width="10051" height="7118" fill="#ffffff"/>
+    <text x="6835" y="1080" class="title">EMPORE</text>
 
-    <!-- Room Outline -->
-    <!-- Left wall -->
-    <path class="wall" d="M 2000 1000 L 2000 6000" />
-    <!-- Angled right wall -->
-    <path class="wall" d="M 2000 1000 L 8000 2000 L 7500 6000 L 2000 6000" />
+    <path class="line" d="M 3340 1655 L 3330 5775"/>
+    <path class="line" d="M 3335 1650 L 5025 1645"/>
+    <path class="line" d="M 5030 1645 L 6275 2575"/>
+    <path class="line" d="M 6275 2575 L 6275 4035"/>
+    <path class="line" d="M 3340 5775 L 4560 5775"/>
+    <path class="line" d="M 4560 5775 L 4560 3550"/>
+    <path class="line" d="M 4560 3550 L 5635 3550"/>
+    <path class="line" d="M 5635 3550 L 6265 3550"/>
+    <path class="line" d="M 6265 3550 L 5600 4035"/>
+    <path class="line" d="M 5600 4035 L 6245 4025"/>
 
-    <!-- Left Wall Controls -->
-    <!-- Point C -->
-    <circle cx="2000" cy="3000" r="40" class="node" />
-    <text x="1700" y="3000" class="text" font-size="250">C</text>
+    <path class="thin" d="M 4885 1645 L 4885 4045"/>
+    <path class="thin" d="M 4940 1645 L 4940 4045"/>
+    <path class="thin" d="M 4995 1645 L 4995 4045"/>
+    <path class="thin" d="M 5045 1645 L 5045 4045"/>
 
-    <!-- Switch Cluster C -->
-    <circle cx="2200" cy="3000" r="50" class="symbol" />
-    <circle cx="2200" cy="3150" r="50" class="symbol" />
-    
-    <!-- Point B -->
-    <circle cx="2000" cy="5000" r="40" class="node" />
-    <text x="1700" y="5000" class="text" font-size="250">B</text>
-    <path class="wire" d="M 2000 5000 L 2000 3000" />
+    <text x="2760" y="3625" class="title">C</text>
+    <path class="line" d="M 2980 3545 L 3325 3560"/>
+    <rect x="3300" y="3520" width="105" height="110" class="sq"/>
+    <path class="symbol" d="M 3490 3345 L 3595 3425"/>
+    <circle cx="3740" cy="3370" r="38" class="dot-gray"/>
+    <circle cx="3750" cy="3585" r="38" class="dot-yellow"/>
+    <circle cx="3605" cy="3445" r="72" class="symbol"/>
+    <path class="symbol" d="M 3660 3390 L 3750 3330"/>
+    <circle cx="3595" cy="3675" r="72" class="symbol"/>
+    <path class="symbol" d="M 3650 3620 L 3740 3560"/>
 
-    <!-- Central Connections D1 & D2 -->
-    <circle cx="4500" cy="3500" r="40" class="node" />
-    <text x="4300" y="3400" class="text">D1</text>
-    
-    <circle cx="5000" cy="3500" r="40" class="node" />
-    <text x="5100" y="3400" class="text">D2</text>
+    <text x="2890" y="4785" class="title">B</text>
+    <rect x="2895" y="4855" width="110" height="108" class="sq"/>
+    <path class="line" d="M 3005 4910 L 3340 4910"/>
+    <path class="line" d="M 3340 4910 L 3340 3630"/>
 
-    <!-- Wire from D2 to Venti -->
-    <path class="wire" d="M 5000 3500 L 5000 4500" />
-    <text x="5100" y="4600" class="text">Venti</text>
+    <text x="4325" y="3280" class="title">D1</text>
+    <path class="line" d="M 4560 3550 L 4350 3425"/>
+    <rect x="4320" y="3430" width="105" height="108" class="sq"/>
+    <text x="4125" y="3835" class="title">D2</text>
+    <path class="line" d="M 4375 3550 L 4365 5775"/>
 
-    <!-- Wiring to Kitchen -->
-    <path class="wire" d="M 4500 3500 L 7000 3500" />
-    
-    <!-- Kitchen Appliances and Sockets -->
-    <!-- Kühlschrank -->
-    <text x="7000" y="3000" class="text">Kühlschrank</text>
-    <circle cx="7000" cy="3200" r="50" class="symbol" />
-    <text x="7100" y="3200" class="text">Y 2</text>
+    <path class="symbol" d="M 4320 5965 C 4270 5900 4275 5835 4315 5795"/>
+    <path class="symbol" d="M 4320 5965 C 4370 5900 4365 5835 4325 5795"/>
+    <path class="symbol" d="M 4320 5965 L 4320 6075"/>
+    <text x="4445" y="6125" class="text">2</text>
 
-    <!-- Herd -->
-    <text x="7000" y="4500" class="text">Herd</text>
-    <circle cx="7000" cy="4300" r="50" class="symbol" />
-    <text x="7100" y="4300" class="text">Y 2</text>
+    <path class="line" d="M 4430 3535 L 6035 3545"/>
+    <path class="line" d="M 4425 3715 L 5655 3720"/>
+    <path class="line" d="M 5665 3715 L 6025 3990"/>
 
-    <!-- General Power -->
-    <circle cx="6500" cy="2500" r="50" class="symbol" />
-    <text x="6600" y="2500" class="text">Y 2</text>
+    <path class="symbol" d="M 4995 3905 C 4945 3840 4950 3775 4990 3735"/>
+    <path class="symbol" d="M 4995 3905 C 5045 3840 5040 3775 5000 3735"/>
+    <path class="symbol" d="M 4995 3905 L 4995 4015"/>
+    <text x="5120" y="3960" class="text">2</text>
+    <path class="symbol" d="M 5185 3890 L 5290 3970"/>
+    <text x="5295" y="4250" class="title">venti</text>
+
+    <path class="symbol" d="M 5895 3575 C 5845 3510 5850 3445 5890 3405"/>
+    <path class="symbol" d="M 5895 3575 C 5945 3510 5940 3445 5900 3405"/>
+    <path class="symbol" d="M 5895 3575 L 5895 3685"/>
+    <text x="6020" y="3630" class="text">2</text>
+
+    <path class="symbol" d="M 5510 2825 C 5460 2760 5465 2695 5505 2655"/>
+    <path class="symbol" d="M 5510 2825 C 5560 2760 5555 2695 5515 2655"/>
+    <path class="symbol" d="M 5510 2825 L 5510 2935"/>
+    <text x="5635" y="2880" class="text">2</text>
+
+    <path class="symbol" d="M 5925 2315 C 5875 2250 5880 2185 5920 2145"/>
+    <path class="symbol" d="M 5925 2315 C 5975 2250 5970 2185 5930 2145"/>
+    <path class="symbol" d="M 5925 2315 L 5925 2425"/>
+    <text x="6050" y="2370" class="text">2</text>
+
+    <path class="symbol" d="M 5920 2925 C 5870 2860 5875 2795 5915 2755"/>
+    <path class="symbol" d="M 5920 2925 C 5970 2860 5965 2795 5925 2755"/>
+    <path class="symbol" d="M 5920 2925 L 5920 3035"/>
+    <text x="6045" y="2980" class="text">2</text>
+
+    <path class="symbol" d="M 5915 3485 C 5865 3420 5870 3355 5910 3315"/>
+    <path class="symbol" d="M 5915 3485 C 5965 3420 5960 3355 5920 3315"/>
+    <path class="symbol" d="M 5915 3485 L 5915 3595"/>
+    <text x="6040" y="3540" class="text">2</text>
+
+    <path class="symbol" d="M 6175 2405 C 6125 2340 6130 2275 6170 2235"/>
+    <path class="symbol" d="M 6175 2405 C 6225 2340 6220 2275 6180 2235"/>
+    <path class="symbol" d="M 6175 2405 L 6175 2515"/>
+    <text x="6300" y="2460" class="text">2</text>
+
+    <text x="5970" y="3820" class="title">Kühlschrank</text>
+    <text x="5975" y="4200" class="title">Herd</text>
 </svg>

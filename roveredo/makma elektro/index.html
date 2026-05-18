@@ -13,6 +13,9 @@
             --text-color: #f8fafc;
             --accent: #38bdf8;
             --line-color: #0284c7;
+            --sidebar-width: 196px;
+            --toolbar-height: 48px;
+            --viewer-gap: 10px;
         }
 
         body {
@@ -26,27 +29,27 @@
         }
 
         .sidebar {
-            width: 320px;
+            width: var(--sidebar-width);
             background-color: var(--panel-bg);
             display: flex;
             flex-direction: column;
             border-right: 1px solid #334155;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.16);
             z-index: 100;
         }
 
         .nav-section {
-            padding: 24px 0;
+            padding: 12px 0;
             border-bottom: 1px solid #334155;
         }
 
         .sidebar h1 {
-            font-size: 1.1rem;
+            font-size: 0.8rem;
             text-transform: uppercase;
             letter-spacing: 1px;
-            padding: 0 24px;
+            padding: 0 14px;
             margin-top: 0;
-            margin-bottom: 24px;
+            margin-bottom: 8px;
             color: var(--accent);
         }
 
@@ -54,11 +57,11 @@
             background: none;
             border: none;
             color: var(--text-color);
-            padding: 16px 24px;
+            padding: 8px 12px;
             width: 100%;
             text-align: left;
             cursor: pointer;
-            font-size: 0.95rem;
+            font-size: 0.78rem;
             font-weight: 500;
             transition: all 0.2s;
         }
@@ -71,15 +74,15 @@
         }
 
         .desc-section {
-            padding: 24px;
+            padding: 12px;
             flex: 1;
             overflow-y: auto;
         }
         
         .desc-panel { display: none; }
         .desc-panel.active { display: block; animation: fadeIn 0.3s; }
-        .desc-panel h3 { margin-top: 0; color: var(--accent); font-size: 1.2rem; border-bottom: 1px solid #334155; padding-bottom: 12px; }
-        .desc-panel p { font-size: 0.95rem; line-height: 1.6; color: #cbd5e1; }
+        .desc-panel h3 { margin-top: 0; color: var(--accent); font-size: 0.84rem; border-bottom: 1px solid #334155; padding-bottom: 7px; margin-bottom: 8px; }
+        .desc-panel p { font-size: 0.72rem; line-height: 1.38; color: #cbd5e1; margin: 0; }
 
         .main {
             flex: 1;
@@ -89,26 +92,37 @@
         }
 
         .toolbar {
-            height: 70px;
+            min-height: var(--toolbar-height);
             background-color: var(--panel-bg);
             border-bottom: 1px solid #334155;
             display: flex;
             align-items: center;
-            padding: 0 32px;
+            padding: 0 14px;
             justify-content: space-between;
+            gap: 10px;
         }
 
-        .toolbar h2 { margin: 0; font-size: 1.4rem; font-weight: 600; }
+        .toolbar h2 { margin: 0; font-size: 0.88rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .toolbar-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
 
         .toggle-btn {
             background-color: transparent;
             color: var(--text-color);
-            border: 2px solid var(--accent);
-            padding: 10px 24px;
-            border-radius: 8px;
+            border: 1px solid var(--accent);
+            padding: 6px 10px;
+            border-radius: 6px;
             cursor: pointer;
             font-weight: 600;
+            font-size: 0.72rem;
+            line-height: 1.2;
             transition: all 0.2s;
+            white-space: nowrap;
         }
         .toggle-btn:hover { background-color: rgba(56, 189, 248, 0.1); }
         .toggle-btn.active { background-color: var(--accent); color: #0f172a; }
@@ -121,26 +135,37 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: var(--viewer-gap);
         }
 
         .page-wrapper {
             position: relative;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            background: #fff;
             display: none;
-            max-width: 100%;
-            max-height: 100%;
+            width: min(100%, calc((100vh - var(--toolbar-height) - (var(--viewer-gap) * 2)) * var(--page-ratio)));
+            max-height: calc(100vh - var(--toolbar-height) - (var(--viewer-gap) * 2));
+            aspect-ratio: var(--page-ratio);
         }
 
         .page-wrapper.active { display: inline-block; }
 
+        .page-frame {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            overflow: hidden;
+            isolation: isolate;
+            box-shadow: 0 14px 38px rgba(0,0,0,0.38);
+            border: 1px solid rgba(15, 23, 42, 0.22);
+            outline: 8px solid rgba(255, 255, 255, 0.15);
+            outline-offset: 0;
+        }
+
         .original-img {
             display: block;
-            max-width: 100%;
-            max-height: calc(100vh - 110px);
-            width: auto;
-            height: auto;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
             opacity: 0;
             transition: opacity 0.3s;
         }
@@ -154,28 +179,91 @@
             z-index: 20;
             pointer-events: none;
             mix-blend-mode: multiply;
+            transform: translate(var(--overlay-x, 0), var(--overlay-y, 0)) scale(var(--overlay-scale, 1));
+            transform-origin: top left;
         }
 
-        svg { width: 100%; height: 100%; display: block; }
-        
-        /* Styles based on exact dimensions (approx 8000x6000) */
-        .wall { stroke: #64748b; stroke-width: 25; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-        .wire { stroke: #0284c7; stroke-width: 25; fill: none; stroke-linecap: round; }
-        .symbol { stroke: #0284c7; stroke-width: 20; fill: none; stroke-linecap: round; }
-        .text { font-family: 'Inter', sans-serif; font-size: 180px; fill: #0f172a; font-weight: 600; }
-        .text-sm { font-family: 'Inter', sans-serif; font-size: 140px; fill: #0f172a; }
-        .node { fill: #facc15; stroke: #ca8a04; stroke-width: 15; }
-        .junction { fill: #fff; stroke: #0284c7; stroke-width: 15; }
+        .digital-img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
         
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .digital-layer-html {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 20;
-            padding: 5%; box-sizing: border-box; color: #0f172a; pointer-events: none;
+        @media (max-width: 900px) {
+            body {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                max-height: none;
+                border-right: 0;
+                border-bottom: 1px solid #334155;
+            }
+
+            .nav-section {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                padding: 8px 10px;
+                overflow-x: auto;
+                border-bottom: 0;
+            }
+
+            .sidebar h1 {
+                flex: 0 0 auto;
+                margin: 0 4px 0 0;
+                padding: 0;
+                font-size: 0.74rem;
+            }
+
+            .nav-btn {
+                width: auto;
+                flex: 0 0 auto;
+                padding: 7px 10px;
+                font-size: 0.72rem;
+                border-radius: 999px;
+                background-color: rgba(51, 65, 85, 0.55);
+            }
+
+            .nav-btn.active {
+                border-left: 0;
+                background-color: rgba(56, 189, 248, 0.16);
+                box-shadow: inset 0 0 0 1px var(--accent);
+            }
+
+            .desc-section {
+                display: none;
+            }
+
+            .main {
+                min-height: 0;
+            }
+
+            .toolbar {
+                min-height: 42px;
+                padding: 6px 10px;
+                align-items: center;
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+
+            .toolbar h2 {
+                white-space: normal;
+                font-size: 0.8rem;
+            }
+
+            .toolbar-actions {
+                gap: 6px;
+            }
+
+            .page-wrapper {
+                width: min(100%, calc((100dvh - 124px) * var(--page-ratio)));
+            }
         }
-        .mat-list { list-style: none; padding: 0; }
-        .mat-list li { border-bottom: 1px solid #cbd5e1; padding: 1.5vh 0; display: flex; justify-content: space-between; font-size: 1.8vh; }
-        .color-dot { display: inline-block; width: 1.5vh; height: 1.5vh; border-radius: 50%; margin-right: 8px; border: 1px solid #000; }
     </style>
 </head>
 <body>
@@ -215,7 +303,7 @@
     <div class="main">
         <div class="toolbar">
             <h2 id="current-title">Material Liste</h2>
-            <div style="display: flex; gap: 16px;">
+            <div class="toolbar-actions">
                 <a href="schematics_scans.zip" download class="toggle-btn" style="text-decoration: none; display: flex; align-items: center;">Download SVGs & Scans</a>
                 <button id="overlay-btn" class="toggle-btn">Zeichnung Einblenden</button>
             </div>
@@ -224,61 +312,52 @@
         <div class="viewer">
             
             <!-- PAGE 1 (6598x9465) -->
-            <div class="page-wrapper active" id="page1">
-                <img src="img/page_01.jpg" class="original-img show">
-                <div class="digital-layer-html">
-                    <h2 style="font-size: 3vh;">MATERIAL LISTE ELEKTRO</h2>
-                    <ul class="mat-list">
-                        <li><strong>KIR ROHR M 20 + BRIDEN</strong> <span>100m</span></li>
-                        <li><strong>Waco klemmen 3er/5er</strong> <span>200 Stk / 100 Stk</span></li>
-                        <li><strong>DOSEN T13 2fach 1 mal geschaltet</strong> <span>17 Stk</span></li>
-                        <li><strong>Dosen T13 2fach</strong> <span>15 Stk</span></li>
-                        <li><strong>Schalter S3 2fach</strong> <span>2 Stk</span></li>
-                        <li><strong>Schalter S3/S0</strong> <span>4 Stk</span></li>
-                        <li><strong>1 Dose Aussen S x T13 (Nass)</strong> <span>1 Stk</span></li>
-                        <li><strong>Abzweigdosen nicht zu klein</strong> <span>20 Stk</span></li>
-                    </ul>
-                    <div style="margin-top: 4vh;">
-                        <ul class="mat-list">
-                            <li><span><i class="color-dot" style="background: linear-gradient(90deg, #4ade80 50%, #facc15 50%);"></i> Erde</span> <span>grün / gelb</span></li>
-                            <li><span><i class="color-dot" style="background: #38bdf8;"></i> Null</span> <span>blau</span></li>
-                            <li><span><i class="color-dot" style="background: #a16207;"></i> Phase</span> <span>braun</span></li>
-                            <li><span><i class="color-dot" style="background: #ffffff;"></i> gesch. Phase</span> <span>weiss / orange</span></li>
-                            <li><span><i class="color-dot" style="background: #f472b6;"></i> Schema 3</span> <span>rosa / hellgrün</span></li>
-                        </ul>
+            <div class="page-wrapper active" id="page1" style="--page-ratio: 6598 / 9465; --overlay-scale: 1.01; --overlay-x: -0.72%; --overlay-y: 1.5%;">
+                <div class="page-frame">
+                    <img src="img/page_01.jpg" class="original-img show">
+                    <div class="digital-layer">
+                        <img src="svg/page_01.svg" class="digital-img" alt="Digitalisierte Materialliste">
                     </div>
                 </div>
             </div>
             
             <!-- PAGE 2 (8861x6234) -->
-            <div class="page-wrapper" id="page2">
-                <img src="img/page_02.jpg" class="original-img">
-                <div class="digital-layer">
-                    <img src="svg/page_02.svg" style="width: 100%; height: 100%; display: block;">
+            <div class="page-wrapper" id="page2" style="--page-ratio: 8861 / 6234; --overlay-scale: 1; --overlay-x: -1%; --overlay-y: 2.13%;">
+                <div class="page-frame">
+                    <img src="img/page_02.jpg" class="original-img show">
+                    <div class="digital-layer">
+                        <img src="svg/page_02.svg" class="digital-img" alt="Digitalisierte Seite 2">
+                    </div>
                 </div>
             </div>
 
             <!-- PAGE 3 (9398x6408) -->
-            <div class="page-wrapper" id="page3">
-                <img src="img/page_03.jpg" class="original-img">
-                <div class="digital-layer">
-                    <img src="svg/page_03.svg" style="width: 100%; height: 100%; display: block;">
+            <div class="page-wrapper" id="page3" style="--page-ratio: 9398 / 6408; --overlay-scale: 0.988; --overlay-x: 0.7%; --overlay-y: 0.2%;">
+                <div class="page-frame">
+                    <img src="img/page_03.jpg" class="original-img show">
+                    <div class="digital-layer">
+                        <img src="svg/page_03.svg" class="digital-img" alt="Digitalisierte Seite 3">
+                    </div>
                 </div>
             </div>
 
             <!-- PAGE 4 (10059x7033) -->
-            <div class="page-wrapper" id="page4">
-                <img src="img/page_04.jpg" class="original-img">
-                <div class="digital-layer">
-                    <img src="svg/page_04.svg" style="width: 100%; height: 100%; display: block;">
+            <div class="page-wrapper" id="page4" style="--page-ratio: 10059 / 7033; --overlay-scale: 0.971; --overlay-x: -1.46%; --overlay-y: -2.09%;">
+                <div class="page-frame">
+                    <img src="img/page_04.jpg" class="original-img show">
+                    <div class="digital-layer">
+                        <img src="svg/page_04.svg" class="digital-img" alt="Digitalisierte Seite 4">
+                    </div>
                 </div>
             </div>
 
             <!-- PAGE 5 (10051x7118) -->
-            <div class="page-wrapper" id="page5">
-                <img src="img/page_05.jpg" class="original-img">
-                <div class="digital-layer">
-                    <img src="svg/page_05.svg" style="width: 100%; height: 100%; display: block;">
+            <div class="page-wrapper" id="page5" style="--page-ratio: 10051 / 7118; --overlay-scale: 0.99; --overlay-x: -1.5%; --overlay-y: 0%;">
+                <div class="page-frame">
+                    <img src="img/page_05.jpg" class="original-img show">
+                    <div class="digital-layer">
+                        <img src="svg/page_05.svg" class="digital-img" alt="Digitalisierte Seite 5">
+                    </div>
                 </div>
             </div>
 
@@ -291,41 +370,55 @@
         const descPanels = document.querySelectorAll('.desc-panel');
         const overlayBtn = document.getElementById('overlay-btn');
         const titleEl = document.getElementById('current-title');
+        const originalImages = document.querySelectorAll('.original-img');
         
         let overlayActive = true; 
 
+        function syncOverlayState() {
+            overlayBtn.classList.toggle('active', overlayActive);
+            overlayBtn.textContent = overlayActive ? 'Zeichnung Ausblenden' : 'Zeichnung Einblenden';
+            originalImages.forEach(img => img.classList.toggle('show', overlayActive));
+        }
+
+        function activatePage(targetId) {
+            const targetBtn = document.querySelector(`.nav-btn[data-target="${targetId}"]`);
+            if (!targetBtn) return;
+
+            navBtns.forEach(b => b.classList.remove('active'));
+            targetBtn.classList.add('active');
+
+            titleEl.textContent = targetBtn.textContent.trim();
+
+            pages.forEach(p => p.classList.remove('active'));
+            document.getElementById(targetId).classList.add('active');
+
+            descPanels.forEach(p => p.classList.remove('active'));
+            const desc = document.getElementById('desc-' + targetId);
+            if (desc) desc.classList.add('active');
+        }
+
         navBtns.forEach(btn => {
             btn.addEventListener('click', () => {
-                navBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                
-                titleEl.textContent = btn.textContent.trim();
-                
                 const targetId = btn.getAttribute('data-target');
-                pages.forEach(p => p.classList.remove('active'));
-                document.getElementById(targetId).classList.add('active');
-                
-                descPanels.forEach(p => p.classList.remove('active'));
-                document.getElementById('desc-' + targetId).classList.add('active');
+                activatePage(targetId);
+                const url = new URL(window.location.href);
+                url.searchParams.set('page', targetId);
+                window.history.replaceState({}, '', url);
             });
         });
 
         overlayBtn.addEventListener('click', () => {
             overlayActive = !overlayActive;
-            if(overlayActive) {
-                overlayBtn.classList.add('active');
-                overlayBtn.textContent = 'Zeichnung Ausblenden';
-                document.querySelectorAll('.original-img').forEach(img => img.classList.add('show'));
-            } else {
-                overlayBtn.classList.remove('active');
-                overlayBtn.textContent = 'Zeichnung Einblenden';
-                document.querySelectorAll('.original-img').forEach(img => img.classList.remove('show'));
-            }
+            syncOverlayState();
         });
         
         // init
-        overlayBtn.classList.add('active');
-        overlayBtn.textContent = 'Zeichnung Ausblenden';
+        syncOverlayState();
+
+        const pageParam = new URLSearchParams(window.location.search).get('page');
+        const pageFromHash = window.location.hash ? window.location.hash.slice(1) : '';
+        const initialPage = pageParam || pageFromHash;
+        if (initialPage) activatePage(initialPage);
     </script>
 </body>
 </html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Coordinate Picker</title>
+<style>
+  body { margin: 0; padding: 0; background: #333; color: white; font-family: monospace; }
+  #container { position: relative; display: inline-block; }
+  img { display: block; }
+  #log { position: fixed; right: 0; top: 0; width: 300px; height: 100vh; overflow-y: scroll; background: rgba(0,0,0,0.8); padding: 10px; }
+</style>
+</head>
+<body>
+  <div id="container">
+    <img id="img" src="img/page_03.jpg" width="9398" height="6408" style="transform-origin: top left; transform: scale(0.1);" />
+  </div>
+  <div id="log">
+    <h3>Coordinates</h3>
+    <button onclick="document.getElementById('log_content').innerHTML = ''">Clear</button>
+    <div id="log_content"></div>
+  </div>
+  <script>
+    const img = document.getElementById('img');
+    const log = document.getElementById('log_content');
+    img.addEventListener('click', (e) => {
+      const rect = img.getBoundingClientRect();
+      const scale = 0.1; // same as transform scale
+      const x = Math.round((e.clientX - rect.left) / scale);
+      const y = Math.round((e.clientY - rect.top) / scale);
+      log.innerHTML += `<div>X: ${x}, Y: ${y}</div>`;
+      // Draw a point
+      const pt = document.createElement('div');
+      pt.style.position = 'absolute';
+      pt.style.left = (e.clientX - rect.left) + 'px';
+      pt.style.top = (e.clientY - rect.top) + 'px';
+      pt.style.width = '4px';
+      pt.style.height = '4px';
+      pt.style.background = 'red';
+      pt.style.borderRadius = '50%';
+      document.getElementById('container').appendChild(pt);
+    });
+  </script>
+</body>
+</html>

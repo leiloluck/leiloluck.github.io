@@ -33,6 +33,10 @@
     <div class="flex items-center justify-end gap-2 px-4 py-1.5 border-b border-[#2a2a28]"
         style="background:rgba(0,0,0,0.25)">
         <span id="app-version" class="text-[11px] font-mono text-gray-600 tracking-wider"></span>
+        <button id="offline-btn"
+            class="text-[11px] font-mono border border-[#3a3a38] text-gray-400 hover:text-gray-200 hover:border-gray-400 px-2 py-0.5 transition-colors">
+            Install for offline
+        </button>
         <button id="install-btn" onclick="handleInstallBtn()"
             class="hidden text-[11px] font-mono border border-[#3a3a38] text-gray-400 hover:text-gray-200 hover:border-gray-400 px-2 py-0.5 transition-colors">
         </button>
@@ -381,13 +385,15 @@
 
     <!-- PWA: service worker registration + install/update button logic -->
     <script>
-        const APP_VERSION = 'v14.05.26';
+        const APP_VERSION = 'v30.05.26';
         let deferredInstallPrompt = null;
 
         // Show version
         document.getElementById('app-version').textContent = APP_VERSION;
 
         const installBtn = document.getElementById('install-btn');
+        const offlineBtn = document.getElementById('offline-btn');
+        const OFFLINE_READY_KEY = 'harm-reduction-offline-ready';
 
         // Detect if already running as installed PWA
         const isStandalone =
@@ -443,6 +449,65 @@
             }
         }
 
+        // ── Offline button ────────────────────────────────────────────────────
+        // All app content is pre-cached by the service worker on first install.
+        // This button: (1) triggers PWA install if the browser has queued a prompt,
+        // (2) waits for the SW to finish caching, (3) confirms offline readiness.
+
+        async function isOfflineReady() {
+            if (!('caches' in window)) return false;
+            try {
+                const keys = await caches.keys();
+                for (const name of keys) {
+                    if (!name.startsWith('harm-reduction-')) continue;
+                    const cache = await caches.open(name);
+                    const match = await cache.match('./index.html');
+                    if (match) return true;
+                }
+                return false;
+            } catch { return false; }
+        }
+
+        function markOfflineReady() {
+            offlineBtn.textContent = 'Offline ready ✓';
+            offlineBtn.disabled = true;
+            localStorage.setItem(OFFLINE_READY_KEY, '1');
+        }
+
+        async function initOfflineBtn() {
+            if (localStorage.getItem(OFFLINE_READY_KEY) === '1' || await isOfflineReady()) {
+                markOfflineReady();
+            }
+        }
+
+        offlineBtn.addEventListener('click', async () => {
+            // Step 1: trigger PWA install if the browser has queued a prompt (Android Chrome)
+            if (deferredInstallPrompt) {
+                deferredInstallPrompt.prompt();
+                const { outcome } = await deferredInstallPrompt.userChoice;
+                deferredInstallPrompt = null;
+                if (outcome === 'accepted') {
+                    localStorage.setItem('pwa-installed', '1');
+                    showAsUpdate();
+                }
+            }
+            // Step 2: wait for SW to finish pre-caching, then confirm offline readiness
+            offlineBtn.textContent = 'Installing…';
+            offlineBtn.disabled = true;
+            try {
+                if ('serviceWorker' in navigator) await navigator.serviceWorker.ready;
+                if (await isOfflineReady()) {
+                    markOfflineReady();
+                } else {
+                    offlineBtn.textContent = 'Install for offline';
+                    offlineBtn.disabled = false;
+                }
+            } catch {
+                offlineBtn.textContent = 'Install for offline';
+                offlineBtn.disabled = false;
+            }
+        });
+
         // Register service worker and auto-reload when a new version takes over
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js').catch(err => {
@@ -456,6 +521,8 @@
                 if (hadController) window.location.reload();
             });
         }
+
+        initOfflineBtn();
     </script>
 
 </body>

@@ -55,9 +55,7 @@ let gainNode    = null;
 let audioEl     = null;
 let mediaSource = null;
 
-let dongAudio1  = null;
-let dongAudio2  = null;
-let dongAudio3  = null;
+let bellBuffer  = null;   // decoded PCM for end-of-session bells
 
 function ensureAudio() {
   if (audioEl) return;
@@ -68,19 +66,30 @@ function ensureAudio() {
   audioEl.loop = selectedSound.type === 'loop';
   audioEl.preload = 'metadata';
 
-  dongAudio1 = new Audio('./resources/Single bowl sound.mp3');
-  dongAudio1.preload = 'auto';
-  dongAudio2 = new Audio('./resources/Single bowl sound.mp3');
-  dongAudio2.preload = 'auto';
-  dongAudio3 = new Audio('./resources/Single bowl sound.mp3');
-  dongAudio3.preload = 'auto';
-
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   mediaSource = audioCtx.createMediaElementSource(audioEl);
   gainNode = audioCtx.createGain();
   gainNode.gain.value = 0;
   mediaSource.connect(gainNode);
   gainNode.connect(audioCtx.destination);
+
+  // Pre-decode bell audio so it can be scheduled via the audio clock
+  // (AudioBufferSourceNode is reliable on locked screens; plain Audio is not)
+  fetch('./resources/Single bowl sound.mp3')
+    .then(r => r.arrayBuffer())
+    .then(buf => audioCtx.decodeAudioData(buf))
+    .then(decoded => { bellBuffer = decoded; })
+    .catch(() => {});
+}
+
+function playBell(offsetSeconds) {
+  if (!audioCtx || !bellBuffer) return;
+  const src = audioCtx.createBufferSource();
+  src.buffer = bellBuffer;
+  // Connect directly to destination — bypasses the fade gainNode so bells
+  // always play at full volume even when the session audio has faded to 0.
+  src.connect(audioCtx.destination);
+  src.start(audioCtx.currentTime + offsetSeconds);
 }
 
 // ── Timer loop ───────────────────────────────────────────────────────────────
@@ -275,23 +284,12 @@ function onSessionEnd() {
 
   document.body.classList.add('session-complete');
 
-  // Triple bell — all three within one second
-  if (dongAudio1) {
-    dongAudio1.currentTime = 0;
-    dongAudio1.play().catch(() => {});
-  }
-  setTimeout(() => {
-    if (dongAudio2) {
-      dongAudio2.currentTime = 0;
-      dongAudio2.play().catch(() => {});
-    }
-  }, 400);
-  setTimeout(() => {
-    if (dongAudio3) {
-      dongAudio3.currentTime = 0;
-      dongAudio3.play().catch(() => {});
-    }
-  }, 800);
+  // Triple bell — scheduled via audio clock so they fire on a locked screen.
+  // AudioBufferSourceNode.start() is handled by the Web Audio engine, not JS timers.
+  if (audioCtx) audioCtx.resume(); // defensive: keep context running
+  playBell(0);
+  playBell(0.4);
+  playBell(0.8);
 
   // Fade-out ramp is already running via scheduleUnfadeOut.
   // Clean up sooner after the bells finish.
@@ -476,6 +474,7 @@ function renderSounds() {
         audioEl.pause();
         audioEl = null; mediaSource = null; gainNode = null;
         if (audioCtx) { audioCtx.close(); audioCtx = null; }
+        bellBuffer = null;
       }
     });
     elSoundGroup.appendChild(btn);
@@ -768,12 +767,27 @@ function markAudioReady() {
 }
 
 elOfflineBtn.addEventListener('click', async () => {
+  // Step 1: trigger PWA install if the browser has queued a prompt (Android Chrome)
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    const { outcome } = await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    if (outcome === 'accepted') {
+      localStorage.setItem(INSTALLED_KEY, '1');
+      elInstallBtn.classList.add('hidden');
+    }
+  }
+
+  // Step 2: download every audio file so the full app works without a connection
   elOfflineBtn.textContent = 'Downloading…';
   elOfflineBtn.disabled = true;
   try {
-    const resp = await fetch(new Request(selectedSound.file));
-    if (!resp.ok) throw new Error('fetch failed');
-    await resp.arrayBuffer();
+    const audioUrls = [...new Set(SOUNDS.map(s => s.file).concat(['./resources/Single bowl sound.mp3']))];
+    await Promise.all(audioUrls.map(async url => {
+      const resp = await fetch(new Request(url));
+      if (!resp.ok) throw new Error('fetch failed');
+      await resp.arrayBuffer();
+    }));
     markAudioReady();
   } catch {
     elOfflineBtn.textContent = 'Download failed — retry';

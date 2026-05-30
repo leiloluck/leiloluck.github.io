@@ -4,7 +4,7 @@
     On version bump: old caches are evicted during activate; controllerchange triggers a page reload.
 */
 
-const VERSION = 'v14.05.26';
+const VERSION = 'v30.05.26';
 const CACHE = `harm-reduction-${VERSION}`;
 
 // Local files to pre-cache on install

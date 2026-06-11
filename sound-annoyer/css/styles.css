@@ -13,8 +13,8 @@
   --bg:         #030309;
   --surface:    #07070f;
   --surface2:   #0c0c18;
-  --border:     #191924;
-  --border-hi:  #25253a;
+  --border:     #1e1e30;
+  --border-hi:  #34344e;     /* brighter — buttons readable on near-black */
   --cyan:       #00ccee;
   --cyan-dim:   #006677;
   --cyan-bg:    rgba(0, 204, 238, 0.07);
@@ -23,8 +23,8 @@
   --amber-bg:   rgba(255, 170, 0, 0.09);
   --red:        #ff3300;
   --red-bg:     rgba(255, 51, 0, 0.10);
-  --text:       #bcc8d4;
-  --muted:      #3e4a56;
+  --text:       #d2dce6;     /* brighter body text */
+  --muted:      #7a8c9c;     /* was #3e4a56 — the main readability fix */
   --fade:       110ms ease;
   --mono:       "Courier New", Courier, monospace;
   --page-pad-x: clamp(12px, 4vw, 20px);
@@ -52,7 +52,7 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--mono);
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.4;
   height: 100vh;
   height: 100dvh;
@@ -117,9 +117,9 @@ body {
 
 .tagline {
   margin-top: 4px;
-  font-size: 10px;
+  font-size: 11px;
   color: var(--muted);
-  letter-spacing: 0.22em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   font-family: var(--mono);
 }
@@ -166,12 +166,12 @@ body.fired .hero-emoji {
 }
 
 .hero-status {
-  font-size: 11px;
+  font-size: 13px;
   font-family: var(--mono);
   color: var(--text);
-  letter-spacing: 0.10em;
+  letter-spacing: 0.08em;
   text-align: center;
-  min-height: 16px;
+  min-height: 18px;
   text-transform: uppercase;
 }
 
@@ -183,11 +183,11 @@ body.running .hero-status {
 
 .hero-sub {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
   letter-spacing: 0.04em;
   text-align: center;
-  min-height: 14px;
+  min-height: 16px;
 }
 
 /* ── Launch button ── */
@@ -246,8 +246,8 @@ body.running .btn-launch:hover {
 .section { flex-shrink: 0; }
 
 .section-label {
-  font-size: 9px;
-  letter-spacing: 0.24em;
+  font-size: 11px;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--muted);
   margin-bottom: 5px;
@@ -258,7 +258,7 @@ body.running .btn-launch:hover {
 }
 
 .section-hint {
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.06em;
   color: var(--cyan-dim);
   text-transform: none;
@@ -289,12 +289,12 @@ body.running .btn-launch:hover {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  padding: 8px 3px;
-  min-height: 56px;
+  gap: 3px;
+  padding: 10px 4px;
+  min-height: 66px;
   background: var(--surface);
   border: 1px solid var(--border-hi);
-  color: var(--muted);
+  color: var(--text);
   font-family: var(--mono);
   cursor: pointer;
   text-align: center;
@@ -305,15 +305,15 @@ body.running .btn-launch:hover {
 .sound-btn:active { transform: scale(0.93); }
 
 .sound-btn .s-emoji {
-  font-size: 21px;
+  font-size: 24px;
   line-height: 1;
-  filter: grayscale(0.65) opacity(0.65);
+  filter: grayscale(0.2) opacity(0.85);
   transition: filter var(--fade);
 }
 
 .sound-btn .s-label { display: flex; flex-direction: column; align-items: center; width: 100%; }
-.sound-btn .s-name { font-size: 10px; font-weight: bold; line-height: 1.1; font-family: var(--mono); }
-.sound-btn .s-tag { font-size: 8px; opacity: 0.45; line-height: 1.1; }
+.sound-btn .s-name { font-size: 12px; font-weight: bold; line-height: 1.15; font-family: var(--mono); }
+.sound-btn .s-tag { font-size: 10px; opacity: 0.6; line-height: 1.1; }
 
 .sound-btn.armed {
   border-color: var(--amber);
@@ -349,28 +349,28 @@ body.test-mode #sound-hint { color: var(--cyan); opacity: 0.95; }
 }
 
 .interval-btn {
-  padding: 7px 2px;
+  padding: 9px 4px;
   background: var(--surface);
   border: 1px solid var(--border-hi);
-  color: var(--muted);
+  color: var(--text);
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 14px;
   cursor: pointer;
   text-align: center;
   transition: border-color var(--fade), color var(--fade), background var(--fade);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1px;
+  gap: 2px;
   min-width: 0;
 }
 
 .interval-btn .i-tag {
   font-family: var(--mono);
-  font-size: 7px;
+  font-size: 9px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  opacity: 0.45;
+  opacity: 0.55;
 }
 
 .interval-btn:hover:not(.selected) { border-color: var(--cyan-dim); color: var(--text); }
@@ -434,8 +434,8 @@ body.test-mode #sound-hint { color: var(--cyan); opacity: 0.95; }
 .toggle-test[aria-checked="true"] .toggle-thumb { background: var(--amber); }
 
 .toggle-text { display: flex; flex-direction: column; min-width: 0; }
-.toggle-title { font-size: 11px; font-weight: bold; line-height: 1.15; font-family: var(--mono); }
-.toggle-sub { font-size: 8px; color: var(--muted); font-family: var(--mono); line-height: 1.15; }
+.toggle-title { font-size: 13px; font-weight: bold; line-height: 1.15; font-family: var(--mono); }
+.toggle-sub { font-size: 10px; color: var(--muted); font-family: var(--mono); line-height: 1.15; }
 
 /* ── Footer ── */
 
@@ -454,11 +454,11 @@ body.test-mode #sound-hint { color: var(--cyan); opacity: 0.95; }
   background: transparent;
   border: 1px solid var(--border-hi);
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
   font-family: var(--mono);
-  padding: 4px 9px;
+  padding: 5px 11px;
   cursor: pointer;
-  letter-spacing: 0.10em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   transition: border-color var(--fade), color var(--fade);
 }

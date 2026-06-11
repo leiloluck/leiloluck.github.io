@@ -1,13 +1,23 @@
 /* app.js — Meditation Timer
-   Audio engine (Web Audio API), drift-free timer, Media Session, custom time, PWA. */
+   Audio engine (Web Audio API), drift-free timer, Media Session, custom time, PWA.
+
+   Lock-screen reliability:
+   All audio events that must fire while the phone is locked — the end-of-session
+   fade-out, the triple end bell, and the interval beats — are scheduled on the
+   AudioContext hardware clock at session start (source.start(when) / gain ramps).
+   The Web Audio clock keeps running while the screen is off; requestAnimationFrame
+   and setTimeout do NOT. rAF is therefore used only to update the visible countdown
+   and to drive UI cleanup once the screen is visible again. */
 
 'use strict';
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 //
 // type: 'loop'     — audio element loops continuously throughout the session.
-// type: 'interval' — sound plays once per intervalMs. Looping is managed by the
-//                    beat scheduler below, not by the audio element itself.
+//                    Fades run on the shared gain node.
+// type: 'interval' — a bell hit is scheduled every intervalMs on the audio clock
+//                    (no looping media element). Beats run through the gain node
+//                    so they fade in/out with the session.
 
 const SOUNDS = [
   {
@@ -35,6 +45,21 @@ const FADE_OUT = 10;
 const PAUSE_FADE_OUT = 2;    // user-initiated stop/pause
 const RESUME_FADE_IN = 0.5;  // resume after pause
 
+// End-of-session bells: three strikes, spaced.
+const END_BELL_OFFSETS = [0, 0.4, 0.8];
+
+// Interval bell pitch variation: each beat is randomly detuned by a sample drawn
+// from N(0, BELL_DETUNE_SD²) in cents. ±15 cents (1 SD) is subtle — audibly
+// different each strike without sounding out of tune. End bells are not detuned.
+const BELL_DETUNE_SD = 15;
+
+function randn() {
+  // Box-Muller transform: two uniform samples → one standard-normal sample.
+  const u = 1 - Math.random();
+  const v = Math.random();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+
 // ── State ────────────────────────────────────────────────────────────────────
 
 let selectedSound     = SOUNDS[0];
@@ -44,9 +69,7 @@ let sessionDurationMs = 0;
 let elapsedMs         = 0;
 let startTimestamp    = null;
 let rafId             = null;
-let fadeOutTimeout    = null;
-let bgFadeTimeout     = null;      // delayed audio.pause() after user-initiated fade-out
-let intervalBeatTimeout = null;    // pending next beat for 'interval' sounds
+let bgFadeTimeout     = null;      // delayed audio.pause() after a user-initiated fade-out
 
 // ── Audio setup ──────────────────────────────────────────────────────────────
 
@@ -55,7 +78,12 @@ let gainNode    = null;
 let audioEl     = null;
 let mediaSource = null;
 
-let bellBuffer  = null;   // decoded PCM for end-of-session bells
+let bellBuffer  = null;            // decoded PCM for interval beats + end-of-session bells
+let scheduledSources = [];         // AudioBufferSourceNodes scheduled ahead on the audio clock
+let keepAliveSrc = null;           // silent looping source that keeps the context awake
+
+let silentEl  = null;              // silent looping <audio> — keeps the iOS audio session alive
+let silentUrl = null;              // blob: URL for the generated silent clip
 
 function ensureAudio() {
   if (audioEl) return;
@@ -73,34 +101,195 @@ function ensureAudio() {
   mediaSource.connect(gainNode);
   gainNode.connect(audioCtx.destination);
 
-  // Pre-decode bell audio so it can be scheduled via the audio clock
-  // (AudioBufferSourceNode is reliable on locked screens; plain Audio is not)
+  // Pre-decode the bell so it can be scheduled via the audio clock.
+  // AudioBufferSourceNode.start() is driven by the Web Audio engine, so it fires
+  // reliably on a locked screen — plain Audio elements do not.
+  //
+  // Race guard: if the user starts a session before decode finishes, bellBuffer is
+  // null and scheduleHit silently drops every hit. When the buffer arrives we check
+  // whether a session is already running and reschedule from the current position.
   fetch('./resources/Single bowl sound.mp3')
     .then(r => r.arrayBuffer())
     .then(buf => audioCtx.decodeAudioData(buf))
-    .then(decoded => { bellBuffer = decoded; })
+    .then(decoded => {
+      bellBuffer = decoded;
+      if ((state === 'playing' || state === 'finishing') && audioCtx && startTimestamp !== null) {
+        const elapsed = elapsedMs + (performance.now() - startTimestamp);
+        const remaining = Math.max(0, sessionDurationMs - elapsed);
+        if (remaining > 0) {
+          clearScheduledSources();
+          scheduleAudioFrom(remaining, true);
+        }
+      }
+    })
     .catch(() => {});
 }
 
-function playBell(offsetSeconds) {
+// Schedule one bell strike at an absolute AudioContext time.
+//   throughGain  true  → routed through the fade gain (interval beats fade in/out)
+//   throughGain  false → routed straight to the output (end bells always full volume)
+//   detuneCents        → optional pitch offset in cents (0 = no change)
+function scheduleHit(ctxTime, throughGain, detuneCents = 0) {
   if (!audioCtx || !bellBuffer) return;
   const src = audioCtx.createBufferSource();
   src.buffer = bellBuffer;
-  // Connect directly to destination — bypasses the fade gainNode so bells
-  // always play at full volume even when the session audio has faded to 0.
-  src.connect(audioCtx.destination);
-  src.start(audioCtx.currentTime + offsetSeconds);
+  if (detuneCents !== 0) src.detune.value = detuneCents;
+  src.connect(throughGain ? gainNode : audioCtx.destination);
+  src.start(ctxTime);
+  src.onended = () => { scheduledSources = scheduledSources.filter(s => s !== src); };
+  scheduledSources.push(src);
+}
+
+// Stop and forget every source we scheduled ahead (used on pause / stop / sound switch).
+function clearScheduledSources() {
+  scheduledSources.forEach(s => {
+    try { s.stop(); } catch {}
+    try { s.disconnect(); } catch {}
+  });
+  scheduledSources = [];
+}
+
+// A silent looping buffer keeps the AudioContext from being suspended between
+// events while the screen is locked — important for 'interval' mode, which has
+// no continuously-playing media element of its own.
+function startKeepAlive() {
+  if (!audioCtx) return;
+  stopKeepAlive();
+  const buf = audioCtx.createBuffer(1, audioCtx.sampleRate, audioCtx.sampleRate);
+  keepAliveSrc = audioCtx.createBufferSource();
+  keepAliveSrc.buffer = buf;
+  keepAliveSrc.loop = true;
+  keepAliveSrc.connect(audioCtx.destination);
+  keepAliveSrc.start();
+}
+
+function stopKeepAlive() {
+  if (!keepAliveSrc) return;
+  try { keepAliveSrc.stop(); } catch {}
+  try { keepAliveSrc.disconnect(); } catch {}
+  keepAliveSrc = null;
+}
+
+// iOS suspends the AudioContext the moment no media element is playing — which is
+// exactly the case in 'interval' mode (no looping soundtrack). A Web Audio silent
+// buffer is not enough to hold the audio session open on iOS; a real, playing
+// <audio> element is. So we generate a tiny silent WAV (as a blob: URL, since the
+// CSP allows blob: but not data: for media) and loop it silently for the whole
+// interval session. This keeps the session — and therefore the scheduled bells —
+// alive while the screen is locked.
+
+function makeSilentWavBlob(seconds = 1, sampleRate = 8000) {
+  const numSamples = Math.floor(seconds * sampleRate);
+  const buffer = new ArrayBuffer(44 + numSamples * 2);
+  const view = new DataView(buffer);
+  const writeStr = (offset, str) => {
+    for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+  };
+  writeStr(0, 'RIFF');
+  view.setUint32(4, 36 + numSamples * 2, true);
+  writeStr(8, 'WAVE');
+  writeStr(12, 'fmt ');
+  view.setUint32(16, 16, true);             // fmt chunk size
+  view.setUint16(20, 1, true);              // PCM
+  view.setUint16(22, 1, true);              // mono
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true); // byte rate
+  view.setUint16(32, 2, true);              // block align
+  view.setUint16(34, 16, true);             // bits per sample
+  writeStr(36, 'data');
+  view.setUint32(40, numSamples * 2, true); // samples left zero-filled → silence
+  return new Blob([view], { type: 'audio/wav' });
+}
+
+function ensureSilentEl() {
+  if (silentEl) return;
+  silentUrl = URL.createObjectURL(makeSilentWavBlob());
+  silentEl = new Audio(silentUrl);
+  silentEl.loop = true;
+  // Played directly (not through the AudioContext): its only job is to keep the
+  // platform audio session active so the context's scheduled bells keep firing.
+}
+
+function startSilentKeepAlive() {
+  ensureSilentEl();
+  silentEl.currentTime = 0;
+  silentEl.play().catch(() => {});
+}
+
+function stopSilentKeepAlive() {
+  if (silentEl) silentEl.pause();
+}
+
+// ── Audio scheduling ─────────────────────────────────────────────────────────
+// Schedules the entire remaining session — fade envelope, interval beats, and the
+// triple end bell — on the audio clock, starting from audioCtx.currentTime. Called
+// at session start and again on every resume. Because every event is placed on the
+// hardware clock, the session ends (and the bells ring) even if the screen locks.
+
+function scheduleAudioFrom(remainingMs, resuming) {
+  const t0      = audioCtx.currentTime;
+  const remSec  = remainingMs / 1000;
+  const totalSec = sessionDurationMs / 1000;
+  const elapsedSec = elapsedMs / 1000;
+  const fades   = scaledFades(sessionDurationMs);
+
+  // ── Gain envelope ──
+  gainNode.gain.cancelScheduledValues(t0);
+  const startGain = resuming ? Math.max(gainNode.gain.value, 0.0001) : 0;
+  gainNode.gain.setValueAtTime(startGain, t0);
+
+  let fadeInEnd;
+  if (!resuming) {
+    gainNode.gain.linearRampToValueAtTime(1, t0 + fades.in);
+    fadeInEnd = t0 + fades.in;
+  } else if (elapsedMs < fades.in * 1000) {
+    const timeLeft = Math.max(RESUME_FADE_IN, fades.in - elapsedSec);
+    gainNode.gain.linearRampToValueAtTime(1, t0 + timeLeft);
+    fadeInEnd = t0 + timeLeft;
+  } else {
+    gainNode.gain.linearRampToValueAtTime(1, t0 + RESUME_FADE_IN);
+    fadeInEnd = t0 + RESUME_FADE_IN;
+  }
+
+  // Hold at full, then fade out to land on zero exactly at the end.
+  const fadeOutAnchor = Math.max(fadeInEnd, t0 + Math.max(0, remSec - fades.out));
+  gainNode.gain.setValueAtTime(1, fadeOutAnchor);
+  gainNode.gain.linearRampToValueAtTime(0, t0 + remSec);
+
+  // ── Interval beats (faded, through the gain node, with subtle pitch variation) ──
+  if (selectedSound.type === 'interval') {
+    const intervalSec = selectedSound.intervalMs / 1000;
+    const firstN = resuming ? Math.ceil(elapsedSec / intervalSec) : 0;
+    for (let n = firstN; n * intervalSec < totalSec; n++) {
+      const when = t0 + (n * intervalSec - elapsedSec);
+      if (when >= t0 - 0.001) {
+        scheduleHit(Math.max(t0, when), true, randn() * BELL_DETUNE_SD);
+      }
+    }
+  }
+
+  // ── Triple end bell (full volume, bypassing the fade) ──
+  END_BELL_OFFSETS.forEach(off => scheduleHit(t0 + remSec + off, false));
 }
 
 // ── Timer loop ───────────────────────────────────────────────────────────────
+// Drives the visible countdown only. All audio is already scheduled on the audio
+// clock, so this loop freezing while the screen is locked is harmless.
 
 function tick(now) {
   if (state !== 'playing' && state !== 'finishing') return;
 
   const elapsed = elapsedMs + (now - startTimestamp);
   const remainingMs = Math.max(0, sessionDurationMs - elapsed);
+  const fades = scaledFades(sessionDurationMs);
 
   updateCountdown(remainingMs);
+
+  // Reflect the fade-out window in the UI (pause is locked out during fade-out).
+  if (state === 'playing' && remainingMs <= fades.out * 1000) {
+    state = 'finishing';
+    setPlayBtn('disabled');
+  }
 
   if (remainingMs <= 0) {
     onSessionEnd();
@@ -110,74 +299,35 @@ function tick(now) {
   rafId = requestAnimationFrame(tick);
 }
 
-// ── Interval beat scheduler ──────────────────────────────────────────────────
-// Used only when selectedSound.type === 'interval'.
-// Plays the sound at t=0, then every intervalMs thereafter.
-// The gain node (shared with loop sounds) controls all fade in/out.
-
-function playIntervalBeat() {
-  audioEl.currentTime = 0;
-  if (audioEl.paused) audioEl.play().catch(() => {});
-}
-
-function scheduleIntervalBeat(delayMs) {
-  intervalBeatTimeout = setTimeout(() => {
-    if (state !== 'playing') return;
-    playIntervalBeat();
-    scheduleIntervalBeat(selectedSound.intervalMs);
-  }, delayMs);
-}
-
-function startIntervalBeats() {
-  playIntervalBeat();
-  scheduleIntervalBeat(selectedSound.intervalMs);
-}
-
-// Called on resume. Determines whether the sound should be mid-play or silent,
-// then fires the next beat at the correct time within the current cycle.
-function resumeIntervalBeats() {
-  const positionMs = elapsedMs % selectedSound.intervalMs;
-  const audioDurationMs = isFinite(audioEl.duration) ? audioEl.duration * 1000 : 0;
-
-  if (positionMs < audioDurationMs && audioEl.paused) {
-    audioEl.play().catch(() => {});
-  }
-
-  scheduleIntervalBeat(selectedSound.intervalMs - positionMs);
-}
-
 // ── Session lifecycle ────────────────────────────────────────────────────────
 
 function startSession() {
   if (state !== 'idle') return;
 
   clearTimeout(bgFadeTimeout);
+  clearScheduledSources();
   ensureAudio();
   audioCtx.resume();
 
   sessionDurationMs = selectedMinutes * 60 * 1000;
   elapsedMs = 0;
-
-  const fades = scaledFades(sessionDurationMs);
-
-  gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
-  gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-  gainNode.gain.linearRampToValueAtTime(1, audioCtx.currentTime + fades.in);
-
-  if (selectedSound.type === 'interval') {
-    startIntervalBeats();
-  } else {
-    audioEl.currentTime = 0;
-    audioEl.play().catch(() => {});
-  }
-
-  setMediaSession();
-  navigator.mediaSession && (navigator.mediaSession.playbackState = 'playing');
-
   state = 'playing';
   startTimestamp = performance.now();
 
-  scheduleUnfadeOut(sessionDurationMs, fades.out);
+  startKeepAlive();
+  if (selectedSound.type === 'loop') {
+    audioEl.currentTime = 0;
+    audioEl.play().catch(() => {});
+  } else {
+    // Interval mode has no looping media element — keep the iOS session alive.
+    startSilentKeepAlive();
+  }
+
+  setMediaSession();
+  updateMediaPosition();
+  navigator.mediaSession && (navigator.mediaSession.playbackState = 'playing');
+
+  scheduleAudioFrom(sessionDurationMs, false);
 
   setPlayBtn('pause');
   setStatus('');
@@ -190,16 +340,17 @@ function pauseSession() {
 
   elapsedMs += (performance.now() - startTimestamp);
   cancelAnimationFrame(rafId);
-  clearTimeout(fadeOutTimeout);
   clearTimeout(bgFadeTimeout);
-  clearTimeout(intervalBeatTimeout);
+  clearScheduledSources();
 
   gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
   gainNode.gain.setValueAtTime(Math.max(gainNode.gain.value, 0.001), audioCtx.currentTime);
   gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + PAUSE_FADE_OUT);
   bgFadeTimeout = setTimeout(() => {
     if (state === 'paused') {
-      audioEl.pause();
+      if (audioEl) audioEl.pause();
+      stopKeepAlive();
+      stopSilentKeepAlive();
       gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
       gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
     }
@@ -215,34 +366,22 @@ function resumeSession() {
   if (state !== 'paused') return;
 
   clearTimeout(bgFadeTimeout);
-
   audioCtx.resume();
 
-  if (selectedSound.type === 'interval') {
-    resumeIntervalBeats();
-  } else {
+  startKeepAlive();
+  if (selectedSound.type === 'loop') {
     if (audioEl.paused) audioEl.play().catch(() => {});
+  } else {
+    startSilentKeepAlive();
   }
 
   navigator.mediaSession && (navigator.mediaSession.playbackState = 'playing');
   state = 'playing';
-
-  const remainingMs = sessionDurationMs - elapsedMs;
-  const fades = scaledFades(sessionDurationMs);
-
-  gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
-  gainNode.gain.setValueAtTime(0.001, audioCtx.currentTime);
-
-  if (elapsedMs < fades.in * 1000) {
-    const timeLeft = Math.max(RESUME_FADE_IN, fades.in - elapsedMs / 1000);
-    gainNode.gain.linearRampToValueAtTime(1, audioCtx.currentTime + timeLeft);
-  } else {
-    gainNode.gain.exponentialRampToValueAtTime(1, audioCtx.currentTime + RESUME_FADE_IN);
-  }
-
-  scheduleUnfadeOut(remainingMs, fades.out);
-
   startTimestamp = performance.now();
+
+  scheduleAudioFrom(sessionDurationMs - elapsedMs, true);
+  updateMediaPosition();
+
   setPlayBtn('pause');
   setStatus('');
   rafId = requestAnimationFrame(tick);
@@ -252,9 +391,10 @@ function stopSession() {
   if (state === 'idle') return;
 
   cancelAnimationFrame(rafId);
-  clearTimeout(fadeOutTimeout);
   clearTimeout(bgFadeTimeout);
-  clearTimeout(intervalBeatTimeout);
+  clearScheduledSources();
+  stopKeepAlive();
+  stopSilentKeepAlive();
 
   navigator.mediaSession && (navigator.mediaSession.playbackState = 'none');
 
@@ -269,8 +409,8 @@ function stopSession() {
         gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
       }
     }, PAUSE_FADE_OUT * 1000 + 50);
-  } else {
-    audioEl && audioEl.pause();
+  } else if (audioEl) {
+    audioEl.pause();
   }
 
   resetUI();
@@ -278,23 +418,20 @@ function stopSession() {
 
 function onSessionEnd() {
   cancelAnimationFrame(rafId);
-  clearTimeout(fadeOutTimeout);
-  clearTimeout(intervalBeatTimeout);
   state = 'finishing';
 
   document.body.classList.add('session-complete');
 
-  // Triple bell — scheduled via audio clock so they fire on a locked screen.
-  // AudioBufferSourceNode.start() is handled by the Web Audio engine, not JS timers.
-  if (audioCtx) audioCtx.resume(); // defensive: keep context running
-  playBell(0);
-  playBell(0.4);
-  playBell(0.8);
+  // The fade-out and the triple bell were scheduled on the audio clock back at
+  // session start, so they have already played — even if the screen was locked
+  // when the timer ran out. Here we only tidy up the UI and stop the silent
+  // playback once the page is visible again.
+  if (audioCtx) audioCtx.resume();
 
-  // Fade-out ramp is already running via scheduleUnfadeOut.
-  // Clean up sooner after the bells finish.
   setTimeout(() => {
     if (audioEl) audioEl.pause();
+    stopKeepAlive();
+    stopSilentKeepAlive();
     if (gainNode) {
       gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
       gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
@@ -318,18 +455,6 @@ function scaledFades(durationMs) {
   return { in: FADE_IN, out: FADE_OUT };
 }
 
-function scheduleUnfadeOut(remainingMs, fadeOutSec) {
-  const delayMs = Math.max(0, remainingMs - fadeOutSec * 1000);
-  fadeOutTimeout = setTimeout(() => {
-    if (state !== 'playing') return;
-    state = 'finishing';
-    gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
-    gainNode.gain.setValueAtTime(gainNode.gain.value, audioCtx.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + fadeOutSec);
-    setPlayBtn('disabled');
-  }, delayMs);
-}
-
 // ── Media Session API ────────────────────────────────────────────────────────
 
 function setMediaSession() {
@@ -348,6 +473,18 @@ function setMediaSession() {
   navigator.mediaSession.setActionHandler('play',  resumeSession);
   navigator.mediaSession.setActionHandler('pause', pauseSession);
   navigator.mediaSession.setActionHandler('stop',  stopSession);
+}
+
+// Surface the countdown on the lock screen where the platform supports it.
+function updateMediaPosition() {
+  if (!('mediaSession' in navigator) || !navigator.mediaSession.setPositionState) return;
+  try {
+    navigator.mediaSession.setPositionState({
+      duration: sessionDurationMs / 1000,
+      position: Math.min(elapsedMs, sessionDurationMs) / 1000,
+      playbackRate: 1,
+    });
+  } catch {}
 }
 
 // ── Custom time (localStorage) ───────────────────────────────────────────────
@@ -471,6 +608,9 @@ function renderSounds() {
       selectedSound = sound;
       renderSounds();
       if (audioEl) {
+        clearScheduledSources();
+        stopKeepAlive();
+        stopSilentKeepAlive();
         audioEl.pause();
         audioEl = null; mediaSource = null; gainNode = null;
         if (audioCtx) { audioCtx.close(); audioCtx = null; }
@@ -802,6 +942,28 @@ renderDurations();
 showIdleCountdown();
 initOfflineBtn();
 
+// ── Service worker: register + keep the app up to date ────────────────────────
+// network-first shell (see sw.js) means an online launch always fetches the newest
+// files. This block additionally pulls in a new service worker promptly and reloads
+// the page once when it takes control, so a freshly deployed version is never more
+// than one launch behind — and never reloads mid-session.
+
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(() => {});
+  const hadController = !!navigator.serviceWorker.controller;
+  let refreshing = false;
+
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadController) return;       // first install claiming the page — nothing to reload to
+    if (refreshing) return;
+    if (state !== 'idle') return;     // never interrupt a running meditation
+    refreshing = true;
+    window.location.reload();
+  });
+
+  navigator.serviceWorker.register('./sw.js').then(reg => {
+    reg.update();
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') reg.update();
+    });
+  }).catch(() => {});
 }

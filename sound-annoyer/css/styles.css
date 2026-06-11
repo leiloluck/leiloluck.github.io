@@ -1,0 +1,607 @@
+/* styles.css — SoundAnnoyer
+   Gremlin / prankster theme: near-black, acid-green + hot-pink, monospace numerals.
+   Single-screen layout, responsive, dark, thin-outline buttons. */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg:        #0a0a0c;
+  --surface:   #131318;
+  --border:    #2a2a33;
+  --lime:      #9dff5b;   /* primary accent — "go / chaos" */
+  --lime-dim:  #5c8f37;
+  --lime-bg:   rgba(157, 255, 91, 0.12);
+  --pink:      #ff4d8d;   /* secondary accent — "stop / armed" */
+  --pink-bg:   rgba(255, 77, 141, 0.14);
+  --text:      #eef0ec;
+  --muted:     #7d7d8a;
+  --fade:      160ms ease;
+  --mono: ui-monospace, 'SF Mono', 'Cascadia Code', 'Roboto Mono', Menlo, Consolas, monospace;
+  --page-pad-x: clamp(14px, 4vw, 22px);
+}
+
+html { min-height: 100%; }
+
+body {
+  background:
+    radial-gradient(120% 80% at 50% -10%, rgba(157, 255, 91, 0.06), transparent 60%),
+    radial-gradient(90% 70% at 100% 110%, rgba(255, 77, 141, 0.07), transparent 55%),
+    var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 15px;
+  line-height: 1.4;
+  /* Fixed-height frame: the page itself never scrolls, so the footer (Install /
+     Update / version) is always on screen. Only the sound list scrolls. */
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overscroll-behavior: contain;
+}
+
+.app {
+  width: 100%;
+  max-width: 440px;
+  flex: 1;
+  min-height: 0;            /* allow the inner sound list to own the scroll */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: clamp(7px, 1.3dvh, 13px);
+  padding-top: max(env(safe-area-inset-top, 0px), 14px);
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 12px);
+  padding-left: var(--page-pad-x);
+  padding-right: var(--page-pad-x);
+  overflow: hidden;
+}
+
+/* ── Header ── */
+
+.header {
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.logo {
+  font-size: clamp(22px, 6.5vw, 30px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.logo-annoy {
+  color: var(--lime);
+  text-shadow: 0 0 18px rgba(157, 255, 91, 0.35);
+}
+
+.logo-imp {
+  display: inline-block;
+  margin-left: 4px;
+  animation: imp-wiggle 3.5s ease-in-out infinite;
+}
+
+@keyframes imp-wiggle {
+  0%, 88%, 100% { transform: rotate(0deg); }
+  92% { transform: rotate(-14deg); }
+  96% { transform: rotate(12deg); }
+}
+
+.tagline {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.14em;
+  text-transform: lowercase;
+}
+
+/* ── Hero / status ── */
+
+.hero {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: clamp(74px, 12dvh, 130px);
+  padding: clamp(2px, 0.6dvh, 8px) 0;
+}
+
+.hero-emoji {
+  font-size: clamp(42px, 12vw, 70px);
+  line-height: 1;
+  filter: drop-shadow(0 0 14px rgba(0,0,0,0.5));
+  transition: transform var(--fade);
+}
+
+body.running .hero-emoji {
+  animation: hero-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes hero-pulse {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50%      { transform: scale(1.08) rotate(-3deg); }
+}
+
+/* a quick jolt when a sound actually fires */
+body.fired .hero-emoji {
+  animation: hero-jolt 360ms ease;
+}
+
+@keyframes hero-jolt {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(1.35) rotate(8deg); }
+  60%  { transform: scale(0.95) rotate(-6deg); }
+  100% { transform: scale(1); }
+}
+
+.hero-status {
+  font-size: 13px;
+  color: var(--text);
+  letter-spacing: 0.04em;
+  text-align: center;
+  min-height: 18px;
+}
+
+body.running .hero-status { color: var(--pink); font-weight: 600; }
+
+.hero-sub {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+  text-align: center;
+  min-height: 16px;
+}
+
+/* ── Launch button ── */
+
+.launch-section {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btn-launch {
+  width: 100%;
+  padding: clamp(14px, 2.2dvh, 18px);
+  font-size: clamp(16px, 2.4dvh, 19px);
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  border: 1.5px solid var(--lime);
+  color: var(--lime);
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  border-radius: 2px;
+  transition: background var(--fade), color var(--fade), border-color var(--fade), box-shadow var(--fade);
+}
+
+.btn-launch:hover:not(:disabled) {
+  background: var(--lime-bg);
+  box-shadow: 0 0 24px rgba(157, 255, 91, 0.2);
+}
+
+.btn-launch:disabled { border-color: var(--border); color: var(--muted); cursor: default; }
+
+/* Running state: button becomes the "stop" affordance */
+body.running .btn-launch {
+  border-color: var(--pink);
+  color: var(--pink);
+  background: var(--pink-bg);
+  box-shadow: 0 0 28px rgba(255, 77, 141, 0.22);
+}
+
+body.running .btn-launch:hover {
+  background: rgba(255, 77, 141, 0.24);
+}
+
+.btn-panic {
+  width: 100%;
+  padding: 9px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  border-radius: 2px;
+  transition: border-color var(--fade), color var(--fade);
+}
+
+.btn-panic:hover { border-color: var(--lime-dim); color: var(--text); }
+
+/* ── Section ── */
+
+.section { flex-shrink: 0; }
+
+.section-label {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.section-hint {
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: var(--lime-dim);
+  text-transform: none;
+}
+
+/* ── Sound grid ── */
+
+/* The sounds section is the only flexible / scrollable region. It absorbs leftover
+   height and scrolls internally when there are more sounds than fit. */
+.sounds-section {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sound-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(74px, 1fr));
+  gap: 7px;
+  overflow-y: auto;
+  min-height: 0;
+  align-content: start;
+  padding: 1px 2px 4px;
+  overscroll-behavior: contain;
+}
+
+.sound-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 9px 4px;
+  min-height: 60px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 6px;
+  text-align: center;
+  transition: border-color var(--fade), color var(--fade), background var(--fade), transform var(--fade);
+}
+
+.sound-btn:hover { border-color: var(--lime-dim); color: var(--text); }
+.sound-btn:active { transform: scale(0.95); }
+
+.sound-btn .s-emoji {
+  font-size: 23px;
+  line-height: 1;
+  filter: grayscale(0.55) opacity(0.72);
+  transition: filter var(--fade);
+}
+
+.sound-btn .s-label { display: flex; flex-direction: column; align-items: center; width: 100%; }
+.sound-btn .s-name { font-size: 11px; font-weight: 600; line-height: 1.1; }
+.sound-btn .s-tag { font-size: 9px; opacity: 0.55; line-height: 1.1; }
+
+.sound-btn.armed {
+  border-color: var(--lime);
+  background: var(--lime-bg);
+  color: var(--lime);
+}
+.sound-btn.armed .s-emoji { filter: none; }
+
+.sound-btn.demo .s-tag { color: var(--pink); opacity: 0.85; }
+
+/* Test mode: tapping a sound PLAYS it (instead of arming). Dashed outline + pink
+   accents make the changed behaviour obvious. */
+body.test-mode .sound-btn { border-style: dashed; }
+body.test-mode .sound-btn:hover { border-color: var(--pink); color: var(--text); }
+body.test-mode #sound-hint { color: var(--pink); opacity: 0.95; }
+
+.sound-btn.playing {
+  animation: sound-pop 420ms ease;
+  border-color: var(--pink) !important;
+  border-style: solid !important;
+  color: var(--pink);
+}
+@keyframes sound-pop {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.13); }
+  100% { transform: scale(1); }
+}
+
+/* ── Interval grid ── */
+
+.interval-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.interval-btn {
+  padding: 11px 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 13px;
+  cursor: pointer;
+  border-radius: 4px;
+  text-align: center;
+  transition: border-color var(--fade), color var(--fade), background var(--fade);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.interval-btn .i-tag {
+  font-family: inherit;
+  font-size: 8px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+
+.interval-btn:hover:not(.selected) { border-color: var(--lime-dim); color: var(--text); }
+
+.interval-btn.selected {
+  border-color: var(--lime);
+  background: var(--lime-bg);
+  color: var(--lime);
+  font-weight: 600;
+}
+
+/* ── Toggles ── */
+
+.toggle-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 9px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--text);
+  text-align: left;
+  transition: border-color var(--fade);
+}
+
+.toggle:hover { border-color: var(--lime-dim); }
+
+.toggle-track {
+  flex-shrink: 0;
+  width: 42px;
+  height: 24px;
+  border-radius: 12px;
+  background: #2a2a33;
+  position: relative;
+  transition: background var(--fade);
+}
+
+.toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--muted);
+  transition: transform var(--fade), background var(--fade);
+}
+
+.toggle[aria-checked="true"] .toggle-track { background: var(--lime-bg); }
+.toggle[aria-checked="true"] .toggle-thumb { transform: translateX(18px); background: var(--lime); }
+
+/* Test mode toggle reads pink (distinct from the lime chaos toggle) when on. */
+.toggle-test[aria-checked="true"] .toggle-track { background: var(--pink-bg); }
+.toggle-test[aria-checked="true"] .toggle-thumb { background: var(--pink); }
+
+.toggle-text { display: flex; flex-direction: column; min-width: 0; }
+.toggle-title { font-size: 12px; font-weight: 600; line-height: 1.15; }
+.toggle-sub { font-size: 9px; color: var(--muted); font-family: var(--mono); line-height: 1.15; }
+
+/* ── Footer ── */
+
+.footer {
+  flex-shrink: 0;
+  padding-top: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-small {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 10px;
+  font-family: inherit;
+  padding: 5px 10px;
+  cursor: pointer;
+  letter-spacing: 0.06em;
+  border-radius: 3px;
+  transition: border-color var(--fade), color var(--fade);
+}
+
+.btn-small:hover:not(:disabled) { border-color: var(--lime-dim); color: var(--text); }
+.btn-small:disabled { opacity: 0.5; cursor: default; }
+
+.version {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  opacity: 0.5;
+  letter-spacing: 0.04em;
+}
+
+.hidden { display: none !important; }
+
+/* ── Custom interval modal ── */
+
+body.modal-open { overflow: hidden; }
+
+.modal-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(0, 0, 0, 0.74);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+}
+
+.custom-modal {
+  position: relative;
+  width: min(100%, 360px);
+  border: 1px solid rgba(157, 255, 91, 0.32);
+  background:
+    radial-gradient(circle at top, rgba(157, 255, 91, 0.16), transparent 52%),
+    linear-gradient(180deg, rgba(19, 19, 24, 0.98), rgba(8, 8, 10, 0.98));
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.55);
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.custom-modal-kicker {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--lime);
+  margin-bottom: 8px;
+}
+
+.custom-modal h2 { font-size: 23px; font-weight: 700; line-height: 1.1; margin-bottom: 10px; }
+.custom-modal-copy { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
+.custom-modal-form { display: flex; flex-direction: column; gap: 10px; }
+
+.custom-modal-label {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.custom-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(157, 255, 91, 0.3);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 12px 14px;
+  border-radius: 4px;
+}
+
+.custom-display { justify-content: space-between; min-height: 64px; }
+
+.custom-input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-family: var(--mono);
+  font-size: 28px;
+}
+
+.custom-input-unit {
+  color: var(--lime);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.custom-keypad {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.custom-keypad-btn {
+  min-height: 52px;
+  border: 1px solid rgba(157, 255, 91, 0.2);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  font: inherit;
+  font-family: var(--mono);
+  font-size: 18px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background var(--fade), border-color var(--fade);
+}
+
+.custom-keypad-btn:hover { border-color: var(--lime-dim); background: rgba(157, 255, 91, 0.08); }
+
+.custom-keypad-btn-muted {
+  color: var(--muted);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-family: inherit;
+}
+
+.custom-modal-error { min-height: 18px; color: var(--pink); font-size: 12px; }
+
+.custom-modal-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.custom-modal-btn { width: 100%; padding: 12px; font-family: inherit; font-size: 14px; cursor: pointer; border-radius: 3px; }
+
+.btn-cancel { border: 1px solid var(--border); color: var(--muted); background: transparent; }
+.btn-cancel:hover { border-color: var(--lime-dim); color: var(--text); }
+.btn-save { border: 1.5px solid var(--lime); color: var(--lime); background: var(--lime-bg); font-weight: 700; }
+.btn-save:hover { background: rgba(157, 255, 91, 0.24); }
+
+/* ── Small screens ── */
+
+@media (max-width: 380px) {
+  .interval-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .interval-btn { font-size: 12px; padding: 10px 2px; }
+  .sound-btn { padding: 10px; }
+}
+
+@media (max-height: 680px) {
+  .hero { min-height: clamp(52px, 8dvh, 96px); }
+  .hero-emoji { font-size: clamp(34px, 9vw, 52px); }
+  .tagline { display: none; }   /* reclaim a line on short screens */
+}
+
+@media (min-width: 600px) {
+  .app { max-width: 480px; }
+}

@@ -13,34 +13,14 @@
     <meta name="description"
         content="Evidence-based harm reduction guide for physiological maintenance during extended exertion at festivals and events.">
 
-    <!-- PWA -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0d0d0c">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="HarmReduction">
-    <link rel="apple-touch-icon" href="icons/icon.svg">
 
-    <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="css/styles.css">
 </head>
 
 <body class="text-gray-300 font-sans leading-relaxed">
 
-    <!-- Version / Install strip -->
-    <div class="flex items-center justify-end gap-2 px-4 py-1.5 border-b border-[#2a2a28]"
-        style="background:rgba(0,0,0,0.25)">
-        <span id="app-version" class="text-[11px] font-mono text-gray-600 tracking-wider"></span>
-        <button id="offline-btn"
-            class="text-[11px] font-mono border border-[#3a3a38] text-gray-400 hover:text-gray-200 hover:border-gray-400 px-2 py-0.5 transition-colors">
-            Install for offline
-        </button>
-        <button id="install-btn" onclick="handleInstallBtn()"
-            class="hidden text-[11px] font-mono border border-[#3a3a38] text-gray-400 hover:text-gray-200 hover:border-gray-400 px-2 py-0.5 transition-colors">
-        </button>
-    </div>
 
     <!-- Disclaimer Banner -->
     <div class="disclaimer-banner px-4 py-3 text-center text-sm text-green-300">
@@ -383,146 +363,13 @@
     <script src="js/data.js"></script>
     <script src="js/app.js"></script>
 
-    <!-- PWA: service worker registration + install/update button logic -->
     <script>
-        const APP_VERSION = 'v30.05.26';
-        let deferredInstallPrompt = null;
-
-        // Show version
-        document.getElementById('app-version').textContent = APP_VERSION;
-
-        const installBtn = document.getElementById('install-btn');
-        const offlineBtn = document.getElementById('offline-btn');
-        const OFFLINE_READY_KEY = 'harm-reduction-offline-ready';
-
-        // Detect if already running as installed PWA
-        const isStandalone =
-            window.matchMedia('(display-mode: standalone)').matches ||
-            window.navigator.standalone === true ||
-            localStorage.getItem('pwa-installed') === '1';
-
-        if (isStandalone) {
-            showAsUpdate();
-        }
-
-        // Android Chrome install prompt
-        window.addEventListener('beforeinstallprompt', e => {
-            e.preventDefault();
-            deferredInstallPrompt = e;
-            if (!isStandalone) showAsInstall();
-        });
-
-        window.addEventListener('appinstalled', () => {
-            localStorage.setItem('pwa-installed', '1');
-            deferredInstallPrompt = null;
-            showAsUpdate();
-        });
-
-        function showAsInstall() {
-            installBtn.textContent = 'Install';
-            installBtn.classList.remove('hidden');
-        }
-
-        function showAsUpdate() {
-            installBtn.textContent = 'Update';
-            installBtn.classList.remove('hidden');
-        }
-
-        async function handleInstallBtn() {
-            if (deferredInstallPrompt) {
-                // Native install (Android)
-                deferredInstallPrompt.prompt();
-                const result = await deferredInstallPrompt.userChoice;
-                deferredInstallPrompt = null;
-                if (result.outcome === 'accepted') showAsUpdate();
-            } else {
-                // Update: clear all caches and reload for fresh content
-                if ('caches' in window) {
-                    const keys = await caches.keys();
-                    await Promise.all(keys.map(k => caches.delete(k)));
-                }
-                if ('serviceWorker' in navigator) {
-                    const regs = await navigator.serviceWorker.getRegistrations();
-                    await Promise.all(regs.map(r => r.unregister()));
-                }
-                window.location.reload();
-            }
-        }
-
-        // ── Offline button ────────────────────────────────────────────────────
-        // All app content is pre-cached by the service worker on first install.
-        // This button: (1) triggers PWA install if the browser has queued a prompt,
-        // (2) waits for the SW to finish caching, (3) confirms offline readiness.
-
-        async function isOfflineReady() {
-            if (!('caches' in window)) return false;
-            try {
-                const keys = await caches.keys();
-                for (const name of keys) {
-                    if (!name.startsWith('harm-reduction-')) continue;
-                    const cache = await caches.open(name);
-                    const match = await cache.match('./index.html');
-                    if (match) return true;
-                }
-                return false;
-            } catch { return false; }
-        }
-
-        function markOfflineReady() {
-            offlineBtn.textContent = 'Offline ready ✓';
-            offlineBtn.disabled = true;
-            localStorage.setItem(OFFLINE_READY_KEY, '1');
-        }
-
-        async function initOfflineBtn() {
-            if (localStorage.getItem(OFFLINE_READY_KEY) === '1' || await isOfflineReady()) {
-                markOfflineReady();
-            }
-        }
-
-        offlineBtn.addEventListener('click', async () => {
-            // Step 1: trigger PWA install if the browser has queued a prompt (Android Chrome)
-            if (deferredInstallPrompt) {
-                deferredInstallPrompt.prompt();
-                const { outcome } = await deferredInstallPrompt.userChoice;
-                deferredInstallPrompt = null;
-                if (outcome === 'accepted') {
-                    localStorage.setItem('pwa-installed', '1');
-                    showAsUpdate();
-                }
-            }
-            // Step 2: wait for SW to finish pre-caching, then confirm offline readiness
-            offlineBtn.textContent = 'Installing…';
-            offlineBtn.disabled = true;
-            try {
-                if ('serviceWorker' in navigator) await navigator.serviceWorker.ready;
-                if (await isOfflineReady()) {
-                    markOfflineReady();
-                } else {
-                    offlineBtn.textContent = 'Install for offline';
-                    offlineBtn.disabled = false;
-                }
-            } catch {
-                offlineBtn.textContent = 'Install for offline';
-                offlineBtn.disabled = false;
-            }
-        });
-
-        // Register service worker and auto-reload when a new version takes over
+        // Unregister any previously installed service worker for this page.
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js').catch(err => {
-                console.warn('SW registration failed:', err);
-            });
-
-            // When a new SW activates (skipWaiting fires), reload once to serve fresh files.
-            // hadController guards against reloading on the very first install (no prior controller).
-            const hadController = !!navigator.serviceWorker.controller;
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (hadController) window.location.reload();
-            });
+            navigator.serviceWorker.getRegistrations().then(regs =>
+                Promise.all(regs.map(r => r.unregister()))
+            );
         }
-
-        initOfflineBtn();
     </script>
 
 </body>

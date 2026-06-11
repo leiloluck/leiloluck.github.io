@@ -2,7 +2,7 @@
 
 A minimalist meditation timer PWA. The user selects a sound and a duration; audio fades in at the start and fades out at the end. Installable, offline-capable.
 
-**Version:** v14.05.26
+**Version:** v09.06.26
 
 ---
 
@@ -38,7 +38,7 @@ idle ──[Begin]──► playing ──[Pause]──► paused ──[Resume]
 - `paused` — rAF stopped, gain faded to 0, audio element paused
 - `finishing` — session timer hit 0 OR fade-out started; play button disabled; audio fading to 0
 
-State transitions happen in: `startSession`, `pauseSession`, `resumeSession`, `stopSession`, `onSessionEnd`, `scheduleUnfadeOut`.
+State transitions happen in: `startSession`, `pauseSession`, `resumeSession`, `stopSession`, `onSessionEnd`, and `tick` (which flips `playing → finishing` when the fade-out window is reached).
 
 ---
 
@@ -56,6 +56,49 @@ The `GainNode` is the only volume control. All fades (session start, session end
 
 **Important:** `gainNode.gain.value` reflects the current instantaneous value. Always call `cancelScheduledValues(audioCtx.currentTime)` before setting new ramps to avoid conflicting schedules.
 
+### Lock-screen scheduling (critical)
+
+`requestAnimationFrame` and `setTimeout` are frozen by the OS while the phone is
+locked or the tab is backgrounded. The **Web Audio hardware clock keeps running**
+(as long as the context is not suspended). Therefore every audio event that must
+fire while the screen is off is placed on the audio clock at session start, not
+triggered by a JS timer:
+
+- **Fade-out** — scheduled as a `linearRampToValueAtTime(0, …)` landing exactly at
+  the session end, set inside `scheduleAudioFrom()`.
+- **Triple end bell** — three `AudioBufferSourceNode`s started at `end`, `end+0.4`,
+  `end+0.8` (`END_BELL_OFFSETS`), routed straight to the destination so they ring at
+  full volume after the session audio has faded out.
+- **Interval beats** — one buffer source per beat, scheduled across the whole
+  session, routed through the gain node so they fade with the envelope.
+
+`scheduleAudioFrom(remainingMs, resuming)` (re)builds this entire schedule from
+`audioCtx.currentTime`. It is called by `startSession` (`resuming=false`) and
+`resumeSession` (`resuming=true`).
+
+`scheduledSources[]` holds every source scheduled ahead; `clearScheduledSources()`
+stops and forgets them all on **pause**, **stop**, and **sound switch** so stale
+beats never leak into a later session.
+
+**Keeping the context awake.** Two layers:
+
+- `startKeepAlive()` plays a silent looping Web Audio buffer for the whole session.
+  Enough on Android/desktop; harmless in `loop` mode (which already has continuous
+  media).
+- `startSilentKeepAlive()` (interval mode only) plays a real silent looping
+  `<audio>` element built from a generated WAV `Blob` (`makeSilentWavBlob`, served
+  as a `blob:` URL because the CSP permits `blob:` but not `data:` media). **iOS
+  suspends the AudioContext whenever no media element is playing**, and a Web Audio
+  buffer does not count — only a playing `<audio>` element holds the platform audio
+  session open. This is what makes interval-mode bells survive a locked screen on
+  iPhone. Both keep-alives are torn down on pause/stop/end and on sound switch.
+
+`tick()` (the rAF loop) now only updates the visible countdown and disables the
+play button during the fade-out window. If the screen is locked it simply doesn't
+run; the audio still ends correctly because it was scheduled on the audio clock.
+`onSessionEnd()` no longer plays anything — it only tidies up the UI and stops the
+silent playback once the page is visible again.
+
 ### Fade types
 
 | Scenario | Type | Duration |
@@ -67,7 +110,7 @@ The `GainNode` is the only volume control. All fades (session start, session end
 
 For sessions shorter than 25 s, all fade durations are scaled proportionally (`scaledFades()`).
 
-`scheduleUnfadeOut(remainingMs, fadeOutSec)` uses `setTimeout` to fire the end-of-session fade exactly `fadeOutSec` seconds before the timer hits zero. It transitions state to `'finishing'` and disables the play button.
+The end-of-session fade is **not** fired by a timer. It is scheduled up front inside `scheduleAudioFrom()` as a gain ramp landing on zero exactly at the session end, so it runs even while the screen is locked. `tick()` only mirrors it in the UI: once the remaining time enters the fade-out window it sets state `'finishing'` and disables the play button.
 
 `bgFadeTimeout` is a `setTimeout` that fires after a pause/stop fade to call `audioEl.pause()`. It must be cleared with `clearTimeout(bgFadeTimeout)` on resume to prevent the audio element being paused mid-resume.
 
@@ -81,14 +124,11 @@ Each entry in `SOUNDS` has a `type` field that changes how the audio is played:
 `audioEl.loop = true`. The audio element handles repetition natively. `startSession` calls `audioEl.play()` once. `resumeSession` calls `audioEl.play()` to resume from the paused position.
 
 ### `type: 'interval'`
-`audioEl.loop = false`. A beat scheduler drives playback:
-
-- **`startIntervalBeats()`** — plays the sound immediately (t=0), then calls `scheduleIntervalBeat(intervalMs)`.
-- **`scheduleIntervalBeat(delayMs)`** — sets a recursive `setTimeout`. When it fires: checks `state === 'playing'`, calls `playIntervalBeat()`, reschedules itself at `intervalMs`.
-- **`playIntervalBeat()`** — resets `audioEl.currentTime = 0` and calls `audioEl.play()` if paused.
-- **`resumeIntervalBeats()`** — called on session resume. Computes `positionMs = elapsedMs % intervalMs`. If `positionMs` is within the audio file's duration, the sound should be mid-play → `audioEl.play()`. Then schedules the next beat at `intervalMs - positionMs`.
-
-`intervalBeatTimeout` holds the pending `setTimeout` id. It must be cleared (`clearTimeout(intervalBeatTimeout)`) in: `pauseSession`, `stopSession`, `onSessionEnd`.
+No media element playback. Each beat is a pre-decoded `bellBuffer` scheduled on the
+audio clock by `scheduleAudioFrom()` (a buffer source per beat at `n * intervalMs`,
+routed through the gain node so beats fade with the envelope). This replaced the old
+`setTimeout` + `audioEl` approach, which silently stopped advancing whenever the
+screen was locked. `startKeepAlive()` keeps the context alive between beats.
 
 ---
 
@@ -102,7 +142,7 @@ remaining = sessionDurationMs - elapsed
 
 `elapsedMs` accumulates across pauses. On pause: `elapsedMs += performance.now() - startTimestamp`. On resume: `startTimestamp = performance.now()`.
 
-The rAF loop is cancelled with `cancelAnimationFrame(rafId)` on pause, stop, and session end.
+The rAF loop is cancelled with `cancelAnimationFrame(rafId)` on pause, stop, and session end. It drives the **display only** — the audio schedule is independent (see Lock-screen scheduling above), so a frozen rAF loop never affects whether the session ends or the bells ring.
 
 ---
 
@@ -142,7 +182,9 @@ Clicking "Update" when `deferredInstallPrompt` is null: clears all caches, unreg
 
 Cache name includes `VERSION` constant — bump it to force cache invalidation after any file change.
 
-**App shell** (HTML, CSS, JS, manifest, icons): pre-cached on install event via `PRECACHE` array. Served cache-first thereafter.
+**App shell** (HTML, CSS, JS, manifest, icons): pre-cached on install event via `PRECACHE` array, then served **network-first** (`serveShell`). When online, every launch fetches the newest file and refreshes the cache; when offline, the cached copy is served, and uncached navigations fall back to `./index.html`. This guarantees an online user always runs the latest deploy rather than a stale cached version.
+
+**Auto-update:** the SW calls `skipWaiting()` + `clients.claim()`, and `app.js` reloads the page once on `controllerchange` (guarded so it never fires on first install or mid-session) and calls `registration.update()` on load and on each `visibilitychange` to visible. Net effect: a freshly deployed version is picked up within one launch and never interrupts a running session.
 
 **Audio (.mp3)**: NOT pre-cached (files are large). Strategy:
 - If cached: serve full `200` response (browsers accept `200` in place of `206` for `<audio loop>`)

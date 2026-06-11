@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<!-- index.html — SoundAnnoyer
+     Hide a Bluetooth speaker, pick prank sounds, and fire them at random
+     intervals while the phone is locked. PWA: installable, offline, network-first
+     so it always boots the newest build. See context.md for the full brief. -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>SoundAnnoyer</title>
+
+  <!-- CSP — no inline scripts/styles, same-origin only, blob: for the silent keep-alive clip -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'">
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SoundAnnoyer">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>😈</text></svg>">
+
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<main class="app">
+
+  <!-- Header -->
+  <header class="header">
+    <h1 class="logo">Sound<span class="logo-annoy">Annoyer</span><span class="logo-imp">😈</span></h1>
+    <p class="tagline">hide a speaker. confuse everyone.</p>
+  </header>
+
+  <!-- Status / hero -->
+  <section class="hero">
+    <div class="hero-emoji" id="hero-emoji">😼</div>
+    <p class="hero-status" id="hero-status">idle — pick your weapons</p>
+    <p class="hero-sub" id="hero-sub" aria-live="polite"></p>
+  </section>
+
+  <!-- THE button -->
+  <section class="launch-section">
+    <button class="btn-launch" id="btn-launch">UNLEASH</button>
+  </section>
+
+  <!-- Sound selection (this list scrolls; everything else stays put) -->
+  <section class="section sounds-section">
+    <p class="section-label">Sounds <span class="section-hint" id="sound-hint">tap to arm</span></p>
+    <div class="sound-grid" id="sound-group"></div>
+  </section>
+
+  <!-- Interval selection -->
+  <section class="section">
+    <p class="section-label">How often <span class="section-hint">randomized around this</span></p>
+    <div class="interval-grid" id="interval-group"></div>
+  </section>
+
+  <!-- Toggles: chaos timing + test mode -->
+  <section class="section toggle-grid">
+    <button class="toggle" id="randomize-toggle" role="switch" aria-checked="true">
+      <span class="toggle-track"><span class="toggle-thumb"></span></span>
+      <span class="toggle-text">
+        <span class="toggle-title">Chaos timing</span>
+        <span class="toggle-sub" id="randomize-sub">gaps wobble 0.5×–1.5×</span>
+      </span>
+    </button>
+    <button class="toggle toggle-test" id="testmode-toggle" role="switch" aria-checked="false">
+      <span class="toggle-track"><span class="toggle-thumb"></span></span>
+      <span class="toggle-text">
+        <span class="toggle-title">Test mode</span>
+        <span class="toggle-sub" id="testmode-sub">preview each sound</span>
+      </span>
+    </button>
+  </section>
+
+  <!-- Footer: install / update / version -->
+  <footer class="footer">
+    <button class="btn-small hidden" id="install-btn">Install</button>
+    <button class="btn-small" id="update-btn">Update</button>
+    <span class="version" id="version">v09.06.26</span>
+  </footer>
+
+</main>
+
+<!-- Custom interval modal -->
+<div class="modal-layer hidden" id="custom-modal-layer">
+  <button class="modal-backdrop" id="custom-modal-dismiss" aria-label="Close custom interval dialog"></button>
+
+  <section class="custom-modal" id="custom-modal" role="dialog" aria-modal="true" aria-labelledby="custom-modal-title" tabindex="-1">
+    <p class="custom-modal-kicker">Custom interval</p>
+    <h2 id="custom-modal-title">Set the base gap</h2>
+    <p class="custom-modal-copy">Seconds between sounds (1–3600). Chaos timing still wobbles around it.</p>
+
+    <form class="custom-modal-form" id="custom-form" novalidate>
+      <p class="custom-modal-label">Seconds</p>
+
+      <div class="custom-input-wrap custom-display" id="custom-display" aria-live="polite" aria-atomic="true">
+        <span class="custom-input" id="custom-value">45</span>
+        <span class="custom-input-unit">sec</span>
+      </div>
+
+      <div class="custom-keypad" aria-label="Custom interval number pad">
+        <button type="button" class="custom-keypad-btn" data-key="1">1</button>
+        <button type="button" class="custom-keypad-btn" data-key="2">2</button>
+        <button type="button" class="custom-keypad-btn" data-key="3">3</button>
+        <button type="button" class="custom-keypad-btn" data-key="4">4</button>
+        <button type="button" class="custom-keypad-btn" data-key="5">5</button>
+        <button type="button" class="custom-keypad-btn" data-key="6">6</button>
+        <button type="button" class="custom-keypad-btn" data-key="7">7</button>
+        <button type="button" class="custom-keypad-btn" data-key="8">8</button>
+        <button type="button" class="custom-keypad-btn" data-key="9">9</button>
+        <button type="button" class="custom-keypad-btn custom-keypad-btn-muted" data-action="clear">Clear</button>
+        <button type="button" class="custom-keypad-btn" data-key="0">0</button>
+        <button type="button" class="custom-keypad-btn custom-keypad-btn-muted" data-action="backspace">Del</button>
+      </div>
+
+      <p class="custom-modal-error" id="custom-error"></p>
+
+      <div class="custom-modal-actions">
+        <button type="button" class="btn-cancel custom-modal-btn" id="custom-cancel">Cancel</button>
+        <button type="submit" class="btn-save custom-modal-btn">Save</button>
+      </div>
+    </form>
+  </section>
+</div>
+
+<script src="js/app.js"></script>
+
+</body>
+</html>

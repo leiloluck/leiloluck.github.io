@@ -294,7 +294,14 @@ body {
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
-  padding-top: 0;
+  /* Stay pinned to the bottom of the viewport so Install / Update / version is
+     always reachable, even if the content is taller than the screen. */
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  padding-top: 8px;
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 4px);
+  background: linear-gradient(to top, var(--bg) 60%, rgba(18, 14, 10, 0));
 }
 
 .btn-small {

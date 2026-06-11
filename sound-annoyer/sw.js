@@ -6,7 +6,7 @@
 
 'use strict';
 
-const VERSION = 'v09.06.26';
+const VERSION = 'v10.06.11';
 const CACHE   = `sound-annoyer-${VERSION}`;
 
 const PRECACHE = [
@@ -64,7 +64,7 @@ async function serveShell(request) {
       const shell = await cache.match('./index.html');
       if (shell) return shell;
     }
-    return new Response('Offline — content not cached.', { status: 503 });
+    return new Response('Offline - content not cached.', { status: 503 });
   }
 }
 

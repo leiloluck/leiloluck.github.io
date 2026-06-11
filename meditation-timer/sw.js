@@ -1,12 +1,12 @@
 /* sw.js — Meditation Timer service worker
-   App shell: cache-first (pre-cached on install).
+   App shell: network-first (always newest when online, cached fallback offline).
    Audio (.mp3): native streaming on first load; served from cache once downloaded.
    Explicitly avoids intercepting range requests before caching, so the browser
    can stream the file naturally without buffering the whole 44 MB first. */
 
 'use strict';
 
-const VERSION = 'v30.05.26';
+const VERSION = 'v09b.06.26';
 const CACHE   = `meditation-timer-${VERSION}`;
 
 const PRECACHE = [
@@ -57,21 +57,30 @@ self.addEventListener('fetch', event => {
   event.respondWith(serveShell(request));
 });
 
-// Stale-while-revalidate for app shell
+// Network-first for the app shell: an online launch always gets the freshest
+// HTML/CSS/JS (so a newly deployed version is used immediately), while a cached
+// copy keeps the app working offline. The fresh response is written back to the
+// cache on every successful fetch.
 async function serveShell(request) {
   const cache = await caches.open(CACHE);
-  const cachedResponse = await cache.match(request);
 
-  const fetchPromise = fetch(request).then((networkResponse) => {
-    if (networkResponse.status === 200) {
+  try {
+    const networkResponse = await fetch(request);
+    if (networkResponse && networkResponse.status === 200) {
       cache.put(request, networkResponse.clone());
     }
     return networkResponse;
-  }).catch(() => {
-    // Ignore offline errors
-  });
+  } catch {
+    const cached = await cache.match(request);
+    if (cached) return cached;
 
-  return cachedResponse || fetchPromise || new Response('Offline — content not cached.', { status: 503 });
+    // Offline navigation to an uncached path → fall back to the cached app shell.
+    if (request.mode === 'navigate') {
+      const shell = await cache.match('./index.html');
+      if (shell) return shell;
+    }
+    return new Response('Offline — content not cached.', { status: 503 });
+  }
 }
 
 // Audio strategy:

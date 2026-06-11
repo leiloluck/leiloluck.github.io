@@ -17,13 +17,13 @@
 
 'use strict';
 
-const APP_VERSION = 'v09.06.26';
+const APP_VERSION = 'v10.06.11';
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 // Drop real files into resources/ (see resources/README.md). Until a matching file
 // exists, a synthesized stand-in is used so every button works and the app is
 // testable. `synth(ctx)` returns an AudioBuffer; `files` lists candidate filenames
-// (English + Spanish) — the first one that decodes wins, so it doesn't matter which
+// (English + Spanish) - the first one that decodes wins, so it doesn't matter which
 // naming you drop in.
 
 const SOUNDS = [
@@ -56,9 +56,14 @@ const SOUNDS = [
 // ── Interval presets (ms) ────────────────────────────────────────────────────
 
 const PRESETS = [
-  { ms: 5000,  label: '5s',  tag: 'debug' },
-  { ms: 30000, label: '30s', tag: '' },
-  { ms: 60000, label: '1m',  tag: '' },
+  { ms: 30000,   label: '30s', tag: '' },
+  { ms: 60000,   label: '1m',  tag: '' },
+  { ms: 120000,  label: '2m',  tag: '' },
+  { ms: 240000,  label: '4m',  tag: '' },
+  { ms: 360000,  label: '6m',  tag: '' },
+  { ms: 480000,  label: '8m',  tag: '' },
+  { ms: 600000,  label: '10m', tag: '' },
+  { ms: 1200000, label: '20m', tag: '' },
 ];
 
 // ── Scheduling constants ─────────────────────────────────────────────────────
@@ -67,7 +72,7 @@ const PRIMER_LEAD  = 0.6;     // s — wake primer fires this long before each s
 const HORIZON_SEC  = 1800;    // schedule up to 30 min ahead (survives a locked screen)
 const MAX_AHEAD    = 180;     // …but never queue more than this many hits at once
 const MIN_GAP_MS   = 1500;    // floor so randomization can't bunch sounds up
-const KEEPALIVE_AMP = 0.0004; // near-inaudible; keeps the OS/BT audio session open
+const KEEPALIVE_AMP = 0.008;  // very quiet but above most BT speakers' auto-off threshold
 const PRIMER_AMP   = 0.05;    // quiet BT wake blip
 const PRIMER_FREQ  = 120;     // Hz — low, felt more than heard
 const PRIMER_DUR   = 0.13;    // s
@@ -213,7 +218,7 @@ function makeSilentWavBlob(seconds = 1, sampleRate = 8000) {
 
 function computeGapMs() {
   const base = selectedIntervalMs;
-  const gap = randomize ? base * (0.5 + Math.random()) : base;
+  const gap = randomize ? base * (0.75 + Math.random() * 0.5) : base;
   return Math.max(MIN_GAP_MS, gap);
 }
 
@@ -294,8 +299,9 @@ function startAnnoying() {
   ensureAudio();
   audioCtx.resume();
 
-  if (getArmedSounds().length === 0) {
-    flashStatus('arm at least one sound 👆');
+  const list = getArmedSounds();
+  if (list.length === 0) {
+    flashStatus('arm at least one sound');
     return;
   }
 
@@ -306,7 +312,15 @@ function startAnnoying() {
   startKeepAlive();
   setMediaSession();
 
-  nextHitTime = audioCtx.currentTime + computeGapMs() / 1000;
+  // Play one sound immediately so the user can gauge the volume.
+  const previewSound = pickNextSound(list);
+  const previewWhen  = audioCtx.currentTime + 0.1;
+  scheduleHit(previewSound, previewWhen);
+  onFiredVisible(previewSound);
+  lastScheduledId = previewSound.id;
+
+  // Regular schedule begins after the preview + one full interval.
+  nextHitTime = previewWhen + (previewSound.buffer?.duration ?? 0.5) + computeGapMs() / 1000;
   fillSchedule();
   startHeartbeat();
 
@@ -325,7 +339,7 @@ function stopAnnoying() {
   if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'none';
 
   setLaunchBtn();
-  elHeroStatus.textContent = 'stopped — silence restored';
+  elHeroStatus.textContent = 'stopped - silence restored';
   elHeroSub.textContent = '';
   elHeroEmoji.textContent = '😼';
 }
@@ -518,6 +532,14 @@ const elTestSub     = document.getElementById('testmode-sub');
 const elInstallBtn  = document.getElementById('install-btn');
 const elUpdateBtn   = document.getElementById('update-btn');
 const elVersion     = document.getElementById('version');
+const elHelpBtn     = document.getElementById('help-btn');
+
+const elHelpModalLayer   = document.getElementById('help-modal-layer');
+const elHelpModal        = document.getElementById('help-modal');
+const elHelpModalDismiss = document.getElementById('help-modal-dismiss');
+const elHelpDetailsBtn   = document.getElementById('help-details-btn');
+const elHelpDetails      = document.getElementById('help-details');
+const elHelpCloseBtn     = document.getElementById('help-close-btn');
 
 const elModalLayer  = document.getElementById('custom-modal-layer');
 const elModal       = document.getElementById('custom-modal');
@@ -543,8 +565,8 @@ function flashStatus(msg) {
 }
 
 function idleStatus() {
-  if (testMode) return 'test mode — tap a sound to hear it';
-  return getArmedSoundsCount() === 0 ? 'arm at least one sound' : 'idle — ready when you are';
+  if (testMode) return 'test mode - tap a sound to hear it';
+  return getArmedSoundsCount() === 0 ? 'arm at least one sound' : 'idle - ready when you are';
 }
 
 function getArmedSoundsCount() {
@@ -553,7 +575,7 @@ function getArmedSoundsCount() {
 
 function updateRunningStatus() {
   if (!running) return;
-  elHeroStatus.textContent = 'ARMED — chaos incoming';
+  elHeroStatus.textContent = 'ARMED - chaos incoming';
   const now = audioCtx.currentTime;
   const upcoming = scheduled
     .map(e => e.when)
@@ -628,10 +650,11 @@ function renderIntervals() {
     elIntervalGroup.appendChild(btn);
   });
 
-  // Custom cell
-  const label = customSeconds ? formatSeconds(customSeconds) : 'Custom';
+  // Custom cell - spans the full row
+  const label = customSeconds ? formatMinutes(customSeconds) : 'Custom';
   const tag = customSeconds ? 'custom' : 'set';
   const btn = makeIntervalBtn(label, tag, isCustomSelected());
+  btn.style.gridColumn = '1 / -1';
   btn.addEventListener('click', openCustomModal);
   elIntervalGroup.appendChild(btn);
 }
@@ -668,12 +691,31 @@ function formatSeconds(sec) {
   return `${sec}s`;
 }
 
+// For the Custom button label: prefer minutes when the value is exact minutes.
+function formatMinutes(sec) {
+  if (sec % 60 === 0 && sec >= 60) return `${sec / 60}m`;
+  return `${sec}s`;
+}
+
 // ── UI: custom interval modal ────────────────────────────────────────────────
 
 let customDraft = '';
+let customUnit  = 'min'; // 'min' (default) or 'sec'
+
+const elCustomUnitBtn = document.getElementById('custom-unit-btn');
 
 function openCustomModal() {
-  customDraft = customSeconds ? String(customSeconds) : '';
+  // Convert stored seconds to display unit
+  if (customSeconds) {
+    if (customUnit === 'min' && customSeconds % 60 === 0) {
+      customDraft = String(customSeconds / 60);
+    } else {
+      customUnit  = 'sec';
+      customDraft = String(customSeconds);
+    }
+  } else {
+    customDraft = '';
+  }
   elCustomError.textContent = '';
   renderCustomDisplay();
   elModalLayer.classList.remove('hidden');
@@ -689,26 +731,80 @@ function closeCustomModal() {
 
 function renderCustomDisplay() {
   elCustomValue.textContent = customDraft || '--';
+  elCustomUnitBtn.textContent = customUnit === 'min' ? 'MIN' : 'SEC';
+}
+
+function toggleCustomUnit() {
+  const val = parseInt(customDraft, 10);
+  if (customUnit === 'min') {
+    customUnit  = 'sec';
+    customDraft = (val && val > 0) ? String(val * 60) : '';
+  } else {
+    const secs = val && val > 0 ? val : 0;
+    if (secs > 0 && secs % 60 === 0) {
+      customUnit  = 'min';
+      customDraft = String(secs / 60);
+    } else {
+      customUnit  = 'min';
+      customDraft = '';
+    }
+  }
+  elCustomError.textContent = '';
+  renderCustomDisplay();
 }
 
 function applyKey(key) {
-  if (customDraft.length >= 4) return;
+  const max = customUnit === 'min' ? 3 : 4; // max digits
+  if (customDraft.length >= max) return;
   customDraft = customDraft === '0' ? key : customDraft + key;
   renderCustomDisplay();
 }
 
 function submitCustom() {
   const val = parseInt(customDraft, 10);
-  if (!val || val < 1 || val > 3600) {
-    elCustomError.textContent = 'Whole number of seconds, 1–3600.';
-    return;
+  if (customUnit === 'min') {
+    if (!val || val < 1 || val > 360) {
+      elCustomError.textContent = 'Enter 1 to 360 minutes.';
+      return;
+    }
+    customSeconds = val * 60;
+  } else {
+    if (!val || val < 1 || val > 3600) {
+      elCustomError.textContent = 'Enter 1 to 3600 seconds.';
+      return;
+    }
+    customSeconds = val;
   }
-  customSeconds = val;
-  selectedIntervalMs = val * 1000;
+  selectedIntervalMs = customSeconds * 1000;
   saveState();
   renderIntervals();
   closeCustomModal();
 }
+
+elCustomUnitBtn.addEventListener('click', toggleCustomUnit);
+
+// ── UI: help modal ───────────────────────────────────────────────────────────
+
+function openHelpModal() {
+  elHelpModalLayer.classList.remove('hidden');
+  document.body.classList.add('modal-open');
+  requestAnimationFrame(() => elHelpModal.focus());
+}
+
+function closeHelpModal() {
+  elHelpModalLayer.classList.add('hidden');
+  document.body.classList.remove('modal-open');
+}
+
+elHelpBtn.addEventListener('click', openHelpModal);
+elHelpModalDismiss.addEventListener('click', closeHelpModal);
+elHelpCloseBtn.addEventListener('click', closeHelpModal);
+elHelpDetailsBtn.addEventListener('click', () => {
+  const nowHidden = elHelpDetails.classList.toggle('hidden');
+  elHelpDetailsBtn.textContent = nowHidden ? '+ more details' : '- less';
+});
+
+// ────────────────────────────────────────────────────────────────────────────
 
 elCustomForm.addEventListener('submit', e => { e.preventDefault(); submitCustom(); });
 elKeypad.addEventListener('click', e => {
@@ -722,6 +818,10 @@ elKeypad.addEventListener('click', e => {
 elCustomCancel.addEventListener('click', closeCustomModal);
 elModalDismiss.addEventListener('click', closeCustomModal);
 document.addEventListener('keydown', e => {
+  if (!elHelpModalLayer.classList.contains('hidden')) {
+    if (e.key === 'Escape') closeHelpModal();
+    return;
+  }
   if (elModalLayer.classList.contains('hidden')) return;
   if (e.key === 'Escape') return closeCustomModal();
   if (e.key === 'Enter') { e.preventDefault(); return submitCustom(); }
@@ -733,7 +833,7 @@ document.addEventListener('keydown', e => {
 
 function renderRandomize() {
   elRandomToggle.setAttribute('aria-checked', randomize ? 'true' : 'false');
-  elRandomSub.textContent = randomize ? 'gaps wobble 0.5×–1.5×' : 'exact, fixed intervals';
+  elRandomSub.textContent = randomize ? 'gaps wobble 0.75x-1.25x' : 'exact, fixed intervals';
 }
 
 elRandomToggle.addEventListener('click', () => {
@@ -750,6 +850,7 @@ function renderTestMode() {
   elTestSub.textContent = testMode ? 'tap sounds to hear' : 'preview each sound';
   document.body.classList.toggle('test-mode', testMode);
   updateSoundHint();
+  if (testMode && running) stopAnnoying(); // test mode exits active session
   if (!running) elHeroStatus.textContent = idleStatus();
 }
 

@@ -37,7 +37,7 @@
   <!-- Status / hero -->
   <section class="hero">
     <div class="hero-emoji" id="hero-emoji">😼</div>
-    <p class="hero-status" id="hero-status">idle — pick your weapons</p>
+    <p class="hero-status" id="hero-status">idle - pick your weapons</p>
     <p class="hero-sub" id="hero-sub" aria-live="polite"></p>
   </section>
 
@@ -64,7 +64,7 @@
       <span class="toggle-track"><span class="toggle-thumb"></span></span>
       <span class="toggle-text">
         <span class="toggle-title">Chaos timing</span>
-        <span class="toggle-sub" id="randomize-sub">gaps wobble 0.5×–1.5×</span>
+        <span class="toggle-sub" id="randomize-sub">gaps wobble 0.75x-1.25x</span>
       </span>
     </button>
     <button class="toggle toggle-test" id="testmode-toggle" role="switch" aria-checked="false">
@@ -76,11 +76,12 @@
     </button>
   </section>
 
-  <!-- Footer: install / update / version -->
+  <!-- Footer: help / install / update / version -->
   <footer class="footer">
+    <button class="btn-small" id="help-btn">?</button>
     <button class="btn-small hidden" id="install-btn">Install</button>
     <button class="btn-small" id="update-btn">Update</button>
-    <span class="version" id="version">v09.06.26</span>
+    <span class="version" id="version">v10.06.11</span>
   </footer>
 
 </main>
@@ -92,14 +93,14 @@
   <section class="custom-modal" id="custom-modal" role="dialog" aria-modal="true" aria-labelledby="custom-modal-title" tabindex="-1">
     <p class="custom-modal-kicker">Custom interval</p>
     <h2 id="custom-modal-title">Set the base gap</h2>
-    <p class="custom-modal-copy">Seconds between sounds (1–3600). Chaos timing still wobbles around it.</p>
+    <p class="custom-modal-copy">Time between sounds. Chaos timing still wobbles around it.</p>
 
     <form class="custom-modal-form" id="custom-form" novalidate>
-      <p class="custom-modal-label">Seconds</p>
+      <p class="custom-modal-label">Duration</p>
 
       <div class="custom-input-wrap custom-display" id="custom-display" aria-live="polite" aria-atomic="true">
-        <span class="custom-input" id="custom-value">45</span>
-        <span class="custom-input-unit">sec</span>
+        <span class="custom-input" id="custom-value">5</span>
+        <button type="button" class="custom-unit-btn" id="custom-unit-btn">MIN</button>
       </div>
 
       <div class="custom-keypad" aria-label="Custom interval number pad">
@@ -124,6 +125,24 @@
         <button type="submit" class="btn-save custom-modal-btn">Save</button>
       </div>
     </form>
+  </section>
+</div>
+
+<!-- Help modal -->
+<div class="modal-layer hidden" id="help-modal-layer">
+  <button class="modal-backdrop" id="help-modal-dismiss" aria-label="Close help dialog"></button>
+  <section class="help-modal" id="help-modal" role="dialog" aria-modal="true" aria-labelledby="help-modal-title" tabindex="-1">
+    <p class="help-modal-kicker">How it works</p>
+    <h2 id="help-modal-title">SoundAnnoyer</h2>
+    <p class="help-summary">Pick some sounds. Set how often they fire. Hit UNLEASH and lock your phone. Walk away.</p>
+    <button class="help-details-btn" id="help-details-btn">+ more details</button>
+    <div class="help-details hidden" id="help-details">
+      <p>Sounds play at random intervals around the time you set. With chaos timing on, each gap is between 0.75x and 1.25x the base interval - irregular enough that nobody can predict when the next one hits.</p>
+      <p>Everything is pre-scheduled on the audio clock, so sounds keep playing even when the screen is locked. No timers, no polling - it just works.</p>
+      <p>Works over Bluetooth. Connect your speaker before hitting UNLEASH. A near-silent signal runs in the background to keep the speaker awake during long gaps.</p>
+      <p>Use Test Mode to preview each sound before hiding the device. It exits the active session automatically.</p>
+    </div>
+    <button class="help-close-btn" id="help-close-btn">Close</button>
   </section>
 </div>
 

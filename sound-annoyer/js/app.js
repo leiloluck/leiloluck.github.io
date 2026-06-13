@@ -65,14 +65,14 @@ const SOUNDS = [
 // ── Interval presets (ms) ────────────────────────────────────────────────────
 
 const PRESETS = [
-  { ms: 30000,   label: '30s', tag: '' },
-  { ms: 60000,   label: '1m',  tag: '' },
-  { ms: 120000,  label: '2m',  tag: '' },
-  { ms: 240000,  label: '4m',  tag: '' },
-  { ms: 360000,  label: '6m',  tag: '' },
-  { ms: 480000,  label: '8m',  tag: '' },
-  { ms: 600000,  label: '10m', tag: '' },
-  { ms: 1200000, label: '20m', tag: '' },
+  { ms: 30000,   label: '30 sec', tag: '' },
+  { ms: 60000,   label: '1 min',  tag: '' },
+  { ms: 120000,  label: '2 min',  tag: '' },
+  { ms: 240000,  label: '4 min',  tag: '' },
+  { ms: 360000,  label: '6 min',  tag: '' },
+  { ms: 480000,  label: '8 min',  tag: '' },
+  { ms: 600000,  label: '10 min', tag: '' },
+  { ms: 1200000, label: '20 min', tag: '' },
 ];
 
 // ── Scheduling constants ─────────────────────────────────────────────────────
@@ -88,7 +88,7 @@ const PRIMER_DUR   = 0.13;    // s
 // ── State ────────────────────────────────────────────────────────────────────
 
 let running       = false;
-let selectedIntervalMs = 30000;
+let selectedIntervalMs = 240000;   // default: 4 min (a preset, so a button is preselected)
 let customSeconds = null;
 let randomize     = true;
 let testMode      = false;       // when on, tapping a sound previews it (no arm/disarm)
@@ -538,6 +538,7 @@ const elHeroEmoji   = document.getElementById('hero-emoji');
 const elHeroStatus  = document.getElementById('hero-status');
 const elHeroSub     = document.getElementById('hero-sub');
 const elLaunch      = document.getElementById('btn-launch');
+const elSkip        = document.getElementById('btn-skip');
 const elSoundGroup  = document.getElementById('sound-group');
 const elSoundHint   = document.getElementById('sound-hint');
 const elIntervalGroup = document.getElementById('interval-group');
@@ -591,6 +592,14 @@ function getArmedSoundsCount() {
   return SOUNDS.filter(s => armed.has(s.id)).length;
 }
 
+// "3:58" for a minute or more, "45 sec" under a minute.
+function formatCountdown(sec) {
+  sec = Math.max(0, Math.ceil(sec));
+  if (sec < 60) return `${sec} sec`;
+  const m = Math.floor(sec / 60), s = sec % 60;
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
 function updateRunningStatus() {
   if (!running) return;
   elHeroStatus.textContent = 'ARMED - chaos incoming';
@@ -600,7 +609,7 @@ function updateRunningStatus() {
     .filter(w => w > now)
     .sort((a, b) => a - b)[0];
   if (upcoming) {
-    elHeroSub.textContent = `next sound in ~${Math.ceil(upcoming - now)}s`;
+    elHeroSub.textContent = `next in ${formatCountdown(upcoming - now)}`;
   } else {
     elHeroSub.textContent = 'scheduling…';
   }
@@ -615,7 +624,8 @@ function onFiredVisible(sound) {
 }
 
 function setLaunchBtn() {
-  elLaunch.textContent = running ? 'STOP THE MADNESS' : 'UNLEASH';
+  elLaunch.textContent = running ? 'STOP' : 'UNLEASH';
+  elSkip.classList.toggle('hidden', !running);
 }
 
 // ── UI: sound buttons ────────────────────────────────────────────────────────
@@ -708,8 +718,8 @@ function formatSeconds(sec) {
 
 // For the Custom button label: prefer minutes when the value is exact minutes.
 function formatMinutes(sec) {
-  if (sec % 60 === 0 && sec >= 60) return `${sec / 60}m`;
-  return `${sec}s`;
+  if (sec % 60 === 0 && sec >= 60) return `${sec / 60} min`;
+  return `${sec} sec`;
 }
 
 // ── UI: custom interval modal ────────────────────────────────────────────────
@@ -898,6 +908,25 @@ elStartToggle.addEventListener('click', () => {
 
 elLaunch.addEventListener('click', () => { running ? stopAnnoying() : startAnnoying(); });
 
+// Skip ahead: play a sound now and restart the countdown from this moment.
+function skipNow() {
+  if (!running || !audioCtx) return;
+  const list = getArmedSounds();
+  if (!list.length) return;
+  audioCtx.resume();
+  clearScheduled();
+  const s = pickNextSound(list);
+  const when = audioCtx.currentTime + 0.08;
+  scheduleHit(s, when);
+  onFiredVisible(s);
+  lastScheduledId = s.id;
+  nextHitTime = when + (s.buffer?.duration ?? 0.5) + computeGapMs() / 1000;
+  fillSchedule();
+  updateRunningStatus();
+}
+
+elSkip.addEventListener('click', skipNow);
+
 // ── Persistence ──────────────────────────────────────────────────────────────
 
 const STATE_KEY = 'soundannoyer-state';
@@ -925,6 +954,12 @@ function loadState() {
     if (typeof s.randomize === 'boolean') randomize = s.randomize;
     if (typeof s.testMode === 'boolean') testMode = s.testMode;
     if (typeof s.startWithSound === 'boolean') startWithSound = s.startWithSound;
+
+    // Guarantee a button is always selected: if the saved interval is neither a
+    // preset nor the saved custom value, fall back to the default.
+    const matchesPreset = PRESETS.some(p => p.ms === selectedIntervalMs);
+    const matchesCustom = customSeconds && selectedIntervalMs === customSeconds * 1000;
+    if (!matchesPreset && !matchesCustom) selectedIntervalMs = 240000;
   } else {
     // First run: arm everything, 30s, chaos on — works out of the box.
     SOUNDS.forEach(x => armed.add(x.id));

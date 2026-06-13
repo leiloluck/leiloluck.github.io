@@ -80,14 +80,17 @@ This is the hard part and mirrors the proven approach in `../meditation-timer/`.
   *replenish* the horizon. A locked phone therefore keeps annoying people for the
   whole horizon even if JS never wakes; in practice the phone gets touched and the
   horizon is topped up continuously.
-- **Keep-alive.** A continuous, **near-inaudible** low-amplitude buffer loops for the
-  whole session. Pure digital silence lets many BT speakers sleep; a tiny non-zero
-  PCM signal keeps both the OS audio session and the BT link awake without being
-  heard in a quiet room. (Also a silent looping `<audio>` element, as iOS insists on
-  a real media element — Android is priority but this is cheap insurance.)
+- **Keep-alive.** A continuous **SILENT** (zero-filled) buffer loops for the whole
+  session, plus a silent looping `<audio>` element. An *active stream of digital
+  silence* is enough to keep the OS audio output / BT link from going idle, and it
+  stays inaudible even when the speaker is cranked. (An earlier build mixed low-level
+  noise in here to keep speakers awake; at high volume that turned into audible hiss,
+  so it was removed. Waking the speaker is the primer's job — see below.)
 - **Wake primer.** ~0.6 s before each real sound, a short, quiet primer tone is
-  scheduled. Belt-and-suspenders for BT standby: even if a speaker dozed off, the
-  primer wakes it so the actual sound's onset is not clipped.
+  scheduled. This is what actually wakes a dozing BT speaker so the sound's onset
+  isn't clipped — it's brief and tied to each sound, not a continuous noise floor.
+  (Trade-off: if a specific speaker sleeps hard during a long gap, its first onset
+  after waking could be slightly soft; the primer minimises this.)
 - **Media Session API** metadata is set so the OS treats this as active media
   playback (helps keep the session alive and shows on the lock screen).
 
@@ -126,6 +129,13 @@ This is the hard part and mirrors the proven approach in `../meditation-timer/`.
   disarming it. Clearly signalled: dashed sound borders, a pink toggle, the hint
   switches to "🔊 tap to hear", and the status line reads "test mode — tap a sound
   to hear it". Turn it off to go back to arming sounds for a run.
+
+### Start with a sound
+
+- Third toggle, **"Start with a sound"** (default **on**). On → UNLEASH fires one
+  sound immediately (handy to confirm it works / gauge the volume). Off → the session
+  stays silent for the first interval, so pressing UNLEASH isn't given away by an
+  instant sound (discreet start). State is persisted like the other toggles.
 
 ### Fit on screen (no stranded footer)
 

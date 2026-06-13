@@ -11,9 +11,11 @@
 
    Bluetooth standby:
    BT speakers drop to standby when idle and clip the start of the next sound. Two
-   defences — (1) a continuous, near-inaudible keep-alive buffer holds the audio
-   session / BT link open, and (2) a short, quiet "wake primer" is scheduled just
-   before every real sound so a dozing speaker is awake by the time it plays. */
+   defences — (1) a continuous SILENT keep-alive stream holds the audio output / BT
+   link open without making any sound (an active stream of digital silence is enough
+   to stop the link going idle, and it stays inaudible even at high speaker volume),
+   and (2) a short "wake primer" tone is scheduled just before every real sound so a
+   speaker that did doze off is awake by the time the sound plays. */
 
 'use strict';
 
@@ -26,31 +28,38 @@ const APP_VERSION = 'v10.06.11';
 // (English + Spanish) - the first one that decodes wins, so it doesn't matter which
 // naming you drop in.
 
+// Ordered so animals are grouped together (and the two birds sit side by side),
+// then human sounds, then mechanical/object sounds — easier to scan.
 const SOUNDS = [
+  // — animals: mammals —
   { id: 'cat',          name: 'Cat',          tag: 'meow',    emoji: '🐱', synth: synthMeow,
     files: ['cat-meow.mp3', 'gato-miau.mp3', 'meow.mp3'] },
   { id: 'dog',          name: 'Dog',          tag: 'bark',    emoji: '🐶', synth: synthBark,
     files: ['dog-bark.mp3', 'bark.mp3', 'ladrido.mp3'] },
-  { id: 'knock',        name: 'Knock',        tag: 'on wood', emoji: '🚪', synth: synthKnock,
-    files: ['knock.mp3', 'knock-on-wood.mp3', 'toque.mp3'] },
-  { id: 'bird',         name: 'Sparrow',      tag: 'chirp',   emoji: '🐦', synth: synthBird,
-    files: ['bird-chirp.mp3', 'sparrow.mp3', 'pajaro.mp3'] },
-  { id: 'crickets',     name: 'Crickets',     tag: 'awkward', emoji: '🦗', synth: synthBlip,
-    files: ['crickets.mp3', 'grillos.mp3'] },
-  { id: 'gasp',         name: 'Crowd gasp',   tag: 'shock',   emoji: '😱', synth: synthBlip,
-    files: ['crowd-gasp.mp3', 'gasp.mp3'] },
-  { id: 'ding',         name: 'Ding',         tag: 'notify',  emoji: '🛎️', synth: synthDoorbell,
-    files: ['ding.mp3', 'doorbell.mp3', 'timbre.mp3'] },
-  { id: 'mosquito',     name: 'Mosquito',     tag: 'buzz',    emoji: '🦟', synth: synthBlip,
-    files: ['mosquito.mp3', 'mosquito-buzz.mp3'] },
   { id: 'mouse',        name: 'Mouse',        tag: 'squeak',  emoji: '🐭', synth: synthBlip,
     files: ['mouse-squeak.mp3', 'mouse.mp3', 'raton.mp3'] },
-  { id: 'vibrate',      name: 'Vibrate',      tag: 'phone',   emoji: '📳', synth: synthBlip,
-    files: ['phone-vibrate.mp3', 'vibrate.mp3'] },
-  { id: 'sneeze',       name: 'Sneeze',       tag: 'achoo',   emoji: '🤧', synth: synthBlip,
-    files: ['sneeze.mp3', 'estornudo.mp3'] },
+  // — animals: birds (kept adjacent) —
+  { id: 'bird',         name: 'Sparrow',      tag: 'chirp',   emoji: '🐦', synth: synthBird,
+    files: ['bird-chirp.mp3', 'sparrow.mp3', 'pajaro.mp3'] },
   { id: 'morningbirds', name: 'Morning birds',tag: 'garden',  emoji: '🐤', synth: synthBird,
     files: ['morning-birds.mp3', 'garden-birds.mp3'] },
+  // — animals: insects —
+  { id: 'crickets',     name: 'Crickets',     tag: 'awkward', emoji: '🦗', synth: synthBlip,
+    files: ['crickets.mp3', 'grillos.mp3'] },
+  { id: 'mosquito',     name: 'Mosquito',     tag: 'buzz',    emoji: '🦟', synth: synthBlip,
+    files: ['mosquito.mp3', 'mosquito-buzz.mp3'] },
+  // — human —
+  { id: 'sneeze',       name: 'Sneeze',       tag: 'achoo',   emoji: '🤧', synth: synthBlip,
+    files: ['sneeze.mp3', 'estornudo.mp3'] },
+  { id: 'gasp',         name: 'Crowd gasp',   tag: 'shock',   emoji: '😱', synth: synthBlip,
+    files: ['crowd-gasp.mp3', 'gasp.mp3'] },
+  // — mechanical / objects —
+  { id: 'knock',        name: 'Knock',        tag: 'on wood', emoji: '🚪', synth: synthKnock,
+    files: ['knock.mp3', 'knock-on-wood.mp3', 'toque.mp3'] },
+  { id: 'ding',         name: 'Ding',         tag: 'notify',  emoji: '🛎️', synth: synthDoorbell,
+    files: ['ding.mp3', 'doorbell.mp3', 'timbre.mp3'] },
+  { id: 'vibrate',      name: 'Vibrate',      tag: 'phone',   emoji: '📳', synth: synthBlip,
+    files: ['phone-vibrate.mp3', 'vibrate.mp3'] },
 ];
 
 // ── Interval presets (ms) ────────────────────────────────────────────────────
@@ -72,8 +81,7 @@ const PRIMER_LEAD  = 0.6;     // s — wake primer fires this long before each s
 const HORIZON_SEC  = 1800;    // schedule up to 30 min ahead (survives a locked screen)
 const MAX_AHEAD    = 180;     // …but never queue more than this many hits at once
 const MIN_GAP_MS   = 1500;    // floor so randomization can't bunch sounds up
-const KEEPALIVE_AMP = 0.008;  // very quiet but above most BT speakers' auto-off threshold
-const PRIMER_AMP   = 0.05;    // quiet BT wake blip
+const PRIMER_AMP   = 0.05;    // quiet BT wake blip (only fires briefly before a sound)
 const PRIMER_FREQ  = 120;     // Hz — low, felt more than heard
 const PRIMER_DUR   = 0.13;    // s
 
@@ -84,6 +92,7 @@ let selectedIntervalMs = 30000;
 let customSeconds = null;
 let randomize     = true;
 let testMode      = false;       // when on, tapping a sound previews it (no arm/disarm)
+let startWithSound = true;       // UNLEASH fires one sound at once (vs. a discreet start)
 const armed       = new Set();   // ids of active sounds
 
 let audioCtx     = null;
@@ -159,17 +168,20 @@ function loadFirstAvailable(sound, i) {
 }
 
 // ── Keep-alive ───────────────────────────────────────────────────────────────
-// Holds the audio session (and the BT link) open between sounds so scheduled
-// events keep firing while locked. Near-inaudible — does not betray the speaker.
+// Holds the audio output (and the BT link) open between sounds so scheduled events
+// keep firing while locked. Completely SILENT — never audible, even at high volume.
 
 function startKeepAlive() {
   if (!audioCtx) return;
   stopKeepAlive();
 
+  // A zero-filled looping buffer: an active stream of digital silence keeps the
+  // output device / Bluetooth link from going idle, while producing no sound at all.
+  // (Earlier builds mixed low-level noise in here; cranked up on a speaker that
+  // turned into audible hiss. The per-sound primer in scheduleHit() does the actual
+  // speaker wake-up now.)
   const sr  = audioCtx.sampleRate;
-  const buf = audioCtx.createBuffer(1, sr * 2, sr);
-  const ch  = buf.getChannelData(0);
-  for (let i = 0; i < ch.length; i++) ch[i] = (Math.random() * 2 - 1) * KEEPALIVE_AMP;
+  const buf = audioCtx.createBuffer(1, sr * 2, sr); // zero-filled = pure silence
 
   keepAliveSrc = audioCtx.createBufferSource();
   keepAliveSrc.buffer = buf;
@@ -312,15 +324,19 @@ function startAnnoying() {
   startKeepAlive();
   setMediaSession();
 
-  // Play one sound immediately so the user can gauge the volume.
-  const previewSound = pickNextSound(list);
-  const previewWhen  = audioCtx.currentTime + 0.1;
-  scheduleHit(previewSound, previewWhen);
-  onFiredVisible(previewSound);
-  lastScheduledId = previewSound.id;
-
-  // Regular schedule begins after the preview + one full interval.
-  nextHitTime = previewWhen + (previewSound.buffer?.duration ?? 0.5) + computeGapMs() / 1000;
+  if (startWithSound) {
+    // Fire one sound right away (confirms it works / lets you gauge the volume).
+    const first     = pickNextSound(list);
+    const firstWhen = audioCtx.currentTime + 0.1;
+    scheduleHit(first, firstWhen);
+    onFiredVisible(first);
+    lastScheduledId = first.id;
+    nextHitTime = firstWhen + (first.buffer?.duration ?? 0.5) + computeGapMs() / 1000;
+  } else {
+    // Discreet start: stay silent for the first interval so hitting UNLEASH isn't
+    // given away by an immediate sound.
+    nextHitTime = audioCtx.currentTime + computeGapMs() / 1000;
+  }
   fillSchedule();
   startHeartbeat();
 
@@ -529,6 +545,8 @@ const elRandomToggle  = document.getElementById('randomize-toggle');
 const elRandomSub   = document.getElementById('randomize-sub');
 const elTestToggle  = document.getElementById('testmode-toggle');
 const elTestSub     = document.getElementById('testmode-sub');
+const elStartToggle = document.getElementById('startsound-toggle');
+const elStartSub    = document.getElementById('startsound-sub');
 const elInstallBtn  = document.getElementById('install-btn');
 const elUpdateBtn   = document.getElementById('update-btn');
 const elVersion     = document.getElementById('version');
@@ -619,10 +637,7 @@ function renderSounds() {
     const name = document.createElement('span');
     name.className = 's-name';
     name.textContent = sound.name;
-    const tag = document.createElement('span');
-    tag.className = 's-tag';
-    tag.textContent = sound.isDemo ? 'demo synth' : sound.tag;
-    label.append(name, tag);
+    label.append(name);   // sub-text intentionally omitted — just the name
 
     btn.append(emoji, label);
     btn.addEventListener('click', () => onSoundClick(sound, btn));
@@ -864,6 +879,21 @@ elTestToggle.addEventListener('click', () => {
   renderTestMode();
 });
 
+// ── UI: start-with-a-sound toggle ────────────────────────────────────────────
+// On  → UNLEASH fires one sound immediately (confirm it works / gauge volume).
+// Off → stays silent for the first interval, so starting isn't given away.
+
+function renderStartSound() {
+  elStartToggle.setAttribute('aria-checked', startWithSound ? 'true' : 'false');
+  elStartSub.textContent = startWithSound ? 'fires one instantly' : 'waits (discreet)';
+}
+
+elStartToggle.addEventListener('click', () => {
+  startWithSound = !startWithSound;
+  saveState();
+  renderStartSound();
+});
+
 // ── Buttons: launch + test ───────────────────────────────────────────────────
 
 elLaunch.addEventListener('click', () => { running ? stopAnnoying() : startAnnoying(); });
@@ -880,6 +910,7 @@ function saveState() {
       customSeconds,
       randomize,
       testMode,
+      startWithSound,
     }));
   } catch {}
 }
@@ -893,6 +924,7 @@ function loadState() {
     if (typeof s.customSeconds === 'number') customSeconds = s.customSeconds;
     if (typeof s.randomize === 'boolean') randomize = s.randomize;
     if (typeof s.testMode === 'boolean') testMode = s.testMode;
+    if (typeof s.startWithSound === 'boolean') startWithSound = s.startWithSound;
   } else {
     // First run: arm everything, 30s, chaos on — works out of the box.
     SOUNDS.forEach(x => armed.add(x.id));
@@ -946,6 +978,7 @@ renderSounds();
 renderIntervals();
 renderRandomize();
 renderTestMode();
+renderStartSound();
 setLaunchBtn();
 elHeroStatus.textContent = idleStatus();
 

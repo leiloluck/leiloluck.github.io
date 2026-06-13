@@ -50,31 +50,31 @@ body {
   font-family: var(--sans);
   font-size: 14px;
   line-height: 1.45;
-  /* Fixed-height frame: the page never scrolls, so the footer is always visible. */
-  height: 100vh;
-  height: 100dvh;
-  overflow: hidden;
+  /* The whole page scrolls when the content is taller than the viewport (e.g. in a
+     browser with a visible address bar), so nothing — including the footer — is ever
+     stuck out of frame. On a tall screen it still fills nicely as one view. */
+  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  overscroll-behavior: contain;
+  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
 
 .app {
   width: 100%;
   max-width: 470px;
-  flex: 1;
-  min-height: 0;
+  flex: 1 0 auto;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  gap: clamp(6px, 1.2dvh, 12px);
+  gap: clamp(8px, 1.4dvh, 14px);
   padding-top: max(env(safe-area-inset-top, 0px), 14px);
   padding-bottom: max(env(safe-area-inset-bottom, 0px), 12px);
   padding-left: var(--page-pad-x);
   padding-right: var(--page-pad-x);
-  overflow: hidden;
 }
 
 /* ── Header ── */
@@ -167,7 +167,13 @@ body.fired .hero-emoji { animation: hero-jolt 360ms ease; }
   min-height: 18px;
 }
 
-body.running .hero-status { color: var(--primary-2); font-weight: 700; }
+body.running .hero-status {
+  color: var(--primary-2);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
 
 .hero-sub {
   font-size: 12px;
@@ -177,12 +183,27 @@ body.running .hero-status { color: var(--primary-2); font-weight: 700; }
   font-variant-numeric: tabular-nums;
 }
 
+/* While running, the countdown to the next sound is the focal point: big, spaced,
+   accent-coloured. */
+body.running .hero-sub {
+  font-size: clamp(22px, 6vw, 30px);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  margin-top: 3px;
+}
+
 /* ── Launch button (big pill) ── */
 
-.launch-section { flex-shrink: 0; }
+.launch-section {
+  flex-shrink: 0;
+  display: flex;
+  gap: 8px;
+}
 
 .btn-launch {
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   padding: clamp(13px, 2dvh, 17px);
   font-family: var(--sans);
   font-size: clamp(15px, 2.1dvh, 17px);
@@ -206,6 +227,22 @@ body.running .btn-launch {
   background: linear-gradient(135deg, var(--danger), #ff7a86);
   box-shadow: 0 10px 26px rgba(255, 93, 108, 0.35);
 }
+
+/* Skip-ahead button — only shown while running, sits beside the (shrunk) stop button */
+.btn-skip {
+  flex-shrink: 0;
+  width: 60px;
+  border: 1px solid var(--primary-line);
+  border-radius: var(--pill);
+  background: var(--primary-soft);
+  color: var(--primary-2);
+  font-size: 19px;
+  line-height: 1;
+  cursor: pointer;
+  transition: filter var(--fade), background var(--fade), border-color var(--fade);
+}
+.btn-skip:hover { background: rgba(79, 110, 247, 0.24); }
+.btn-skip:active { transform: translateY(1px); }
 
 /* ── Section ── */
 

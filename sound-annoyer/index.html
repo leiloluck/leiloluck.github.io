@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <!-- index.html — SoundAnnoyer
      Hide a Bluetooth speaker, pick prank sounds, and fire them at random
-     intervals while the phone is locked. PWA: installable, offline, network-first
-     so it always boots the newest build. See context.md for the full brief. -->
+     intervals while the phone is locked. Two tabs: Annoy (the whole app) and
+     Settings. PWA: installable, cache-first/offline-first (boots with zero network;
+     updates in the background when online). See context.md for the full brief. -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -31,66 +32,86 @@
   <!-- Header -->
   <header class="header">
     <h1 class="logo">Sound<span class="logo-annoy">Annoyer</span><span class="logo-imp">😈</span></h1>
-    <p class="tagline">hide a speaker. confuse everyone.</p>
   </header>
 
-  <!-- Status / hero -->
-  <section class="hero">
-    <div class="hero-emoji" id="hero-emoji">😼</div>
-    <p class="hero-status" id="hero-status">idle - pick your weapons</p>
-    <p class="hero-sub" id="hero-sub" aria-live="polite"></p>
+  <!-- Tab switcher: Annoy (the whole app) | Settings (toggles + help/install/update) -->
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button class="tab" id="tab-annoy" type="button" role="tab" aria-selected="true" aria-controls="panel-annoy">Annoy</button>
+    <button class="tab" id="tab-settings" type="button" role="tab" aria-selected="false" aria-controls="panel-settings">⚙ Settings</button>
+  </nav>
+
+  <!-- ── Tab 1: the entire app ── -->
+  <section class="panel" id="panel-annoy" role="tabpanel" aria-labelledby="tab-annoy">
+
+    <!-- Status / hero -->
+    <section class="hero">
+      <div class="hero-emoji" id="hero-emoji">😼</div>
+      <p class="hero-status" id="hero-status">idle - pick your weapons</p>
+      <p class="hero-sub" id="hero-sub" aria-live="polite"></p>
+    </section>
+
+    <!-- THE button (+ skip-ahead while running) -->
+    <section class="launch-section">
+      <button class="btn-launch" id="btn-launch">UNLEASH</button>
+      <button class="btn-skip hidden" id="btn-skip" type="button" aria-label="Play next sound now" title="Play next sound now">⏭</button>
+    </section>
+
+    <!-- Sound selection -->
+    <section class="section sounds-section">
+      <p class="section-label">Sounds <span class="section-hint" id="sound-hint">tap to arm</span></p>
+      <div class="sound-grid" id="sound-group"></div>
+    </section>
+
+    <!-- Interval selection -->
+    <section class="section">
+      <p class="section-label">How often <span class="section-hint">randomized around this</span></p>
+      <div class="interval-grid" id="interval-group"></div>
+    </section>
+
   </section>
 
-  <!-- THE button (+ skip-ahead while running) -->
-  <section class="launch-section">
-    <button class="btn-launch" id="btn-launch">UNLEASH</button>
-    <button class="btn-skip hidden" id="btn-skip" type="button" aria-label="Play next sound now" title="Play next sound now">⏭</button>
-  </section>
+  <!-- ── Tab 2: settings ── -->
+  <section class="panel hidden" id="panel-settings" role="tabpanel" aria-labelledby="tab-settings">
 
-  <!-- Sound selection (this list scrolls; everything else stays put) -->
-  <section class="section sounds-section">
-    <p class="section-label">Sounds <span class="section-hint" id="sound-hint">tap to arm</span></p>
-    <div class="sound-grid" id="sound-group"></div>
-  </section>
+    <!-- Toggles: chaos timing + test mode + start with a sound -->
+    <section class="section toggle-grid">
+      <button class="toggle" id="randomize-toggle" role="switch" aria-checked="true">
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        <span class="toggle-text">
+          <span class="toggle-title">Chaos timing</span>
+          <span class="toggle-sub" id="randomize-sub">gaps wobble 0.75x-1.25x</span>
+        </span>
+      </button>
+      <button class="toggle toggle-test" id="testmode-toggle" role="switch" aria-checked="false">
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        <span class="toggle-text">
+          <span class="toggle-title">Test mode</span>
+          <span class="toggle-sub" id="testmode-sub">preview each sound</span>
+        </span>
+      </button>
+      <button class="toggle toggle-start" id="startsound-toggle" role="switch" aria-checked="true">
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        <span class="toggle-text">
+          <span class="toggle-title">Start with a sound</span>
+          <span class="toggle-sub" id="startsound-sub">fires one instantly</span>
+        </span>
+      </button>
+    </section>
 
-  <!-- Interval selection -->
-  <section class="section">
-    <p class="section-label">How often <span class="section-hint">randomized around this</span></p>
-    <div class="interval-grid" id="interval-group"></div>
-  </section>
+    <!-- App actions: help / install / update -->
+    <section class="section settings-actions">
+      <button class="btn-small" id="help-btn">? How it works</button>
+      <button class="btn-small" id="install-btn">Install app</button>
+      <button class="btn-small" id="update-btn">Update</button>
+    </section>
 
-  <!-- Toggles: chaos timing + test mode -->
-  <section class="section toggle-grid">
-    <button class="toggle" id="randomize-toggle" role="switch" aria-checked="true">
-      <span class="toggle-track"><span class="toggle-thumb"></span></span>
-      <span class="toggle-text">
-        <span class="toggle-title">Chaos timing</span>
-        <span class="toggle-sub" id="randomize-sub">gaps wobble 0.75x-1.25x</span>
-      </span>
-    </button>
-    <button class="toggle toggle-test" id="testmode-toggle" role="switch" aria-checked="false">
-      <span class="toggle-track"><span class="toggle-thumb"></span></span>
-      <span class="toggle-text">
-        <span class="toggle-title">Test mode</span>
-        <span class="toggle-sub" id="testmode-sub">preview each sound</span>
-      </span>
-    </button>
-    <button class="toggle toggle-start" id="startsound-toggle" role="switch" aria-checked="true">
-      <span class="toggle-track"><span class="toggle-thumb"></span></span>
-      <span class="toggle-text">
-        <span class="toggle-title">Start with a sound</span>
-        <span class="toggle-sub" id="startsound-sub">fires one instantly</span>
-      </span>
-    </button>
-  </section>
+    <!-- Version + offline status (version is tappable: checks for an update) -->
+    <section class="section settings-meta">
+      <button class="version" id="version" type="button" title="Check for updates">v26.06.18</button>
+      <span class="offline-badge" id="offline-badge">✓ works offline</span>
+    </section>
 
-  <!-- Footer: help / install / update / version -->
-  <footer class="footer">
-    <button class="btn-small" id="help-btn">?</button>
-    <button class="btn-small hidden" id="install-btn">Install</button>
-    <button class="btn-small" id="update-btn">Update</button>
-    <span class="version" id="version">v10.06.11</span>
-  </footer>
+  </section>
 
 </main>
 
@@ -151,6 +172,19 @@
       <p>Use Test Mode to preview each sound before hiding the device. It exits the active session automatically.</p>
     </div>
     <button class="help-close-btn" id="help-close-btn">Close</button>
+  </section>
+</div>
+
+<!-- Install instructions modal (shown when the OS can't fire a native install prompt,
+     e.g. iPhone Safari). The steps are filled in per-platform by app.js. -->
+<div class="modal-layer hidden" id="install-modal-layer">
+  <button class="modal-backdrop" id="install-modal-dismiss" aria-label="Close install dialog"></button>
+  <section class="help-modal" id="install-modal" role="dialog" aria-modal="true" aria-labelledby="install-modal-title" tabindex="-1">
+    <p class="help-modal-kicker">Install</p>
+    <h2 id="install-modal-title">Add to your home screen</h2>
+    <p class="help-summary" id="install-modal-summary">Install SoundAnnoyer as an app. Once installed it works fully offline.</p>
+    <ol class="install-steps" id="install-steps"></ol>
+    <button class="help-close-btn" id="install-close-btn">Got it</button>
   </section>
 </div>
 

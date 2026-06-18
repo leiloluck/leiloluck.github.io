@@ -50,14 +50,19 @@ These are the explicit asks. Treat them as a checklist.
       then *clip the start* of the next sound. The app must **wake the speaker**
       before each sound so it plays immediately and in full. See "Audio engine".
 - [ ] **Lightweight.**
-- [ ] **Always serves the newest version** — opening the site must never get stuck
-      on a stale cached build. Pushing a change must show up on the phone.
-- [ ] **"Update to newest version" button** — manual escape hatch in case the auto
-      refresh hasn't happened.
-- [ ] **Installable as an offline PWA** — Install button → open as app → works
-      offline. **Android is the priority** platform.
-- [ ] **Version number tied to the current date** — format `vDD.MM.YY`
-      (e.g. `v09.06.26`). Bump it on every change.
+- [ ] **Works perfectly offline once installed** — no mandatory connection. The
+      installed app must boot and run with zero network; when a connection exists it
+      updates in the background; offline it keeps working from cache.
+- [ ] **Serves the newest version when online** — a deployed change must reach the
+      phone (on the next open, or instantly via the Update button). It must never get
+      permanently stuck on a stale build.
+- [ ] **"Update" button + tappable version** — manual escape hatch that jumps to the
+      newest build (online); offline it is a no-op that confirms the cached build.
+- [ ] **Installable on Android *and* iPhone** — a real home-screen install. Android /
+      desktop use the native prompt; iPhone Safari has no prompt, so the Install button
+      shows "Add to Home Screen" steps. Runs standalone + offline once installed.
+- [ ] **Version number tied to the current date** — format `vYY.MM.DD`
+      (e.g. `v26.06.18`, year.month.day). Bump it on every change.
 - [ ] **Owner supplies the sound files** as `.mp3`s dropped into `resources/`. The
       app picks them up automatically (see `resources/README.md` for filenames).
 
@@ -100,14 +105,20 @@ This is the hard part and mirrors the proven approach in `../meditation-timer/`.
   minimum. Average stays ≈ the chosen interval, but timing is unpredictable.
 - A toggle can switch to exact, fixed intervals.
 
-### Freshness / updates
+### Offline-first + freshness
 
-- **Service worker is network-first for the app shell** (`sw.js`): an online launch
-  always fetches the freshest HTML/CSS/JS, falling back to cache only when offline.
-- On load the page pulls any new service worker and reloads once when it takes
-  control (never mid-session).
-- A manual **Update** button clears all caches, unregisters the SW, and reloads —
-  the guaranteed way to jump to the newest build.
+- **Cache-first service worker** (`sw.js`). On install it precaches the whole shell,
+  the icons, **and every sound**, so the installed app boots and plays with zero
+  network. Every same-origin request is served from cache first (instant, offline).
+- Freshness comes from the **SW lifecycle**, not a per-launch network hit: bump
+  `VERSION` → the new worker precaches a new version-keyed cache in the background →
+  it takes over and the page reloads **once** when it gains control (never
+  mid-session). Registered with `updateViaCache:'none'` so a bumped `sw.js` is
+  detected promptly behind GitHub Pages' HTTP caching.
+- The **Update** button (and the tappable **version** label) are the manual jump to
+  newest: online they wipe caches + unregister the SW and reload; **offline they do
+  nothing destructive** (wiping with no network would brick the app) and just confirm
+  the cached build. This offline guard is essential — do not remove it.
 
 ### Sounds / resources
 
@@ -137,16 +148,20 @@ This is the hard part and mirrors the proven approach in `../meditation-timer/`.
   stays silent for the first interval, so pressing UNLEASH isn't given away by an
   instant sound (discreet start). State is persisted like the other toggles.
 
-### Fit on screen (no stranded footer)
+### Two tabs + single-page scroll
 
-- The page is a fixed-height frame (`body { height:100dvh; overflow:hidden }`); it
-  never scrolls, so the footer (Install / Update / version) is always on screen.
-- The **sound list is the only scrollable region** — it flexes to fill leftover
-  height and scrolls internally if there are ever more sounds than fit. Everything
-  else (hero, launch, intervals, toggles, footer) stays pinned.
-- The same problem is fixed in `../meditation-timer/` by making its footer
-  `position: sticky; bottom: 0` so Install / Update / version can't fall below the
-  fold there either.
+- The UI is split into two tabs under a sticky segmented control:
+  - **Annoy** — the entire app: hero/countdown, UNLEASH (+ skip), the sound grid, and
+    the interval picker. Sized to fit one screen on common phones.
+  - **Settings** — the three toggles (chaos / test / start-with-a-sound), the
+    How-it-works / Install / Update buttons, and the version + offline badge.
+- **There is no nested scroll container.** The whole page scrolls as one. The previous
+  build made the sound grid its own `overflow:auto; overscroll-behavior:contain`
+  scroller, which *trapped* touches: a finger landing on a sound button couldn't
+  drag-scroll the page. The grid is now plain auto-height; if a tab is taller than the
+  screen the page scrolls normally, and tapping a button never blocks that.
+- Tappable controls carry `touch-action: manipulation` (crisp taps, no double-tap
+  zoom, drags still scroll).
 
 ### Loudness normalization
 
@@ -173,16 +188,16 @@ with intent.
 
 | File | Purpose |
 |---|---|
-| `index.html` | UI shell, CSP, PWA meta. No inline scripts/styles. |
-| `css/styles.css` | Gremlin theme + responsive layout. |
-| `js/app.js` | Audio engine, random scheduler, anti-repeat shuffle, PWA/install/update, BT wake. |
-| `manifest.json` | PWA manifest (Android-first). |
-| `sw.js` | Service worker: network-first shell, offline cache, version-keyed cache. |
+| `index.html` | UI shell (two tab panels + modals), CSP, PWA meta. No inline scripts/styles. |
+| `css/styles.css` | Theme, tabbed layout, single-page scroll, responsive. |
+| `js/app.js` | Audio engine, random scheduler, anti-repeat shuffle, tabs, smart install (native prompt / iOS instructions), offline-safe update, BT wake. |
+| `manifest.json` | PWA manifest. |
+| `sw.js` | Service worker: cache-first / offline-first, precaches shell + all sounds, version-keyed cache. |
 | `icons/` | `icon.svg` + `icon-192/512/180.png`. |
 | `resources/` | Owner-supplied `.mp3` sounds (see its `README.md`). |
 
 ## Versioning
 
 Bump the version on **every** change, in lockstep, in three places:
-`index.html` (footer `.version`), `sw.js` (`VERSION`), and `js/app.js`
-(`APP_VERSION`). Format `vDD.MM.YY`.
+`index.html` (the Settings `.version` button), `sw.js` (`VERSION`), and `js/app.js`
+(`APP_VERSION`). Format `vYY.MM.DD` (year.month.day, e.g. `v26.06.18`).

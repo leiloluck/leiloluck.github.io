@@ -19,7 +19,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v10.06.11';
+const APP_VERSION = 'v26.06.18';
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 // Drop real files into resources/ (see resources/README.md). Until a matching file
@@ -552,6 +552,21 @@ const elInstallBtn  = document.getElementById('install-btn');
 const elUpdateBtn   = document.getElementById('update-btn');
 const elVersion     = document.getElementById('version');
 const elHelpBtn     = document.getElementById('help-btn');
+const elOfflineBadge= document.getElementById('offline-badge');
+
+// Tabs
+const elTabAnnoy     = document.getElementById('tab-annoy');
+const elTabSettings  = document.getElementById('tab-settings');
+const elPanelAnnoy   = document.getElementById('panel-annoy');
+const elPanelSettings= document.getElementById('panel-settings');
+
+// Install instructions modal
+const elInstallModalLayer   = document.getElementById('install-modal-layer');
+const elInstallModal        = document.getElementById('install-modal');
+const elInstallModalDismiss = document.getElementById('install-modal-dismiss');
+const elInstallSummary      = document.getElementById('install-modal-summary');
+const elInstallSteps        = document.getElementById('install-steps');
+const elInstallCloseBtn     = document.getElementById('install-close-btn');
 
 const elHelpModalLayer   = document.getElementById('help-modal-layer');
 const elHelpModal        = document.getElementById('help-modal');
@@ -829,6 +844,23 @@ elHelpDetailsBtn.addEventListener('click', () => {
   elHelpDetailsBtn.textContent = nowHidden ? '+ more details' : '- less';
 });
 
+// ── UI: tabs (Annoy / Settings) ──────────────────────────────────────────────
+// Pure show/hide of two panels. Defaults to Annoy on load so the countdown is
+// visible while running.
+
+function showTab(name) {
+  const annoy = name !== 'settings';
+  elPanelAnnoy.classList.toggle('hidden', !annoy);
+  elPanelSettings.classList.toggle('hidden', annoy);
+  elTabAnnoy.setAttribute('aria-selected', annoy ? 'true' : 'false');
+  elTabSettings.setAttribute('aria-selected', annoy ? 'false' : 'true');
+  // Jump back to the top when switching, in case the previous panel was scrolled.
+  window.scrollTo(0, 0);
+}
+
+elTabAnnoy.addEventListener('click', () => showTab('annoy'));
+elTabSettings.addEventListener('click', () => showTab('settings'));
+
 // ────────────────────────────────────────────────────────────────────────────
 
 elCustomForm.addEventListener('submit', e => { e.preventDefault(); submitCustom(); });
@@ -843,6 +875,10 @@ elKeypad.addEventListener('click', e => {
 elCustomCancel.addEventListener('click', closeCustomModal);
 elModalDismiss.addEventListener('click', closeCustomModal);
 document.addEventListener('keydown', e => {
+  if (!elInstallModalLayer.classList.contains('hidden')) {
+    if (e.key === 'Escape') closeInstallModal();
+    return;
+  }
   if (!elHelpModalLayer.classList.contains('hidden')) {
     if (e.key === 'Escape') closeHelpModal();
     return;
@@ -966,31 +1002,124 @@ function loadState() {
   }
 }
 
-// ── PWA: install + update ────────────────────────────────────────────────────
+// ── PWA: install ─────────────────────────────────────────────────────────────
+// Android / desktop fire `beforeinstallprompt` → we trigger the native prompt.
+// iOS Safari never does, so the Install button instead opens step-by-step
+// "Add to Home Screen" instructions. The button always shows (so iPhone users get
+// it too) unless the app is already running standalone.
 
 let deferredPrompt = null;
 
+function isStandalone() {
+  return window.matchMedia('(display-mode: standalone)').matches
+      || window.navigator.standalone === true;
+}
+
+function isIOS() {
+  const ua = navigator.userAgent || '';
+  // iPadOS 13+ reports as desktop Safari, so also treat touch-capable Mac as iOS.
+  return /iphone|ipad|ipod/i.test(ua)
+      || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+function refreshInstallUI() {
+  if (isStandalone()) {
+    elInstallBtn.textContent = '✓ Installed';
+    elInstallBtn.disabled = true;
+  } else {
+    elInstallBtn.textContent = 'Install app';
+    elInstallBtn.disabled = false;
+  }
+}
+
 window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();
+  e.preventDefault();          // keep our own button in charge of the prompt
   deferredPrompt = e;
-  elInstallBtn.classList.remove('hidden');
 });
 
 window.addEventListener('appinstalled', () => {
   deferredPrompt = null;
-  elInstallBtn.classList.add('hidden');
+  closeInstallModal();
+  refreshInstallUI();
 });
 
 elInstallBtn.addEventListener('click', async () => {
-  if (!deferredPrompt) { elInstallBtn.classList.add('hidden'); return; }
-  deferredPrompt.prompt();
-  await deferredPrompt.userChoice;
-  deferredPrompt = null;
-  elInstallBtn.classList.add('hidden');
+  if (isStandalone()) return;
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    refreshInstallUI();
+  } else {
+    openInstallModal();        // iOS, or Android/desktop with no live prompt
+  }
 });
 
-// Hard update: wipe caches + service workers, then reload to the freshest build.
-elUpdateBtn.addEventListener('click', async () => {
+// Install instructions modal (platform-specific steps).
+function installSteps() {
+  if (isIOS()) {
+    return [
+      'Open this page in Safari (not another browser).',
+      'Tap the Share button — the square with an upward arrow.',
+      'Choose "Add to Home Screen", then tap "Add".',
+    ];
+  }
+  if (/android/i.test(navigator.userAgent || '')) {
+    return [
+      'Open the browser menu (⋮, top-right).',
+      'Tap "Install app" or "Add to Home screen".',
+      'Confirm — it installs and runs offline.',
+    ];
+  }
+  return [
+    'Click the install icon in the address bar (⊕ / a small screen icon).',
+    'Or open the browser menu and choose "Install SoundAnnoyer".',
+    'Confirm — it opens as its own app and runs offline.',
+  ];
+}
+
+function openInstallModal() {
+  elInstallSteps.innerHTML = '';
+  installSteps().forEach(step => {
+    const li = document.createElement('li');
+    li.textContent = step;
+    elInstallSteps.appendChild(li);
+  });
+  elInstallModalLayer.classList.remove('hidden');
+  document.body.classList.add('modal-open');
+  requestAnimationFrame(() => elInstallModal.focus());
+}
+
+function closeInstallModal() {
+  elInstallModalLayer.classList.add('hidden');
+  document.body.classList.remove('modal-open');
+}
+
+elInstallModalDismiss.addEventListener('click', closeInstallModal);
+elInstallCloseBtn.addEventListener('click', closeInstallModal);
+
+// ── PWA: update (offline-safe) ───────────────────────────────────────────────
+// Online  → wipe caches + service workers and reload to the freshest build.
+// Offline → do NOTHING destructive (wiping with no network would brick the app);
+//           just confirm we're still running from the offline cache.
+
+let updateMsgTimer = null;
+
+function flashInstallStatus(msg, isOffline) {
+  if (isOffline) elOfflineBadge.classList.add('is-offline');
+  elUpdateBtn.textContent = msg;
+  clearTimeout(updateMsgTimer);
+  updateMsgTimer = setTimeout(() => {
+    elUpdateBtn.textContent = 'Update';
+    refreshOfflineBadge();
+  }, 2600);
+}
+
+async function runUpdate() {
+  if (navigator.onLine === false) {
+    flashInstallStatus('Offline — cached ✓', true);
+    return;
+  }
   elUpdateBtn.textContent = 'Updating…';
   elUpdateBtn.disabled = true;
   try {
@@ -1004,7 +1133,24 @@ elUpdateBtn.addEventListener('click', async () => {
     }
   } catch {}
   window.location.reload();
-});
+}
+
+elUpdateBtn.addEventListener('click', runUpdate);
+elVersion.addEventListener('click', runUpdate);   // the "date button" checks for updates
+
+// Offline indicator in Settings.
+function refreshOfflineBadge() {
+  const offline = navigator.onLine === false;
+  elOfflineBadge.textContent = offline ? '⚠ offline — running cached' : '✓ works offline';
+  elOfflineBadge.classList.toggle('is-offline', offline);
+}
+window.addEventListener('online',  refreshOfflineBadge);
+window.addEventListener('offline', refreshOfflineBadge);
+
+// Keep the Install button label in sync if the app gets installed mid-session.
+window.matchMedia('(display-mode: standalone)').addEventListener?.('change', refreshInstallUI);
+refreshInstallUI();
+refreshOfflineBadge();
 
 // ── Init ─────────────────────────────────────────────────────────────────────
 
@@ -1030,9 +1176,9 @@ document.addEventListener('visibilitychange', () => {
 });
 
 // ── Service worker: register + stay on the newest build ───────────────────────
-// network-first shell (sw.js) means an online launch fetches the freshest files.
-// We also pull a new worker promptly and reload once when it takes control —
-// never mid-session.
+// The SW (sw.js) is cache-first / offline-first. Freshness comes from the worker
+// lifecycle: we pull a new worker promptly (reg.update) and reload once when it takes
+// control — never mid-session.
 
 if ('serviceWorker' in navigator) {
   const hadController = !!navigator.serviceWorker.controller;
@@ -1044,7 +1190,9 @@ if ('serviceWorker' in navigator) {
     window.location.reload();
   });
 
-  navigator.serviceWorker.register('./sw.js').then(reg => {
+  // updateViaCache:'none' → the sw.js script is always revalidated on update checks,
+  // so a bumped VERSION is detected promptly even behind GitHub Pages' HTTP caching.
+  navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).then(reg => {
     reg.update();
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') reg.update();

@@ -1,8 +1,9 @@
 /* styles.css — SoundAnnoyer
    "Nightshift" concept: a clean, modern fitness-dashboard look adapted to dark mode.
    Periwinkle / indigo accents on deep navy, soft rounded cards, pill-shaped buttons.
-   Single-screen frame: the page never scrolls; only the sound list scrolls; the
-   footer stays pinned. */
+   Two tabs (Annoy / Settings) under a sticky segmented control. The WHOLE page
+   scrolls as one — there is no nested scroll container, so a touch that lands on a
+   sound button never traps the scroll. */
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -123,6 +124,55 @@ body {
   text-transform: uppercase;
 }
 
+/* ── Tabs (segmented control) ── */
+/* Sticky so it stays reachable if the page ever scrolls. The bg-coloured box-shadow
+   (clipped vertically) is an opaque full-width band that masks content scrolling
+   underneath, so the pill reads as floating on the page background. */
+.tabs {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 5;
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 5px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--pill);
+  box-shadow: 0 0 0 100vmax var(--bg);
+  clip-path: inset(0 -100vmax);
+}
+
+.tab {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 9px 8px;
+  border-radius: var(--pill);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background var(--fade), color var(--fade);
+}
+.tab:not([aria-selected="true"]):hover { color: var(--text); }
+.tab[aria-selected="true"] {
+  background: linear-gradient(135deg, var(--primary), var(--primary-2));
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(79, 110, 247, 0.3);
+}
+
+/* ── Panels ── */
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 1.4dvh, 14px);
+}
+
 /* ── Hero / status card ── */
 
 .hero {
@@ -216,6 +266,7 @@ body.running .hero-sub {
   background: linear-gradient(135deg, var(--primary), var(--primary-2));
   box-shadow: 0 10px 26px rgba(79, 110, 247, 0.35);
   cursor: pointer;
+  touch-action: manipulation;
   transition: filter var(--fade), box-shadow var(--fade), background var(--fade);
 }
 
@@ -270,21 +321,19 @@ body.running .btn-launch {
 /* ── Sounds (scrollable region) ── */
 
 .sounds-section {
-  flex: 1 1 auto;
-  min-height: 0;
   display: flex;
   flex-direction: column;
 }
 
+/* Plain auto-height grid — NOT its own scroll container. The whole page scrolls as
+   one, so a touch that lands on a sound button can still drag-scroll the page (the
+   old overflow/overscroll-contain here trapped the scroll). */
 .sound-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 7px;
-  overflow-y: auto;
-  min-height: 0;
   align-content: start;
   padding: 1px 2px 4px;
-  overscroll-behavior: contain;
 }
 
 /* Pill-style chips: emoji badge + name (no sub-text) */
@@ -301,6 +350,7 @@ body.running .btn-launch {
   cursor: pointer;
   border-radius: var(--radius-sm);
   text-align: left;
+  touch-action: manipulation;
   transition: border-color var(--fade), background var(--fade), transform 80ms ease, box-shadow var(--fade);
 }
 
@@ -376,6 +426,7 @@ body.test-mode #sound-hint { color: var(--orange); }
   cursor: pointer;
   border-radius: var(--pill);
   text-align: center;
+  touch-action: manipulation;
   transition: border-color var(--fade), color var(--fade), background var(--fade);
   display: flex;
   flex-direction: column;
@@ -423,6 +474,7 @@ body.test-mode #sound-hint { color: var(--orange); }
   font-family: var(--sans);
   color: var(--text);
   text-align: left;
+  touch-action: manipulation;
   transition: border-color var(--fade);
 }
 
@@ -461,44 +513,67 @@ body.test-mode #sound-hint { color: var(--orange); }
 .toggle-title { font-size: 12.5px; font-weight: 700; line-height: 1.15; }
 .toggle-sub { font-size: 10px; color: var(--muted); line-height: 1.2; margin-top: 1px; }
 
-/* ── Footer ── */
+/* ── Settings: actions + meta ── */
 
-.footer {
-  flex-shrink: 0;
+.settings-actions {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
   flex-wrap: wrap;
-  padding-top: 4px;
+  gap: 8px;
 }
+.settings-actions .btn-small { flex: 1 1 auto; }
 
 .btn-small {
   background: var(--surface);
   border: 1px solid var(--border-hi);
-  color: var(--muted);
-  font-size: 11px;
+  color: var(--text);
+  font-size: 12.5px;
   font-family: var(--sans);
   font-weight: 600;
-  padding: 6px 13px;
+  padding: 12px 14px;
   cursor: pointer;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
   border-radius: var(--pill);
+  touch-action: manipulation;
   transition: border-color var(--fade), color var(--fade), background var(--fade);
 }
 
-.btn-small:hover:not(:disabled) { border-color: var(--primary-line); color: var(--text); }
+.btn-small:hover:not(:disabled) { border-color: var(--primary-line); }
 .btn-small:disabled { opacity: 0.5; cursor: default; }
 
-#help-btn { width: 28px; padding: 6px 0; }
+.settings-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 2px;
+}
 
+/* Tappable version → checks for an update (see app.js). */
 .version {
-  font-size: 10px;
+  appearance: none;
+  background: transparent;
+  border: 1px solid transparent;
+  font-family: var(--sans);
+  font-size: 11px;
   color: var(--muted);
-  opacity: 0.6;
+  opacity: 0.75;
   letter-spacing: 0.04em;
   font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  padding: 6px 11px;
+  border-radius: var(--pill);
+  touch-action: manipulation;
+  transition: color var(--fade), border-color var(--fade), opacity var(--fade);
 }
+.version:hover { color: var(--text); opacity: 1; border-color: var(--border-hi); }
+
+.offline-badge {
+  font-size: 11px;
+  color: var(--muted);
+  opacity: 0.7;
+  letter-spacing: 0.03em;
+}
+.offline-badge.is-offline { color: var(--orange); opacity: 0.95; }
 
 .hidden { display: none !important; }
 
@@ -662,6 +737,43 @@ body.modal-open { overflow: hidden; }
   box-shadow: 0 8px 20px rgba(79, 110, 247, 0.3);
 }
 .help-close-btn:hover { filter: brightness(1.08); }
+
+/* ── Install instructions ── */
+
+.install-steps {
+  list-style: none;
+  counter-reset: step;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 4px 0 18px;
+}
+.install-steps li {
+  position: relative;
+  padding-left: 34px;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.5;
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+}
+.install-steps li::before {
+  counter-increment: step;
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary), var(--primary-2));
+  border-radius: 50%;
+}
 
 /* ── Responsive ── */
 

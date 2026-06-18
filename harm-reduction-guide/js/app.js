@@ -616,7 +616,11 @@ function renderCombosSection(data) {
                 }).join('')
                 + `</div>`;
         }
-        sourcesHtml += `<div class="mt-1 pl-3"><a href="https://combo.tripsit.me" target="_blank" rel="noopener" class="text-[10px] opacity-30 hover:opacity-60 underline transition-opacity" style="color:${data.color}">TripSit Drug Combination Chart</a></div>`;
+        if (combo.curated) {
+            sourcesHtml += `<div class="mt-1 pl-3 text-[10px] italic opacity-40" style="color:${data.color}">Curated from the cited sources — this pairing is not in the TripSit dataset.</div>`;
+        } else {
+            sourcesHtml += `<div class="mt-1 pl-3"><a href="https://combo.tripsit.me" target="_blank" rel="noopener" class="text-[10px] opacity-30 hover:opacity-60 underline transition-opacity" style="color:${data.color}">TripSit Drug Combination Chart</a></div>`;
+        }
 
         html += `
         <div class="combo-item" style="border-left:3px solid ${risk.color};background:${hexAlpha(risk.color, 0.04)}">
@@ -627,6 +631,7 @@ function renderCombosSection(data) {
                     <span class="text-sm">
                         ${combo.displayEmoji}
                         <span class="font-semibold" style="color:${nameColor}">${combo.displayName}</span>
+                        ${combo.curated ? `<span class="text-[9px] uppercase tracking-wider opacity-40 ml-1" title="Not in the TripSit dataset; curated from cited sources" style="color:${data.color}">curated</span>` : ''}
                     </span>
                 </div>
                 ${hasDetail ? `
@@ -645,6 +650,16 @@ function renderCombosSection(data) {
     list.innerHTML = html;
 }
 
+// Axis definitions — shown in the risk-chart tooltip so each axis states its
+// scope explicitly (the labels are deliberately narrow proxies, not catch-alls).
+const AXIS_DESC = {
+    'Neurotoxicity': 'Risk of direct, lasting damage to neural tissue.',
+    'Cardiotoxicity': 'Cardiovascular strain — heart rate, blood pressure, vasoconstriction.',
+    'Dehydration': 'Fluid and electrolyte disruption.',
+    'Sleep Disruption': 'How strongly it prevents or degrades sleep during and after use (not the same as long-term sleep harm).',
+    'Compulsion': 'Loss of behavioural control — disinhibition and compulsive redosing.'
+};
+
 // --- Charts (Dark Mode) ---
 function updateCharts(data, skipDuration = false) {
     const multiplier = getIntensityMultiplier();
@@ -656,7 +671,7 @@ function updateCharts(data, skipDuration = false) {
         Math.min(8, Math.round(data.visualizer.impulsivity * multiplier))
     ];
 
-    const labels = ['Neurotoxicity', 'Cardiotoxicity', 'Dehydration', 'Sleep Loss', 'Impulsivity'];
+    const labels = ['Neurotoxicity', 'Cardiotoxicity', 'Dehydration', 'Sleep Disruption', 'Compulsion'];
     const darkGridColor = 'rgba(255,255,255,0.06)';
     const darkLabelColor = '#71717a'; // zinc-500
 
@@ -734,6 +749,9 @@ function createHistogramChart(data, labels, scores, gridColor, labelColor) {
                 legend: { display: false },
                 tooltip: {
                     callbacks: {
+                        afterTitle: function (items) {
+                            return items && items[0] ? (AXIS_DESC[items[0].label] || '') : '';
+                        },
                         label: function (context) {
                             const v = context.raw;
                             let t = 'None';

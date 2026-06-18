@@ -29,6 +29,22 @@ The sober / baseline state is always presented **first and prominently** at the 
 
 The sober section explicitly covers the physiological strain of sleep deprivation, prolonged dancing, nutritional depletion, and circadian disruption. This normalises harm reduction as a practice relevant to everyone, not only substance users.
 
+### 1.4 Language of Risk — Calibrated, Not Absolutist
+
+Warnings must match the strength of the evidence behind them. Absolutist phrasing ("**never**") spent on risks that competent users routinely manage erodes trust in the warnings that genuinely matter — if everything is "never," nothing is. The wording of a risk statement is therefore **calibrated to the severity and the certainty of the underlying source**, using a deliberate three-tier vocabulary:
+
+| Tier | Phrasing | When to use | Example |
+|---|---|---|---|
+| **Caution** | "Avoid …", "Best avoided …", "Generally unnecessary …" | Dose- or context-dependent risks; combinations sources rate as *Caution*; effects that are unpleasant or add strain but are commonly tolerated. | Caffeine + other stimulants (SaferParty: "can increase strain on the heart"; TripSit: *Caution*) → **"Avoid mixing with other stimulants."** |
+| **Strong** | "Do not …", "Never …" | Genuinely life-threatening, well-evidenced combinations or actions; combinations sources rate as *Dangerous*; where the failure mode is death, not discomfort. | GHB + alcohol, opioids + any depressant, speedballing → **"Do not combine."** |
+| **Technique** | "Never …" (retained) | Non-negotiable safety technique with zero upside to doing otherwise — not a substance *choice* people enjoy. | "Never share needles," "Never leave someone nodding off unmonitored," "Never eyeball a GHB dose." |
+
+Rules:
+- **Reserve "never" for the Strong and Technique tiers.** Do not use it for Caution-level risks. The ⚠️ life-threatening prefix (§5.6) follows the same boundary — it belongs only to Strong-tier items.
+- **Match the cited source's own register.** If SaferParty says "can increase strain on the heart" and TripSit rates a pairing *Caution*, the site must not escalate that to "never." Overstating a source is as much an accuracy error as understating one.
+- **Qualify weak evidence explicitly** (per §2.2). Preclinical or animal-only findings are stated as such ("animal studies suggest…"), not as established human fact.
+- Non-judgemental throughout: describe the risk and the safer action, never scold.
+
 ---
 
 ## 2. Epistemological Standards
@@ -53,7 +69,7 @@ The data model supports a `sources` array on every content item. Each source ent
 2. **SaferParty (Safer Nightlife Schweiz)** — Swiss drug-checking service. Provides real-world European adulterant data, regional substance alerts, and pragmatic consumption advice.
 3. **TripSit** — Combination safety charts, factsheets, and community-reviewed pharmacological summaries. The definitive source for multi-substance interaction data (see `tripsit-combo/combos.json`).
 4. **DanceSafe** — US-based harm reduction organisation. Reagent testing protocols, adulterant warnings, and accessible substance overviews.
-5. **DrugScience (Nutt et al.)** — Academic multi-criteria harm analysis. Used for relative risk comparisons and the physiological impact visualiser values.
+5. **DrugScience (Nutt et al.)** — Academic multi-criteria harm analysis. Reserved as a *future* reference for relative risk comparisons; not yet integrated (the `drugscience/` folder is currently empty). The risk visualiser does **not** derive its numbers from this source — see §2.4 for what the visualiser actually is.
 6. **Peer-reviewed literature** — PubMed-indexed studies are cited where specific physiological mechanisms require clinical backing (e.g., hyponatremia risk in MDMA, cocaethylene cardiotoxicity).
 
 ### 2.2 Confidence & Controversy Policy
@@ -77,6 +93,15 @@ The `/resources/` directory contains the raw reference material organised by sou
 | `drugscience/` | DrugScience.org.uk | Multi-criteria harm rankings (reserved for future use) |
 | `browse.md` | — | Navigation index for the resource library |
 | `Festival Harm Reduction Guide.md` | Original compilation | The master narrative document from which protocol data was derived |
+
+### 2.4 The Risk Visualiser Is an Estimate, Not a Sourced Dataset
+
+The five-axis **Risk Profile** chart (neurotoxicity, cardiotoxicity, dehydration, sleep disruption, compulsion) is the one element on the site that is **not** traceable to a citation. Its 0–8 values live on the `visualizer` object in `protocols.json`, which — unlike every `detail` field — carries **no `sources` array**. They are an **editorial synthesis**: a rough qualitative ranking assigned by reading across the literature, not a measured quantity reproduced from any dataset. This is a deliberate, disclosed limitation, governed by four rules:
+
+1. **Never present it as harder data than it is.** The numbers have no units, no decimal precision, and no per-axis citation. The UI caption states plainly that the chart is an estimate for rough comparison; the wording must not imply measurement.
+2. **Sourced content comes first.** The **Common Risks** list (derived from each substance's `risks` array, which is grounded in the sources) is shown *above* the chart, so the reader meets traceable content before the estimate. The chart is the *last* thing in the Risk Profile tab, not the first.
+3. **The five axes do not capture every danger.** They were designed around stimulant/empathogen *exertion* strain. Acute mechanisms — opioid and GHB **respiratory depression**, GHB's **narrow therapeutic window**, serotonin syndrome — are represented by *none* of the axes, so for depressants/opioids the chart **understates lethality**. The Common Risks list and emergency guidance exist to carry what the chart structurally cannot. The "Compulsion" axis also deliberately spans two ideas (behavioural disinhibition *and* compulsive redosing) and should be read loosely.
+4. **The dose multiplier is a display heuristic, not pharmacology.** `getIntensityMultiplier()` scales all five axes by the same factor (threshold ×0.35 → heavy ×1.5, capped at 8). This is a uniform visual approximation — it does not model real dose-response, the axes do not all scale with dose in reality, and for already-maxed substances (e.g. methamphetamine) the bars stop moving across tiers. Never describe it as dose-response data.
 
 ---
 
@@ -178,8 +203,12 @@ Five axes representing physiological strain dimensions:
 - **Neurotoxicity** — Direct damage to neural tissue
 - **Cardiotoxicity** — Cardiovascular strain (heart rate, blood pressure, vasoconstriction)
 - **Dehydration** — Fluid and electrolyte disruption
-- **Sleep Deprivation** — Circadian disruption and sleep architecture impairment
-- **Impulsivity** — Behavioural disinhibition and compulsive redosing risk
+- **Sleep Disruption** — How strongly the substance prevents or degrades sleep during and after use (a narrower idea than long-term sleep harm)
+- **Compulsion** — Loss of behavioural control: disinhibition and compulsive redosing
+
+Each axis carries a one-line scope definition in its chart tooltip (`AXIS_DESC` in `js/app.js`), because the labels are deliberately narrow proxies, not catch-alls. "Sleep Disruption" and "Compulsion" replaced the older "Sleep Loss" / "Impulsivity" labels, which conflated distinct ideas.
+
+> **Provenance:** these are editorial estimates, not sourced figures, and they omit some acute dangers (e.g. respiratory depression). They are shown *after* the source-derived Common Risks list. See §2.4 before treating any value as data.
 
 Values are qualitative (0–8 scale) and colour-coded:
 - 0 = Gray (None)
@@ -433,7 +462,9 @@ The `resources/tripsit-combo/combos.json` file contains a machine-readable inter
 - **Unsafe** — Significant danger
 - **Dangerous** — Life-threatening; never combine
 
-This dataset is available for future integration into a combination-checker feature.
+This dataset is **live** in the **Combinations** tab. `js/comboData.js` loads it, maps app substance IDs to TripSit keys (`COMBO_KEY_MAP`), looks combinations up bidirectionally, and sorts them by severity. A combination class is never compared to itself (e.g. amphetamine vs. methamphetamine, which share the `amphetamines` key, are suppressed).
+
+**Curated overlay for TripSit gaps.** TripSit's data is incomplete for some substances — notably **mephedrone (4-MMC)**, which has no entries for its most relevant pairings (other stimulants, alcohol, ketamine). These gaps are filled by a small `CURATED_COMBOS` table in `comboData.js`, used **only as a fallback** when TripSit has no entry for a pair. Every curated entry is source-cited and flagged `curated: true`; the UI labels it "curated" and states plainly that the pairing is not in the TripSit dataset. Curated entries must meet the same evidence bar as everything else — pairings with no source basis (e.g. 4-MMC + cannabis, 4-MMC + 2C-B) are deliberately left absent rather than invented.
 
 ---
 

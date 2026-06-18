@@ -330,11 +330,55 @@ body {
   display: none !important;
 }
 
+/* Tappable version → checks for an update (see app.js). */
 .version {
+  appearance: none;
+  background: transparent;
+  border: 1px solid transparent;
+  font-family: inherit;
   font-size: 10px;
   color: var(--muted);
-  opacity: 0.35;
+  opacity: 0.45;
   letter-spacing: 0.04em;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color var(--fade), border-color var(--fade), opacity var(--fade);
+}
+.version:hover { color: var(--text); opacity: 1; border-color: var(--border); }
+
+/* ── Install instructions ── */
+.install-steps {
+  list-style: none;
+  counter-reset: step;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 6px 0 18px;
+}
+.install-steps li {
+  position: relative;
+  padding-left: 34px;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.5;
+  display: flex;
+  align-items: center;
+  min-height: 24px;
+}
+.install-steps li::before {
+  counter-increment: step;
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  color: var(--bg);
+  background: var(--accent);
+  border-radius: 50%;
 }
 
 body.modal-open {

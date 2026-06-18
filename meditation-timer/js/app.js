@@ -11,6 +11,8 @@
 
 'use strict';
 
+const APP_VERSION = 'v26.06.19';   // format vYY.MM.DD — keep in lockstep with sw.js + index.html
+
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 //
 // type: 'loop'     — audio element loops continuously throughout the session.
@@ -527,7 +529,14 @@ const elResetBtn      = document.getElementById('btn-reset');
 const elSoundGroup    = document.getElementById('sound-group');
 const elDurationGroup = document.getElementById('duration-group');
 const elInstallBtn    = document.getElementById('install-btn');
+const elUpdateBtn     = document.getElementById('update-btn');
 const elOfflineBtn    = document.getElementById('offline-btn');
+const elVersion       = document.getElementById('version');
+const elInstallModalLayer   = document.getElementById('install-modal-layer');
+const elInstallModal        = document.getElementById('install-modal');
+const elInstallModalDismiss = document.getElementById('install-modal-dismiss');
+const elInstallSteps        = document.getElementById('install-steps');
+const elInstallCloseBtn     = document.getElementById('install-close-btn');
 const elCustomModalLayer = document.getElementById('custom-modal-layer');
 const elCustomModal = document.getElementById('custom-modal');
 const elCustomModalDismiss = document.getElementById('custom-modal-dismiss');
@@ -775,6 +784,11 @@ elCustomDurationCancel.addEventListener('click', closeCustomTimeModal);
 elCustomModalDismiss.addEventListener('click', closeCustomTimeModal);
 
 document.addEventListener('keydown', event => {
+  if (!elInstallModalLayer.classList.contains('hidden')) {
+    if (event.key === 'Escape') closeInstallModal();
+    return;
+  }
+
   if (elCustomModalLayer.classList.contains('hidden')) return;
 
   if (event.key === 'Escape') {
@@ -819,47 +833,121 @@ elResetBtn.addEventListener('click', () => {
   stopSession();
 });
 
-// ── PWA install ──────────────────────────────────────────────────────────────
+// ── PWA: install ─────────────────────────────────────────────────────────────
+// Android / desktop fire `beforeinstallprompt` → we trigger the native prompt.
+// iOS Safari never does, so the Install button instead opens step-by-step
+// "Add to Home Screen" instructions. The button always shows unless already standalone.
 
-const INSTALLED_KEY = 'meditation-pwa-installed';
 let deferredInstallPrompt = null;
 
-const isStandalone =
-  window.matchMedia('(display-mode: standalone)').matches ||
-  window.navigator.standalone === true ||
-  localStorage.getItem(INSTALLED_KEY) === '1';
+function isStandalone() {
+  return window.matchMedia('(display-mode: standalone)').matches
+      || window.navigator.standalone === true;
+}
 
-if (isStandalone) showUpdateBtn();
+function isIOS() {
+  const ua = navigator.userAgent || '';
+  // iPadOS 13+ reports as desktop Safari, so also treat touch-capable Mac as iOS.
+  return /iphone|ipad|ipod/i.test(ua)
+      || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+function refreshInstallUI() {
+  if (isStandalone()) {
+    elInstallBtn.textContent = '✓ Installed';
+    elInstallBtn.disabled = true;
+  } else {
+    elInstallBtn.textContent = 'Install app';
+    elInstallBtn.disabled = false;
+  }
+}
 
 window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();
+  e.preventDefault();          // keep our own button in charge of the prompt
   deferredInstallPrompt = e;
-  if (!isStandalone) showInstallBtn();
 });
 
 window.addEventListener('appinstalled', () => {
-  localStorage.setItem(INSTALLED_KEY, '1');
   deferredInstallPrompt = null;
-  showUpdateBtn();
+  closeInstallModal();
+  refreshInstallUI();
 });
 
-function showInstallBtn() {
-  elInstallBtn.textContent = 'Install';
-  elInstallBtn.classList.remove('hidden');
-}
-
-function showUpdateBtn() {
-  elInstallBtn.textContent = 'Update';
-  elInstallBtn.classList.remove('hidden');
-}
-
 elInstallBtn.addEventListener('click', async () => {
+  if (isStandalone()) return;
   if (deferredInstallPrompt) {
     deferredInstallPrompt.prompt();
-    const result = await deferredInstallPrompt.userChoice;
+    await deferredInstallPrompt.userChoice;
     deferredInstallPrompt = null;
-    if (result.outcome === 'accepted') showUpdateBtn();
+    refreshInstallUI();
   } else {
+    openInstallModal();        // iOS, or Android/desktop with no live prompt
+  }
+});
+
+function installSteps() {
+  if (isIOS()) {
+    return [
+      'Open this page in Safari (not another browser).',
+      'Tap the Share button — the square with an upward arrow.',
+      'Choose "Add to Home Screen", then tap "Add".',
+    ];
+  }
+  if (/android/i.test(navigator.userAgent || '')) {
+    return [
+      'Open the browser menu (⋮, top-right).',
+      'Tap "Install app" or "Add to Home screen".',
+      'Confirm — it installs and opens on its own.',
+    ];
+  }
+  return [
+    'Click the install icon in the address bar (⊕ / a small screen icon).',
+    'Or open the browser menu and choose "Install Meditation Timer".',
+    'Confirm — it opens as its own app.',
+  ];
+}
+
+function openInstallModal() {
+  elInstallSteps.innerHTML = '';
+  installSteps().forEach(step => {
+    const li = document.createElement('li');
+    li.textContent = step;
+    elInstallSteps.appendChild(li);
+  });
+  elInstallModalLayer.classList.remove('hidden');
+  document.body.classList.add('modal-open');
+  requestAnimationFrame(() => elInstallModal.focus());
+}
+
+function closeInstallModal() {
+  elInstallModalLayer.classList.add('hidden');
+  document.body.classList.remove('modal-open');
+}
+
+elInstallModalDismiss.addEventListener('click', closeInstallModal);
+elInstallCloseBtn.addEventListener('click', closeInstallModal);
+
+// ── PWA: update (offline-safe) ───────────────────────────────────────────────
+// Online  → wipe caches + service workers and reload to the freshest build.
+// Offline → do NOTHING destructive (wiping with no network would brick the app);
+//           just confirm we're still running from the offline cache.
+
+let updateMsgTimer = null;
+
+function flashUpdateMsg(msg) {
+  elUpdateBtn.textContent = msg;
+  clearTimeout(updateMsgTimer);
+  updateMsgTimer = setTimeout(() => { elUpdateBtn.textContent = 'Update'; }, 2600);
+}
+
+async function runUpdate() {
+  if (navigator.onLine === false) {
+    flashUpdateMsg('Offline — cached ✓');
+    return;
+  }
+  elUpdateBtn.textContent = 'Updating…';
+  elUpdateBtn.disabled = true;
+  try {
     if ('caches' in window) {
       const keys = await caches.keys();
       await Promise.all(keys.map(k => caches.delete(k)));
@@ -868,9 +956,12 @@ elInstallBtn.addEventListener('click', async () => {
       const regs = await navigator.serviceWorker.getRegistrations();
       await Promise.all(regs.map(r => r.unregister()));
     }
-    window.location.reload();
-  }
-});
+  } catch {}
+  window.location.reload();
+}
+
+elUpdateBtn.addEventListener('click', runUpdate);
+elVersion.addEventListener('click', runUpdate);   // tappable version checks for updates
 
 // ── Offline audio download ───────────────────────────────────────────────────
 
@@ -907,18 +998,9 @@ function markAudioReady() {
 }
 
 elOfflineBtn.addEventListener('click', async () => {
-  // Step 1: trigger PWA install if the browser has queued a prompt (Android Chrome)
-  if (deferredInstallPrompt) {
-    deferredInstallPrompt.prompt();
-    const { outcome } = await deferredInstallPrompt.userChoice;
-    deferredInstallPrompt = null;
-    if (outcome === 'accepted') {
-      localStorage.setItem(INSTALLED_KEY, '1');
-      elInstallBtn.classList.add('hidden');
-    }
-  }
-
-  // Step 2: download every audio file so the full app works without a connection
+  // Download every audio file so the full app (incl. the long soundtrack) works
+  // without a connection. The app shell itself is already cached by the SW; this
+  // pulls in the large .mp3s, which are too big to precache on install.
   elOfflineBtn.textContent = 'Downloading…';
   elOfflineBtn.disabled = true;
   try {
@@ -937,16 +1019,17 @@ elOfflineBtn.addEventListener('click', async () => {
 
 // ── Init ─────────────────────────────────────────────────────────────────────
 
+elVersion.textContent = APP_VERSION;
 renderSounds();
 renderDurations();
 showIdleCountdown();
 initOfflineBtn();
+refreshInstallUI();
 
 // ── Service worker: register + keep the app up to date ────────────────────────
-// network-first shell (see sw.js) means an online launch always fetches the newest
-// files. This block additionally pulls in a new service worker promptly and reloads
-// the page once when it takes control, so a freshly deployed version is never more
-// than one launch behind — and never reloads mid-session.
+// The SW (see sw.js) is cache-first / offline-first for the app shell. Freshness
+// comes from the worker lifecycle: we pull in a new worker promptly and reload the
+// page once when it takes control — never mid-session.
 
 if ('serviceWorker' in navigator) {
   const hadController = !!navigator.serviceWorker.controller;
@@ -960,7 +1043,9 @@ if ('serviceWorker' in navigator) {
     window.location.reload();
   });
 
-  navigator.serviceWorker.register('./sw.js').then(reg => {
+  // updateViaCache:'none' → the sw.js script is always revalidated on update checks,
+  // so a bumped VERSION is detected promptly even behind GitHub Pages' HTTP caching.
+  navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).then(reg => {
     reg.update();
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') reg.update();

@@ -1,12 +1,14 @@
-/* sw.js — Meditation Timer service worker
-   App shell: network-first (always newest when online, cached fallback offline).
-   Audio (.mp3): native streaming on first load; served from cache once downloaded.
-   Explicitly avoids intercepting range requests before caching, so the browser
-   can stream the file naturally without buffering the whole 44 MB first. */
+/* sw.js — Meditation Timer service worker (offline-first)
+   App shell: cache-first — boots and runs with zero network once installed. Freshness
+   comes from the SW lifecycle: bump VERSION → new cache precached → it takes over and
+   the page reloads once (see js/app.js). The in-app Update button is the manual jump.
+   Audio (.mp3): NOT precached (the soundtrack is ~44 MB). Streamed on first load via
+   native range requests; served from cache once fully downloaded (the "Download for
+   offline" button fetches the whole file so it works without a connection). */
 
 'use strict';
 
-const VERSION = 'v09b.06.26';
+const VERSION = 'v26.06.19';
 const CACHE   = `meditation-timer-${VERSION}`;
 
 const PRECACHE = [
@@ -45,6 +47,7 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   const { request } = event;
+  if (request.method !== 'GET') return;
   const url = new URL(request.url);
 
   if (url.origin !== self.location.origin) return;
@@ -57,23 +60,22 @@ self.addEventListener('fetch', event => {
   event.respondWith(serveShell(request));
 });
 
-// Network-first for the app shell: an online launch always gets the freshest
-// HTML/CSS/JS (so a newly deployed version is used immediately), while a cached
-// copy keeps the app working offline. The fresh response is written back to the
-// cache on every successful fetch.
+// Cache-first for the app shell: instant, works fully offline. On a miss we fetch and
+// cache (so anything not precached still becomes available offline after one online
+// load). Navigations fall back to the cached shell so the app always opens.
 async function serveShell(request) {
   const cache = await caches.open(CACHE);
 
+  const cached = await cache.match(request);
+  if (cached) return cached;
+
   try {
     const networkResponse = await fetch(request);
-    if (networkResponse && networkResponse.status === 200) {
+    if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
       cache.put(request, networkResponse.clone());
     }
     return networkResponse;
   } catch {
-    const cached = await cache.match(request);
-    if (cached) return cached;
-
     // Offline navigation to an uncached path → fall back to the cached app shell.
     if (request.mode === 'navigate') {
       const shell = await cache.match('./index.html');
@@ -115,3 +117,8 @@ async function serveAudio(request) {
     return new Response('Audio not available offline.', { status: 503 });
   }
 }
+
+// Lets the in-app Update flow activate a freshly installed worker immediately.
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
+});

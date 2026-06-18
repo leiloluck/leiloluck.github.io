@@ -1,8 +1,9 @@
 # Meditation Timer
 
-A minimalist meditation timer PWA. The user selects a sound and a duration; audio fades in at the start and fades out at the end. Installable, offline-capable.
+A minimalist meditation timer PWA. The user selects a sound and a duration; audio fades in at the start and fades out at the end. Installable on Android + iPhone, offline-first.
 
-**Version:** v09.06.26
+**Version:** v26.06.19 (format `vYY.MM.DD` — year.month.day; bump on every change, in
+lockstep across `index.html`, `sw.js` `VERSION`, and `js/app.js` `APP_VERSION`).
 
 ---
 
@@ -146,35 +147,31 @@ The rAF loop is cancelled with `cancelAnimationFrame(rafId)` on pause, stop, and
 
 ---
 
-## PWA Install Flow
+## PWA install / update / version
 
-```
-First visit (Android Chrome):
-  → beforeinstallprompt fires → deferredInstallPrompt stored
-  → if NOT already installed: "Install" button appears
+This mirrors the SoundAnnoyer app so both behave the same. Three footer controls plus a
+tappable version label:
 
-User clicks "Install":
-  → deferredInstallPrompt.prompt() → native install dialog
-  → if accepted: appinstalled event fires
-    → localStorage.setItem('meditation-pwa-installed', '1')
-    → button label changes to "Update"
+- **Install app** — a *smart* button. If the browser queued a `beforeinstallprompt`
+  (Android / desktop) it fires the native install dialog. Otherwise (iPhone Safari,
+  which never fires it) it opens an **install-instructions modal** with platform steps
+  (`installSteps()` detects iOS / Android / desktop). When the app is already running
+  standalone the button shows "✓ Installed" and is disabled. `isStandalone()` =
+  `matchMedia('(display-mode: standalone)')` `||` `navigator.standalone` (no localStorage
+  flag — viewing in a browser correctly still offers install).
+- **Update** and the **tappable version** both call `runUpdate()` — the manual jump to
+  the newest build. **Offline-safe:** if `navigator.onLine === false` it does nothing
+  destructive (wiping caches with no network would brick the app) and just flashes
+  "Offline — cached ✓". Online it clears caches, unregisters the SW, and reloads. **Do
+  not remove this offline guard.**
+- **Download for offline** — fetches the large `.mp3`s (the soundtrack is ~44 MB, too big
+  to precache) so the full app works without a connection; shows "Audio offline ✓" once
+  cached. The app *shell* is already offline via the cache-first SW; this is only for the
+  audio.
 
-Next launch (standalone / installed):
-  → isStandalone = true (matchMedia or localStorage flag)
-  → showUpdateBtn() called immediately at load
-  → button shows "Update" from the start
-```
-
-`isStandalone` combines three checks with `||`:
-1. `window.matchMedia('(display-mode: standalone)').matches` — reliable on Android Chrome
-2. `window.navigator.standalone === true` — iOS Safari only
-3. `localStorage.getItem('meditation-pwa-installed') === '1'` — fallback (persists across sessions)
-
-Clicking "Update" when `deferredInstallPrompt` is null: clears all caches, unregisters the service worker, reloads → fresh install on next load.
-
-**Android Chrome:** Fully supported. HTTPS (GitHub Pages) satisfies the PWA requirement. `beforeinstallprompt`, `appinstalled`, `display: standalone`, and Media Session API all work.
-
-**iOS Safari:** Install is manual (Share → Add to Home Screen). `beforeinstallprompt` does NOT fire on iOS, so the Install button never appears. Standalone detection via `navigator.standalone`. No lock screen media controls.
+**Android Chrome:** native prompt + `appinstalled` + `display: standalone` + Media Session.
+**iOS Safari:** no `beforeinstallprompt`, so Install opens the Add-to-Home-Screen steps;
+standalone detected via `navigator.standalone`; no lock-screen media controls.
 
 ---
 
@@ -182,9 +179,9 @@ Clicking "Update" when `deferredInstallPrompt` is null: clears all caches, unreg
 
 Cache name includes `VERSION` constant — bump it to force cache invalidation after any file change.
 
-**App shell** (HTML, CSS, JS, manifest, icons): pre-cached on install event via `PRECACHE` array, then served **network-first** (`serveShell`). When online, every launch fetches the newest file and refreshes the cache; when offline, the cached copy is served, and uncached navigations fall back to `./index.html`. This guarantees an online user always runs the latest deploy rather than a stale cached version.
+**App shell** (HTML, CSS, JS, manifest, icons): pre-cached on the install event via `PRECACHE`, then served **cache-first** (`serveShell`) so the installed app boots and runs with zero network. On a cache miss it fetches and caches; uncached navigations fall back to `./index.html`.
 
-**Auto-update:** the SW calls `skipWaiting()` + `clients.claim()`, and `app.js` reloads the page once on `controllerchange` (guarded so it never fires on first install or mid-session) and calls `registration.update()` on load and on each `visibilitychange` to visible. Net effect: a freshly deployed version is picked up within one launch and never interrupts a running session.
+**Freshness / auto-update:** comes from the SW lifecycle, not a per-launch network hit. The SW calls `skipWaiting()` + `clients.claim()`; `app.js` registers with `updateViaCache:'none'`, calls `registration.update()` on load and on each `visibilitychange` to visible, and reloads the page once on `controllerchange` (guarded so it never fires on first install or mid-session). So a bumped `VERSION` precaches a new version-keyed cache in the background and takes over within one launch — never interrupting a running session. The **Update** button / version tap are the manual jump (online only; see PWA section).
 
 **Audio (.mp3)**: NOT pre-cached (files are large). Strategy:
 - If cached: serve full `200` response (browsers accept `200` in place of `206` for `<audio loop>`)
@@ -200,7 +197,6 @@ The `serveAudio` function strips the `Range` header from the cache key so the st
 | Key | Purpose |
 |---|---|
 | `meditation-custom-min` | Saved custom duration (integer, minutes) |
-| `meditation-pwa-installed` | `'1'` after PWA install; used to show Update button |
 | `meditation-audio-cached` | `'1'` after "Download for offline" succeeds |
 
 ---

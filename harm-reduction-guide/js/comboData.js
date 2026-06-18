@@ -50,6 +50,52 @@ const RISK_GROUP_HEADERS = {
 };
 
 // ────────────────────────────────────────────
+// Curated combinations — fill documented gaps in TripSit's dataset.
+// TripSit has no entries for several mephedrone (4-MMC) pairings, so the
+// most relevant ones are supplied here, each source-cited and flagged
+// `curated:true` so the UI can mark them as non-TripSit. Used only as a
+// fallback when TripSit has no entry for the pair (see getComboEntry).
+// ────────────────────────────────────────────
+const CURATED_COMBOS = {
+    'mephedrone': {
+        'amphetamines': {
+            status: 'Unsafe',
+            note: "Two strong stimulants stacked together. PsychonautWiki warns this can drive heart rate and blood pressure to dangerous levels and compounds hyperthermia and neurotoxicity. Best avoided — if combined, keep doses low and watch for chest pain or overheating.",
+            curated: true,
+            sources: [
+                { title: 'PsychonautWiki — Mephedrone', url: 'https://psychonautwiki.org/wiki/Mephedrone' },
+                { title: 'checkit! — 4-MMC / Mephedron', url: 'https://checkit.wien/substanz/mephedron-4-mmc/' }
+            ]
+        },
+        'cocaine': {
+            status: 'Unsafe',
+            note: "Both are potent stimulants; PsychonautWiki specifically flags mephedrone + cocaine as able to push heart rate and blood pressure to dangerous levels. Cocaine adds vasoconstriction and cardiotoxicity on top of mephedrone's own cardiac strain.",
+            curated: true,
+            sources: [
+                { title: 'PsychonautWiki — Mephedrone', url: 'https://psychonautwiki.org/wiki/Mephedrone' }
+            ]
+        },
+        'alcohol': {
+            status: 'Caution',
+            note: "Mephedrone masks alcohol's depressant effects, making accidental over-drinking easy. Animal studies also suggest co-use may worsen neurotoxicity (not confirmed in humans). Pace alcohol carefully and keep hydrated.",
+            curated: true,
+            sources: [
+                { title: 'PsychonautWiki — Mephedrone', url: 'https://psychonautwiki.org/wiki/Mephedrone' },
+                { title: 'Neurotoxicity Induced by Mephedrone — Review (PMC/NIH)', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC5771050/' }
+            ]
+        },
+        'ketamine': {
+            status: 'Caution',
+            note: "Stimulant + dissociative. Both can provoke confusion, mania or psychosis, and PsychonautWiki notes the risk may be multiplied when combined. Stimulation can also mask ketamine's sedation, encouraging redosing. Use low doses in a calm setting.",
+            curated: true,
+            sources: [
+                { title: 'PsychonautWiki — Mephedrone', url: 'https://psychonautwiki.org/wiki/Mephedrone' }
+            ]
+        }
+    }
+};
+
+// ────────────────────────────────────────────
 // Loading
 // ────────────────────────────────────────────
 async function loadComboData() {
@@ -69,9 +115,14 @@ async function loadComboData() {
 // Lookup — bidirectional
 // ────────────────────────────────────────────
 function getComboEntry(keyA, keyB) {
-    if (!comboData) return null;
-    if (comboData[keyA] && comboData[keyA][keyB]) return comboData[keyA][keyB];
-    if (comboData[keyB] && comboData[keyB][keyA]) return comboData[keyB][keyA];
+    // TripSit data takes precedence wherever it exists.
+    if (comboData) {
+        if (comboData[keyA] && comboData[keyA][keyB]) return comboData[keyA][keyB];
+        if (comboData[keyB] && comboData[keyB][keyA]) return comboData[keyB][keyA];
+    }
+    // Curated fallback fills documented gaps (e.g. mephedrone pairings).
+    if (CURATED_COMBOS[keyA] && CURATED_COMBOS[keyA][keyB]) return CURATED_COMBOS[keyA][keyB];
+    if (CURATED_COMBOS[keyB] && CURATED_COMBOS[keyB][keyA]) return CURATED_COMBOS[keyB][keyA];
     return null;
 }
 
@@ -120,6 +171,7 @@ function getSubstanceCombos(substanceId) {
             status: entry.status,
             note: entry.note || null,
             sources: entry.sources || null,
+            curated: entry.curated || false,
             sortOrder: riskInfo.order,
             riskInfo
         });

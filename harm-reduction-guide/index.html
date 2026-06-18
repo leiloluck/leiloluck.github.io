@@ -195,7 +195,19 @@
 
             <!-- TAB CONTENT: Risk Profile -->
             <div id="tab-risk" class="tab-content space-y-8 block">
-                <!-- TOP: Estimated Risk Profile -->
+                <!-- FIRST: Common Risks — the source-derived, factual risks (amber, hidden for sober) -->
+                <div id="emergency-flags" class="hidden p-5 border"
+                    style="background:rgba(234,179,8,0.06);border-color:rgba(234,179,8,0.2);">
+                    <h3 class="font-bold mb-2 text-sm" style="color:rgba(234,179,8,0.85)">
+                        Common Risks
+                    </h3>
+                    <ul id="risk-list" class="list-disc list-inside text-sm space-y-1"
+                        style="color:rgba(234,179,8,0.65)">
+                        <!-- Injected via JS -->
+                    </ul>
+                </div>
+
+                <!-- AFTER: Estimated Risk Profile — an editorial estimate, shown after the sourced risks -->
                 <section class="card-transition">
                     <div class="flex items-center mb-4">
                         <h3 class="text-xl font-bold text-gray-100">Estimated Risk Profile 📊</h3>
@@ -209,22 +221,13 @@
                         <div id="dose-display-text" class="hidden mt-3 text-xs text-center font-semibold tracking-wide">
                         </div>
                         <p class="mt-2 text-xs text-center text-gray-600 italic">
-                            Values represent estimated physiological load (Qualitative Scale).
+                            A qualitative editorial estimate (0–8) of physiological strain, synthesised from
+                            harm-reduction literature — not a measured or directly sourced figure. Use it for rough
+                            comparison between substances, not as precise data. The Common Risks above and the
+                            Protocol &amp; Combinations tabs carry the source-linked detail.
                         </p>
                     </div>
                 </section>
-
-                <!-- Common Risks (amber, hidden for sober) -->
-                <div id="emergency-flags" class="hidden p-5 border"
-                    style="background:rgba(234,179,8,0.06);border-color:rgba(234,179,8,0.2);">
-                    <h3 class="font-bold mb-2 text-sm" style="color:rgba(234,179,8,0.85)">
-                        Common Risks
-                    </h3>
-                    <ul id="risk-list" class="list-disc list-inside text-sm space-y-1"
-                        style="color:rgba(234,179,8,0.65)">
-                        <!-- Injected via JS -->
-                    </ul>
-                </div>
 
             </div>
 

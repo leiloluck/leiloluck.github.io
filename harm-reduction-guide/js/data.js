@@ -568,7 +568,7 @@ const _inlineProtocols = {
             during: {
                 focus: "Regulating core temperature and water intake.",
                 essential: [
-                    { short: "Hydration limit: 250 ml (1 cup) per hour if resting, 500 ml if active.", detail: "MDMA promotes the release of antidiuretic hormone (ADH), completely halting urination. Drinking excess water dilutes blood sodium rapidly, leading to MDMA-associated hyponatremia. This condition causes brain swelling and is the primary cause of MDMA-related fatalities among females.", sources: [{ label: "TripSit — MDMA", url: "https://drugs.tripsit.me/mdma" }, { label: "DanceSafe — MDMA", url: "https://dancesafe.org/mdma/" }, { label: "PsychonautWiki — MDMA", url: "https://psychonautwiki.org/wiki/MDMA" }] },
+                    { short: "Hydration limit: 250 ml (1 cup) per hour if resting, 500 ml if active.", detail: "MDMA promotes the release of antidiuretic hormone (ADH), completely halting urination. Drinking excess water dilutes blood sodium rapidly, leading to MDMA-associated hyponatremia. This condition causes brain swelling and can be fatal; reported fatal cases have disproportionately involved women, who appear more susceptible.", sources: [{ label: "TripSit — MDMA", url: "https://drugs.tripsit.me/mdma" }, { label: "DanceSafe — MDMA", url: "https://dancesafe.org/mdma/" }, { label: "PsychonautWiki — MDMA", url: "https://psychonautwiki.org/wiki/MDMA" }] },
                     { short: "Heat: Take cooling breaks every hour.", detail: "MDMA impairs the body's thermoregulatory center. When combined with crowded spaces and dancing, core body temperatures can reach dangerous levels (hyperthermia), which simultaneously multiplies neurotoxicity." }
                 ],
                 bonus: [
@@ -628,7 +628,7 @@ const _inlineProtocols = {
                 focus: "Timing and moderation.",
                 essential: [
                     { short: "Limit: Under 400 mg total (approximately 4 cups).", detail: "Above 400 mg, caffeine significantly increases the risk of anxiety, tremors, and gastrointestinal distress. Individual tolerance varies, but this is the generally accepted upper safety limit.", sources: [{ label: "PsychonautWiki — Caffeine", url: "https://psychonautwiki.org/wiki/Caffeine" }, { label: "SaferParty — Koffein", url: "https://www.saferparty.ch/substanzen/koffein" }] },
-                    { short: "⚠️ Never mix with other stimulants (cardiac risk).", detail: "Combining caffeine with MDMA, amphetamines, or cocaine creates synergistic vasoconstrictive and chronotropic effects. This exponentially increases the risk of severe tachycardia and cardiac arrhythmias.", sources: [{ label: "SaferParty — Koffein", url: "https://www.saferparty.ch/substanzen/koffein" }, { label: "TripSit — Caffeine", url: "https://drugs.tripsit.me/caffeine" }] }
+                    { short: "Avoid mixing with other stimulants (added cardiac strain).", detail: "Caffeine alongside MDMA, amphetamines, or cocaine adds cardiovascular load — raising heart rate and blood pressure — and can heighten anxiety and physical discomfort. The extra caffeine is generally unnecessary next to a stimulant and offers little benefit. TripSit classifies these pairings as 'Caution' rather than dangerous.", sources: [{ label: "SaferParty — Koffein", url: "https://www.saferparty.ch/substanzen/koffein" }, { label: "TripSit — Caffeine", url: "https://drugs.tripsit.me/caffeine" }] }
                 ],
                 bonus: [
                     { short: "Hydration: Water with every caffeinated drink.", detail: "The diuretic effect of caffeine combined with sweat loss accelerates dehydration. Matching each caffeinated beverage with water maintains fluid balance." }
@@ -768,7 +768,7 @@ const _inlineProtocols = {
                 essential: [
                     { short: "Heat: Monitor temperature closely. Cool down every 45 minutes.", detail: "4-MMC triggers extreme hyperthermia and tachycardia simultaneously. Core body temperature must be actively managed. Taking breaks in ventilated areas is mandatory." },
                     { short: "Heart: Vasoconstriction is severe. Watch extremities.", detail: "4-MMC causes severe peripheral vasoconstriction — blood vessels in the fingers, toes, and extremities shrink dramatically. Cold, blue, or numb extremities are warning signs of dangerous cardiovascular stress." },
-                    { short: "⚠️ Never mix with alcohol (severe neurotoxicity).", detail: "Research has demonstrated that co-administering 4-MMC with ethanol triggers widespread neuronal deactivation and precipitates severe, long-term neurotoxicity comparable to methamphetamine-induced brain damage." }
+                    { short: "Avoid mixing with alcohol (may worsen neurotoxicity).", detail: "Preclinical (animal) studies suggest that combining 4-MMC with alcohol may increase oxidative stress and neuronal damage; this has not been confirmed in human trials. The combination also masks intoxication — encouraging heavier use of both — and adds cardiovascular strain.", sources: [{ label: "Neurotoxicity Induced by Mephedrone — Review (PMC/NIH)", url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC5771050/" }] }
                 ]
             },
             after: {

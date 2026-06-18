@@ -1592,7 +1592,7 @@
             ]
           },
           {
-            "short": "⚠️ CRITICAL: Pill identity & content are extremely unreliable. ~30% of 'MDMA' pills at festivals contain nothing but caffeine. High-dose pills (250–300+ mg) circulate widely. Always test before consuming.",
+            "short": "⚠️ CRITICAL: Pill identity & content are extremely unreliable. Samples sold as 'MDMA' may be caffeine, other stimulants, or contain no MDMA at all (at one 2021 UK festival, ~30% of 'MDMA' samples were caffeine). High-dose pills (250–300+ mg) circulate widely. Always test before consuming.",
             "detail": "Identical-looking pills can contain completely different drugs — one batch might be genuine MDMA, the next batch with the same logo might be caffeine, synthetic cathinones (4-CMC), NBOMe compounds, PMA/PMMA, or even nitazenes (synthetic opioids linked to deaths). Additionally, many modern pills exceed 200 mg — far above the safe 150 mg threshold. Visual appearance and branding are NOT reliable. Drug testing (reagent kits or coulter testing services) is essential.",
             "sources": [
               {
@@ -1624,7 +1624,7 @@
         "essential": [
           {
             "short": "Hydration limit: 250 ml (1 cup) per hour if resting, 500 ml if active. Electrolyte drinks only (not plain water).",
-            "detail": "MDMA promotes the release of antidiuretic hormone (ADH), completely halting urination. Drinking excess water dilutes blood sodium rapidly, leading to MDMA-associated hyponatremia. This condition causes brain swelling and is the primary cause of MDMA-related fatalities among females. Use electrolyte-containing sports drinks, not plain water alone.",
+            "detail": "MDMA promotes the release of antidiuretic hormone (ADH), completely halting urination. Drinking excess water dilutes blood sodium rapidly, leading to MDMA-associated hyponatremia. This condition causes brain swelling and can be fatal; reported fatal cases have disproportionately involved women, who appear more susceptible. Use electrolyte-containing sports drinks, not plain water alone.",
             "sources": [
               {
                 "label": "TripSit — MDMA",
@@ -1834,8 +1834,8 @@
             ]
           },
           {
-            "short": "⚠️ Never mix with other stimulants (cardiac risk).",
-            "detail": "Combining caffeine with MDMA, amphetamines, or cocaine creates synergistic vasoconstrictive and chronotropic effects. This exponentially increases the risk of severe tachycardia and cardiac arrhythmias.",
+            "short": "Avoid mixing with other stimulants (added cardiac strain).",
+            "detail": "Caffeine alongside MDMA, amphetamines, or cocaine adds cardiovascular load — raising heart rate and blood pressure — and can heighten anxiety and physical discomfort. The extra caffeine is generally unnecessary next to a stimulant and offers little benefit. TripSit classifies these pairings as 'Caution' rather than dangerous.",
             "sources": [
               {
                 "label": "SaferParty — Koffein",
@@ -2249,8 +2249,14 @@
             "detail": "4-MMC causes severe peripheral vasoconstriction — blood vessels in the fingers, toes, and extremities shrink dramatically. Cold, blue, or numb extremities are warning signs of dangerous cardiovascular stress."
           },
           {
-            "short": "⚠️ Never mix with alcohol (severe neurotoxicity).",
-            "detail": "Research has demonstrated that co-administering 4-MMC with ethanol triggers widespread neuronal deactivation and precipitates severe, long-term neurotoxicity comparable to methamphetamine-induced brain damage."
+            "short": "Avoid mixing with alcohol (may worsen neurotoxicity).",
+            "detail": "Preclinical (animal) studies suggest that combining 4-MMC with alcohol may increase oxidative stress and neuronal damage; this has not been confirmed in human trials. The combination also masks intoxication — encouraging heavier use of both — and adds cardiovascular strain.",
+            "sources": [
+              {
+                "label": "Neurotoxicity Induced by Mephedrone — Review (PMC/NIH)",
+                "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5771050/"
+              }
+            ]
           }
         ]
       },

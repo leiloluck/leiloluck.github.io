@@ -61,11 +61,12 @@
     <div class="btn-group" id="duration-group"></div>
   </section>
 
-  <!-- Footer: install + offline + version -->
+  <!-- Footer: install / update / offline download + tappable version -->
   <footer class="footer">
-    <button class="btn-small hidden" id="install-btn"></button>
+    <button class="btn-small" id="install-btn">Install app</button>
+    <button class="btn-small" id="update-btn">Update</button>
     <button class="btn-small hidden" id="offline-btn">Download for offline</button>
-    <span class="version">v09b.06.26</span>
+    <button class="version" id="version" type="button" title="Check for updates">v26.06.19</button>
   </footer>
 
 </main>
@@ -108,6 +109,19 @@
         <button type="submit" class="btn-play custom-modal-btn">Save</button>
       </div>
     </form>
+  </section>
+</div>
+
+<!-- Install instructions modal — shown when the OS can't fire a native install prompt
+     (e.g. iPhone Safari). Steps are filled in per-platform by app.js. -->
+<div class="modal-layer hidden" id="install-modal-layer">
+  <button class="modal-backdrop" id="install-modal-dismiss" aria-label="Close install dialog"></button>
+  <section class="custom-modal" id="install-modal" role="dialog" aria-modal="true" aria-labelledby="install-modal-title" tabindex="-1">
+    <p class="custom-modal-kicker">Install</p>
+    <h2 id="install-modal-title">Add to your home screen</h2>
+    <p class="custom-modal-copy">Install Meditation Timer as an app. Once installed it opens on its own and works offline.</p>
+    <ol class="install-steps" id="install-steps"></ol>
+    <button class="btn-play custom-modal-btn" id="install-close-btn" type="button">Got it</button>
   </section>
 </div>
 

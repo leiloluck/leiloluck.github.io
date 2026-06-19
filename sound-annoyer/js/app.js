@@ -19,7 +19,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.06.18';
+const APP_VERSION = 'v26.06.19';
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 // Drop real files into resources/ (see resources/README.md). Until a matching file
@@ -1027,7 +1027,7 @@ function refreshInstallUI() {
     elInstallBtn.textContent = '✓ Installed';
     elInstallBtn.disabled = true;
   } else {
-    elInstallBtn.textContent = 'Install app';
+    elInstallBtn.textContent = '📲 Install to Home Screen';
     elInstallBtn.disabled = false;
   }
 }

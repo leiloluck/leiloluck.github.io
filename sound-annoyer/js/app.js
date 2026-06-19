@@ -1008,7 +1008,7 @@ function loadState() {
 // "Add to Home Screen" instructions. The button always shows (so iPhone users get
 // it too) unless the app is already running standalone.
 
-let deferredPrompt = null;
+let deferredPrompt = window.deferredPrompt || null;
 
 function isStandalone() {
   return window.matchMedia('(display-mode: standalone)').matches
@@ -1035,6 +1035,7 @@ function refreshInstallUI() {
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();          // keep our own button in charge of the prompt
   deferredPrompt = e;
+  window.deferredPrompt = e;
 });
 
 window.addEventListener('appinstalled', () => {

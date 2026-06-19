@@ -7,9 +7,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Meditation Timer</title>
+  
+  <script>
+    // Catch the install prompt early before app.js loads
+    window.deferredInstallPrompt = null;
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      window.deferredInstallPrompt = e;
+    });
+  </script>
 
   <!-- Content Security Policy — no inline scripts/styles, same-origin only -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'">
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.json">

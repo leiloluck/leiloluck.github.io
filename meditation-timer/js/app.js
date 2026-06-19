@@ -838,7 +838,7 @@ elResetBtn.addEventListener('click', () => {
 // iOS Safari never does, so the Install button instead opens step-by-step
 // "Add to Home Screen" instructions. The button always shows unless already standalone.
 
-let deferredInstallPrompt = null;
+let deferredInstallPrompt = window.deferredInstallPrompt || null;
 
 function isStandalone() {
   return window.matchMedia('(display-mode: standalone)').matches
@@ -865,6 +865,7 @@ function refreshInstallUI() {
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();          // keep our own button in charge of the prompt
   deferredInstallPrompt = e;
+  window.deferredInstallPrompt = e;
 });
 
 window.addEventListener('appinstalled', () => {

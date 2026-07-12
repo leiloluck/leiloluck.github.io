@@ -8,7 +8,7 @@
 
 'use strict';
 
-const VERSION = 'v26.06.19.1';
+const VERSION = 'v26.07.13';
 const CACHE   = `meditation-timer-${VERSION}`;
 
 const PRECACHE = [

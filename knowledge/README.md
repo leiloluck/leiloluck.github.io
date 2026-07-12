@@ -11,6 +11,7 @@
 |---|---|---|
 | 1 | [`pwa-offline-installable.md`](./pwa-offline-installable.md) | **Complete PWA blueprint.** Manifest, service worker (network-first shell + cache-first assets), install button with Chrome + iOS support, update button, auto-update system, offline audio strategy, CSP configuration, iOS deep dive, testing checklist, common pitfalls. |
 | 2 | [`versioning.md`](./versioning.md) | **Date-based versioning system.** `vYY.MM.DD` format, three-location sync (sw.js + app.js + index.html), auto-update end-to-end flow, manual update escape hatch, service worker lifecycle deep dive, debugging guide. |
+| 3 | [`locked-screen-audio.md`](./locked-screen-audio.md) | **Audio that survives a locked screen.** Pre-scheduling on the AudioContext clock, the ≈ -72 dBFS Chrome audibility threshold, why the keep-alive must be a faint 25 Hz tone and never digital silence (the v26.06.19 regression), Bluetooth standby primer, audio-focus recovery, iOS audio-session rules. |
 
 ---
 
@@ -60,8 +61,8 @@ Don't add knowledge files for:
 
 | App | SW Version | Pattern | Notable Features |
 |---|---|---|---|
-| `sound-annoyer/` | `v10.06.11` | Network-first shell, cache-first audio | Silent keep-alive for iOS lock-screen audio, wake primer for Bluetooth |
-| `meditation-timer/` | `v26.06.19` | Same pattern | Streaming audio support (range requests), offline-safe update, "Download for offline" button, tappable version for updates |
+| `sound-annoyer/` | `v26.07.13` | Network-first shell, cache-first audio | Faint-tone keep-alive for locked-screen playback (see `locked-screen-audio.md`), wake primer for Bluetooth |
+| `meditation-timer/` | `v26.07.13` | Same pattern | Streaming audio support (range requests), offline-safe update, "Download for offline" button, tappable version for updates |
 | `harm-reduction-guide/` | *(no SW yet)* | Not yet a PWA | Documentation dashboard — offline not needed yet |
 
 ---

@@ -9,17 +9,22 @@
    clock keeps running while locked. We schedule out to a horizon and top it up
    whenever the app gets CPU again (visible / heartbeat).
 
-   Bluetooth standby:
-   BT speakers drop to standby when idle and clip the start of the next sound. Two
-   defences — (1) a continuous SILENT keep-alive stream holds the audio output / BT
-   link open without making any sound (an active stream of digital silence is enough
-   to stop the link going idle, and it stays inaudible even at high speaker volume),
-   and (2) a short "wake primer" tone is scheduled just before every real sound so a
-   speaker that did doze off is awake by the time the sound plays. */
+   Bluetooth standby + surviving the locked screen:
+   BT speakers drop to standby when idle and clip the start of the next sound, and
+   Android freezes a page — AudioContext included — soon after the screen locks
+   unless the page is audibly playing media (Chrome counts a page as "playing
+   audio" only while its output power is above ≈ -72 dBFS; an all-zero stream loses
+   that status and with it the media wakelock). One keep-alive handles both: a
+   continuous 25 Hz tone at ≈ -54 dBFS — comfortably above Chrome's silence
+   threshold, yet inaudible in the room (small speakers physically can't reproduce
+   25 Hz, and the level sits below the human hearing threshold at that frequency
+   even on big ones). A short "wake primer" tone is additionally scheduled just
+   before every real sound so a speaker that dozed off mid-gap is awake by the time
+   the sound plays. */
 
 'use strict';
 
-const APP_VERSION = 'v26.06.19';
+const APP_VERSION = 'v26.07.13';
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 // Drop real files into resources/ (see resources/README.md). Until a matching file
@@ -85,6 +90,11 @@ const PRIMER_AMP   = 0.05;    // quiet BT wake blip (only fires briefly before a
 const PRIMER_FREQ  = 120;     // Hz — low, felt more than heard
 const PRIMER_DUR   = 0.13;    // s
 
+const KEEPALIVE_FREQ = 25;    // Hz — subsonic; real speakers can't reproduce it
+const KEEPALIVE_AMP  = 0.002; // ≈ -54 dBFS: above Chrome's ≈ -72 dBFS audibility
+                              // threshold (page stays unfrozen while locked), yet
+                              // below the human hearing threshold at 25 Hz
+
 // ── State ────────────────────────────────────────────────────────────────────
 
 let running       = false;
@@ -100,8 +110,8 @@ let masterGain   = null;
 let primerGain   = null;
 let primerBuffer = null;
 let keepAliveSrc = null;
-let silentEl     = null;
-let silentUrl    = null;
+let keepAliveEl  = null;   // looping <audio> carrying the faint keep-alive tone
+let keepAliveUrl = null;   // blob: URL for the generated keep-alive clip
 
 let scheduled        = [];   // { soundSrc, primerSrc, when, soundId }
 let nextHitTime      = 0;    // ctx time of the next hit still to be scheduled
@@ -168,20 +178,27 @@ function loadFirstAvailable(sound, i) {
 }
 
 // ── Keep-alive ───────────────────────────────────────────────────────────────
-// Holds the audio output (and the BT link) open between sounds so scheduled events
-// keep firing while locked. Completely SILENT — never audible, even at high volume.
+// Holds the audio output (and the BT link) open between sounds AND keeps the page
+// counted as "playing audio" so Android doesn't freeze it when the screen locks.
+// Inaudible in practice, but deliberately NOT digital silence — see header comment.
 
 function startKeepAlive() {
   if (!audioCtx) return;
   stopKeepAlive();
 
-  // A zero-filled looping buffer: an active stream of digital silence keeps the
-  // output device / Bluetooth link from going idle, while producing no sound at all.
-  // (Earlier builds mixed low-level noise in here; cranked up on a speaker that
-  // turned into audible hiss. The per-sound primer in scheduleHit() does the actual
-  // speaker wake-up now.)
+  // Faint 25 Hz tone. v26.06.19 used a zero-filled buffer here (after an earlier
+  // audible-hiss complaint) and that is exactly what broke locked-screen playback:
+  // Chrome treats an all-zero output as "not audible", drops the media wakelock,
+  // and Android freezes the page + AudioContext on lock — no scheduled sound ever
+  // fires again. Do NOT "optimize" this back to pure silence. The loop is a whole
+  // number of cycles, so it repeats seamlessly.
   const sr  = audioCtx.sampleRate;
-  const buf = audioCtx.createBuffer(1, sr * 2, sr); // zero-filled = pure silence
+  const len = sr * 2;                               // 2 s = 50 full cycles at 25 Hz
+  const buf = audioCtx.createBuffer(1, len, sr);
+  const ch  = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) {
+    ch[i] = Math.sin(2 * Math.PI * KEEPALIVE_FREQ * (i / sr)) * KEEPALIVE_AMP;
+  }
 
   keepAliveSrc = audioCtx.createBufferSource();
   keepAliveSrc.buffer = buf;
@@ -189,9 +206,12 @@ function startKeepAlive() {
   keepAliveSrc.connect(audioCtx.destination);
   keepAliveSrc.start();
 
-  // A real, playing <audio> element keeps the platform audio session alive where a
-  // Web Audio buffer alone is not enough (notably iOS). Cheap insurance.
-  startSilentEl();
+  // A real, playing <audio> element carries the same faint tone: it keeps the
+  // platform audio session alive where a Web Audio buffer alone is not enough
+  // (notably iOS), and it is the strongest "this tab plays media" signal on
+  // Android. Redundant with the buffer above on purpose — either alone keeps the
+  // page alive if the other is muted or fails.
+  startKeepAliveEl();
 }
 
 function stopKeepAlive() {
@@ -200,20 +220,31 @@ function stopKeepAlive() {
     try { keepAliveSrc.disconnect(); } catch {}
     keepAliveSrc = null;
   }
-  if (silentEl) silentEl.pause();
+  if (keepAliveEl) keepAliveEl.pause();
 }
 
-function startSilentEl() {
-  if (!silentEl) {
-    silentUrl = URL.createObjectURL(makeSilentWavBlob());
-    silentEl = new Audio(silentUrl);
-    silentEl.loop = true;
+function startKeepAliveEl() {
+  if (!keepAliveEl) {
+    keepAliveUrl = URL.createObjectURL(makeKeepAliveWavBlob());
+    keepAliveEl = new Audio(keepAliveUrl);
+    keepAliveEl.loop = true;
+    // If the OS pauses it (transient audio-focus loss: a notification, the lock
+    // event itself), take playback back — while locked, losing this element lets
+    // Android freeze the page and the whole session goes quiet.
+    keepAliveEl.addEventListener('pause', () => {
+      if (!running) return;
+      setTimeout(() => {
+        if (running && keepAliveEl && keepAliveEl.paused) keepAliveEl.play().catch(() => {});
+      }, 400);
+    });
   }
-  silentEl.currentTime = 0;
-  silentEl.play().catch(() => {});
+  keepAliveEl.currentTime = 0;
+  keepAliveEl.play().catch(() => {});
 }
 
-function makeSilentWavBlob(seconds = 1, sampleRate = 8000) {
+// 10 s mono WAV of the faint keep-alive tone (250 full cycles at 25 Hz, so it
+// loops seamlessly). Served as a blob: URL — the CSP allows blob: media, not data:.
+function makeKeepAliveWavBlob(seconds = 10, sampleRate = 8000) {
   const n = Math.floor(seconds * sampleRate);
   const buffer = new ArrayBuffer(44 + n * 2);
   const view = new DataView(buffer);
@@ -222,7 +253,11 @@ function makeSilentWavBlob(seconds = 1, sampleRate = 8000) {
   view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
   view.setUint32(24, sampleRate, true); view.setUint32(28, sampleRate * 2, true);
   view.setUint16(32, 2, true); view.setUint16(34, 16, true); w(36, 'data');
-  view.setUint32(40, n * 2, true); // samples left zero → silence
+  view.setUint32(40, n * 2, true);
+  for (let i = 0; i < n; i++) {
+    const s = Math.sin(2 * Math.PI * KEEPALIVE_FREQ * (i / sampleRate)) * KEEPALIVE_AMP;
+    view.setInt16(44 + i * 2, Math.round(s * 32767), true);
+  }
   return new Blob([view], { type: 'audio/wav' });
 }
 
@@ -1173,6 +1208,15 @@ document.addEventListener('visibilitychange', () => {
     audioCtx.resume();
     fillSchedule();
     updateRunningStatus();
+  }
+});
+
+// Page Lifecycle: if Android froze the page anyway (e.g. audio focus was lost
+// while locked), top the schedule back up the moment the page is thawed.
+document.addEventListener('resume', () => {
+  if (running && audioCtx) {
+    audioCtx.resume();
+    fillSchedule();
   }
 });
 

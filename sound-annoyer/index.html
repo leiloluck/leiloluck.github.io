@@ -19,7 +19,7 @@
     });
   </script>
 
-  <!-- CSP — no inline scripts/styles, same-origin only, blob: for the silent keep-alive clip -->
+  <!-- CSP — same-origin only; inline allowed only for the early install-prompt catcher above; blob: for the near-silent keep-alive clip -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'">
 
   <!-- PWA -->
@@ -116,7 +116,7 @@
 
     <!-- Version + offline status (version is tappable: checks for an update) -->
     <section class="section settings-meta">
-      <button class="version" id="version" type="button" title="Check for updates">v26.06.19</button>
+      <button class="version" id="version" type="button" title="Check for updates">v26.07.13</button>
       <span class="offline-badge" id="offline-badge">✓ works offline</span>
     </section>
 

@@ -11,7 +11,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.07.13';   // format vYY.MM.DD — keep in lockstep with sw.js + index.html
+const APP_VERSION = 'v26.07.13b';   // format vYY.MM.DD — keep in lockstep with sw.js + index.html
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 //
@@ -154,15 +154,20 @@ function clearScheduledSources() {
 // Keep-alive between scheduled events while the screen is locked — important for
 // 'interval' mode, which has no continuously-playing media element of its own.
 //
-// Deliberately NOT digital silence: Chrome counts a page as "playing audio" only
-// while its output power is above ≈ -72 dBFS, and on Android a page that isn't
-// audibly playing is frozen — AudioContext included — once the screen locks, so
-// scheduled bells stop firing (SoundAnnoyer v26.06.19 died on lock exactly this
-// way). A faint 25 Hz tone at ≈ -54 dBFS keeps the "audible" status while staying
-// imperceptible: speakers and headphones barely reproduce 25 Hz, and the level is
-// below the human hearing threshold at that frequency.
+// Deliberately NOT digital silence. Chrome exempts a page from background
+// freezing only while it counts as "playing audio" (documented:
+// developer.chrome.com/docs/web-platform/page-lifecycle-api) — a frozen page's
+// AudioContext stops too, so scheduled bells die with it. That audibility check
+// is power-based: a literal all-zero stream does not qualify, confirmed by prior
+// art solving this exact problem (github.com/t-mullen/silent-audio). SoundAnnoyer
+// v26.06.19 shipped a zero-filled keep-alive and died on lock exactly this way.
+// A faint 25 Hz tone — clearly nonzero, but far below the human hearing threshold
+// at that frequency — fixes it while staying imperceptible. See
+// knowledge/locked-screen-audio.md for the full writeup, including the caveat
+// that the amplitude below is an engineering safety margin, not a verified
+// Chromium constant.
 const KEEPALIVE_FREQ = 25;    // Hz
-const KEEPALIVE_AMP  = 0.002; // ≈ -54 dBFS
+const KEEPALIVE_AMP  = 0.002; // clearly nonzero, well under the audible threshold
 
 function startKeepAlive() {
   if (!audioCtx) return;

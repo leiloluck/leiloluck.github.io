@@ -11,20 +11,30 @@
 
    Bluetooth standby + surviving the locked screen:
    BT speakers drop to standby when idle and clip the start of the next sound, and
-   Android freezes a page — AudioContext included — soon after the screen locks
-   unless the page is audibly playing media (Chrome counts a page as "playing
-   audio" only while its output power is above ≈ -72 dBFS; an all-zero stream loses
-   that status and with it the media wakelock). One keep-alive handles both: a
-   continuous 25 Hz tone at ≈ -54 dBFS — comfortably above Chrome's silence
-   threshold, yet inaudible in the room (small speakers physically can't reproduce
-   25 Hz, and the level sits below the human hearing threshold at that frequency
-   even on big ones). A short "wake primer" tone is additionally scheduled just
-   before every real sound so a speaker that dozed off mid-gap is awake by the time
-   the sound plays. */
+   Chrome exempts a page from its background-freezing behavior only while the page
+   counts as "playing audio" (documented: developer.chrome.com/docs/web-platform/
+   page-lifecycle-api) — a frozen page's AudioContext stops too. That audibility
+   check is power-based, not just "is a media element playing": a literal
+   all-zero stream does NOT qualify (confirmed by prior art solving this exact
+   problem, e.g. github.com/t-mullen/silent-audio), only a genuinely nonzero
+   signal does. One keep-alive handles both problems: a continuous 25 Hz tone,
+   clearly nonzero but at a very low amplitude — inaudible in the room (small
+   speakers can't reproduce 25 Hz, and the level sits below the human hearing
+   threshold at that frequency even on big ones). See knowledge/locked-screen-
+   audio.md for the full writeup, including the caveat that the exact dBFS
+   numbers below are an engineering safety margin, not a verified Chromium
+   constant. A short "wake primer" tone is additionally scheduled just before
+   every real sound so a speaker that dozed off mid-gap is awake by the time the
+   sound plays.
+
+   Separately, on Android, per-app battery optimization for Chrome itself can cut
+   background audio regardless of anything this page does — that is an OS-level
+   setting (Settings → Apps → Chrome → Battery → Unrestricted), not something any
+   in-page trick can fix. See knowledge/locked-screen-audio.md §4. */
 
 'use strict';
 
-const APP_VERSION = 'v26.07.13';
+const APP_VERSION = 'v26.07.13b';
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 // Drop real files into resources/ (see resources/README.md). Until a matching file
@@ -91,9 +101,10 @@ const PRIMER_FREQ  = 120;     // Hz — low, felt more than heard
 const PRIMER_DUR   = 0.13;    // s
 
 const KEEPALIVE_FREQ = 25;    // Hz — subsonic; real speakers can't reproduce it
-const KEEPALIVE_AMP  = 0.002; // ≈ -54 dBFS: above Chrome's ≈ -72 dBFS audibility
-                              // threshold (page stays unfrozen while locked), yet
-                              // below the human hearing threshold at 25 Hz
+const KEEPALIVE_AMP  = 0.002; // clearly nonzero (Chrome's audibility check needs
+                              // that — see file header), yet below the human
+                              // hearing threshold at 25 Hz. Not a tuned dBFS
+                              // target — see knowledge/locked-screen-audio.md §2.
 
 // ── State ────────────────────────────────────────────────────────────────────
 

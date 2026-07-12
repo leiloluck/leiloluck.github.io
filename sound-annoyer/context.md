@@ -85,16 +85,19 @@ This is the hard part and mirrors the proven approach in `../meditation-timer/`.
   *replenish* the horizon. A locked phone therefore keeps annoying people for the
   whole horizon even if JS never wakes; in practice the phone gets touched and the
   horizon is topped up continuously.
-- **Keep-alive.** A continuous **faint 25 Hz tone at ≈ -54 dBFS** loops for the whole
-  session (a Web Audio buffer plus a looping `<audio>` element carrying the same
-  clip). It must **NOT** be digital silence: Chrome counts a page as "playing audio"
-  only while its output power is above ≈ -72 dBFS, and on Android a page that isn't
-  audibly playing is frozen — AudioContext included — the moment the screen locks,
-  killing every pre-scheduled sound. (v26.06.19 shipped a zero-filled buffer and
-  died on lock exactly this way.) 25 Hz at -54 dBFS stays imperceptible in the room:
-  small speakers physically can't reproduce it, and it sits below the human hearing
+- **Keep-alive.** A continuous **faint 25 Hz tone, clearly nonzero but very quiet**
+  loops for the whole session (a Web Audio buffer plus a looping `<audio>` element
+  carrying the same clip). It must **NOT** be digital silence: Chrome exempts a page
+  from background freezing only while it counts as "playing audio" (documented in
+  Chrome's Page Lifecycle API), and that audibility check is power-based — a literal
+  all-zero stream does not qualify, confirmed by prior art solving this exact
+  problem (`t-mullen/silent-audio`). A frozen page's AudioContext stops too, killing
+  every pre-scheduled sound. (v26.06.19 shipped a zero-filled buffer and died on
+  lock exactly this way.) 25 Hz at this level stays imperceptible in the room: small
+  speakers physically can't reproduce it, and it sits below the human hearing
   threshold at that frequency even on big ones — unlike the broadband noise of an
-  earlier build, which became audible hiss on a cranked speaker. Waking the speaker
+  earlier build, which became audible hiss on a cranked speaker. Full writeup incl.
+  sources: `knowledge/locked-screen-audio.md`. Waking the speaker
   is still the primer's job — see below.
 - **Wake primer.** ~0.6 s before each real sound, a short, quiet primer tone is
   scheduled. This is what actually wakes a dozing BT speaker so the sound's onset

@@ -11,7 +11,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.06.19';   // format vYY.MM.DD — keep in lockstep with sw.js + index.html
+const APP_VERSION = 'v26.07.13';   // format vYY.MM.DD — keep in lockstep with sw.js + index.html
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 //
@@ -151,13 +151,29 @@ function clearScheduledSources() {
   scheduledSources = [];
 }
 
-// A silent looping buffer keeps the AudioContext from being suspended between
-// events while the screen is locked — important for 'interval' mode, which has
-// no continuously-playing media element of its own.
+// Keep-alive between scheduled events while the screen is locked — important for
+// 'interval' mode, which has no continuously-playing media element of its own.
+//
+// Deliberately NOT digital silence: Chrome counts a page as "playing audio" only
+// while its output power is above ≈ -72 dBFS, and on Android a page that isn't
+// audibly playing is frozen — AudioContext included — once the screen locks, so
+// scheduled bells stop firing (SoundAnnoyer v26.06.19 died on lock exactly this
+// way). A faint 25 Hz tone at ≈ -54 dBFS keeps the "audible" status while staying
+// imperceptible: speakers and headphones barely reproduce 25 Hz, and the level is
+// below the human hearing threshold at that frequency.
+const KEEPALIVE_FREQ = 25;    // Hz
+const KEEPALIVE_AMP  = 0.002; // ≈ -54 dBFS
+
 function startKeepAlive() {
   if (!audioCtx) return;
   stopKeepAlive();
-  const buf = audioCtx.createBuffer(1, audioCtx.sampleRate, audioCtx.sampleRate);
+  const sr  = audioCtx.sampleRate;
+  const len = sr * 2;                               // 2 s = 50 full cycles at 25 Hz
+  const buf = audioCtx.createBuffer(1, len, sr);
+  const ch  = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) {
+    ch[i] = Math.sin(2 * Math.PI * KEEPALIVE_FREQ * (i / sr)) * KEEPALIVE_AMP;
+  }
   keepAliveSrc = audioCtx.createBufferSource();
   keepAliveSrc.buffer = buf;
   keepAliveSrc.loop = true;
@@ -173,14 +189,15 @@ function stopKeepAlive() {
 }
 
 // iOS suspends the AudioContext the moment no media element is playing — which is
-// exactly the case in 'interval' mode (no looping soundtrack). A Web Audio silent
-// buffer is not enough to hold the audio session open on iOS; a real, playing
-// <audio> element is. So we generate a tiny silent WAV (as a blob: URL, since the
-// CSP allows blob: but not data: for media) and loop it silently for the whole
-// interval session. This keeps the session — and therefore the scheduled bells —
-// alive while the screen is locked.
+// exactly the case in 'interval' mode (no looping soundtrack). A Web Audio buffer
+// is not enough to hold the audio session open on iOS; a real, playing <audio>
+// element is. So we generate a tiny WAV carrying the same faint keep-alive tone
+// (as a blob: URL, since the CSP allows blob: but not data: for media) and loop it
+// for the whole interval session. This keeps the session — and therefore the
+// scheduled bells — alive while the screen is locked, and on Android its faint
+// audibility stops the page from being frozen (see the keep-alive note above).
 
-function makeSilentWavBlob(seconds = 1, sampleRate = 8000) {
+function makeKeepAliveWavBlob(seconds = 10, sampleRate = 8000) {
   const numSamples = Math.floor(seconds * sampleRate);
   const buffer = new ArrayBuffer(44 + numSamples * 2);
   const view = new DataView(buffer);
@@ -199,17 +216,31 @@ function makeSilentWavBlob(seconds = 1, sampleRate = 8000) {
   view.setUint16(32, 2, true);              // block align
   view.setUint16(34, 16, true);             // bits per sample
   writeStr(36, 'data');
-  view.setUint32(40, numSamples * 2, true); // samples left zero-filled → silence
+  view.setUint32(40, numSamples * 2, true);
+  for (let i = 0; i < numSamples; i++) {    // faint 25 Hz tone, whole cycles → seamless loop
+    const s = Math.sin(2 * Math.PI * KEEPALIVE_FREQ * (i / sampleRate)) * KEEPALIVE_AMP;
+    view.setInt16(44 + i * 2, Math.round(s * 32767), true);
+  }
   return new Blob([view], { type: 'audio/wav' });
 }
 
 function ensureSilentEl() {
   if (silentEl) return;
-  silentUrl = URL.createObjectURL(makeSilentWavBlob());
+  silentUrl = URL.createObjectURL(makeKeepAliveWavBlob());
   silentEl = new Audio(silentUrl);
   silentEl.loop = true;
-  // Played directly (not through the AudioContext): its only job is to keep the
+  // Played directly (not through the AudioContext): its job is to keep the
   // platform audio session active so the context's scheduled bells keep firing.
+  // If the OS pauses it (transient audio-focus loss: a notification, the lock
+  // event itself), take playback back — otherwise the session dies while locked.
+  silentEl.addEventListener('pause', () => {
+    if (state !== 'playing' && state !== 'finishing') return;
+    setTimeout(() => {
+      if ((state === 'playing' || state === 'finishing') && silentEl && silentEl.paused) {
+        silentEl.play().catch(() => {});
+      }
+    }, 400);
+  });
 }
 
 function startSilentKeepAlive() {
@@ -1026,6 +1057,12 @@ renderDurations();
 showIdleCountdown();
 initOfflineBtn();
 refreshInstallUI();
+
+// Page Lifecycle: if Android froze the page while locked (e.g. audio focus was
+// lost), get the audio clock running again the moment the page is thawed.
+document.addEventListener('resume', () => {
+  if ((state === 'playing' || state === 'finishing') && audioCtx) audioCtx.resume();
+});
 
 // ── Service worker: register + keep the app up to date ────────────────────────
 // The SW (see sw.js) is cache-first / offline-first for the app shell. Freshness

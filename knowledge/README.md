@@ -11,7 +11,7 @@
 |---|---|---|
 | 1 | [`pwa-offline-installable.md`](./pwa-offline-installable.md) | **Complete PWA blueprint.** Manifest, service worker (network-first shell + cache-first assets), install button with Chrome + iOS support, update button, auto-update system, offline audio strategy, CSP configuration, iOS deep dive, testing checklist, common pitfalls. |
 | 2 | [`versioning.md`](./versioning.md) | **Date-based versioning system.** `vYY.MM.DD` format, three-location sync (sw.js + app.js + index.html), auto-update end-to-end flow, manual update escape hatch, service worker lifecycle deep dive, debugging guide. |
-| 3 | [`locked-screen-audio.md`](./locked-screen-audio.md) | **Audio that survives a locked screen.** Pre-scheduling on the AudioContext clock, the ≈ -72 dBFS Chrome audibility threshold, why the keep-alive must be a faint 25 Hz tone and never digital silence (the v26.06.19 regression), Bluetooth standby primer, audio-focus recovery, iOS audio-session rules. |
+| 3 | [`locked-screen-audio.md`](./locked-screen-audio.md) | **Audio that survives a locked screen.** Pre-scheduling on the AudioContext clock, Chrome's documented "playing audio" freezing exemption, why the keep-alive must be a faint 25 Hz tone and never digital silence (the v26.06.19 regression), Bluetooth standby primer, audio-focus recovery, iOS audio-session rules, and the separate Android battery-optimization setting no page code can override. |
 
 ---
 

@@ -8,7 +8,7 @@
 
 'use strict';
 
-const VERSION = 'v26.07.13b';
+const VERSION = 'v26.07.13c';
 const CACHE   = `sound-annoyer-${VERSION}`;
 
 // Critical app shell — install fails (and retries) if any of these can't be cached.

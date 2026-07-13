@@ -53,18 +53,28 @@ Either alone keeps the page alive if the other fails — the redundancy is delib
 
 BT speakers drop to standby during silence and **clip the start** of the next sound. The keep-alive tone keeps the *link* open, but a dozed speaker still needs waking: schedule a short, quiet **primer blip** (~120 Hz, 0.13 s, amp 0.05) ~0.6 s before every real sound.
 
-## 4. The Mechanism JS Cannot Fix: Android Battery Optimization
+## 4. Does Installing the App "Guarantee" This Works? No.
 
-Independent of everything above, Android's Doze mode / App Standby / per-app battery optimization can restrict a backgrounded app — Chrome itself — regardless of what the page inside it does. Real-world reports describe Chrome's background audio being cut specifically because of this OS-level policy, not a page-level freeze. No in-page JS trick (this document's keep-alive included) can override it, because it isn't a page behavior — it's Android deciding how much CPU/network/wake-lock budget the *Chrome app process* gets.
+Checked directly: MDN's PWA background-operation docs are explicit that **no web-platform mechanism guarantees continued execution** — "browsers may stop [things] when they think it is appropriate," full stop, no carve-out for installed apps. There is no formal spec-level promise here, installed or not. The only way to get an Android-native guarantee (a real foreground service with a persistent notification, immune to Doze) is to stop being "just a PWA" and ship it as a **TWA** (Trusted Web Activity, via Bubblewrap) published through the Play Store with actual native code added — a materially bigger project than tapping the install button.
 
-**If a user reports the app still goes silent on lock after this fix ships:** the next diagnostic step is Android Settings → Apps → Chrome (or whichever browser) → Battery → set to **Unrestricted** (not "Optimized"). This is a manual, per-device, per-browser setting; it cannot be triggered from the page. Worth adding a line to the app's install/help copy if this turns out to be the common failure mode in practice.
+That said, installing is not merely cosmetic — it changes one concrete, verifiable thing:
+
+**Installing on Android creates a WebAPK — a real, separate Android app package.** Confirmed directly from Google's own web.dev docs: an installed PWA "show[s] up in the app launcher, in Android's app settings" as its own entry, "without a browser badge." Practical consequence: **once installed, the app's battery-optimization toggle lives at its own name** (e.g. Settings → Apps → **SoundAnnoyer** → Battery), completely separate from Chrome's own toggle. This matters because:
+- Independent of everything above, Android's Doze mode / App Standby / per-app battery optimization can restrict a backgrounded app regardless of what the page inside it does. No in-page JS trick (this doc's keep-alive included) can override it — it's Android deciding how much CPU/network/wake-lock budget the *app process* gets, not a page behavior.
+- **My earlier draft of this doc told users to fix this via Chrome's own battery setting — that's wrong once the app is installed.** An installed WebAPK is a distinct package; exempting Chrome the browser does nothing for it. The correct instruction depends on how the app is running:
+  - **Installed (standalone, own icon):** Settings → Apps → **[app name]** → Battery → **Unrestricted**.
+  - **Running in a regular Chrome tab (not installed):** it's genuinely Chrome's own setting that applies instead: Settings → Apps → Chrome → Battery → Unrestricted.
+- Even "Unrestricted" is only a *partial* exemption from Doze/Standby per Android's own docs (jobs/alarms can still be deferred) — it measurably helps, it doesn't formally guarantee.
+
+**Considered and rejected: Screen Wake Lock API.** Checked the spec directly — a screen wake lock is explicitly released the moment the user manually turns the screen off (W3C spec: "must not be applicable after the screen is manually switched off by the user"). Both apps' whole premise is the user *deliberately* locking/pocketing the phone, so Wake Lock would do nothing for the actual use case (it only defers an *automatic* timeout the user isn't hitting anyway). Not implemented — don't re-propose it without a different use case in mind.
 
 ## 5. Rules of Thumb (don't relearn these)
 
 1. **Never "clean up" the keep-alive to pure silence.** It looks like an optimization; it kills locked-screen playback. This has now happened once (v26.06.19) — the code comments say so at the exact spot.
 2. Keep the tone clearly non-zero and subsonic (~25 Hz). Don't chase a precise dB target — the number in §2 is a safety margin, not a spec.
 3. Timers are UI-only. Any sound that must fire while locked goes on the AudioContext clock.
-4. Test on a real phone: UNLEASH → lock the screen → wait through at least two full intervals → sounds must keep coming. If they still don't, check Android's per-app battery optimization setting (§4) before assuming the in-page fix is wrong.
+4. Test on a real phone: UNLEASH → lock the screen → wait through at least two full intervals → sounds must keep coming. If they still don't, check the *correct* battery-optimization setting first (§4 — it's the installed app's own toggle, not Chrome's, once installed) before assuming the in-page fix is wrong.
+5. Don't promise users "guaranteed" background playback in UI copy — say "install for the most reliable results," not "it always works." §4 is why.
 
 ## 6. iOS Notes
 
@@ -78,3 +88,6 @@ Independent of everything above, Android's Doze mode / App Standby / per-app bat
 - [t-mullen/silent-audio](https://github.com/t-mullen/silent-audio) — existing open-source precedent for the "near-silent audio keeps background timers alive" technique; its README states plainly that *silent* streams do not receive the exemption, only audible ones do.
 - [How to Keep Audio Playing in the Background in Chrome on Android (spf.io)](https://www.spf.io/2025/01/30/how-to-keep-audio-playing-in-the-background-in-chrome-on-android/) — real-world report attributing background audio loss on Android to Chrome's battery-optimization status, fixed by setting it to Unrestricted; independent of any page-level code.
 - [Android Doze and App Standby — Android Developers](https://developer.android.com/training/monitoring-device-state/doze-standby) — confirms even a battery-optimization exemption ("Unrestricted") is only a *partial* exemption from Doze/Standby restrictions.
+- [WebAPKs on Android — web.dev](https://web.dev/articles/webapks) — official Google doc confirming an installed PWA registers as its own entry in Android's app settings, separate from the browser.
+- [MDN: Offline and background operation](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Offline_and_background_operation) — explicit that no web-platform background mechanism (service workers included) is guaranteed to keep running; the browser may stop it "when it thinks it is appropriate."
+- [Screen Wake Lock API — W3C spec](https://w3c.github.io/screen-wake-lock/) — a screen wake lock must not apply after the user manually turns the screen off, which is why it doesn't help this repo's "lock the phone and hide it" use case.

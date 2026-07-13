@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(ffmpeg -version)",
-      "WebFetch(domain:leiloluck.github.io)"
+      "WebFetch(domain:leiloluck.github.io)",
+      "Bash(git fetch *)"
     ]
   }
 }

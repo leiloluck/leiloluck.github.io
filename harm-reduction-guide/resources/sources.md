@@ -48,6 +48,25 @@ External references cited by URL but **not** mirrored locally are marked *(exter
 - (local) `drugchecking-berlin/aktuelle-warnungen` (alerts) + `theloop/drug-alerts.md`
   Supports: "4-MMC/3-MMC" frequently mis-sold as other cathinones (3-CMC, 4-CMC, N-ethylpentedrone); "pink cocaine"/Tusi rarely contains 2C-B; 2C-H adulteration.
 
+### CMC — 3-CMC / 4-CMC (new substance, v26.07.24d)
+Chloromethcathinones — mephedrone analogs now widespread in the European supply and frequently mis-sold as 3-MMC / mephedrone / MDMA / speed / ketamine. Combined entry led by 3-CMC (4-CMC noted inline; its dose tiers are not established). Not in Nutt 2010 → `mcda: null`. All sources are external (not yet mirrored locally).
+- **PsychonautWiki — 3-CMC** *(external)* — https://psychonautwiki.org/wiki/3-CMC
+  Supports: 3-CMC dosing tiers (oral & insufflated), duration phases, effects, dependence, confirmed-death count.
+- **SaferParty — 3-CMC (Clophedron)** *(external)* — https://en.saferparty.ch/substanzen/clophedron
+  Supports: dosing/duration corroboration; ~75% of cathinone samples mis-declared; neurotoxicity concern; compulsive redosing.
+- **checkit! / triptalks — 3-CMC / 4-CMC** *(external)* — https://triptalks.at/substanzen/substanzen-a-z/3-cmc-clophedron-/-4-cmc-clephedron/
+  Supports: 3-CMC vs 4-CMC character (4-CMC more empathogenic/serotonergic); serotonin-syndrome and depressant-masking combination risks.
+- **Drugchecking Berlin — Warnungen** *(external)* — https://drugchecking.berlin/aktuelle-warnungen
+  Supports: current-supply identity findings (e.g. a "3-MMC" that was 90.6% 4-CMC; 4-CMC in an MDMA tablet).
+- **checkit! Wien — Ergebnisse** *(external)* — https://checkit.wien/en/drug-checking-ergebnisse/
+  Supports: Feb 2025 samples sold as 3-MMC / speed that were pure 3-CMC.
+- **EUDA — Synthetic stimulants, European Drug Report 2024** *(external)* — https://www.euda.europa.eu/publications/european-drug-report/2024/synthetic-stimulants_en
+  Supports: 3-CMC & 4-CMC among the most-detected cathinones in 2023 MDMA products; rising intentional use.
+- **TEDI / Correlation — European Drug Checking Trends 2018–2024** *(external)* — https://correlation-net.org/2025/01/08/european-drug-checking-trends-2018-2024/
+  Supports: cathinones increasingly sought in their own right as cocaine purity falls.
+- **3-CMC clinical case series (PMC)** *(external)* — https://pmc.ncbi.nlm.nih.gov/articles/PMC12692235/
+  Supports: acute cardiac (tachycardia, arrhythmia, chest pain, desaturation) and psychiatric (confusion/psychosis) presentations; fatal cases.
+
 ### Emergency & first aid (button-only panel)
 - **Drugchecking Berlin — First Aid / Erste Hilfe** (local: `drugchecking-berlin/erste-hilfe.md`) — https://drugchecking.berlin/substanzen/erste-hilfe
   Supports: the emergency panel (button-only, inside the disclaimer banner) — when to call 112, recovery position, CPR, naloxone.

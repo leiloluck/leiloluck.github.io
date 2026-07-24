@@ -25,7 +25,10 @@ const COMBO_KEY_MAP = {
     'ghb':             'ghb/gbl',
     'gbl':             'ghb/gbl',
     'heroin':          'opioids',
-    'methamphetamine': 'amphetamines'
+    'methamphetamine': 'amphetamines',
+    'dmt':             'dmt',
+    'nitrous':         'nitrous',
+    'benzodiazepines': 'benzodiazepines'
 };
 
 // (COMBO_DISPLAY_INFO removed to strictly only use app substances)

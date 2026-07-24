@@ -14,7 +14,7 @@ Plain HTML/CSS/JS, no build step unless a subpage says otherwise.
 
 | Folder | What it is | Read first |
 |---|---|---|
-| `harm-reduction-guide/` | Evidence-based harm-reduction protocols for festival/nightlife settings. 17 substances, sourced dosing, a regrounded risk chart, drug-combination data. | `harm-reduction-guide/context.md` |
+| `harm-reduction-guide/` | Evidence-based harm-reduction protocols for festival/nightlife settings. 21 substances, sourced dosing, a regrounded risk chart, drug-combination data. | `harm-reduction-guide/context.md` |
 | `your-final-words/` | Minimalist reflective writing-exercise web app. | `your-final-words/context.md` |
 | `sound-annoyer/`, `meditation-timer/` | Installable PWA utilities (date-based `vYY.MM.DD` versioning). | their `context.md` |
 

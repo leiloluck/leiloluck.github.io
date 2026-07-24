@@ -6,7 +6,7 @@
 */
 
 // Display order by pharmacological class (stimulants → empathogens → psychedelics → dissociatives → depressants → opioids)
-const SUBSTANCE_ORDER = ['sober', 'caffeine', 'cocaine', 'amphetamine', 'methamphetamine', 'mdma', '4mmc', 'cmc', 'lsd', 'mushrooms', '2cb', 'ketamine', 'cannabis', 'alcohol', 'ghb', 'gbl', 'heroin'];
+const SUBSTANCE_ORDER = ['sober', 'caffeine', 'cocaine', 'amphetamine', 'methamphetamine', 'mdma', '4mmc', 'cmc', 'lsd', 'mushrooms', '2cb', 'dmt', 'ketamine', 'nitrous', 'poppers', 'cannabis', 'alcohol', 'ghb', 'gbl', 'benzodiazepines', 'heroin'];
 
 // State
 let currentProtocol = 'sober';
@@ -434,7 +434,10 @@ function updateDosingDisplay(data) {
             '2cb': 'At this range effects can become overwhelming — a comfortable setting helps.',
             ketamine: 'This approaches the "k-hole" (full dissociation) — best not to be alone.',
             lsd: 'Higher doses make challenging experiences more likely — set & setting matter more.',
-            alcohol: 'Heavy doses strongly impair coordination; if vomiting, lie on your side (aspiration risk).'
+            alcohol: 'Heavy doses strongly impair coordination; if vomiting, lie on your side (aspiration risk).',
+            benzodiazepines: 'Higher doses deepen sedation and, with any other depressant, the risk of stopped breathing.',
+            dmt: 'This is breakthrough territory — total and overwhelming; have a sober sitter and stay seated or lying down.',
+            nitrous: 'More balloons in one session raise the cumulative nerve-damage and hypoxia risk, not the high.'
         };
         if (warnings[data.id]) {
             doseWarning.textContent = warnings[data.id];
@@ -572,25 +575,26 @@ function renderCombosSection(data) {
 
     if (!section || !list) return;
 
-    // Sober baseline: no substance selected — show a simple placeholder instead of an empty tab
+    function showPlaceholder(msg) {
+        section.classList.add('hidden');
+        if (placeholder) { placeholder.textContent = msg; placeholder.classList.remove('hidden'); }
+    }
+
+    // Sober baseline: no substance selected yet.
     if (data.id === 'sober') {
-        section.classList.add('hidden');
-        if (placeholder) placeholder.classList.remove('hidden');
-        return;
-    }
-    if (placeholder) placeholder.classList.add('hidden');
-
-    if (!comboData) {
-        section.classList.add('hidden');
+        showPlaceholder('Drug combinations will be displayed here once you select a substance.');
         return;
     }
 
-    const combos = getSubstanceCombos(data.id);
+    // Substances with no combination data (e.g. poppers — not in the TripSit chart):
+    // point the reader to the Protocol tab instead of showing an empty panel.
+    const combos = comboData ? getSubstanceCombos(data.id) : [];
     if (combos.length === 0) {
-        section.classList.add('hidden');
+        showPlaceholder(`No combination chart is available for ${data.name} — see the Protocol tab for its key interaction warnings.`);
         return;
     }
 
+    if (placeholder) placeholder.classList.add('hidden');
     section.classList.remove('hidden');
 
     // Apply substance color to section card border

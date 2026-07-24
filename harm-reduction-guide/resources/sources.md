@@ -13,6 +13,7 @@ External references cited by URL but **not** mirrored locally are marked *(exter
 - `checkit/` — checkit! Wien factsheets.
 - `drugchecking-berlin/` — Berlin drug-checking substance pages, 2026 alerts, first-aid (`erste-hilfe.md`).
 - `energycontrol/`, `jellinek/`, `theloop/` — additional EU harm-reduction / drug-checking sources.
+- `sources/` — consolidated per-substance mirrors for substances without a dedicated org folder (`nitrous.md`, `poppers.md`, `benzodiazepines.md`, `dmt.md`), extracted 2026-07-24.
 
 ## Added / corrected citations — 2026-07-24 content review (v26.07.24)
 
@@ -70,6 +71,40 @@ Chloromethcathinones — mephedrone analogs now widespread in the European suppl
 ### Emergency & first aid (button-only panel)
 - **Drugchecking Berlin — First Aid / Erste Hilfe** (local: `drugchecking-berlin/erste-hilfe.md`) — https://drugchecking.berlin/substanzen/erste-hilfe
   Supports: the emergency panel (button-only, inside the disclaimer banner) — when to call 112, recovery position, CPR, naloxone.
+
+## New substances — v26.07.24e (N₂O, poppers, benzodiazepines, DMT)
+
+Each was researched across several harm-reduction sources and adversarially fact-checked. Full mirrors live under `resources/sources/` (`nitrous.md`, `poppers.md`, `benzodiazepines.md`, `dmt.md`), extracted 2026-07-24.
+
+### Nitrous Oxide (N₂O)
+- **PsychonautWiki — Nitrous Oxide** *(external)* — https://psychonautwiki.org/wiki/Nitrous_Oxide — dosing tiers in grams, duration, "toxic dose unknown".
+- **Talk to Frank — Nitrous oxide** *(external)* — https://www.talktofrank.com/drug/nitrous-oxide — 1–2 min duration, B12/paralysis, mask/bag deaths.
+- **Crew — Nitrous oxide** *(external)* — https://www.crew.scot/drug/nitrous-oxide/ — sit down, don't re-breathe, chaining, cold cartridge, B12/D depletion.
+- **EUDA — Recreational nitrous oxide: a growing concern for Europe** *(external)* — larger tanks / rising-harm, dose-dependent B12 neurotoxicity, vegan/vegetarian risk.
+- **Neurologic & thrombotic complications of chronic nitrous abuse (PMC9859688)** *(external)* — https://pmc.ncbi.nlm.nih.gov/articles/PMC9859688/ — methionine-synthase inhibition, homocysteine, DVT/PE, subacute combined degeneration.
+- **TripSit — Nitrous** *(external)* — https://drugs.tripsit.me/nitrous — combination ratings (`nitrous` key present in the local TripSit chart).
+
+### Poppers (Alkyl Nitrites)
+- **PsychonautWiki — Poppers** *(external)* — https://psychonautwiki.org/wiki/Poppers — isopropyl-nitrite maculopathy, contraindications, lipoid pneumonia.
+- **Talk to FRANK — Poppers** *(external)* — https://talktofrank.com/drug/poppers — BP crash, temporary/permanent vision loss, heart/anaemia/glaucoma cautions.
+- **DanceSafe — Poppers** *(external)* — https://dancesafe.org/poppers/ — waft-don't-press, flammable, "sudden sniffing death", sexual disinhibition.
+- **Release — Alkyl Nitrites harm reduction** *(external)* — https://www.release.org.uk/drugs/alkyl-nitrites-poppers/harm-reduction — methaemoglobinaemia (blue lips), headache, skin lesions.
+- **Corkery et al. 2025 — UK poppers deaths (PMC)** *(external)* — https://pmc.ncbi.nlm.nih.gov/articles/PMC11765549/ — ≥10 swallowing deaths (methHb 38–46%), fatal alkyl-nitrite + tadalafil case. *(No TripSit `poppers` combo key exists — the Combinations tab shows a "see Protocol" note.)*
+
+### Benzodiazepines
+- **PsychonautWiki — Benzodiazepines / Diazepam** *(external)* — https://psychonautwiki.org/wiki/Benzodiazepines , https://psychonautwiki.org/wiki/Diazepam — diazepam-equivalents, duration (peak 60–90 min), tolerance, withdrawal seizures, amnesia.
+- **Talk to Frank — Benzodiazepines** *(external)* — https://www.talktofrank.com/drug/benzodiazepines
+- **Ashton Manual — equivalence table** *(external)* — https://www.benzo.org.uk/bzequiv.htm (note: designer benzos like etizolam are not listed there).
+- **Correlation / TEDI 2018–2024** + **EUDA — NPS (European Drug Report 2025)** *(external)* — counterfeit/designer benzos (bromazolam) & nitazenes substituted into the benzo market.
+- **Nutt, King & Phillips 2010 (Lancet)** *(external)* — MCDA overall-harm score **15, rank 10/20** (between GHB 9th and ketamine 11th).
+
+### DMT
+- **PsychonautWiki — DMT** *(external)* — https://psychonautwiki.org/wiki/DMT — vaporized tiers, smoked duration, oral-inactive-without-MAOI, tolerance.
+- **TripSit — DMT** *(external)* — https://wiki.tripsit.me/wiki/DMT — combinations (`dmt` key present; lithium Dangerous, tramadol Unsafe).
+- **DanceSafe — DMT** *(external)* — https://dancesafe.org/dmt/ — set & setting, sitter, brevity.
+- **MAPS — MAOI Contraindications (Ayahuasca)** *(external)* — https://maps.org/news-letters/v06n1/06158mao.html — serotonergic/tyramine dangers of the MAOI route.
+- **Strassman & Qualls 1994** *(external)* — https://pubmed.ncbi.nlm.nih.gov/8297216/ — dose-dependent, transient cardiovascular response.
+- **Nayak et al. 2021, *Pharmacopsychiatry*** *(external)* — https://doi.org/10.1055/a-1524-2794 — psychedelics + lithium seizure rate.
 
 ## Reserved for the risk-chart reground (Phase 2 — pending)
 - **Nutt, King & Phillips 2010, *Lancet* 376:1558–65** *(external)* — https://pubmed.ncbi.nlm.nih.gov/21036393/ — MCDA overall-harm scores (0–100).

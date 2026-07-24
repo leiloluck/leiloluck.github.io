@@ -335,6 +335,597 @@ const _inlineProtocols = {
         },
         "visualizer_note": "Deceptively harmful: dehydration, disinhibition and genuine overdose risk (alcohol poisoning, aspiration) — the most harmful drug overall in expert rankings."
     },
+    "nitrous": {
+        "id": "nitrous",
+        "name": "Nitrous Oxide (N₂O)",
+        "type": "Dissociative/Inhalant",
+        "emoji": "🎈",
+        "color": "#94a3b8",
+        "duration": 0.05,
+        "dosing": {
+            "Inhaled": {
+                "unit": "balloon (~8 g charger)",
+                "threshold": 0.5,
+                "light": {
+                    "min": 0.5,
+                    "max": 1
+                },
+                "common": {
+                    "min": 1,
+                    "max": 2
+                },
+                "strong": {
+                    "min": 2,
+                    "max": 5
+                },
+                "heavy": 5,
+                "note": "Counted in cream chargers (~8 g each ≈ roughly one balloon), not mg. Grams equivalent (PsychonautWiki/TripSit): threshold ~4 g, light 4–8 g, common 8–16 g, strong 16–40 g, heavy 40 g+. IMPORTANT: these tiers describe how intense one sitting feels — they do NOT bound the nerve-damage risk, which tracks the TOTAL number of balloons per session and per week, not the size of any single hit. There is no established safe cumulative amount; people who develop nerve damage are typically heavy or regular users getting through many chargers, or using large catering-size tanks where it is very easy to lose count. Toxic dose is undefined.",
+                "source": "https://psychonautwiki.org/wiki/Nitrous_Oxide"
+            }
+        },
+        "routes": [
+            {
+                "name": "Inhaled",
+                "displayName": "Inhaled",
+                "emoji": "💨",
+                "isDefault": true,
+                "phases": null
+            }
+        ],
+        "visualizer": {
+            "neurotoxicity": 5,
+            "cardiotoxicity": 2,
+            "dehydration": 1,
+            "sleep_deprivation": 1,
+            "impulsivity": 5,
+            "lethality": 3
+        },
+        "sleep_strategy": "No real sleep impact — it clears within minutes. The only overnight concern is not lying down or being left alone while still unsteady, and not chaining balloons late into the night.",
+        "phases": {
+            "before": {
+                "essential": [
+                    {
+                        "short": "Setting: Sit down before you inhale.",
+                        "detail": "Nitrous causes an abrupt loss of balance and can make you faint. Sitting (ideally on the floor, away from roads, water, edges and hard corners) means that if you pass out you slump rather than fall — falls are the most common nitrous injury.",
+                        "sources": [
+                            {
+                                "label": "Crew — Nitrous oxide",
+                                "url": "https://www.crew.scot/drug/nitrous-oxide/"
+                            },
+                            {
+                                "label": "PsychonautWiki — Nitrous Oxide",
+                                "url": "https://psychonautwiki.org/wiki/Nitrous_Oxide"
+                            }
+                        ]
+                    },
+                    {
+                        "short": "B12: A B12 supplement is sensible if you use regularly — but it is not a licence to use more.",
+                        "detail": "Nitrous chemically inactivates vitamin B12 (it oxidises the cobalt core and blocks the B12-dependent enzyme methionine synthase), which is what leads to nerve damage. Keeping B12 stores up is low-risk and reasonable, but there is no good evidence that supplementing reliably prevents nerve damage in heavy users — the deficiency is functional, not just dietary. The only dependable protection is limiting how much gas you get through. People eating little B12 (vegans/vegetarians) or with gut-absorption problems are at higher risk.",
+                        "sources": [
+                            {
+                                "label": "TripSit — Nitrous",
+                                "url": "https://drugs.tripsit.me/nitrous"
+                            },
+                            {
+                                "label": "Neurologic & thrombotic complications of chronic nitrous abuse (PMC9859688)",
+                                "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9859688/"
+                            }
+                        ]
+                    }
+                ],
+                "bonus": [
+                    {
+                        "short": "Equipment: Use a balloon and a proper cracker/dispenser — never inhale straight from a charger or tank.",
+                        "detail": "Gas leaving a charger or tank is under high pressure and extremely cold, and can freeze (frostbite / cold-burn) the lips, mouth, throat and lungs. Releasing it into a balloon first lets it warm and drop in pressure to something safe to breathe. Cheap plastic dispensers have also burst under pressure.",
+                        "sources": [
+                            {
+                                "label": "Crew — Nitrous oxide",
+                                "url": "https://www.crew.scot/drug/nitrous-oxide/"
+                            },
+                            {
+                                "label": "Talk to Frank — Nitrous oxide",
+                                "url": "https://www.talktofrank.com/drug/nitrous-oxide"
+                            },
+                            {
+                                "label": "PsychonautWiki — Nitrous Oxide",
+                                "url": "https://psychonautwiki.org/wiki/Nitrous_Oxide"
+                            }
+                        ]
+                    },
+                    {
+                        "short": "Supply: Prefer small chargers over large catering tanks.",
+                        "detail": "Large cylinders/tanks make it very easy to lose track of how much you have inhaled and to take huge volumes quickly — the pattern most associated with hypoxia and with the cumulative dose that causes nerve damage. EUDA flags the shift to bigger tanks as a rising-harm trend in Europe.",
+                        "sources": [
+                            {
+                                "label": "EUDA — Recreational use of nitrous oxide: a growing concern for Europe",
+                                "url": "https://www.euda.europa.eu/system/files/media/publications/documents/14934/20225054_PDF_TD0922561ENN_002.pdf"
+                            },
+                            {
+                                "label": "PsychonautWiki — Nitrous Oxide",
+                                "url": "https://psychonautwiki.org/wiki/Nitrous_Oxide"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "during": {
+                "focus": "Keep oxygen in the loop and stay seated. The acute danger is suffocation; the long-term danger is total volume.",
+                "essential": [
+                    {
+                        "short": "⚠️ Oxygen: Never use a mask or bag, or an enclosed space (car, tent), and don't breathe in and out of the balloon.",
+                        "detail": "Pure nitrous contains no oxygen (unlike the 50/50 medical mix). Re-breathing it, sealing it over your face with a mask, putting a bag over your head, or filling a small closed space starves the brain of oxygen — and if you pass out with a mask strapped on or a bag on your head, you suffocate. People have died this way. This is the one genuinely life-threatening rule.",
+                        "sources": [
+                            {
+                                "label": "Talk to Frank — Nitrous oxide",
+                                "url": "https://www.talktofrank.com/drug/nitrous-oxide"
+                            },
+                            {
+                                "label": "Crew — Nitrous oxide",
+                                "url": "https://www.crew.scot/drug/nitrous-oxide/"
+                            },
+                            {
+                                "label": "PsychonautWiki — Nitrous Oxide",
+                                "url": "https://psychonautwiki.org/wiki/Nitrous_Oxide"
+                            }
+                        ]
+                    },
+                    {
+                        "short": "Pace: One balloon at a time, with normal breaths of fresh air in between.",
+                        "detail": "Spacing balloons lets your blood oxygen recover between hits and keeps the total volume down. 'Chaining' balloons back-to-back is what drives both the immediate hypoxia risk and the cumulative B12/nerve-damage risk. Because each hit lasts only a minute or two, the urge to immediately redose is strong — decide a limit before you start.",
+                        "sources": [
+                            {
+                                "label": "Crew — Nitrous oxide",
+                                "url": "https://www.crew.scot/drug/nitrous-oxide/"
+                            },
+                            {
+                                "label": "Talk to Frank — Nitrous oxide",
+                                "url": "https://www.talktofrank.com/drug/nitrous-oxide"
+                            }
+                        ]
+                    },
+                    {
+                        "short": "Position: Stay seated and still — don't walk, dance, climb or stand near roads, water or edges while it hits.",
+                        "detail": "Nitrous briefly wipes out gross and fine motor control, balance and coordination. Standing or moving during the peak is how people fall, and the peak arrives within seconds. Wait until you are fully steady before getting up.",
+                        "sources": [
+                            {
+                                "label": "PsychonautWiki — Nitrous Oxide",
+                                "url": "https://psychonautwiki.org/wiki/Nitrous_Oxide"
+                            },
+                            {
+                                "label": "Crew — Nitrous oxide",
+                                "url": "https://www.crew.scot/drug/nitrous-oxide/"
+                            }
+                        ]
+                    },
+                    {
+                        "short": "Mixing: Go easy if you've been drinking or using other depressants or dissociatives (alcohol, GHB/GBL, ketamine, opioids).",
+                        "detail": "These add to nitrous's sedation and loss of coordination and raise the chance of an unexpected blackout — and passing out brings a risk of choking on vomit if you're not on your side. TripSit rates nitrous with alcohol, GHB/GBL, opioids and tramadol as 'Caution' for exactly this reason; ketamine and other dissociatives add incoordination on top. Not a deadly combination in itself, but a reason to slow right down, not chain balloons, and stay seated.",
+                        "sources": [
+                            {
+                                "label": "TripSit — Nitrous combinations",
+                                "url": "https://drugs.tripsit.me/nitrous"
+                            },
+                            {
+                                "label": "PsychonautWiki — Nitrous Oxide",
+                                "url": "https://psychonautwiki.org/wiki/Nitrous_Oxide"
+                            }
+                        ]
+                    }
+                ],
+                "bonus": [
+                    {
+                        "short": "Limit: Cap the total balloons for the night and the week.",
+                        "detail": "The nerve-damage risk tracks how many balloons you get through over time, not how strong a single hit feels — there is no known safe cumulative amount. Occasional, small use carries far less risk than regular heavy sessions or daily use. Keeping session and weekly totals low is the single most effective harm-reduction step.",
+                        "sources": [
+                            {
+                                "label": "EUDA — Recreational use of nitrous oxide: a growing concern for Europe",
+                                "url": "https://www.euda.europa.eu/system/files/media/publications/documents/14934/20225054_PDF_TD0922561ENN_002.pdf"
+                            },
+                            {
+                                "label": "Neurologic & thrombotic complications of chronic nitrous abuse (PMC9859688)",
+                                "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9859688/"
+                            }
+                        ]
+                    },
+                    {
+                        "short": "Driving: Don't drive or cycle after using.",
+                        "detail": "Even though the effects are brief, coordination and judgement are impaired around use, and driving while impaired is dangerous and illegal.",
+                        "sources": [
+                            {
+                                "label": "Talk to Frank — Nitrous oxide",
+                                "url": "https://www.talktofrank.com/drug/nitrous-oxide"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "after": {
+                "essential": [
+                    {
+                        "short": "If someone passes out: lay them on their side and check breathing — call emergency services if they don't come round quickly.",
+                        "detail": "Most people recover within minutes, but combined with alcohol or other depressants a person can lose consciousness and choke on vomit. The recovery position keeps the airway clear. Don't leave anyone who is drowsy or unresponsive on their back or unmonitored.",
+                        "sources": [
+                            {
+                                "label": "PsychonautWiki — Nitrous Oxide",
+                                "url": "https://psychonautwiki.org/wiki/Nitrous_Oxide"
+                            },
+                            {
+                                "label": "TripSit — Nitrous",
+                                "url": "https://drugs.tripsit.me/nitrous"
+                            }
+                        ]
+                    }
+                ],
+                "bonus": [
+                    {
+                        "short": "Watch for warning signs: tingling, numbness, pins-and-needles, weakness or unsteady walking in the days after.",
+                        "detail": "These are the early signs of B12-related nerve damage from nitrous. If they appear, that is a clear signal to stop and see a doctor — early treatment gives the best chance of full recovery, whereas continued use can make the damage lasting.",
+                        "sources": [
+                            {
+                                "label": "Talk to Frank — Nitrous oxide",
+                                "url": "https://www.talktofrank.com/drug/nitrous-oxide"
+                            },
+                            {
+                                "label": "Neurologic & thrombotic complications of chronic nitrous abuse (PMC9859688)",
+                                "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9859688/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "next_morning": {
+                "essential": [
+                    {
+                        "short": "Body check: persistent numbness or tingling in hands/feet, weakness, or an unsteady, stumbling walk means see a doctor.",
+                        "detail": "Nitrous-induced B12 deficiency can cause peripheral neuropathy and, when severe, subacute combined degeneration of the spinal cord — which can progress to difficulty walking and even lasting disability. Tell the doctor you've been using nitrous and ask specifically about B12; treatment is B12 plus stopping the gas, and recovery is best when caught early.",
+                        "sources": [
+                            {
+                                "label": "Neurologic & thrombotic complications of chronic nitrous abuse (PMC9859688)",
+                                "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9859688/"
+                            },
+                            {
+                                "label": "Talk to Frank — Nitrous oxide",
+                                "url": "https://www.talktofrank.com/drug/nitrous-oxide"
+                            }
+                        ]
+                    }
+                ],
+                "bonus": [
+                    {
+                        "short": "Diet: if you use nitrous and eat little B12 (vegan/vegetarian) or have absorption problems, get a B12 check.",
+                        "detail": "Low baseline B12 leaves less buffer against nitrous inactivating it, so nerve symptoms can appear after less use. A blood test (B12, and ideally homocysteine/MMA) is worth it — but a normal result is not a green light to use heavily.",
+                        "sources": [
+                            {
+                                "label": "TripSit — Nitrous",
+                                "url": "https://drugs.tripsit.me/nitrous"
+                            },
+                            {
+                                "label": "Neurologic & thrombotic complications of chronic nitrous abuse (PMC9859688)",
+                                "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9859688/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "risks": [
+            "Vitamin B12 inactivation → nerve damage (tingling, numbness, weakness, unsteady gait) and, when severe, spinal-cord degeneration that can be lasting — the main danger of heavy or regular use",
+            "Fainting and suffocation (hypoxia) — especially with a mask/bag, in a car or enclosed space, or straight from a large tank",
+            "Falls and injury from sudden loss of balance while standing",
+            "Frostbite / cold burns to lips, mouth and airway from gas taken straight off a charger or tank",
+            "Strong pull to keep redosing ('chaining' balloons), which is what pushes the cumulative dose up",
+            "Blood-clot risk (DVT / pulmonary embolism) via raised homocysteine in heavy users"
+        ],
+        "mcda": null,
+        "visualizer_note": "The real danger is cumulative and preventable: short, moreish hits drive compulsive redosing, and heavy or regular use inactivates vitamin B12 and can cause lasting nerve and spinal-cord damage — plus a real risk of fainting or suffocation whenever oxygen is cut off (mask, bag, enclosed space, or straight from a tank)."
+    },
+    "poppers": {
+        "id": "poppers",
+        "name": "Poppers (Alkyl Nitrites)",
+        "type": "Inhalant (Vasodilator)",
+        "emoji": "💨",
+        "color": "#eab308",
+        "duration": 0.05,
+        "routes": [
+            {
+                "name": "Inhaled",
+                "displayName": "Sniffed",
+                "emoji": "👃",
+                "isDefault": true,
+                "phases": null
+            }
+        ],
+        "visualizer": {
+            "neurotoxicity": 2,
+            "cardiotoxicity": 5,
+            "dehydration": 1,
+            "sleep_deprivation": 1,
+            "impulsivity": 3,
+            "lethality": 4
+        },
+        "sleep_strategy": "Poppers don't disturb sleep on their own — the effect is gone within a couple of minutes. Any wakefulness comes from the setting (sex, clubbing, other drugs), not the poppers.",
+        "phases": {
+            "before": {
+                "essential": [
+                    {
+                        "short": "⚠️ Erection drugs: never use poppers if you've taken Viagra (sildenafil), Cialis (tadalafil), Levitra (vardenafil) or any nitrate.",
+                        "detail": "Both poppers and PDE5-inhibitor erection drugs are vasodilators. Together they can cause a catastrophic, potentially fatal drop in blood pressure — fainting, shock and death. A UK death review recorded a fatality from 'combined alkyl nitrate and tadalafil toxicity'. This is the single most important warning.",
+                        "sources": [
+                            {
+                                "label": "PsychonautWiki — Poppers",
+                                "url": "https://psychonautwiki.org/wiki/Poppers"
+                            },
+                            {
+                                "label": "Talk to FRANK — Poppers",
+                                "url": "https://talktofrank.com/drug/poppers"
+                            },
+                            {
+                                "label": "Corkery et al. 2025 — UK poppers deaths (PMC)",
+                                "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11765549/"
+                            }
+                        ]
+                    },
+                    {
+                        "short": "⚠️ Inhale only, never swallow: drinking poppers can be fatal.",
+                        "detail": "Swallowing alkyl nitrites causes methaemoglobinaemia — the blood can no longer carry oxygen — leading to cyanosis, coma and death. UK coroners recorded at least 10 swallowing deaths, with methaemoglobin levels of 38–46%. Keep the bottle well away from drinks and out of reach of others.",
+                        "sources": [
+                            {
+                                "label": "Corkery et al. 2025 — UK poppers deaths (PMC)",
+                                "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11765549/"
+                            },
+                            {
+                                "label": "DanceSafe — Poppers",
+                                "url": "https://dancesafe.org/poppers/"
+                            },
+                            {
+                                "label": "Talk to FRANK — Poppers",
+                                "url": "https://talktofrank.com/drug/poppers"
+                            }
+                        ]
+                    },
+                    {
+                        "short": "Health check: best avoided if you have heart problems, low or unstable blood pressure, anaemia or glaucoma, or are pregnant.",
+                        "detail": "Poppers sharply drop blood pressure and can trigger an abnormal heart rhythm ('sudden sniffing death'). These conditions make that swing dangerous, and glaucoma and anaemia are specific contraindications across harm-reduction sources.",
+                        "sources": [
+                            {
+                                "label": "Talk to FRANK — Poppers",
+                                "url": "https://talktofrank.com/drug/poppers"
+                            },
+                            {
+                                "label": "DanceSafe — Poppers",
+                                "url": "https://dancesafe.org/poppers/"
+                            },
+                            {
+                                "label": "Release — Alkyl Nitrites harm reduction",
+                                "url": "https://www.release.org.uk/drugs/alkyl-nitrites-poppers/harm-reduction"
+                            }
+                        ]
+                    }
+                ],
+                "bonus": [
+                    {
+                        "short": "Blood-pressure medication: the same crash risk applies — avoid poppers if you're on any nitrate or BP-lowering drug.",
+                        "detail": "Nitroglycerin and other nitrate/antihypertensive medicines are vasodilators too; stacking poppers on top can drop blood pressure dangerously, the same mechanism as the erection-drug interaction.",
+                        "sources": [
+                            {
+                                "label": "Talk to FRANK — Poppers",
+                                "url": "https://talktofrank.com/drug/poppers"
+                            },
+                            {
+                                "label": "PsychonautWiki — Poppers",
+                                "url": "https://psychonautwiki.org/wiki/Poppers"
+                            }
+                        ]
+                    },
+                    {
+                        "short": "Your own bottle: use your own, keep it capped and upright.",
+                        "detail": "Spilled liquid burns skin and lips and irritates the eyes, and open or stale product loses potency and worsens headaches. A capped, upright, personal bottle avoids spills and cross-contamination.",
+                        "sources": [
+                            {
+                                "label": "DanceSafe — Poppers",
+                                "url": "https://dancesafe.org/poppers/"
+                            },
+                            {
+                                "label": "Release — Alkyl Nitrites harm reduction",
+                                "url": "https://www.release.org.uk/drugs/alkyl-nitrites-poppers/harm-reduction"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "during": {
+                "focus": "Stay seated or steady, waft the vapour rather than pressing the bottle to your nose, and keep flames well away.",
+                "essential": [
+                    {
+                        "short": "Sit or steady yourself: the head-rush is a sharp blood-pressure drop, so you can feel faint or fall.",
+                        "detail": "Rapid vasodilation lowers blood pressure within seconds, causing light-headedness and fainting — especially the first time or standing up. Sit or lean on something solid before you inhale.",
+                        "sources": [
+                            {
+                                "label": "Talk to FRANK — Poppers",
+                                "url": "https://talktofrank.com/drug/poppers"
+                            },
+                            {
+                                "label": "DanceSafe — Poppers",
+                                "url": "https://dancesafe.org/poppers/"
+                            },
+                            {
+                                "label": "PsychonautWiki — Poppers",
+                                "url": "https://psychonautwiki.org/wiki/Poppers"
+                            }
+                        ]
+                    },
+                    {
+                        "short": "Waft, don't press: hold the bottle a little away and breathe the vapour — the liquid burns skin, lips and eyes.",
+                        "detail": "Alkyl nitrites are corrosive; direct contact causes chemical burns and rashes around the nose and mouth, and splashes irritate the eyes and throat. Wafting the vapour toward your nose avoids skin contact.",
+                        "sources": [
+                            {
+                                "label": "DanceSafe — Poppers",
+                                "url": "https://dancesafe.org/poppers/"
+                            },
+                            {
+                                "label": "Release — Alkyl Nitrites harm reduction",
+                                "url": "https://www.release.org.uk/drugs/alkyl-nitrites-poppers/harm-reduction"
+                            },
+                            {
+                                "label": "PsychonautWiki — Poppers",
+                                "url": "https://psychonautwiki.org/wiki/Poppers"
+                            }
+                        ]
+                    },
+                    {
+                        "short": "Flame: never use near cigarettes, candles or lighters — the vapour and liquid are extremely flammable.",
+                        "detail": "Alkyl nitrites are highly flammable and can ignite from a nearby flame or ember. Keep all ignition sources well away while a bottle is open.",
+                        "sources": [
+                            {
+                                "label": "DanceSafe — Poppers",
+                                "url": "https://dancesafe.org/poppers/"
+                            },
+                            {
+                                "label": "Release — Alkyl Nitrites harm reduction",
+                                "url": "https://www.release.org.uk/drugs/alkyl-nitrites-poppers/harm-reduction"
+                            },
+                            {
+                                "label": "PsychonautWiki — Poppers",
+                                "url": "https://psychonautwiki.org/wiki/Poppers"
+                            }
+                        ]
+                    },
+                    {
+                        "short": "Blue lips or breathlessness: stop, get fresh air, and get help if it doesn't clear quickly.",
+                        "detail": "Blue-grey lips or fingertips plus shortness of breath signal methaemoglobinaemia — too much nitrite has entered the blood and oxygen transport is impaired. It comes from too much nitrite entering the blood, usually with heavy or continuous use; stopping and fresh air usually reverse mild cases.",
+                        "sources": [
+                            {
+                                "label": "Release — Alkyl Nitrites harm reduction",
+                                "url": "https://www.release.org.uk/drugs/alkyl-nitrites-poppers/harm-reduction"
+                            },
+                            {
+                                "label": "Corkery et al. 2025 — UK poppers deaths (PMC)",
+                                "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11765549/"
+                            }
+                        ]
+                    }
+                ],
+                "bonus": [
+                    {
+                        "short": "Pace it: the effect fades within a minute and tempts a repeat — frequent redosing brings headaches and more strain.",
+                        "detail": "The very short duration drives repeated sniffing; each redose stacks blood-pressure swings and commonly causes headaches. Take breaks rather than sniffing continuously.",
+                        "sources": [
+                            {
+                                "label": "TripSit — Use of Poppers",
+                                "url": "https://updates.tripsit.me/use-of-poppers/"
+                            },
+                            {
+                                "label": "DanceSafe — Poppers",
+                                "url": "https://dancesafe.org/poppers/"
+                            }
+                        ]
+                    },
+                    {
+                        "short": "Alcohol: mixing raises the risk of passing out or choking.",
+                        "detail": "Heavy alcohol adds to the blood-pressure drop and sedation, increasing the chance of fainting or choking; it also blunts your judgement about how much you're using.",
+                        "sources": [
+                            {
+                                "label": "Talk to FRANK — Poppers",
+                                "url": "https://talktofrank.com/drug/poppers"
+                            }
+                        ]
+                    },
+                    {
+                        "short": "Sex: poppers lower inhibitions, which can lead to riskier decisions such as skipping condoms.",
+                        "detail": "Disinhibition and heightened libido are part of the effect; harm-reduction sources link poppers use during sex to reduced condom use, STI transmission and injury. Decide on protection before you start.",
+                        "sources": [
+                            {
+                                "label": "Talk to FRANK — Poppers",
+                                "url": "https://talktofrank.com/drug/poppers"
+                            },
+                            {
+                                "label": "PsychonautWiki — Poppers",
+                                "url": "https://psychonautwiki.org/wiki/Poppers"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "after": {
+                "essential": [
+                    {
+                        "short": "Vision: if colours look off, you notice a central blur or a blind spot, stop using — poppers can damage the retina.",
+                        "detail": "'Poppers maculopathy' is retinal photoreceptor damage linked especially to isopropyl nitrite (more common since the 2006 formula shift). It often improves after stopping but can be lasting, so treat any vision change as a signal to stop.",
+                        "sources": [
+                            {
+                                "label": "PsychonautWiki — Poppers",
+                                "url": "https://psychonautwiki.org/wiki/Poppers"
+                            },
+                            {
+                                "label": "Talk to FRANK — Poppers",
+                                "url": "https://talktofrank.com/drug/poppers"
+                            }
+                        ]
+                    }
+                ],
+                "bonus": [
+                    {
+                        "short": "Headache: a headache afterwards is common and usually settles with rest and water; it's worse with stale product.",
+                        "detail": "Cerebral vasodilation and repeated dosing cause the classic poppers headache. Older, degraded liquid makes it worse — another reason to keep bottles fresh and capped.",
+                        "sources": [
+                            {
+                                "label": "Release — Alkyl Nitrites harm reduction",
+                                "url": "https://www.release.org.uk/drugs/alkyl-nitrites-poppers/harm-reduction"
+                            },
+                            {
+                                "label": "DanceSafe — Poppers",
+                                "url": "https://dancesafe.org/poppers/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "next_morning": {
+                "essential": [
+                    {
+                        "short": "Vision persisting: if any vision change hasn't cleared by the next day, stop entirely and see an optician or doctor.",
+                        "detail": "Both temporary and permanent vision loss have been reported after poppers use. Persistent changes need an eye exam, and continuing to use risks making retinal damage permanent.",
+                        "sources": [
+                            {
+                                "label": "Talk to FRANK — Poppers",
+                                "url": "https://talktofrank.com/drug/poppers"
+                            },
+                            {
+                                "label": "PsychonautWiki — Poppers",
+                                "url": "https://psychonautwiki.org/wiki/Poppers"
+                            }
+                        ]
+                    }
+                ],
+                "bonus": [
+                    {
+                        "short": "Skin: crusty patches or a rash around the nose or lips come from liquid contact — let them heal and waft next time.",
+                        "detail": "Repeated skin contact with the corrosive liquid causes crusty lesions and rashes around the nose and mouth. They heal once contact stops; wafting instead of pressing the bottle prevents them.",
+                        "sources": [
+                            {
+                                "label": "DanceSafe — Poppers",
+                                "url": "https://dancesafe.org/poppers/"
+                            },
+                            {
+                                "label": "Talk to FRANK — Poppers",
+                                "url": "https://talktofrank.com/drug/poppers"
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "risks": [
+            "Potentially fatal with erection drugs (Viagra/Cialis/Levitra) or any nitrate/blood-pressure medication — blood pressure can crash catastrophically",
+            "Swallowing is potentially fatal — causes methaemoglobinaemia (blood can't carry oxygen)",
+            "Sudden blood-pressure drop causes dizziness, fainting and falls; rare 'sudden sniffing death' from a heart-rhythm disturbance",
+            "Isopropyl nitrite can damage the retina ('poppers maculopathy') — vision changes that are sometimes permanent",
+            "Corrosive to skin, lips and eyes, and highly flammable — keep away from flames",
+            "Risky with heart or blood-pressure conditions, anaemia, glaucoma, and in pregnancy"
+        ],
+        "mcda": null,
+        "visualizer_note": "Inhaled poppers rarely kill on their own — the real dangers are combining them with erection drugs or blood-pressure medication (a potentially fatal blood-pressure crash), swallowing them (fatal methaemoglobinaemia), fainting from the sudden pressure drop, and — with isopropyl nitrite — lasting retinal damage."
+    },
     "cannabis": {
         "id": "cannabis",
         "name": "Cannabis",
@@ -562,6 +1153,303 @@ const _inlineProtocols = {
             "of": 20
         },
         "visualizer_note": "Low physiological harm with no fatal overdose from THC; main issues are faintness, anxiety and synthetic-cannabinoid adulteration."
+    },
+    "dmt": {
+        "id": "dmt",
+        "name": "DMT",
+        "type": "Psychedelic",
+        "emoji": "🌌",
+        "color": "#7c3aed",
+        "duration": 0.5,
+        "dosing": {
+            "Vaporized": {
+                "unit": "mg",
+                "threshold": 2,
+                "light": {
+                    "min": 10,
+                    "max": 20
+                },
+                "common": {
+                    "min": 20,
+                    "max": 40
+                },
+                "strong": {
+                    "min": 40,
+                    "max": 60
+                },
+                "heavy": 60,
+                "note": "These tiers are for VAPORIZED / smoked freebase DMT. Oral DMT is inactive on its own — gut monoamine oxidase (MAO) destroys it — so oral use only works combined with an MAOI (ayahuasca / pharmahuasca / changa). That is a completely different experience: much longer (roughly 2–10 h depending on preparation), MAOI-dependent, and with a sharply higher-risk interaction profile (see risks/combinations). Vaporized potency varies a lot with purity and technique; a full 'breakthrough' is often 40 mg+, but poor vaporizing wastes material. Figures per PsychonautWiki; TripSit lists somewhat lower tiers (common ~15–25 mg), reflecting real-world variance — start low.",
+                "source": "https://psychonautwiki.org/wiki/DMT"
+            }
+        },
+        "routes": [
+            {
+                "name": "Vaporized",
+                "displayName": "Vaporized / Smoked",
+                "emoji": "🚬",
+                "isDefault": true,
+                "phases": {
+                    "onset": {
+                        "min": 0.006,
+                        "max": 0.011,
+                        "label": "Onset"
+                    },
+                    "come_up": {
+                        "min": 0.017,
+                        "max": 0.05,
+                        "label": "Come-up"
+                    },
+                    "peak": {
+                        "min": 0.033,
+                        "max": 0.133,
+                        "label": "Peak"
+                    },
+                    "come_down": {
+                        "min": 0.017,
+                        "max": 0.1,
+                        "label": "Come-down"
+                    },
+                    "after_effects": {
+                        "min": 0.17,
+                        "max": 1,
+                        "label": "After-effects"
+                    }
+                }
+            }
+        ],
+        "visualizer": {
+            "neurotoxicity": 0,
+            "cardiotoxicity": 2,
+            "dehydration": 2,
+            "sleep_deprivation": 2,
+            "impulsivity": 2,
+            "lethality": 1
+        },
+        "sleep_strategy": "Effects are over within ~15–30 minutes and after-effects fade within the hour, so normal sleep is usually possible the same night. Allow quiet time to reintegrate before bed.",
+        "phases": {
+            "before": {
+                "essential": [
+                    {
+                        "short": "Set & setting: Calm, familiar space with a sober person present.",
+                        "detail": "DMT is one of the most intense psychedelics but also one of the shortest. The psychological outcome depends heavily on mindset ('set') and surroundings ('setting'); people with a personal or family history of psychosis or mood disorders face a higher risk of a distressing reaction. A trusted, sober companion makes an overwhelming experience manageable.",
+                        "sources": [
+                            {
+                                "label": "DanceSafe — DMT",
+                                "url": "https://dancesafe.org/dmt/"
+                            },
+                            {
+                                "label": "PsychonautWiki — DMT",
+                                "url": "https://psychonautwiki.org/wiki/DMT"
+                            }
+                        ]
+                    },
+                    {
+                        "short": "Position: Sit back or lie down before you inhale — you will lose motor control.",
+                        "detail": "At common and strong doses, voluntary movement and spatial awareness disappear within seconds and stay gone through the ~2–8 minute peak. Being already seated or reclined on the floor (away from edges, water, heat sources and crowds) prevents falls and injury while you are physically helpless.",
+                        "sources": [
+                            {
+                                "label": "PsychonautWiki — DMT",
+                                "url": "https://psychonautwiki.org/wiki/DMT"
+                            },
+                            {
+                                "label": "DanceSafe — DMT",
+                                "url": "https://dancesafe.org/dmt/"
+                            }
+                        ]
+                    },
+                    {
+                        "short": "⚠️ MAOI route is different: oral/ayahuasca use, or use while on an MAOI, is a higher-risk scenario.",
+                        "detail": "Smoked DMT alone is low-toxicity, but the moment an MAOI is involved — ayahuasca, pharmahuasca, changa, or an MAOI antidepressant — the risk profile changes sharply. MAOIs block the breakdown of serotonin and tyramine, so combining them with SSRIs/SNRIs, other serotonergics, stimulants (cocaine, amphetamine, MDMA) or tyramine-rich foods can cause serotonin syndrome or a hypertensive crisis (stroke risk). If you take any serotonergic medication, do not add an MAOI-based DMT preparation.",
+                        "sources": [
+                            {
+                                "label": "MAPS — MAOI Contraindications (Ayahuasca)",
+                                "url": "https://maps.org/news-letters/v06n1/06158mao.html"
+                            },
+                            {
+                                "label": "PsychonautWiki — DMT",
+                                "url": "https://psychonautwiki.org/wiki/DMT"
+                            }
+                        ]
+                    },
+                    {
+                        "short": "⚠️ Lithium & tramadol: Do not combine — both sharply raise seizure risk.",
+                        "detail": "Analysis of large numbers of experience reports links classic psychedelics taken with lithium to a high rate of seizures and psychosis; TripSit rates this pairing Dangerous. Tramadol independently lowers the seizure threshold (TripSit: Unsafe). Combining either with DMT risks a seizure.",
+                        "sources": [
+                            {
+                                "label": "Nayak et al. 2021 — Psychedelics + Lithium and Seizures",
+                                "url": "https://doi.org/10.1055/a-1524-2794"
+                            },
+                            {
+                                "label": "TripSit — DMT",
+                                "url": "https://wiki.tripsit.me/wiki/DMT"
+                            },
+                            {
+                                "label": "PsychonautWiki — DMT",
+                                "url": "https://psychonautwiki.org/wiki/DMT"
+                            }
+                        ]
+                    }
+                ],
+                "bonus": [
+                    {
+                        "short": "Dose: Know your source and start with a light dose to gauge potency.",
+                        "detail": "Freebase DMT strength and vaporizing efficiency vary widely, so the same 'hit' can be light for one person and a full breakthrough for another. Starting at a light dose (10–20 mg) lets you feel the onset before committing to a breakthrough, which can otherwise be overwhelming if unexpected.",
+                        "sources": [
+                            {
+                                "label": "PsychonautWiki — DMT (dosage)",
+                                "url": "https://psychonautwiki.org/wiki/DMT"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "during": {
+                "focus": "A sober sitter and a safe seated/lying position — the peak is total but brief.",
+                "essential": [
+                    {
+                        "short": "Sitter: Have someone sober stay with you until you can move and speak again.",
+                        "detail": "At a full dose you are non-functional for the few minutes of the peak. A sitter keeps you physically safe, stops you wandering, and offers calm reassurance if the experience turns frightening. PsychonautWiki explicitly recommends a trip sitter for this substance.",
+                        "sources": [
+                            {
+                                "label": "PsychonautWiki — DMT",
+                                "url": "https://psychonautwiki.org/wiki/DMT"
+                            },
+                            {
+                                "label": "DanceSafe — DMT",
+                                "url": "https://dancesafe.org/dmt/"
+                            }
+                        ]
+                    },
+                    {
+                        "short": "Stay put: Don't stand, walk, or move to music until effects fully subside.",
+                        "detail": "Motor coordination and awareness of your real surroundings are gone at the peak, so a festival environment — crowds, edges, water, traffic — is genuinely hazardous. Remain seated or lying down for the whole experience.",
+                        "sources": [
+                            {
+                                "label": "PsychonautWiki — DMT",
+                                "url": "https://psychonautwiki.org/wiki/DMT"
+                            },
+                            {
+                                "label": "DanceSafe — DMT",
+                                "url": "https://dancesafe.org/dmt/"
+                            }
+                        ]
+                    },
+                    {
+                        "short": "If it's overwhelming: it is brief — breathe, stay reclined, let it pass.",
+                        "detail": "DMT is among the most intense psychedelics but also the shortest-acting: the peak resolves within a few minutes and the whole experience within roughly 15–30 minutes. Knowing it will end quickly is itself a grounding tool during a difficult passage.",
+                        "sources": [
+                            {
+                                "label": "DanceSafe — DMT",
+                                "url": "https://dancesafe.org/dmt/"
+                            },
+                            {
+                                "label": "PsychonautWiki — DMT (duration)",
+                                "url": "https://psychonautwiki.org/wiki/DMT"
+                            }
+                        ]
+                    }
+                ],
+                "bonus": [
+                    {
+                        "short": "Avoid stacking with cannabis or stimulants in the moment.",
+                        "detail": "Cannabis has an unexpectedly strong and unpredictable synergy with psychedelics; stimulants (cocaine, amphetamine) add anxiety, thought loops and cardiovascular strain on top of DMT's own heart-rate/blood-pressure spike. TripSit rates both pairings Caution.",
+                        "sources": [
+                            {
+                                "label": "TripSit — DMT",
+                                "url": "https://wiki.tripsit.me/wiki/DMT"
+                            },
+                            {
+                                "label": "PsychonautWiki — DMT",
+                                "url": "https://psychonautwiki.org/wiki/DMT"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "after": {
+                "essential": [
+                    {
+                        "short": "Cardio recovery: Rest and sit up slowly — the heart-rate/BP spike is brief but real.",
+                        "detail": "In controlled dosing studies, DMT produced dose-dependent rises in blood pressure, heart rate, pupil diameter and body temperature, peaking within about two minutes and largely gone by 30 minutes. The surge is transient, but if you have a heart condition or uncontrolled hypertension this brief cardiovascular strain is the main physical caution.",
+                        "sources": [
+                            {
+                                "label": "Strassman & Qualls 1994 — DMT dose-response (cardiovascular)",
+                                "url": "https://pubmed.ncbi.nlm.nih.gov/8297216/"
+                            },
+                            {
+                                "label": "PsychonautWiki — DMT",
+                                "url": "https://psychonautwiki.org/wiki/DMT"
+                            }
+                        ]
+                    },
+                    {
+                        "short": "Reintegration: Take quiet time to reorient before moving on.",
+                        "detail": "Even though it is short, a breakthrough can be profoundly disorienting. A few calm minutes to reorient — sitting still, water, a familiar voice — reduces residual anxiety before you rejoin the event.",
+                        "sources": [
+                            {
+                                "label": "DanceSafe — DMT",
+                                "url": "https://dancesafe.org/dmt/"
+                            },
+                            {
+                                "label": "PsychonautWiki — DMT",
+                                "url": "https://psychonautwiki.org/wiki/DMT"
+                            }
+                        ]
+                    }
+                ],
+                "bonus": [
+                    {
+                        "short": "Redosing: Effects fade fast and tolerance barely builds — but each dose repeats the cardiovascular hit.",
+                        "detail": "DMT shows little acute tolerance, so redosing 'works' in a way it wouldn't for most psychedelics. But every dose repeats the sharp heart-rate and blood-pressure spike, so space doses out and don't chase the experience back-to-back.",
+                        "sources": [
+                            {
+                                "label": "PsychonautWiki — DMT (tolerance & toxicity)",
+                                "url": "https://psychonautwiki.org/wiki/DMT"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "next_morning": {
+                "essential": [
+                    {
+                        "short": "Expect a clear head: unlike long psychedelics, there is usually little hangover.",
+                        "detail": "Smoked DMT clears the body within about half an hour and after-effects fade within the hour, so next-day physical residue is typically minimal — the main exception is if the experience itself was psychologically difficult.",
+                        "sources": [
+                            {
+                                "label": "PsychonautWiki — DMT (duration)",
+                                "url": "https://psychonautwiki.org/wiki/DMT"
+                            }
+                        ]
+                    }
+                ],
+                "bonus": [
+                    {
+                        "short": "Check in: If the experience was distressing, talk it through with someone you trust.",
+                        "detail": "Intense breakthroughs can surface difficult psychological material. People with a personal or family history of psychosis or mood disorders are at higher risk of lingering upset; persistent distress is worth discussing with a supportive person or professional.",
+                        "sources": [
+                            {
+                                "label": "DanceSafe — DMT",
+                                "url": "https://dancesafe.org/dmt/"
+                            },
+                            {
+                                "label": "PsychonautWiki — DMT",
+                                "url": "https://psychonautwiki.org/wiki/DMT"
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "risks": [
+            "Overwhelming / frightening breakthrough experience",
+            "Total loss of motor control at peak (fall / injury risk)",
+            "Sharp transient rise in heart rate & blood pressure",
+            "Serotonin syndrome / hypertensive crisis if combined with an MAOI (ayahuasca) or serotonergic meds",
+            "Seizure risk with lithium or tramadol"
+        ],
+        "mcda": null,
+        "visualizer_note": "On its own, vaporized DMT is physiologically low-risk and non-addictive; the real dangers are a frightening loss-of-motor-control breakthrough (needs a sitter and a safe seated/lying position) and a sharp but brief spike in heart rate and blood pressure — an MAOI (ayahuasca/pharmahuasca or MAOI meds) changes this entirely, adding serotonin-syndrome and hypertensive-crisis risk."
     },
     "ketamine": {
         "id": "ketamine",
@@ -3234,6 +4122,354 @@ const _inlineProtocols = {
             "note": "assessed together with GHB"
         },
         "visualizer_note": "Same lethal profile as GHB but harder to dose (stronger by volume, faster onset) — the narrow-window overdose risk is the headline."
+    },
+    "benzodiazepines": {
+        "id": "benzodiazepines",
+        "name": "Benzodiazepines",
+        "type": "Depressant",
+        "emoji": "😴",
+        "color": "#4338ca",
+        "duration": 6,
+        "dosing": {
+            "Oral": {
+                "unit": "mg diazepam-equivalent",
+                "threshold": 1,
+                "light": {
+                    "min": 2.5,
+                    "max": 5
+                },
+                "common": {
+                    "min": 5,
+                    "max": 15
+                },
+                "strong": {
+                    "min": 15,
+                    "max": 30
+                },
+                "heavy": 30,
+                "note": "⚠️ Tiers are DIAZEPAM-EQUIVALENT mg (from PsychonautWiki's diazepam guide). Potency varies enormously between benzos: ~0.5 mg alprazolam (Xanax) or ~0.5 mg clonazepam ≈ 10 mg diazepam (~20× stronger by weight); ~1 mg lorazepam or ~1 mg etizolam ≈ 10 mg diazepam. Convert your specific drug before dosing (e.g. the Ashton/benzo.org.uk table; designer benzos like etizolam aren't listed there — use PsychonautWiki/TripSit). Counterfeit pressed pills (fake 'Xanax'/'Valium') routinely contain unknown, variable or much stronger designer benzos (e.g. bromazolam) — or even nitazene opioids — so the dose is a guess: get it drug-checked and start with a fraction (e.g. half), waiting at least an hour.",
+                "source": "https://psychonautwiki.org/wiki/Diazepam"
+            }
+        },
+        "routes": [
+            {
+                "name": "Oral",
+                "displayName": "Oral",
+                "emoji": "💊",
+                "isDefault": true,
+                "phases": {
+                    "onset": {
+                        "min": 0.33,
+                        "max": 0.67,
+                        "label": "Onset"
+                    },
+                    "come_up": {
+                        "min": 0.67,
+                        "max": 1,
+                        "label": "Come-up"
+                    },
+                    "peak": {
+                        "min": 1,
+                        "max": 1.5,
+                        "label": "Peak"
+                    },
+                    "come_down": {
+                        "min": 1.5,
+                        "max": 6,
+                        "label": "Come-down"
+                    },
+                    "after_effects": {
+                        "min": 12,
+                        "max": 36,
+                        "label": "After-effects"
+                    }
+                }
+            }
+        ],
+        "visualizer": {
+            "neurotoxicity": 1,
+            "cardiotoxicity": 1,
+            "dehydration": 1,
+            "sleep_deprivation": 2,
+            "impulsivity": 6,
+            "lethality": 4
+        },
+        "sleep_strategy": "Benzodiazepines induce sedation and sleep, but degrade sleep quality (less deep/REM sleep), and long-acting ones like diazepam leave next-day grogginess for 12–36 h. Never stack other depressants (alcohol, opioids, GHB) to get to sleep. Place anyone heavily sedated in the recovery position and monitor breathing.",
+        "phases": {
+            "before": {
+                "essential": [
+                    {
+                        "short": "⚠️ Depressant combinations: Do not combine with opioids, alcohol, GHB/GBL, or other depressants.",
+                        "detail": "Benzodiazepines are fairly safe on their own (wide therapeutic index), but combined with any other CNS depressant they potentiate sedation and respiratory depression, leading to sudden unconsciousness, aspiration and death. Benzo-plus-depressant combinations are one of the leading drivers of overdose deaths. Even a moderate amount of alcohol or a small opioid dose can tip this over.",
+                        "sources": [
+                            {
+                                "label": "TripSit — Drug Combinations",
+                                "url": "https://combo.tripsit.me"
+                            },
+                            {
+                                "label": "PsychonautWiki — Benzodiazepines",
+                                "url": "https://psychonautwiki.org/wiki/Benzodiazepines"
+                            },
+                            {
+                                "label": "Talk to Frank — Benzodiazepines",
+                                "url": "https://www.talktofrank.com/drug/benzodiazepines"
+                            }
+                        ]
+                    },
+                    {
+                        "short": "⚠️ Counterfeit pills: A pressed 'Xanax' or 'Valium' is often not what the imprint says — get it drug-checked and start with a fraction.",
+                        "detail": "Street/pressed benzo pills are unpredictable in content and potency. Tablets sold as diazepam or alprazolam frequently contain a different, stronger designer benzodiazepine (e.g. bromazolam, phenazolam) or — increasingly in Europe — nitazene opioids substituted into the benzo market. The imprint, colour and blister pack prove nothing. Because the real dose is a guess, use a drug-checking service where available and start with a small fraction of a pill.",
+                        "sources": [
+                            {
+                                "label": "Correlation / TEDI — European Drug Checking Trends 2018–2024",
+                                "url": "https://correlation-net.org/2025/01/08/european-drug-checking-trends-2018-2024/"
+                            },
+                            {
+                                "label": "EUDA — New psychoactive substances (European Drug Report 2025)",
+                                "url": "https://www.euda.europa.eu/publications/european-drug-report/2025/new-psychoactive-substances_en"
+                            },
+                            {
+                                "label": "Talk to Frank — Benzodiazepines",
+                                "url": "https://www.talktofrank.com/drug/benzodiazepines"
+                            }
+                        ]
+                    },
+                    {
+                        "short": "Dose in diazepam-equivalents and start low: potency varies up to ~20× between benzos.",
+                        "detail": "Roughly 0.5 mg alprazolam or clonazepam, or 1 mg lorazepam or etizolam, is equivalent to 10 mg diazepam. Confusing milligrams between benzos is a common way to massively overshoot. Convert your specific drug to diazepam-equivalents first, and remember these are estimates that vary between individuals and reference tables.",
+                        "sources": [
+                            {
+                                "label": "PsychonautWiki — Benzodiazepines (equivalent dosages)",
+                                "url": "https://psychonautwiki.org/wiki/Benzodiazepines"
+                            },
+                            {
+                                "label": "Ashton Manual — Benzodiazepine equivalence table (benzo.org.uk)",
+                                "url": "https://www.benzo.org.uk/bzequiv.htm"
+                            }
+                        ]
+                    },
+                    {
+                        "short": "Go slow: take a fraction, then wait at least an hour before considering more.",
+                        "detail": "Oral onset is around 20–40 minutes. The classic trap is redosing during that delay — then the amnesia sets in and further pills get taken without memory of them, stacking into a blackout or overdose. One dose, then wait.",
+                        "sources": [
+                            {
+                                "label": "Talk to Frank — Benzodiazepines",
+                                "url": "https://www.talktofrank.com/drug/benzodiazepines"
+                            },
+                            {
+                                "label": "PsychonautWiki — Diazepam (duration)",
+                                "url": "https://psychonautwiki.org/wiki/Diazepam"
+                            }
+                        ]
+                    }
+                ],
+                "bonus": [
+                    {
+                        "short": "Not a routine comedown crutch: tolerance builds within days and dependence forms quickly with regular use.",
+                        "detail": "Using benzos to blunt a stimulant comedown or to sleep after events, if repeated, builds tolerance and physical dependence quickly. Keeping benzo use occasional and spaced out is the main way to avoid a dependence that is difficult and dangerous to reverse.",
+                        "sources": [
+                            {
+                                "label": "PsychonautWiki — Benzodiazepines (tolerance & addiction)",
+                                "url": "https://psychonautwiki.org/wiki/Benzodiazepines"
+                            },
+                            {
+                                "label": "TripSit — Benzodiazepines factsheet",
+                                "url": "https://wiki.tripsit.me/wiki/Benzodiazepines"
+                            }
+                        ]
+                    },
+                    {
+                        "short": "Do not drive or operate machinery while dosed or the next day.",
+                        "detail": "Benzodiazepines impair coordination, reaction time and alertness, and long-acting ones leave residual impairment into the following day even when you feel fine.",
+                        "sources": [
+                            {
+                                "label": "TripSit — Benzodiazepines factsheet",
+                                "url": "https://wiki.tripsit.me/wiki/Benzodiazepines"
+                            },
+                            {
+                                "label": "Talk to Frank — Benzodiazepines",
+                                "url": "https://www.talktofrank.com/drug/benzodiazepines"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "during": {
+                "focus": "Avoiding depressant stacking and blackout-driven redosing.",
+                "essential": [
+                    {
+                        "short": "⚠️ Overdose signs — heavy sedation, slow/shallow breathing, unresponsiveness, blue lips → recovery position, call 112.",
+                        "detail": "Benzodiazepines alone rarely stop breathing, but combined with other depressants — or when a pill secretly contains a nitazene opioid — they cause life-threatening respiratory depression. If someone cannot be roused, is breathing slowly or shallowly, or has blue lips/fingertips, put them on their side in the recovery position and call emergency services. If an opioid may be involved, give naloxone if available (naloxone does not reverse the benzo itself, but it reverses the opioid that may be the real danger).",
+                        "sources": [
+                            {
+                                "label": "PsychonautWiki — Benzodiazepines (overdose)",
+                                "url": "https://psychonautwiki.org/wiki/Benzodiazepines"
+                            },
+                            {
+                                "label": "EUDA — New psychoactive substances (nitazenes in the benzo market)",
+                                "url": "https://www.euda.europa.eu/publications/european-drug-report/2025/new-psychoactive-substances_en"
+                            }
+                        ]
+                    },
+                    {
+                        "short": "⚠️ Do not add alcohol, opioids or GHB/GBL on top while dosed.",
+                        "detail": "Topping up with another depressant while a benzo is active is when sudden, unexpected loss of consciousness happens — with a real risk of choking on vomit. The two substances potentiate each other strongly and unpredictably.",
+                        "sources": [
+                            {
+                                "label": "TripSit — Drug Combinations",
+                                "url": "https://combo.tripsit.me"
+                            },
+                            {
+                                "label": "PsychonautWiki — Benzodiazepines (dangerous interactions)",
+                                "url": "https://psychonautwiki.org/wiki/Benzodiazepines"
+                            }
+                        ]
+                    },
+                    {
+                        "short": "Blackouts and disinhibition: stay with trusted people; don't make big decisions or redose.",
+                        "detail": "Benzodiazepines commonly cause anterograde amnesia (you don't form memories) and disinhibition, and at higher doses a 'delusion of sobriety' — feeling fine while badly impaired. This drives risky behaviour and repeat dosing that isn't remembered. Staying around people you trust and keeping the pills out of reach once you've dosed protects against this.",
+                        "sources": [
+                            {
+                                "label": "PsychonautWiki — Benzodiazepines (amnesia, delusion of sobriety)",
+                                "url": "https://psychonautwiki.org/wiki/Benzodiazepines"
+                            },
+                            {
+                                "label": "TripSit — Benzodiazepines factsheet",
+                                "url": "https://wiki.tripsit.me/wiki/Benzodiazepines"
+                            }
+                        ]
+                    }
+                ],
+                "bonus": [
+                    {
+                        "short": "Anyone who passes out goes on their side in the recovery position, monitored.",
+                        "detail": "A sedated person's gag reflex is suppressed, so vomit aspiration is the practical killer. The recovery position keeps the airway clear; never leave a heavily sedated person alone.",
+                        "sources": [
+                            {
+                                "label": "PsychonautWiki — Benzodiazepines",
+                                "url": "https://psychonautwiki.org/wiki/Benzodiazepines"
+                            },
+                            {
+                                "label": "Drugchecking Berlin — Erste Hilfe",
+                                "url": "https://drugchecking.berlin/erste-hilfe"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "after": {
+                "essential": [
+                    {
+                        "short": "⚠️ Don't chase sleep with more depressants.",
+                        "detail": "A long-acting benzo like diazepam is still active for many hours. Adding alcohol, opioids or z-drugs on top to get to sleep re-creates the dangerous depressant stack overnight, when no one is watching your breathing.",
+                        "sources": [
+                            {
+                                "label": "PsychonautWiki — Benzodiazepines",
+                                "url": "https://psychonautwiki.org/wiki/Benzodiazepines"
+                            },
+                            {
+                                "label": "TripSit — Drug Combinations",
+                                "url": "https://combo.tripsit.me"
+                            }
+                        ]
+                    },
+                    {
+                        "short": "Residual impairment lingers: diazepam's long half-life means grogginess for 12–36 h — don't drive.",
+                        "detail": "After-effects and impaired coordination persist well beyond the main experience, especially for long-half-life benzos (diazepam's half-life with active metabolites can reach several days). You can be legally and functionally impaired the next morning while feeling recovered.",
+                        "sources": [
+                            {
+                                "label": "PsychonautWiki — Diazepam (after effects)",
+                                "url": "https://psychonautwiki.org/wiki/Diazepam"
+                            },
+                            {
+                                "label": "TripSit — Benzodiazepines factsheet",
+                                "url": "https://wiki.tripsit.me/wiki/Benzodiazepines"
+                            }
+                        ]
+                    }
+                ],
+                "bonus": [
+                    {
+                        "short": "Keep monitoring anyone heavily sedated; recovery position until fully alert.",
+                        "detail": "Sedation can deepen after the last dose as absorption continues. Keep a sedated person on their side and checked on until they are clearly awake and oriented.",
+                        "sources": [
+                            {
+                                "label": "PsychonautWiki — Benzodiazepines",
+                                "url": "https://psychonautwiki.org/wiki/Benzodiazepines"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "next_morning": {
+                "essential": [
+                    {
+                        "short": "⚠️ If you've been using regularly, never stop abruptly — taper under medical supervision.",
+                        "detail": "Physical dependence forms quickly. In someone dependent, sudden discontinuation can cause seizures and delirium that are genuinely life-threatening. The safe route is a gradual dose reduction (tapering) guided by a doctor — this is one of the few withdrawals, alongside alcohol, that can kill.",
+                        "sources": [
+                            {
+                                "label": "PsychonautWiki — Benzodiazepines (withdrawal, tapering)",
+                                "url": "https://psychonautwiki.org/wiki/Benzodiazepines"
+                            },
+                            {
+                                "label": "TripSit — Benzodiazepines factsheet",
+                                "url": "https://wiki.tripsit.me/wiki/Benzodiazepines"
+                            },
+                            {
+                                "label": "Talk to Frank — Benzodiazepines",
+                                "url": "https://www.talktofrank.com/drug/benzodiazepines"
+                            }
+                        ]
+                    },
+                    {
+                        "short": "Space out use and keep breaks: tolerance and dependence build within days.",
+                        "detail": "Tolerance to the sedative effects develops within a couple of days of continuous use and returns to baseline over about 7–14 days of abstinence. Keeping clear gaps between uses is what prevents a dependence taking hold.",
+                        "sources": [
+                            {
+                                "label": "PsychonautWiki — Benzodiazepines (tolerance)",
+                                "url": "https://psychonautwiki.org/wiki/Benzodiazepines"
+                            },
+                            {
+                                "label": "TripSit — Benzodiazepines factsheet",
+                                "url": "https://wiki.tripsit.me/wiki/Benzodiazepines"
+                            }
+                        ]
+                    }
+                ],
+                "bonus": [
+                    {
+                        "short": "Expect rebound anxiety or poor sleep the next day — don't re-dose to fix it.",
+                        "detail": "As the drug clears, anxiety and insomnia can rebound above baseline. Taking another dose to relieve this is exactly how a dependence cycle starts; ride it out if you can.",
+                        "sources": [
+                            {
+                                "label": "PsychonautWiki — Benzodiazepines",
+                                "url": "https://psychonautwiki.org/wiki/Benzodiazepines"
+                            },
+                            {
+                                "label": "Talk to Frank — Benzodiazepines",
+                                "url": "https://www.talktofrank.com/drug/benzodiazepines"
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "risks": [
+            "Fatal respiratory depression when combined with opioids, alcohol, GHB/GBL or other depressants (a leading overdose driver)",
+            "Counterfeit pills (fake Xanax/Valium) may contain stronger designer benzos (e.g. bromazolam) or nitazene opioids — the dose is a guess",
+            "Rapid dependence; abrupt withdrawal can cause life-threatening seizures and delirium (taper, never stop suddenly)",
+            "Blackouts and anterograde amnesia",
+            "Disinhibition and risky behaviour",
+            "Redosing into a blackout (delayed onset plus amnesia)",
+            "Tolerance develops within days",
+            "Severe impairment of coordination and reaction time — do not drive"
+        ],
+        "mcda": {
+            "score": 15,
+            "rank": 10,
+            "of": 20
+        },
+        "visualizer_note": "On their own benzodiazepines have a wide safety margin, but they are a leading driver of overdose deaths when stacked with opioids, alcohol or GHB — and counterfeit pills can hide nitazene opioids; the everyday harms are fast dependence, dangerous withdrawal, and blackout-driven redosing."
     },
     "heroin": {
         "id": "heroin",

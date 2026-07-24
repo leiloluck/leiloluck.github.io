@@ -1,12 +1,14 @@
 # Harm Reduction Protocols — Subpage Design Document
 
 > **Status:** Active Development  
-> **Version:** v26.07.24d  
+> **Version:** v26.07.24e  
 > **Last Updated:** 2026-07-24  
 > **Author Role:** Scientific harm reduction design lead  
 
 ---
 
+> **Recent changes (2026-07-24, v26.07.24e):** Added four substances (now **21 total**) — **Nitrous Oxide (N₂O)**, **Poppers (alkyl nitrites)**, **Benzodiazepines**, and **DMT** — each from a multi-agent, adversarially-verified research pass with local source mirrors under `resources/sources/`. Model choices: N₂O is dosed in balloons/chargers with no duration chart (B12/neuropathy + hypoxia as headline harms); poppers carry no numeric tiers, lead with the PDE5-inhibitor and never-swallow ⚠️, and — having no TripSit combo data — show a "see the Protocol tab" note instead of an empty Combinations panel; benzodiazepines are dosed in diazepam-equivalents (counterfeit/nitazene caveat) and carry a real Nutt-2010 MCDA score (15, rank 10/20); DMT is vaporized-mg with the oral/MAOI (ayahuasca) context noted. Combos: N₂O / benzos / DMT map to their own TripSit keys; benzos correctly flag alcohol / GHB / GBL / heroin as Dangerous.
+>
 > **Recent changes (2026-07-24, v26.07.24d):** Added **CMC (3-CMC / 4-CMC)** as a new substance (**17 total**) — a sourced mephedrone-analog cathinone profile (dosing flagged as user-reported / approximate; suspected neurotoxicity; compulsive-redosing focus), mapped to the `mephedrone` combination key so it inherits that interaction profile and mutually excludes 4-MMC. The Combinations tab now shows a simple placeholder for the sober baseline instead of an empty panel.
 >
 > **Recent changes (2026-07-24, v26.07.24c):** Recommendation-tone pass + layout changes. Recalibrated protocol language to read as **recommendations with the reason stated** (per §1.4) rather than commandments — softened ~30 over-strong / "mandatory" lines and reframed supplements as explicitly optional; dropped the ⚠️ prefix from three non-acute items (4-MMC "pre-weigh", MDMA dose ceiling, amphetamine "push through") while keeping every genuine hard-stop (GHB/GBL, opioids/contamination, MAOI, cocaethylene, MDMA 5-HTP & hyponatremia, meth emergencies). **Emergency/first-aid is now button-only** — a toggle inside the disclaimer banner; the standalone red Emergency card and the sticky "🆘 112" are removed. **Protocol is now the first / default tab**; the dangerous-combinations strip moved to the **top of the Combinations tab**; tabs restyled to carry their own colour with a distinct active state.
@@ -135,17 +137,23 @@ Substances are ordered to form a pharmacological gradient — from stimulating u
 | 8 | `lsd` | LSD | Psychedelic | 🌈 | `#06b6d4` (cyan) | Psychedelics: cool blues/purples |
 | 9 | `mushrooms` | Mushrooms (Psilocybin) | Psychedelic | 🍄 | `#8b5cf6` (violet) | |
 | 10 | `2cb` | 2C-B | Psychedelic | 🔮 | `#a855f7` (orchid) | |
-| 11 | `ketamine` | Ketamine | Dissociative | 🐴 | `#14b8a6` (teal) | Dissociative — between psychedelics & depressants |
-| 12 | `cannabis` | Cannabis | Depressant/Psychedelic | 🌿 | `#22c55e` (green) | Transitional — unique green |
-| 13 | `alcohol` | Alcohol | Depressant | 🍺 | `#3b82f6` (blue) | Depressants: cool blues |
-| 14 | `ghb` | GHB | Depressant | 💧 | `#6366f1` (indigo) | |
-| 15 | `gbl` | GBL | Depressant | 🧪 | `#818cf8` (light indigo) | Separated from GHB — ~2–3× stronger by volume |
-| 16 | `heroin` | Heroin (Diamorphine) | Opioid | 🩸 | `#dc2626` (crimson) | Opioid — warning red |
+| 11 | `dmt` | DMT | Psychedelic | 🌌 | `#7c3aed` (violet) | Short, intense — vaporized |
+| 12 | `ketamine` | Ketamine | Dissociative | 🐴 | `#14b8a6` (teal) | Dissociative — between psychedelics & depressants |
+| 13 | `nitrous` | Nitrous Oxide (N₂O) | Dissociative/Inhalant | 🎈 | `#94a3b8` (slate) | Inhalants cluster |
+| 14 | `poppers` | Poppers (Alkyl Nitrites) | Inhalant (Vasodilator) | 💨 | `#eab308` (yellow) | Inhalant — head-rush vasodilator |
+| 15 | `cannabis` | Cannabis | Depressant/Psychedelic | 🌿 | `#22c55e` (green) | Transitional — unique green |
+| 16 | `alcohol` | Alcohol | Depressant | 🍺 | `#3b82f6` (blue) | Depressants: cool blues |
+| 17 | `ghb` | GHB | Depressant | 💧 | `#6366f1` (indigo) | |
+| 18 | `gbl` | GBL | Depressant | 🧪 | `#818cf8` (light indigo) | Separated from GHB — ~2–3× stronger by volume |
+| 19 | `benzodiazepines` | Benzodiazepines | Depressant | 😴 | `#4338ca` (deep indigo) | Depressant — diazepam-equivalents; in Nutt 2010 |
+| 20 | `heroin` | Heroin (Diamorphine) | Opioid | 🩸 | `#dc2626` (crimson) | Opioid — warning red |
 
 ### 3.3 Future Additions (Considered)
 
-- **Nitrous Oxide (N₂O)** — Common at festivals, risks often underestimated (B12 depletion, hypoxia).
-- **Benzodiazepines** — Relevant for combination risks and recovery contexts.
+Nitrous oxide, poppers, benzodiazepines and DMT were added in v26.07.24e. Remaining candidates flagged but not yet added:
+- **3-MMC** — the other cathinone widespread in Europe alongside the CMCs.
+- **Pregabalin / gabapentin** — rising recreational / comedown use; dangerous with opioids.
+- **Nicotine, kratom** — common but lower-priority for this festival/nightlife scope.
 
 ### 3.4 Navigation Layout Note
 

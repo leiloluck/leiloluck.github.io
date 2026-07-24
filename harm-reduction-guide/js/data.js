@@ -2485,6 +2485,316 @@ const _inlineProtocols = {
         },
         "visualizer_note": "Very high cardiac strain and compulsive redosing; deaths have occurred, and mis-selling as unknown cathinones adds risk."
     },
+    "cmc": {
+        "id": "cmc",
+        "name": "3-CMC / 4-CMC",
+        "type": "Stimulant/Cathinone",
+        "emoji": "💠",
+        "color": "#a21caf",
+        "duration": 2,
+        "dosing": {
+            "Insufflated": {
+                "unit": "mg",
+                "threshold": 20,
+                "light": {
+                    "min": 20,
+                    "max": 45
+                },
+                "common": {
+                    "min": 45,
+                    "max": 85
+                },
+                "strong": {
+                    "min": 85,
+                    "max": 120
+                },
+                "heavy": 130,
+                "note": "3-CMC figures — the tiers are user-reported, not clinical. A batch may be 4-CMC or a mix (less characterised, likely more serotonergic), so treat any unknown \"CMC / 3-MMC / mephedrone\" as a low test dose.",
+                "source": "https://psychonautwiki.org/wiki/3-CMC"
+            },
+            "Oral": {
+                "unit": "mg",
+                "threshold": 30,
+                "light": {
+                    "min": 30,
+                    "max": 60
+                },
+                "common": {
+                    "min": 60,
+                    "max": 100
+                },
+                "strong": {
+                    "min": 100,
+                    "max": 180
+                },
+                "heavy": 180,
+                "note": "3-CMC figures (PsychonautWiki and SaferParty broadly agree). Approximate and user-derived; 4-CMC tiers are not established.",
+                "source": "https://psychonautwiki.org/wiki/3-CMC"
+            }
+        },
+        "routes": [
+            {
+                "name": "Insufflated",
+                "displayName": "Snorted",
+                "emoji": "👃",
+                "isDefault": true,
+                "phases": {
+                    "onset": {
+                        "min": 0.08,
+                        "max": 0.13,
+                        "label": "Onset"
+                    },
+                    "come_up": {
+                        "min": 0.02,
+                        "max": 0.08,
+                        "label": "Come-up"
+                    },
+                    "peak": {
+                        "min": 0.33,
+                        "max": 1.5,
+                        "label": "Peak"
+                    },
+                    "come_down": {
+                        "min": 1,
+                        "max": 2,
+                        "label": "Come-down"
+                    },
+                    "after_effects": {
+                        "min": 1,
+                        "max": 1.5,
+                        "label": "After-effects"
+                    }
+                }
+            },
+            {
+                "name": "Oral",
+                "displayName": "Swallowed",
+                "emoji": "💊",
+                "phases": {
+                    "onset": {
+                        "min": 0.17,
+                        "max": 0.5,
+                        "label": "Onset"
+                    },
+                    "come_up": {
+                        "min": 0.08,
+                        "max": 0.25,
+                        "label": "Come-up"
+                    },
+                    "peak": {
+                        "min": 0.33,
+                        "max": 2,
+                        "label": "Peak"
+                    },
+                    "come_down": {
+                        "min": 1,
+                        "max": 3,
+                        "label": "Come-down"
+                    },
+                    "after_effects": {
+                        "min": 2,
+                        "max": 6,
+                        "label": "After-effects"
+                    }
+                }
+            }
+        ],
+        "visualizer": {
+            "neurotoxicity": 7,
+            "cardiotoxicity": 7,
+            "dehydration": 6,
+            "sleep_deprivation": 7,
+            "impulsivity": 8,
+            "lethality": 5
+        },
+        "sleep_strategy": "Sleep is difficult while active, and compulsive redosing tends to stretch the night. Stop redosing several hours before you want to sleep.",
+        "phases": {
+            "before": {
+                "essential": [
+                    {
+                        "short": "⚠️ Identity: powder sold as 3-MMC, mephedrone, MDMA, speed or ketamine is often 3-CMC or 4-CMC — get it checked if you can.",
+                        "detail": "Drug-checking services keep finding CMC where another drug was expected (Vienna, Feb 2025: all three \"3-MMC\" samples were pure 3-CMC; Berlin, 2026: a \"3-MMC\" that was 90.6% 4-CMC). Look and smell tell you nothing about which cathinone it is or how strong it is.",
+                        "sources": [
+                            {
+                                "label": "Drugchecking Berlin — Warnungen",
+                                "url": "https://drugchecking.berlin/aktuelle-warnungen"
+                            },
+                            {
+                                "label": "checkit! Wien — Ergebnisse",
+                                "url": "https://checkit.wien/en/drug-checking-ergebnisse/"
+                            }
+                        ]
+                    },
+                    {
+                        "short": "Start low: the dose numbers are rough — take a small test dose and wait.",
+                        "detail": "The published tiers come from user reports rather than studies, and 4-CMC is barely characterised, so a small test dose is the only reliable way to read an unknown batch before committing to a full dose.",
+                        "sources": [
+                            {
+                                "label": "PsychonautWiki — 3-CMC",
+                                "url": "https://psychonautwiki.org/wiki/3-CMC"
+                            },
+                            {
+                                "label": "SaferParty — Clophedron",
+                                "url": "https://en.saferparty.ch/substanzen/clophedron"
+                            }
+                        ]
+                    },
+                    {
+                        "short": "Control: because the peak is short and pushes for a repeat, many people weigh out a session limit and leave the rest at home.",
+                        "detail": "Like mephedrone, CMC's euphoria fades within the hour and drives a strong urge to redose. Carrying only a pre-measured amount is the most reliable brake on a compulsive night.",
+                        "sources": [
+                            {
+                                "label": "SaferParty — Clophedron",
+                                "url": "https://en.saferparty.ch/substanzen/clophedron"
+                            },
+                            {
+                                "label": "checkit! / triptalks — 3-CMC / 4-CMC",
+                                "url": "https://triptalks.at/substanzen/substanzen-a-z/3-cmc-clophedron-/-4-cmc-clephedron/"
+                            }
+                        ]
+                    }
+                ],
+                "bonus": [
+                    {
+                        "short": "Supplements (optional): some people pre-load antioxidants (vitamin C, ALA); neuroprotection is unproven in humans.",
+                        "detail": "Cathinones generate oxidative stress, so an antioxidant buffer is plausible, but it has not been demonstrated in people and does not replace limiting dose and spacing use."
+                    }
+                ]
+            },
+            "during": {
+                "focus": "Pace redosing; watch your heart and temperature.",
+                "essential": [
+                    {
+                        "short": "Redosing: space it out and respect your pre-set limit — this is where CMC bites.",
+                        "detail": "The short peak invites a bump every 20–60 minutes; each redose stacks cardiovascular strain and vasoconstriction and deepens the eventual comedown.",
+                        "sources": [
+                            {
+                                "label": "PsychonautWiki — 3-CMC",
+                                "url": "https://psychonautwiki.org/wiki/3-CMC"
+                            },
+                            {
+                                "label": "SaferParty — Clophedron",
+                                "url": "https://en.saferparty.ch/substanzen/clophedron"
+                            }
+                        ]
+                    },
+                    {
+                        "short": "Heart: cold, numb or blue fingers, chest tightness, or a pounding/irregular heartbeat mean it's time to stop and cool down.",
+                        "detail": "Case reports describe tachycardia, extra beats and chest pain, and the peripheral vasoconstriction gets worse with each redose.",
+                        "sources": [
+                            {
+                                "label": "3-CMC clinical case series (PMC)",
+                                "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12692235/"
+                            }
+                        ]
+                    },
+                    {
+                        "short": "⚠️ Depressants: be very careful stacking CMC on GHB/GBL, ketamine, benzodiazepines or opioids — the stimulation hides how sedated you are.",
+                        "detail": "When the stimulant fades first, the depressant can surface as sudden over-sedation or slowed breathing — a leading cause of harm in chemsex settings.",
+                        "sources": [
+                            {
+                                "label": "SaferParty — Clophedron",
+                                "url": "https://en.saferparty.ch/substanzen/clophedron"
+                            },
+                            {
+                                "label": "checkit! / triptalks — 3-CMC / 4-CMC",
+                                "url": "https://triptalks.at/substanzen/substanzen-a-z/3-cmc-clophedron-/-4-cmc-clephedron/"
+                            }
+                        ]
+                    },
+                    {
+                        "short": "⚠️ Serotonergic drugs: avoid stacking MDMA or meth, and don't combine with SSRIs or MAOIs.",
+                        "detail": "CMC releases serotonin — 4-CMC especially — so adding other serotonergic drugs risks serotonin syndrome, and an MAOI can turn a normal dose dangerous.",
+                        "sources": [
+                            {
+                                "label": "checkit! / triptalks — 3-CMC / 4-CMC",
+                                "url": "https://triptalks.at/substanzen/substanzen-a-z/3-cmc-clophedron-/-4-cmc-clephedron/"
+                            }
+                        ]
+                    }
+                ],
+                "bonus": [
+                    {
+                        "short": "Alcohol: mixing mainly masks how much you've taken and adds strain.",
+                        "detail": "It blunts your read on intoxication, encourages heavier use of both, and adds cardiac and dehydration load.",
+                        "sources": [
+                            {
+                                "label": "SaferParty — Clophedron",
+                                "url": "https://en.saferparty.ch/substanzen/clophedron"
+                            }
+                        ]
+                    },
+                    {
+                        "short": "Hydration: sip water and take cool breaks — but you don't need litres.",
+                        "detail": "Stimulation, dancing and jaw-clenching drive heat and fluid loss; steady sips plus rest manage it without risking overhydration."
+                    }
+                ]
+            },
+            "after": {
+                "essential": [
+                    {
+                        "short": "Sleep: give yourself several hours between the last dose and trying to sleep.",
+                        "detail": "It is a strong, fairly short stimulant, but redosing stretches wakefulness and insomnia is a common after-effect.",
+                        "sources": [
+                            {
+                                "label": "PsychonautWiki — 3-CMC",
+                                "url": "https://psychonautwiki.org/wiki/3-CMC"
+                            }
+                        ]
+                    },
+                    {
+                        "short": "Comedown: expect a flat, anxious, sometimes paranoid mood — it passes.",
+                        "detail": "Dopamine and serotonin depletion produce low mood, anxiety and confusion, occasionally brief paranoia; a calm, safe space with trusted people helps most.",
+                        "sources": [
+                            {
+                                "label": "3-CMC clinical case series (PMC)",
+                                "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12692235/"
+                            }
+                        ]
+                    }
+                ],
+                "bonus": [
+                    {
+                        "short": "Supplements (optional): magnesium and antioxidants are sometimes used; benefits are modest.",
+                        "detail": "Magnesium may ease jaw tension and vasoconstriction, and antioxidants target oxidative stress."
+                    }
+                ]
+            },
+            "next_morning": {
+                "essential": [
+                    {
+                        "short": "Mood: a low, anxious mood for a day or two is the neurotransmitter rebound, not your baseline.",
+                        "detail": "Monoamine stores replenish with food, hydration and sleep; if low mood drags on, a longer break and some support are worth considering.",
+                        "sources": [
+                            {
+                                "label": "PsychonautWiki — 3-CMC",
+                                "url": "https://psychonautwiki.org/wiki/3-CMC"
+                            },
+                            {
+                                "label": "SaferParty — Clophedron",
+                                "url": "https://en.saferparty.ch/substanzen/clophedron"
+                            }
+                        ]
+                    }
+                ],
+                "bonus": [
+                    {
+                        "short": "Recovery (optional): eat properly and rehydrate; if you use 5-HTP, wait at least 24 h after the last dose.",
+                        "detail": "Precursors and balanced meals support recovery, but 5-HTP too soon after a serotonin-releasing drug is best avoided."
+                    }
+                ]
+            }
+        },
+        "risks": [
+            "Often mis-sold — \"CMC / 3-MMC / mephedrone / MDMA / speed\" frequently contains a different or unknown cathinone at an unknown dose",
+            "Strong compulsive redosing (a short peak drives a hard urge to repeat)",
+            "Cardiac strain: tachycardia, arrhythmias, chest pain, severe vasoconstriction",
+            "Suspected high neurotoxicity (animal and structural evidence; unconfirmed in humans)",
+            "Harsh anxious/paranoid comedown; transient psychosis reported"
+        ],
+        "mcda": null,
+        "visualizer_note": "A barely-researched mephedrone stand-in that is frequently not what the label says — the real dangers are strong compulsive redosing, suspected neurotoxicity and cardiac strain, plus a harsh anxious comedown; deaths have occurred, mostly alongside other drugs."
+    },
     "ghb": {
         "id": "ghb",
         "name": "GHB",

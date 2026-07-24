@@ -1,12 +1,14 @@
 # Harm Reduction Protocols — Subpage Design Document
 
 > **Status:** Active Development  
-> **Version:** v26.07.24c  
+> **Version:** v26.07.24d  
 > **Last Updated:** 2026-07-24  
 > **Author Role:** Scientific harm reduction design lead  
 
 ---
 
+> **Recent changes (2026-07-24, v26.07.24d):** Added **CMC (3-CMC / 4-CMC)** as a new substance (**17 total**) — a sourced mephedrone-analog cathinone profile (dosing flagged as user-reported / approximate; suspected neurotoxicity; compulsive-redosing focus), mapped to the `mephedrone` combination key so it inherits that interaction profile and mutually excludes 4-MMC. The Combinations tab now shows a simple placeholder for the sober baseline instead of an empty panel.
+>
 > **Recent changes (2026-07-24, v26.07.24c):** Recommendation-tone pass + layout changes. Recalibrated protocol language to read as **recommendations with the reason stated** (per §1.4) rather than commandments — softened ~30 over-strong / "mandatory" lines and reframed supplements as explicitly optional; dropped the ⚠️ prefix from three non-acute items (4-MMC "pre-weigh", MDMA dose ceiling, amphetamine "push through") while keeping every genuine hard-stop (GHB/GBL, opioids/contamination, MAOI, cocaethylene, MDMA 5-HTP & hyponatremia, meth emergencies). **Emergency/first-aid is now button-only** — a toggle inside the disclaimer banner; the standalone red Emergency card and the sticky "🆘 112" are removed. **Protocol is now the first / default tab**; the dangerous-combinations strip moved to the **top of the Combinations tab**; tabs restyled to carry their own colour with a distinct active state.
 >
 > **Recent changes (2026-07-24, v26.07.24b):** Major content & safety review. Corrected dosing/adulterant advice across substances; **split GHB and GBL into two separate substances**; **regrounded the risk chart** (added an *Overdose / Lethality* axis, named bands instead of 0–8, removed dose-scaling, added a rubric + per-substance rationale + an independent Nutt-2010 MCDA harm score); added a persistent **emergency card** and surfaced dangerous combinations above the tabs; WCAG fixes (focus, reduced-motion, contrast, tap targets); `data.js` is now generated from `protocols.json` rather than hand-synced. Note: parts of §4–§5 below still describe the earlier two-column layout — the live page now uses a tabbed folder (Risk Profile / Protocol / Combinations).
@@ -129,15 +131,16 @@ Substances are ordered to form a pharmacological gradient — from stimulating u
 | 4 | `methamphetamine` | Methamphetamine | Stimulant | 💎 | `#ef4444` (red) | Most extreme stimulant |
 | 5 | `mdma` | MDMA | Empathogen | 💖 | `#ec4899` (pink) | Empathogens: pink/fuchsia |
 | 6 | `4mmc` | 4-MMC (Mephedrone) | Stimulant/Empathogen | 💥 | `#d946ef` (fuchsia) | |
-| 7 | `lsd` | LSD | Psychedelic | 🌈 | `#06b6d4` (cyan) | Psychedelics: cool blues/purples |
-| 8 | `mushrooms` | Mushrooms (Psilocybin) | Psychedelic | 🍄 | `#8b5cf6` (violet) | |
-| 9 | `2cb` | 2C-B | Psychedelic | 🔮 | `#a855f7` (orchid) | |
-| 10 | `ketamine` | Ketamine | Dissociative | 🐴 | `#14b8a6` (teal) | Dissociative — between psychedelics & depressants |
-| 11 | `cannabis` | Cannabis | Depressant/Psychedelic | 🌿 | `#22c55e` (green) | Transitional — unique green |
-| 12 | `alcohol` | Alcohol | Depressant | 🍺 | `#3b82f6` (blue) | Depressants: cool blues |
-| 13 | `ghb` | GHB | Depressant | 💧 | `#6366f1` (indigo) | |
-| 14 | `gbl` | GBL | Depressant | 🧪 | `#818cf8` (light indigo) | Separated from GHB — ~2–3× stronger by volume |
-| 15 | `heroin` | Heroin (Diamorphine) | Opioid | 🩸 | `#dc2626` (crimson) | Opioid — warning red |
+| 7 | `cmc` | 3-CMC / 4-CMC | Stimulant/Cathinone | 💠 | `#a21caf` (magenta) | Mephedrone analogs — grouped with 4-MMC |
+| 8 | `lsd` | LSD | Psychedelic | 🌈 | `#06b6d4` (cyan) | Psychedelics: cool blues/purples |
+| 9 | `mushrooms` | Mushrooms (Psilocybin) | Psychedelic | 🍄 | `#8b5cf6` (violet) | |
+| 10 | `2cb` | 2C-B | Psychedelic | 🔮 | `#a855f7` (orchid) | |
+| 11 | `ketamine` | Ketamine | Dissociative | 🐴 | `#14b8a6` (teal) | Dissociative — between psychedelics & depressants |
+| 12 | `cannabis` | Cannabis | Depressant/Psychedelic | 🌿 | `#22c55e` (green) | Transitional — unique green |
+| 13 | `alcohol` | Alcohol | Depressant | 🍺 | `#3b82f6` (blue) | Depressants: cool blues |
+| 14 | `ghb` | GHB | Depressant | 💧 | `#6366f1` (indigo) | |
+| 15 | `gbl` | GBL | Depressant | 🧪 | `#818cf8` (light indigo) | Separated from GHB — ~2–3× stronger by volume |
+| 16 | `heroin` | Heroin (Diamorphine) | Opioid | 🩸 | `#dc2626` (crimson) | Opioid — warning red |
 
 ### 3.3 Future Additions (Considered)
 

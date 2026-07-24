@@ -21,6 +21,7 @@ const COMBO_KEY_MAP = {
     'mushrooms':       'mushrooms',
     '2cb':             '2c-x',
     '4mmc':            'mephedrone',
+    'cmc':             'mephedrone',
     'ghb':             'ghb/gbl',
     'gbl':             'ghb/gbl',
     'heroin':          'opioids',

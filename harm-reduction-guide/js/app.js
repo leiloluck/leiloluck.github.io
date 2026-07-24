@@ -6,7 +6,7 @@
 */
 
 // Display order by pharmacological class (stimulants → empathogens → psychedelics → dissociatives → depressants → opioids)
-const SUBSTANCE_ORDER = ['sober', 'caffeine', 'cocaine', 'amphetamine', 'methamphetamine', 'mdma', '4mmc', 'lsd', 'mushrooms', '2cb', 'ketamine', 'cannabis', 'alcohol', 'ghb', 'gbl', 'heroin'];
+const SUBSTANCE_ORDER = ['sober', 'caffeine', 'cocaine', 'amphetamine', 'methamphetamine', 'mdma', '4mmc', 'cmc', 'lsd', 'mushrooms', '2cb', 'ketamine', 'cannabis', 'alcohol', 'ghb', 'gbl', 'heroin'];
 
 // State
 let currentProtocol = 'sober';
@@ -430,6 +430,7 @@ function updateDosingDisplay(data) {
             cocaine: 'Higher doses raise the risk of cardiac strain and compulsive redosing.',
             amphetamine: 'Higher doses raise cardiovascular strain and overheating risk.',
             '4mmc': 'Higher doses strongly increase the urge to redose and the cardiac strain.',
+            'cmc': 'Higher doses sharply increase the urge to redose and the cardiac strain.',
             '2cb': 'At this range effects can become overwhelming — a comfortable setting helps.',
             ketamine: 'This approaches the "k-hole" (full dissociation) — best not to be alone.',
             lsd: 'Higher doses make challenging experiences more likely — set & setting matter more.',
@@ -567,10 +568,19 @@ function toggleExpand(uid) {
 function renderCombosSection(data) {
     const section = document.getElementById('combos-section');
     const list = document.getElementById('combos-list');
+    const placeholder = document.getElementById('combos-placeholder');
 
     if (!section || !list) return;
 
-    if (data.id === 'sober' || !comboData) {
+    // Sober baseline: no substance selected — show a simple placeholder instead of an empty tab
+    if (data.id === 'sober') {
+        section.classList.add('hidden');
+        if (placeholder) placeholder.classList.remove('hidden');
+        return;
+    }
+    if (placeholder) placeholder.classList.add('hidden');
+
+    if (!comboData) {
         section.classList.add('hidden');
         return;
     }

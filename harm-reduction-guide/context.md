@@ -1,10 +1,15 @@
 # Harm Reduction Protocols — Subpage Design Document
 
 > **Status:** Active Development  
-> **Last Updated:** 2026-03-15  
+> **Version:** v26.07.24c  
+> **Last Updated:** 2026-07-24  
 > **Author Role:** Scientific harm reduction design lead  
 
 ---
+
+> **Recent changes (2026-07-24, v26.07.24c):** Recommendation-tone pass + layout changes. Recalibrated protocol language to read as **recommendations with the reason stated** (per §1.4) rather than commandments — softened ~30 over-strong / "mandatory" lines and reframed supplements as explicitly optional; dropped the ⚠️ prefix from three non-acute items (4-MMC "pre-weigh", MDMA dose ceiling, amphetamine "push through") while keeping every genuine hard-stop (GHB/GBL, opioids/contamination, MAOI, cocaethylene, MDMA 5-HTP & hyponatremia, meth emergencies). **Emergency/first-aid is now button-only** — a toggle inside the disclaimer banner; the standalone red Emergency card and the sticky "🆘 112" are removed. **Protocol is now the first / default tab**; the dangerous-combinations strip moved to the **top of the Combinations tab**; tabs restyled to carry their own colour with a distinct active state.
+>
+> **Recent changes (2026-07-24, v26.07.24b):** Major content & safety review. Corrected dosing/adulterant advice across substances; **split GHB and GBL into two separate substances**; **regrounded the risk chart** (added an *Overdose / Lethality* axis, named bands instead of 0–8, removed dose-scaling, added a rubric + per-substance rationale + an independent Nutt-2010 MCDA harm score); added a persistent **emergency card** and surfaced dangerous combinations above the tabs; WCAG fixes (focus, reduced-motion, contrast, tap targets); `data.js` is now generated from `protocols.json` rather than hand-synced. Note: parts of §4–§5 below still describe the earlier two-column layout — the live page now uses a tabbed folder (Risk Profile / Protocol / Combinations).
 
 ## 1. Mission & Editorial Philosophy
 
@@ -94,14 +99,14 @@ The `/resources/` directory contains the raw reference material organised by sou
 | `browse.md` | — | Navigation index for the resource library |
 | `Festival Harm Reduction Guide.md` | Original compilation | The master narrative document from which protocol data was derived |
 
-### 2.4 The Risk Visualiser Is an Estimate, Not a Sourced Dataset
+### 2.4 The Risk Profile Is a Transparent Estimate, Not a Measured Dataset
 
-The five-axis **Risk Profile** chart (neurotoxicity, cardiotoxicity, dehydration, sleep disruption, compulsion) is the one element on the site that is **not** traceable to a citation. Its 0–8 values live on the `visualizer` object in `protocols.json`, which — unlike every `detail` field — carries **no `sources` array**. They are an **editorial synthesis**: a rough qualitative ranking assigned by reading across the literature, not a measured quantity reproduced from any dataset. This is a deliberate, disclosed limitation, governed by four rules:
+The **Risk Profile** chart has **six** axes — *Overdose / Lethality, Neurotoxicity, Cardiotoxicity, Dehydration, Sleep Disruption, Compulsion* — whose values live on the `visualizer` object in `protocols.json`. They remain an **editorial estimate** (a qualitative rating assigned by reading across the literature), not a measured quantity — but the presentation is built so a reader sees exactly that, governed by these rules:
 
-1. **Never present it as harder data than it is.** The numbers have no units, no decimal precision, and no per-axis citation. The UI caption states plainly that the chart is an estimate for rough comparison; the wording must not imply measurement.
-2. **Sourced content comes first.** The **Common Risks** list (derived from each substance's `risks` array, which is grounded in the sources) is shown *above* the chart, so the reader meets traceable content before the estimate. The chart is the *last* thing in the Risk Profile tab, not the first.
-3. **The five axes do not capture every danger.** They were designed around stimulant/empathogen *exertion* strain. Acute mechanisms — opioid and GHB **respiratory depression**, GHB's **narrow therapeutic window**, serotonin syndrome — are represented by *none* of the axes, so for depressants/opioids the chart **understates lethality**. The Common Risks list and emergency guidance exist to carry what the chart structurally cannot. The "Compulsion" axis also deliberately spans two ideas (behavioural disinhibition *and* compulsive redosing) and should be read loosely.
-4. **The dose multiplier is a display heuristic, not pharmacology.** `getIntensityMultiplier()` scales all five axes by the same factor (threshold ×0.35 → heavy ×1.5, capped at 8). This is a uniform visual approximation — it does not model real dose-response, the axes do not all scale with dose in reality, and for already-maxed substances (e.g. methamphetamine) the bars stop moving across tiers. Never describe it as dose-response data.
+1. **Named bands, not false precision.** Bars display as **None / Low / Moderate / High / Very High**, never as "x/8". The underlying 0–8 integers exist only to size and colour the bars; the UI shows no number and implies no decimal precision.
+2. **A fixed profile, not fake dose-response.** The chart is **not** scaled by the selected dose tier. (The old uniform `getIntensityMultiplier` has been removed.) One per-substance profile is shown, and the caption states that higher doses raise every risk — especially overdose — rather than drawing that as precise bar movement.
+3. **The Overdose / Lethality axis closes the old structural hole.** Previously the five strain axes had no term for acute overdose / respiratory depression, so heroin and GHB rendered as mostly low/green — an inversion of their real danger. The lethality axis fixes this; it is anchored to the "drug-specific mortality" dimension of Nutt, King & Phillips (2010). "Compulsion" still spans disinhibition *and* compulsive redosing and is read loosely.
+4. **Auditable, and paired with sourced content.** Each substance carries a one-line `visualizer_note` rationale, and an on-page "How these ratings are decided" rubric defines every axis and the band scale. The source-linked **Common Risks** list is shown *above* the chart, and an independent **MCDA overall-harm score** (`mcda` field; Nutt 2010) is shown *with* each chart as a peer-reviewed reference — displayed as "not assessed" for substances the study did not cover (caffeine, 2C-B, and the sober baseline).
 
 ---
 
@@ -130,8 +135,9 @@ Substances are ordered to form a pharmacological gradient — from stimulating u
 | 10 | `ketamine` | Ketamine | Dissociative | 🐴 | `#14b8a6` (teal) | Dissociative — between psychedelics & depressants |
 | 11 | `cannabis` | Cannabis | Depressant/Psychedelic | 🌿 | `#22c55e` (green) | Transitional — unique green |
 | 12 | `alcohol` | Alcohol | Depressant | 🍺 | `#3b82f6` (blue) | Depressants: cool blues |
-| 13 | `ghb` | GHB / GBL | Depressant | 💧 | `#6366f1` (indigo) | |
-| 14 | `heroin` | Heroin (Diamorphine) | Opioid | 🩸 | `#dc2626` (crimson) | Opioid — warning red |
+| 13 | `ghb` | GHB | Depressant | 💧 | `#6366f1` (indigo) | |
+| 14 | `gbl` | GBL | Depressant | 🧪 | `#818cf8` (light indigo) | Separated from GHB — ~2–3× stronger by volume |
+| 15 | `heroin` | Heroin (Diamorphine) | Opioid | 🩸 | `#dc2626` (crimson) | Opioid — warning red |
 
 ### 3.3 Future Additions (Considered)
 
@@ -199,21 +205,22 @@ Each phase contains:
 The right side of the layout contains two data visualisations:
 
 #### Risk Analysis (Horizontal Bar Chart)
-Five axes representing physiological strain dimensions:
+Six axes, with **Overdose / Lethality first** so the deadliest dimension leads:
+- **Overdose / Lethality** — Risk of death from the drug itself: overdose, respiratory depression, or a narrow dose-to-danger margin
 - **Neurotoxicity** — Direct damage to neural tissue
 - **Cardiotoxicity** — Cardiovascular strain (heart rate, blood pressure, vasoconstriction)
 - **Dehydration** — Fluid and electrolyte disruption
 - **Sleep Disruption** — How strongly the substance prevents or degrades sleep during and after use (a narrower idea than long-term sleep harm)
 - **Compulsion** — Loss of behavioural control: disinhibition and compulsive redosing
 
-Each axis carries a one-line scope definition in its chart tooltip (`AXIS_DESC` in `js/app.js`), because the labels are deliberately narrow proxies, not catch-alls. "Sleep Disruption" and "Compulsion" replaced the older "Sleep Loss" / "Impulsivity" labels, which conflated distinct ideas.
+Each axis carries a one-line scope definition in its chart tooltip (`AXIS_DESC` in `js/app.js`) and in the on-page "How these ratings are decided" rubric. The **Overdose / Lethality** axis was added to close the old structural hole (depressants/opioids reading as low-risk); it is anchored to Nutt 2010's "drug-specific mortality" dimension. "Sleep Disruption" and "Compulsion" replaced the older "Sleep Loss" / "Impulsivity" labels.
 
-> **Provenance:** these are editorial estimates, not sourced figures, and they omit some acute dangers (e.g. respiratory depression). They are shown *after* the source-derived Common Risks list. See §2.4 before treating any value as data.
+> **Provenance:** these remain editorial estimates (see §2.4), now shown as **named bands** (not 0–8), as a **fixed profile** (not dose-scaled), each with a per-substance rationale, the rubric, and an independent MCDA harm score alongside. The source-derived Common Risks list is shown *above* the chart.
 
-Values are qualitative (0–8 scale) and colour-coded:
+Bars are labelled by band and colour-coded (the underlying 0–8 value sizes the bar; no number is shown):
 - 0 = Gray (None)
 - 1–2 = Green (Low)
-- 3–4 = Yellow (Medium)
+- 3–4 = Yellow (Moderate)
 - 5–6 = Orange (High)
 - 7–8 = Red (Very High)
 
@@ -226,8 +233,11 @@ Shows the temporal profile of substance effects by route of administration:
 #### Sleep Strategy
 A text box summarising the expected impact on sleep and recommended approach.
 
-#### Emergency Risk Factors
-A red-tinted panel listing the substance-specific acute dangers (hidden for Sober/Baseline). These are the conditions under which immediate emergency intervention (call 112) may be required.
+#### Emergency & Acute-Danger Surfaces
+The page is deliberately calm — emergency messaging is available but never shouted:
+- **Emergency & first aid is button-only.** A small "🆘 Emergency & first aid" toggle sits inside the disclaimer banner; opening it reveals the `tel:` numbers, the signs that mean *call now*, and recovery-position / CPR / naloxone guidance. Nothing emergency-related is shown until the reader opens it. (Sourced to Drugchecking Berlin — Erste Hilfe.)
+- A red **"Do not mix — dangerous combinations"** strip pinned to the **top of the Combinations tab**, listing the Dangerous/Unsafe pairings for the current substance (hidden for the sober baseline).
+- The amber **Common Risks** list at the top of the Risk Profile tab — the substance-specific acute dangers, drawn from the sourced `risks` array.
 
 ---
 
@@ -291,24 +301,11 @@ After scrolling 300px, a slim fixed bar slides down from the top edge. It contai
 #### Footer
 A quiet footer with a `border-t` separator. Two lines of muted text repeating the disclaimer and citing source organisations. No links, no logos — just attribution.
 
-### 5.3 Background — Scroll-Reactive OKLCH Hue Gradient
+### 5.3 Background — Animated OKLCH Gradient (CSS)
 
-The page background is a **scroll-reactive oklch gradient** managed entirely by JavaScript. As the user scrolls, the background hue cycles through the color wheel from red-orange (top) to blue (bottom):
+The page background is a dark **oklch vertical gradient** defined in `css/styles.css` on the `html` element, animated by the `bgShift` keyframes (a slow ~30s vertical drift). A substance-tinted radial glow fades in over it via `html::before` and the `--accent-color` custom property (see §5.4). Both layers are dark (luminance well below content level) so cards at `#1a1a19` / `#151514` float above them.
 
-- **Top of page:** `oklch(7–11% 0.038 25°)` — deep red-orange tint
-- **Mid-scroll:** passes through orange → green → cyan
-- **Bottom of page:** `oklch(7–11% 0.038 265°)` — deep blue tint
-
-The gradient covers a 240° hue arc and updates on every scroll frame via `requestAnimationFrame`. The luminance stays between 7–11% — dark enough to never compete with content, vivid enough to give the page environmental depth and a sense of scroll position.
-
-The implementation in `js/app.js` (`initScrollGradient`):
-```javascript
-const centerHue = 25 + progress * 240;
-document.body.style.background =
-    `linear-gradient(to bottom, oklch(7% 0.04 ${h0}), oklch(11% 0.038 ${h1}), oklch(7% 0.04 ${h2}))`;
-```
-
-Cards and sections remain at fixed dark backgrounds (`#1a1a19`, `#151514`) so they float above the gradient.
+> Earlier builds used a JavaScript scroll-reactive hue gradient (`initScrollGradient`); that has been removed. All background motion now honours `prefers-reduced-motion: reduce` — the gradient animation and the nav pulse/sweep stop for users who request reduced motion.
 
 ### 5.4 Colour System
 
@@ -391,7 +388,9 @@ The overall impression should be: **someone who cares about information design b
 
 Permanently visible at the top of the page, above the sticky header:
 
-> ℹ️ This guide is for **educational and harm reduction purposes only**. It does not endorse substance use. In case of emergency, **call your local emergency number** and seek professional help immediately.
+> ℹ️ This guide is for **educational and harm reduction purposes only**. It does not endorse substance use. &nbsp; **[🆘 Emergency & first aid ▸]**
+
+The emergency / first-aid information — emergency numbers, the "call now" signs, and recovery-position / CPR / naloxone guidance — lives **only** behind that toggle, collapsed by default so the page opens calm. (Sourced to Drugchecking Berlin — Erste Hilfe.)
 
 ---
 
@@ -423,11 +422,11 @@ The risk chart for Sober/Baseline shows non-zero values for dehydration (1–2) 
 
 ### 7.1 Canonical Data Source
 
-All protocol data is stored in `data/protocols.json`. This is the single source of truth. The file `js/data.js` contains:
-1. A `loadProtocolData()` function that attempts to `fetch()` the JSON file.
-2. An inline fallback copy (`_inlineProtocols`) for environments where fetch fails (e.g., `file://` CORS restrictions during local development).
+All protocol data is stored in `data/protocols.json` — the single source of truth. The file `js/data.js` contains:
+1. A `loadProtocolData()` function that `fetch()`es the JSON file (the normal path on GitHub Pages).
+2. An inline fallback copy (`_inlineProtocols`) for environments where fetch fails (e.g., `file://` CORS during local preview).
 
-**When editing protocol data, both `protocols.json` and the inline copy in `data.js` must be updated to remain in sync.**
+**Edit only `protocols.json`, then regenerate the inline copy from it** so the two cannot drift. The `_inlineProtocols` block is produced by re-serialising `protocols.json` into `data.js` (`node -e "…'const _inlineProtocols = ' + JSON.stringify(require('./data/protocols.json'), null, 4) + ';'…"`), and a deep-equal check confirms they match. Do not hand-edit the inline copy.
 
 ### 7.2 Application Logic
 
@@ -462,7 +461,7 @@ The `resources/tripsit-combo/combos.json` file contains a machine-readable inter
 - **Unsafe** — Significant danger
 - **Dangerous** — Life-threatening; never combine
 
-This dataset is **live** in the **Combinations** tab. `js/comboData.js` loads it, maps app substance IDs to TripSit keys (`COMBO_KEY_MAP`), looks combinations up bidirectionally, and sorts them by severity. A combination class is never compared to itself (e.g. amphetamine vs. methamphetamine, which share the `amphetamines` key, are suppressed).
+This dataset is **live** in the **Combinations** tab. `js/comboData.js` loads it, maps app substance IDs to TripSit keys (`COMBO_KEY_MAP`), looks combinations up bidirectionally, and sorts them by severity. A combination class is never compared to itself (e.g. amphetamine vs. methamphetamine, which share the `amphetamines` key — and GHB vs. GBL, which share the `ghb/gbl` key — are suppressed, since those pairs are effectively the same drug).
 
 **Curated overlay for TripSit gaps.** TripSit's data is incomplete for some substances — notably **mephedrone (4-MMC)**, which has no entries for its most relevant pairings (other stimulants, alcohol, ketamine). These gaps are filled by a small `CURATED_COMBOS` table in `comboData.js`, used **only as a fallback** when TripSit has no entry for a pair. Every curated entry is source-cited and flagged `curated: true`; the UI labels it "curated" and states plainly that the pairing is not in the TripSit dataset. Curated entries must meet the same evidence bar as everything else — pairings with no source basis (e.g. 4-MMC + cannabis, 4-MMC + 2C-B) are deliberately left absent rather than invented.
 
@@ -473,7 +472,7 @@ This dataset is **live** in the **Combinations** tab. `js/comboData.js` loads it
 ### 9.1 Adding a New Substance
 
 1. Add an entry to `data/protocols.json` following the existing schema.
-2. Mirror the entry in the `_inlineProtocols` object in `js/data.js`.
+2. Regenerate the `_inlineProtocols` copy in `js/data.js` from `protocols.json` (see §7.1) — do not hand-edit it.
 3. Ensure every `detail` field has at least one entry in the `sources` array.
 4. Assign a unique colour and emoji that are not already in use.
 5. Place the substance in the navigation order according to European prevalence data.
@@ -483,7 +482,7 @@ This dataset is **live** in the **Combinations** tab. `js/comboData.js` loads it
 
 - Cross-check any update against at least two independent sources.
 - Update the `sources` array if new references are added.
-- Keep `protocols.json` and `data.js` inline copy synchronised.
+- Regenerate the `data.js` inline copy from `protocols.json` (see §7.1); never hand-edit it.
 
 ### 9.3 Content Review Checklist
 
@@ -531,10 +530,7 @@ After selecting a substance, the user encounters the following decision sequence
 The selected route and intensity combination modulates:
 
 - **Effect Timeline** — Duration phases adjust to match the selected route (e.g., oral cannabis has much longer onset than smoked).
-- **Risk Analysis** — Physiological strain values adjust with intensity:
-  - Light: baseline risk values (may be reduced from common)
-  - Common: standard risk values (default display)
-  - Strong: elevated risk values with additional warnings
+- **Risk Analysis** — Shows a fixed per-substance profile; it is **not** scaled by the selected intensity (see §2.4). Higher doses raise real risk — especially overdose — but the chart states that in its caption rather than animating the bars.
 - **Warnings** — High-dose warnings appear automatically when "Strong" is selected for high-risk substances (e.g., MDMA >150 mg triggers explicit neurotoxicity warnings).
 - **Protocol Tips** — The textual harm reduction advice remains the same across intensities (the advice is relevant regardless of dose), but critical warnings may be emphasised differently.
 

@@ -22,12 +22,23 @@
 <body class="text-gray-300 font-sans leading-relaxed">
 
 
-    <!-- Disclaimer Banner -->
+    <!-- Disclaimer Banner — also the only place the emergency / first-aid info lives, tucked behind a button. -->
     <div class="disclaimer-banner px-4 py-3 text-center text-sm text-green-300">
         <span class="mr-1">ℹ️</span>
-        This guide is for <strong>educational and harm reduction purposes only</strong>. It does not endorse substance
-        use.
-        In case of emergency, <strong>call your local emergency number</strong> and seek professional help immediately.
+        This guide is for <strong>educational and harm reduction purposes only</strong>. It does not endorse substance use.
+        <details class="emergency-details">
+            <summary>🆘 Emergency &amp; first aid</summary>
+            <div class="emergency-panel">
+                <p class="ep-line"><strong>Call now</strong> —
+                    <a href="tel:112" class="emergency-call">112</a> (EU) ·
+                    <a href="tel:999" class="emergency-call">999</a> UK ·
+                    <a href="tel:911" class="emergency-call">911</a> US/CA ·
+                    <a href="tel:000" class="emergency-call">000</a> AU</p>
+                <p class="ep-line"><strong>Call if someone</strong> is unconscious and can't be woken · breathing is slow, irregular or has stopped, or lips look blue · is having a seizure lasting over 5 minutes · is burning-up hot and confused (heatstroke) · is rigid, twitching or feverish after MDMA (serotonin syndrome).</p>
+                <p class="ep-line"><strong>While you wait:</strong> if they are unconscious but breathing, put them in the recovery position (on their side) and tilt the head back to keep the airway open. If they are not breathing, start CPR (30 chest compressions to 2 breaths; hands-only is fine). For a suspected opioid overdose, give naloxone if you have it — then still call. Stay with them and tell responders what was taken (they are bound by confidentiality).</p>
+                <a href="https://drugchecking.berlin/substanzen/erste-hilfe" target="_blank" rel="noopener" class="ep-source">Source: Drugchecking Berlin — First Aid / Erste Hilfe</a>
+            </div>
+        </details>
     </div>
 
     <!-- Sticky Header (Hidden by default) -->
@@ -40,11 +51,13 @@
                 <p id="sticky-type" class="text-xs text-gray-500 leading-tight">Type</p>
             </div>
         </div>
-        <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})"
-            class="text-gray-500 hover:text-gray-200 px-2 py-1 transition-colors opacity-50 hover:opacity-100"
-            title="Back to top">
-            <span style="display:inline-block;transform:rotate(-90deg);font-size:1.1rem;line-height:1">›</span>
-        </button>
+        <div class="flex items-center gap-2">
+            <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})"
+                class="text-gray-500 hover:text-gray-200 px-2 py-1 transition-colors opacity-50 hover:opacity-100"
+                title="Back to top">
+                <span style="display:inline-block;transform:rotate(-90deg);font-size:1.1rem;line-height:1">›</span>
+            </button>
+        </div>
     </div>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -172,7 +185,7 @@
 
                 <!-- Dose Note & Source -->
                 <div id="dose-note" class="text-xs text-gray-500 italic mb-1 hidden"></div>
-                <div id="dose-warning" class="text-xs text-red-400 font-bold mb-1 hidden"></div>
+                <div id="dose-warning" class="text-xs text-amber-400 mb-1 hidden"></div>
                 <div id="dose-source" class="text-[10px] text-gray-600">
                     <a id="dose-source-link" href="#" target="_blank" rel="noopener"
                         class="underline hover:text-gray-400 transition-opacity">Source: PsychonautWiki</a>
@@ -185,16 +198,16 @@
 
             <!-- Tabs Navigation -->
             <div id="main-tabs" class="flex items-end mb-0 z-20 relative gap-1 px-2 hide-scrollbar overflow-x-auto sm:px-4">
-                <button onclick="switchTab('tab-risk')" id="btn-tab-risk" class="tab-btn flex-1 max-w-[150px] py-3 px-2 sm:px-4 text-[13px] sm:text-sm font-bold transition-all rounded-t-xl z-20 relative translate-y-[1px] shadow-[0_-4px_15px_rgba(0,0,0,0.3)] border-b-transparent">Risk Profile</button>
-                <button onclick="switchTab('tab-protocol')" id="btn-tab-protocol" class="tab-btn flex-1 max-w-[150px] py-3 px-2 sm:px-4 text-[13px] sm:text-sm font-bold transition-all bg-[#0a0a0a] text-gray-500 rounded-t-xl hover:bg-[#111] hover:text-gray-300 z-10 relative opacity-70 hover:opacity-100">Protocol</button>
-                <button onclick="switchTab('tab-combos')" id="btn-tab-combos" class="tab-btn flex-1 max-w-[150px] py-3 px-2 sm:px-4 text-[13px] sm:text-sm font-bold transition-all bg-[#0a0a0a] text-gray-500 rounded-t-xl hover:bg-[#111] hover:text-gray-300 z-10 relative opacity-70 hover:opacity-100">Combinations</button>
+                <button onclick="switchTab('tab-protocol')" id="btn-tab-protocol" class="tab-btn flex-1 max-w-[150px] py-3 px-2 sm:px-4 text-[13px] sm:text-sm font-bold transition-all rounded-t-xl z-20 relative translate-y-[1px]">Protocol</button>
+                <button onclick="switchTab('tab-risk')" id="btn-tab-risk" class="tab-btn flex-1 max-w-[150px] py-3 px-2 sm:px-4 text-[13px] sm:text-sm font-bold transition-all rounded-t-xl z-10 relative">Risk Profile</button>
+                <button onclick="switchTab('tab-combos')" id="btn-tab-combos" class="tab-btn flex-1 max-w-[150px] py-3 px-2 sm:px-4 text-[13px] sm:text-sm font-bold transition-all rounded-t-xl z-10 relative">Combinations</button>
             </div>
 
             <!-- Folder Body Wrapper -->
             <div id="tab-folder-body" class="border rounded-b-xl rounded-tr-xl p-3 sm:p-6 shadow-2xl relative z-10 mb-8 min-h-[400px]" style="transition: all 0.3s ease;">
 
             <!-- TAB CONTENT: Risk Profile -->
-            <div id="tab-risk" class="tab-content space-y-8 block">
+            <div id="tab-risk" class="tab-content space-y-8 hidden">
                 <!-- FIRST: Common Risks — the source-derived, factual risks (amber, hidden for sober) -->
                 <div id="emergency-flags" class="hidden p-5 border"
                     style="background:rgba(234,179,8,0.06);border-color:rgba(234,179,8,0.2);">
@@ -215,17 +228,39 @@
                     <!-- Canvas Container -->
                     <div
                         class="section-card bg-[#1a1a19] border-2 border-[#2a2a28] overflow-hidden transition-all duration-300 p-6">
-                        <div class="relative h-64 w-full">
+                        <div class="relative h-72 w-full">
                             <canvas id="riskChart"></canvas>
                         </div>
                         <div id="dose-display-text" class="hidden mt-3 text-xs text-center font-semibold tracking-wide">
                         </div>
-                        <p class="mt-2 text-xs text-center text-gray-600 italic">
-                            A qualitative editorial estimate (0–8) of physiological strain, synthesised from
-                            harm-reduction literature — not a measured or directly sourced figure. Use it for rough
-                            comparison between substances, not as precise data. The Common Risks above and the
-                            Protocol &amp; Combinations tabs carry the source-linked detail.
+
+                        <!-- Per-substance rationale (injected by JS) -->
+                        <p id="risk-rationale" class="mt-3 text-sm text-gray-300 leading-relaxed"></p>
+
+                        <!-- Independent MCDA overall-harm reference (injected by JS) -->
+                        <div id="mcda-chip" class="mt-3 text-xs text-gray-400 leading-relaxed"></div>
+
+                        <p class="mt-3 text-xs text-gray-400 italic leading-relaxed">
+                            These are qualitative editorial estimates (None → Very&nbsp;High), not measured figures,
+                            and they show a fixed profile — they are not scaled by the dose you pick above (higher
+                            doses raise every risk, especially overdose). The source-linked detail lives in Common
+                            Risks (above) and the Protocol &amp; Combinations tabs.
                         </p>
+
+                        <details class="mt-3 text-xs text-gray-400">
+                            <summary class="cursor-pointer text-gray-300 hover:text-gray-100 select-none">How these ratings are decided</summary>
+                            <div class="mt-2 space-y-2 leading-relaxed">
+                                <p><strong class="text-gray-300">Scale:</strong> each bar is rated None / Low / Moderate / High / Very&nbsp;High — deliberately coarse, because the underlying judgement has no finer precision.</p>
+                                <p><strong class="text-gray-300">Axes:</strong>
+                                    <strong>Overdose / Lethality</strong> — risk of death from the drug itself (overdose, breathing failure, narrow dose-to-danger margin);
+                                    <strong>Neurotoxicity</strong> — lasting damage to neural tissue;
+                                    <strong>Cardiotoxicity</strong> — heart-rate, blood-pressure and vascular strain;
+                                    <strong>Dehydration</strong> — fluid and electrolyte disruption;
+                                    <strong>Sleep Disruption</strong> — how strongly it prevents or degrades sleep around use;
+                                    <strong>Compulsion</strong> — loss of behavioural control (disinhibition and compulsive redosing).</p>
+                                <p>Ratings summarise the sourced Common Risks for each substance. The <strong>Overdose / Lethality</strong> axis follows the "drug-specific mortality" dimension from the peer-reviewed harm analysis of <a href="https://pubmed.ncbi.nlm.nih.gov/21036393/" target="_blank" rel="noopener" class="underline hover:text-gray-200">Nutt, King &amp; Phillips (2010)</a>, which is also the source of the independent overall-harm ranking shown with each chart.</p>
+                            </div>
+                        </details>
                     </div>
                 </section>
 
@@ -233,6 +268,12 @@
 
             <!-- TAB CONTENT: Combinations -->
             <div id="tab-combos" class="tab-content space-y-8 hidden">
+                <!-- Dangerous combinations — pinned to the top of this tab (most important first) -->
+                <div id="danger-combos" class="hidden p-4 rounded-xl"
+                    style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.4)">
+                    <p class="text-sm font-bold mb-2" style="color:#fca5a5">⚠️ Do not mix — dangerous combinations</p>
+                    <div id="danger-combos-list" class="flex flex-wrap gap-2"></div>
+                </div>
                 <!-- Drug Combinations Section (hidden for sober) -->
                 <section id="combos-section" class="card-transition hidden">
                     <div class="flex items-center mb-4">
@@ -256,7 +297,7 @@
             </div>
 
             <!-- TAB CONTENT: Protocol -->
-            <div id="tab-protocol" class="tab-content space-y-8 hidden">
+            <div id="tab-protocol" class="tab-content space-y-8 block">
                 <!-- Introduction Paragraph for Guide Section -->
                 <div class="bg-[#1a1a19] p-6 border border-[#2a2a28]">
                     <h2 class="text-lg font-bold text-gray-100 mb-2">Protocol Timeline 🕐</h2>
@@ -357,6 +398,7 @@
                     target="_blank" class="underline hover:text-gray-400">SaferParty</a>, <a href="https://tripsit.me"
                     target="_blank" class="underline hover:text-gray-400">TripSit</a>, <a href="https://dancesafe.org"
                     target="_blank" class="underline hover:text-gray-400">DanceSafe</a>.</p>
+            <p class="mt-3 text-gray-700 font-mono tracking-wide">v26.07.24c · content reviewed 2026-07-24</p>
         </footer>
 
     </div>

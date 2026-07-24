@@ -17,7 +17,8 @@
       "cardiotoxicity": 0,
       "dehydration": 2,
       "sleep_deprivation": 2,
-      "impulsivity": 0
+      "impulsivity": 0,
+      "lethality": 0
     },
     "sleep_strategy": "Normal sleep cycle recommended. 9–10 hours pre-event banking.",
     "phases": {
@@ -25,7 +26,7 @@
         "essential": [
           {
             "short": "Sleep banking: 9–10 hours per night for days prior.",
-            "detail": "Prophylactic sleep extension creates a homeostatic reserve that mitigates cognitive decline, delayed reaction times, and mood instability when staying up past your normal sleep window."
+            "detail": "Banking extra sleep beforehand (\"prophylactic sleep extension\") appears to build some reserve against the cognitive decline, slowed reaction times, and mood dips that come from staying up past your normal sleep window. The evidence is promising rather than fully settled, but there is no downside to arriving well-rested."
           },
           {
             "short": "Nutrition: Complex carbohydrates + lean protein, 2–4 hours before.",
@@ -48,7 +49,7 @@
         "essential": [
           {
             "short": "Hydration: Water + electrolytes (sodium/potassium). Avoid plain water only.",
-            "detail": "Sweat contains 200–700 mg sodium per hour. Consuming pure water without replacing lost electrolytes dilutes blood sodium, risking exertional hyponatremia — a potentially fatal condition causing headaches, confusion, and seizures."
+            "detail": "Sweat contains roughly 200–700 mg sodium per hour. Drinking large volumes of plain water without replacing lost electrolytes dilutes blood sodium, risking exertional hyponatremia — a potentially fatal condition causing headaches, confusion, and seizures. Just as important: don't over-drink — match intake to thirst and sweat loss rather than forcing fluids."
           },
           {
             "short": "Nutrition: Simple carbohydrates (fruit, applesauce) for rapid energy.",
@@ -103,7 +104,9 @@
       "Exhaustion from prolonged exertion",
       "Dehydration and electrolyte imbalance",
       "Sleep deprivation and circadian disruption"
-    ]
+    ],
+    "mcda": null,
+    "visualizer_note": "Baseline physiological strain only, with no substance toxicity — the real risks of a long night are dehydration and sleep loss."
   },
   "alcohol": {
     "id": "alcohol",
@@ -129,6 +132,7 @@
           "max": 40
         },
         "heavy": 40,
+        "note": "1 standard drink ≈ 10 g ethanol (EU/WHO convention; a US 'standard drink' is ~14 g).",
         "source": "https://psychonautwiki.org/wiki/Alcohol"
       }
     },
@@ -172,7 +176,8 @@
       "cardiotoxicity": 3,
       "dehydration": 8,
       "sleep_deprivation": 7,
-      "impulsivity": 6
+      "impulsivity": 6,
+      "lethality": 6
     },
     "sleep_strategy": "Expect fragmented sleep. Hydrate before bed.",
     "phases": {
@@ -204,8 +209,8 @@
         "focus": "Counteracting fluid loss from diuresis.",
         "essential": [
           {
-            "short": "Rule: One glass of water or electrolyte drink per alcoholic drink.",
-            "detail": "Alcohol suppresses ADH secretion, causing the kidneys to flush water continuously. Combined with sweating, this creates rapid two-front fluid loss. A strict 1:1 ratio prevents severe dehydration.",
+            "short": "Hydration: Alternating each alcoholic drink with water or an electrolyte drink helps offset dehydration.",
+            "detail": "Alcohol suppresses ADH secretion, causing the kidneys to flush water continuously. Combined with sweating, this creates rapid two-front fluid loss. Roughly one water per drink is an easy way to limit it.",
             "sources": [
               {
                 "label": "PsychonautWiki — Alcohol",
@@ -280,7 +285,7 @@
         ],
         "bonus": [
           {
-            "short": "Avoid: Do not drink more alcohol to offset a hangover.",
+            "short": "Avoid: drinking more alcohol to offset a hangover only delays it.",
             "detail": "Consuming more alcohol merely delays the hangover by re-introducing the depressant. It prolongs liver stress, deepens dehydration, and significantly worsens the eventual recovery."
           }
         ]
@@ -291,7 +296,13 @@
       "REM sleep suppression and fragmentation",
       "Behavioral disinhibition",
       "Liver stress and gastric irritation"
-    ]
+    ],
+    "mcda": {
+      "score": 72,
+      "rank": 1,
+      "of": 20
+    },
+    "visualizer_note": "Deceptively harmful: dehydration, disinhibition and genuine overdose risk (alcohol poisoning, aspiration) — the most harmful drug overall in expert rankings."
   },
   "cannabis": {
     "id": "cannabis",
@@ -410,7 +421,8 @@
       "cardiotoxicity": 2,
       "dehydration": 2,
       "sleep_deprivation": 3,
-      "impulsivity": 3
+      "impulsivity": 3,
+      "lethality": 1
     },
     "sleep_strategy": "May help sleep onset, but reduces REM quality.",
     "phases": {
@@ -440,8 +452,8 @@
         "focus": "Blood pressure management.",
         "essential": [
           {
-            "short": "Blood sugar: Keep fruit or juice available for blood pressure drops.",
-            "detail": "Cannabis is a peripheral vasodilator — it widens blood vessels and increases heart rate. Combined with standing and sweating, this creates high risk for orthostatic hypotension (sudden blood pressure drop), causing dizziness and fainting.",
+            "short": "Faintness: Sit or lie down if dizzy, and stand up slowly.",
+            "detail": "Cannabis is a peripheral vasodilator — it widens blood vessels and raises heart rate. Combined with standing and sweating, this creates a risk of orthostatic hypotension (a sudden blood-pressure drop on standing), causing dizziness or fainting. If you feel light-headed, sit or lie down and rise slowly. A snack or juice helps general energy but does not itself fix the blood-pressure drop.",
             "sources": [
               {
                 "label": "PsychonautWiki — Cannabis",
@@ -512,7 +524,13 @@
       "Orthostatic hypotension (faintness/dizziness)",
       "Anxiety or paranoia episodes",
       "Adulteration with synthetic cannabinoids"
-    ]
+    ],
+    "mcda": {
+      "score": 20,
+      "rank": 8,
+      "of": 20
+    },
+    "visualizer_note": "Low physiological harm with no fatal overdose from THC; main issues are faintness, anxiety and synthetic-cannabinoid adulteration."
   },
   "ketamine": {
     "id": "ketamine",
@@ -632,14 +650,15 @@
       "cardiotoxicity": 2,
       "dehydration": 2,
       "sleep_deprivation": 3,
-      "impulsivity": 4
+      "impulsivity": 4,
+      "lethality": 3
     },
     "sleep_strategy": "Wait for full offset. Do not mix with depressants.",
     "phases": {
       "before": {
         "essential": [
           {
-            "short": "Fasting: No food 90 minutes before (aspiration risk).",
+            "short": "Stomach: Best to avoid eating in the ~90 minutes before, since ketamine can cause nausea and vomiting.",
             "detail": "Ketamine frequently induces nausea and vomiting. At dissociative doses, the gag reflex is severely suppressed. Vomiting while dissociated can lead to aspiration and asphyxiation.",
             "sources": [
               {
@@ -668,8 +687,8 @@
         "focus": "Physical safety and bladder care.",
         "essential": [
           {
-            "short": "Hydration: Sip only to thirst. Do not over-hydrate.",
-            "detail": "Ketamine metabolites are toxic to the urothelial cells lining the bladder, causing severe inflammation (ketamine-induced ulcerative cystitis). Over-hydrating places additional strain on an already vulnerable bladder.",
+            "short": "Hydration: Drink to thirst — no need to force fluids.",
+            "detail": "Drink to thirst rather than forcing fluids. Long-term ketamine use is toxic to the bladder lining (ketamine-induced cystitis), so bladder health matters — but, unlike MDMA, a single ketamine session carries no special water-intoxication risk. Simply drink normally, neither forcing nor heavily restricting fluids.",
             "sources": [
               {
                 "label": "PsychonautWiki — Ketamine",
@@ -729,7 +748,13 @@
       "Aspiration from vomiting while dissociated",
       "Physical injury due to anesthesia",
       "Loss of motor control"
-    ]
+    ],
+    "mcda": {
+      "score": 15,
+      "rank": 11,
+      "of": 20
+    },
+    "visualizer_note": "Moderate — bladder damage with repeated use and injury/aspiration while dissociated; overdose risk climbs steeply if mixed with depressants."
   },
   "lsd": {
     "id": "lsd",
@@ -798,7 +823,8 @@
       "cardiotoxicity": 3,
       "dehydration": 4,
       "sleep_deprivation": 8,
-      "impulsivity": 3
+      "impulsivity": 3,
+      "lethality": 1
     },
     "sleep_strategy": "Plan for complete insomnia during effects. Do not fight it.",
     "phases": {
@@ -891,7 +917,13 @@
       "Peripheral vasoconstriction",
       "Complete insomnia (8–12 hours)",
       "Severe caloric deficit"
-    ]
+    ],
+    "mcda": {
+      "score": 7,
+      "rank": 18,
+      "of": 20
+    },
+    "visualizer_note": "Physiologically very safe (near-zero overdose risk); the danger is psychological, plus total insomnia during effects. NBOMe substitutes are the real lethal risk."
   },
   "mushrooms": {
     "id": "mushrooms",
@@ -960,7 +992,8 @@
       "cardiotoxicity": 2,
       "dehydration": 2,
       "sleep_deprivation": 4,
-      "impulsivity": 2
+      "impulsivity": 2,
+      "lethality": 1
     },
     "sleep_strategy": "Insomnia likely until effects subside. Rest in darkness.",
     "phases": {
@@ -972,13 +1005,13 @@
           },
           {
             "short": "Dose: Start low (1–2 g dried) to gauge potency.",
-            "detail": "Potency varies significantly between species and batches. A standard dose is 1.5–2.5 g. Doses above 5 g exponentially increase the risk of psychological crisis and should not be attempted in a recreational setting."
+            "detail": "Potency varies significantly between species and batches. A standard dose is 1.5–2.5 g. Doses above 5 g strongly increase the risk of a psychological crisis and are best avoided in a recreational setting."
           }
         ],
         "bonus": [
           {
             "short": "Stomach: Light meal or fasting to reduce nausea.",
-            "detail": "Chitin in mushroom cell walls can cause significant stomach upset. Fasting for 3–4 hours or eating a very light meal helps minimize this. Ginger tea is a well-established antiemetic.",
+            "detail": "Nausea on the come-up is mainly serotonergic — psilocin stimulates serotonin receptors in the gut, driving queasiness — with the tough fungal fibre a possible secondary factor. An empty or light stomach reduces the volume that can come back up; ginger is a well-established antiemetic, and a tea or lemon-tek is often gentler than eating whole mushrooms.",
             "sources": [
               {
                 "label": "PsychonautWiki — Psilocybin",
@@ -1041,7 +1074,13 @@
       "Nausea and vomiting",
       "Accidental poisoning (if foraging)",
       "Confusion and disorientation"
-    ]
+    ],
+    "mcda": {
+      "score": 6,
+      "rank": 20,
+      "of": 20
+    },
+    "visualizer_note": "Among the lowest-harm substances — no fatal overdose from psilocybin itself; the main risks are difficult trips and misidentified wild mushrooms."
   },
   "cocaine": {
     "id": "cocaine",
@@ -1110,15 +1149,16 @@
       "cardiotoxicity": 8,
       "dehydration": 4,
       "sleep_deprivation": 6,
-      "impulsivity": 8
+      "impulsivity": 8,
+      "lethality": 6
     },
     "sleep_strategy": "Stop use 3–4 hours before bed. Sleep is very difficult.",
     "phases": {
       "before": {
         "essential": [
           {
-            "short": "⚠️ Test: Fentanyl test strips are mandatory.",
-            "detail": "Cocaine is frequently adulterated with fentanyl, causing fatal opioid overdoses in users with no opioid tolerance. Testing every batch with fentanyl strips is a non-negotiable safety step.",
+            "short": "Test: Use a reagent kit; fentanyl strips are a sensible extra precaution.",
+            "detail": "In Europe, fentanyl contamination of cocaine is uncommon (unlike parts of North America) but has caused deaths, so fentanyl test strips are a cheap, worthwhile precaution — not a guarantee. More useful for identity and purity is a reagent kit (e.g. Marquis/Mecke/Morris) or a drug-checking service, which also flags the common cutting agents.",
             "sources": [
               {
                 "label": "DanceSafe — Cocaine",
@@ -1127,6 +1167,28 @@
               {
                 "label": "PsychonautWiki — Cocaine",
                 "url": "https://psychonautwiki.org/wiki/Cocaine"
+              },
+              {
+                "label": "Drugchecking Berlin — Cocaine/Crack",
+                "url": "https://drugchecking.berlin/substanzen/kokain-crack"
+              }
+            ]
+          },
+          {
+            "short": "⚠️ Levamisole: The most common dangerous cocaine adulterant.",
+            "detail": "A large share of street cocaine is cut with levamisole (a veterinary deworming agent). It can suppress the immune system (agranulocytosis) and cause skin necrosis and vasculitis. It cannot be seen or tasted; only lab-based drug checking detects it reliably. Unexplained sores, mouth ulcers, fever, or repeated infections after cocaine use warrant medical attention.",
+            "sources": [
+              {
+                "label": "PsychonautWiki — Cocaine",
+                "url": "https://psychonautwiki.org/wiki/Cocaine"
+              },
+              {
+                "label": "checkit! — Cocaine",
+                "url": "https://checkit.wien/substanz/kokain/"
+              },
+              {
+                "label": "Drugchecking Berlin — Cocaine/Crack",
+                "url": "https://drugchecking.berlin/substanzen/kokain-crack"
               }
             ]
           },
@@ -1171,7 +1233,7 @@
         "bonus": [
           {
             "short": "Preparation: Fine powder absorbs better and reduces tissue damage.",
-            "detail": "Large crystals damage tissue and are poorly absorbed. Rinse nose with saline every hour to prevent septal perforation."
+            "detail": "Large crystals damage tissue and are poorly absorbed. Rinsing with saline between sessions helps limit tissue damage."
           }
         ]
       },
@@ -1207,9 +1269,15 @@
     "risks": [
       "Severe cardiotoxicity (heart attack)",
       "Cocaethylene formation (with alcohol)",
-      "Fentanyl contamination",
+      "Adulteration (commonly levamisole; occasionally fentanyl)",
       "Compulsive redosing"
-    ]
+    ],
+    "mcda": {
+      "score": 27,
+      "rank": 5,
+      "of": 20
+    },
+    "visualizer_note": "High cardiotoxicity and strong compulsion; overdose risk is real and rises sharply with binge use or alcohol (cocaethylene)."
   },
   "amphetamine": {
     "id": "amphetamine",
@@ -1235,7 +1303,7 @@
           "max": 50
         },
         "heavy": 50,
-        "note": "Street 'speed' purity varies widely. Use drug-checking services.",
+        "note": "Street 'speed' purity varies widely — use drug-checking services. SaferParty advises a ceiling of ~50 mg per 12 hours. Wet amphetamine paste must be fully dried before dosing (residual solvents are toxic).",
         "source": "https://psychonautwiki.org/wiki/Amphetamine"
       },
       "Insufflated": {
@@ -1329,9 +1397,10 @@
       "cardiotoxicity": 7,
       "dehydration": 6,
       "sleep_deprivation": 8,
-      "impulsivity": 6
+      "impulsivity": 6,
+      "lethality": 5
     },
-    "sleep_strategy": "Vitamin C may accelerate excretion. Sleep aids often needed.",
+    "sleep_strategy": "Sleep is very difficult until the drug clears. Do not redose to delay it; plan recovery time.",
     "phases": {
       "before": {
         "essential": [
@@ -1342,7 +1411,7 @@
         ],
         "bonus": [
           {
-            "short": "Supplements: Magnesium pre-load for vasoconstriction.",
+            "short": "Supplements (optional): some people pre-load magnesium for vasoconstriction and muscle tension.",
             "detail": "Amphetamines cause severe vasoconstriction and muscle tension. Pre-loading magnesium provides a buffer against these effects and supports cardiovascular function."
           }
         ]
@@ -1351,7 +1420,7 @@
         "focus": "Cardiac safety and core temperature management.",
         "essential": [
           {
-            "short": "Rest: Mandatory breaks every 60 minutes.",
+            "short": "Rest: Take regular breaks (roughly hourly is a good target) to let heart rate and temperature settle.",
             "detail": "Amphetamines place intense continuous strain on the cardiovascular system — elevated heart rate, blood pressure, and core temperature. The dopamine flood masks pain and fatigue perception.",
             "sources": [
               {
@@ -1365,7 +1434,7 @@
             ]
           },
           {
-            "short": "⚠️ Pain signals are masked — do not push through injury.",
+            "short": "Pain and fatigue are masked — pace yourself and try not to push through strain or injury.",
             "detail": "The dopamine flood completely blocks pain and fatigue perception. Users can sustain joint damage, muscle tears, or exertional heatstroke without any subjective warning signs.",
             "sources": [
               {
@@ -1375,6 +1444,20 @@
               {
                 "label": "SaferParty — Amphetamin",
                 "url": "https://www.saferparty.ch/substanzen/amphetamin"
+              }
+            ]
+          },
+          {
+            "short": "⚠️ Never combine with MAOIs or serotonergic antidepressants.",
+            "detail": "Amphetamine with an MAOI (including moclobemide, or the herb Syrian rue) can cause a hypertensive crisis and serotonin syndrome — potentially fatal. Combined with SSRIs/SNRIs the risk of serotonin toxicity also rises. If you take any antidepressant or MAOI, do not use amphetamine without medical advice.",
+            "sources": [
+              {
+                "label": "Drugchecking Berlin — Amphetamine/Speed",
+                "url": "https://drugchecking.berlin/substanzen/amphetamin-speed"
+              },
+              {
+                "label": "checkit! — Speed/Amphetamine",
+                "url": "https://checkit.wien/substanz/speed-amphetamin/"
               }
             ]
           }
@@ -1395,17 +1478,17 @@
         ],
         "bonus": [
           {
-            "short": "Supplements: Vitamin C (1000 mg) may accelerate excretion.",
-            "detail": "Vitamin C (ascorbic acid) acidifies urine, which accelerates renal clearance of amphetamines. This can shorten the comedown and help the body reach a state where sleep is possible.",
+            "short": "Supplements (optional): vitamin C for general recovery — not to \"flush out\" the drug.",
+            "detail": "Gram-level vitamin C does not meaningfully acidify urine — that would need very high doses (~12 g/day, with their own risks) — so it does not accelerate amphetamine clearance or shorten the comedown, contrary to a common claim. It remains useful for general antioxidant and nutrient replenishment after a depleting night.",
             "sources": [
               {
-                "label": "PsychonautWiki — Amphetamine",
-                "url": "https://psychonautwiki.org/wiki/Amphetamine"
+                "label": "SaferParty — Amphetamin",
+                "url": "https://www.saferparty.ch/substanzen/amphetamin"
               }
             ]
           },
           {
-            "short": "Supplements: Magnesium for muscle tightness.",
+            "short": "Supplements (optional): magnesium for muscle tightness.",
             "detail": "Amphetamine-induced vasoconstriction causes severe muscle cramping and tension. Magnesium directly counteracts this by promoting smooth muscle relaxation."
           }
         ]
@@ -1419,7 +1502,7 @@
         ],
         "bonus": [
           {
-            "short": "Recovery: L-Tyrosine (dopamine precursor) the next day.",
+            "short": "Recovery (optional): some people take L-Tyrosine the next day (a dopamine precursor; evidence is limited).",
             "detail": "L-Tyrosine is the amino acid precursor to dopamine. Supplementing the next day provides building blocks for faster dopamine store replenishment."
           }
         ]
@@ -1430,7 +1513,13 @@
       "Hyperthermia (masked overheating)",
       "Exhaustion and physical injury",
       "Stimulant psychosis (with sleep deprivation)"
-    ]
+    ],
+    "mcda": {
+      "score": 23,
+      "rank": 7,
+      "of": 20
+    },
+    "visualizer_note": "Sustained cardiovascular strain, hyperthermia and heavy sleep loss; overdose is less abrupt than opioids but real at high doses."
   },
   "mdma": {
     "id": "mdma",
@@ -1551,15 +1640,16 @@
       "cardiotoxicity": 6,
       "dehydration": 7,
       "sleep_deprivation": 6,
-      "impulsivity": 5
+      "impulsivity": 5,
+      "lethality": 5
     },
     "sleep_strategy": "Usually possible 6+ hours after last dose. Melatonin helps.",
     "phases": {
       "before": {
         "essential": [
           {
-            "short": "⚠️ Dose: Practice the 1.5 mg/kg rule. Avoid exceeding 150 mg.",
-            "detail": "The neurobehavioral effect plateaus around 125–150 mg. Exceeding this does not increase empathy or euphoria, but exponentially increases amphetamine-like stimulation, jaw clenching (bruxism), and neurotoxicity.",
+            "short": "Dose: Around 1.5 mg/kg is a common guideline, and staying under ~150 mg keeps toxicity lower — higher doses add side-effects, not much extra euphoria.",
+            "detail": "The neurobehavioral effect plateaus around 125–150 mg. Exceeding this does not increase empathy or euphoria, but does increase amphetamine-like stimulation, jaw clenching (bruxism), and neurotoxicity.",
             "sources": [
               {
                 "label": "DanceSafe — MDMA",
@@ -1608,12 +1698,16 @@
         ],
         "bonus": [
           {
-            "short": "Supplements: ALA and ALCAR 1 hour before.",
-            "detail": "MDMA metabolism produces free radicals that damage serotonin terminals. Antioxidants like Alpha-Lipoic Acid (ALA) and Acetyl-L-Carnitine (ALCAR) provide neuroprotective buffering against oxidative stress.",
+            "short": "Supplements: ALA/ALCAR are sometimes taken as antioxidants — evidence is weak.",
+            "detail": "The rationale is that antioxidants like Alpha-Lipoic Acid (ALA) and Acetyl-L-Carnitine (ALCAR) buffer the oxidative stress from MDMA metabolism. This neuroprotection is demonstrated only in animal studies and is unproven in humans — it does not replace the measures that actually reduce harm: limiting dose, staying cool, and spacing use 4–6 weeks apart.",
             "sources": [
               {
-                "label": "PsychonautWiki — MDMA",
-                "url": "https://psychonautwiki.org/wiki/MDMA"
+                "label": "DanceSafe — MDMA",
+                "url": "https://dancesafe.org/mdma/"
+              },
+              {
+                "label": "RollSafe — Health & safety",
+                "url": "https://rollsafe.org/"
               }
             ]
           }
@@ -1653,7 +1747,7 @@
             ]
           },
           {
-            "short": "Heat: Take cooling breaks every hour.",
+            "short": "Heat: Take regular cooling breaks and step out of the heat whenever you feel too warm.",
             "detail": "MDMA impairs the body's thermoregulatory center. When combined with crowded spaces and dancing, core body temperatures can reach dangerous levels (hyperthermia), which simultaneously multiplies neurotoxicity.",
             "sources": [
               {
@@ -1669,7 +1763,7 @@
         ],
         "bonus": [
           {
-            "short": "Supplements: Vitamin C and Magnesium during the roll.",
+            "short": "Supplements (optional): some people take vitamin C and magnesium during the roll.",
             "detail": "Vitamin C provides ongoing antioxidant support. Magnesium helps prevent severe jaw clenching and muscle tension."
           }
         ]
@@ -1678,18 +1772,22 @@
         "essential": [
           {
             "short": "⚠️ Danger: Do NOT take 5-HTP within 24 hours of MDMA.",
-            "detail": "Taking 5-HTP while MDMA is still active in the central nervous system creates a severe risk of Serotonin Syndrome — an acute, life-threatening condition caused by excess serotonin. The brain requires up to 4 weeks to fully rebuild normal serotonin levels.",
+            "detail": "Taking 5-HTP while MDMA is still active in the central nervous system creates a severe risk of Serotonin Syndrome — an acute, life-threatening condition caused by excess serotonin. DanceSafe advises waiting at least 8 hours; we advise 24 hours to be safe. The brain requires up to 4 weeks to fully rebuild normal serotonin levels.",
             "sources": [
               {
                 "label": "checkit! Wien — Ecstasy/MDMA",
                 "url": "https://checkit.wien/substanz/ecstasy-mdma/"
+              },
+              {
+                "label": "DanceSafe — MDMA",
+                "url": "https://dancesafe.org/mdma/"
               }
             ]
           }
         ],
         "bonus": [
           {
-            "short": "Supplements: Magnesium to ease jaw tension.",
+            "short": "Supplements (optional): magnesium to ease jaw tension.",
             "detail": "A final dose of high-absorption magnesium (glycinate) facilitates muscle relaxation to assist with sleep onset."
           }
         ]
@@ -1713,7 +1811,7 @@
         ],
         "bonus": [
           {
-            "short": "Recovery: Begin 5-HTP + Green Tea Extract (EGCG) regimen.",
+            "short": "Recovery (optional): some people take 5-HTP with green tea extract (EGCG) after 24 h to support serotonin recovery.",
             "detail": "After 24 hours, taking 5-HTP with EGCG (which ensures conversion happens in the brain, not the gut) accelerates the regeneration of depleted serotonin stores."
           },
           {
@@ -1728,7 +1826,13 @@
       "Hyperthermia (overheating)",
       "Serotonin syndrome (if interacting with antidepressants MAOI/SSRI)",
       "Severe serotonin depletion (neurochemical crash)"
-    ]
+    ],
+    "mcda": {
+      "score": 9,
+      "rank": 16,
+      "of": 20
+    },
+    "visualizer_note": "Neurotoxic and dehydrating; the main killers are hyperthermia and water intoxication (hyponatremia), not a simple 'overdose'."
   },
   "caffeine": {
     "id": "caffeine",
@@ -1798,7 +1902,8 @@
       "cardiotoxicity": 2,
       "dehydration": 3,
       "sleep_deprivation": 6,
-      "impulsivity": 1
+      "impulsivity": 1,
+      "lethality": 1
     },
     "sleep_strategy": "Avoid caffeine less than 6 hours before planned sleep.",
     "phases": {
@@ -1821,15 +1926,19 @@
         "essential": [
           {
             "short": "Limit: Under 400 mg total (approximately 4 cups).",
-            "detail": "Above 400 mg, caffeine significantly increases the risk of anxiety, tremors, and gastrointestinal distress. Individual tolerance varies, but this is the generally accepted upper safety limit.",
+            "detail": "Above 400 mg/day, caffeine significantly increases the risk of anxiety, tremors, and gastrointestinal distress. Individual tolerance varies, but ~400 mg/day for healthy adults is the limit set by food-safety authorities (EFSA, US FDA).",
             "sources": [
+              {
+                "label": "EFSA — Caffeine safety (2015)",
+                "url": "https://www.efsa.europa.eu/en/topics/topic/caffeine"
+              },
+              {
+                "label": "US FDA — Spilling the Beans on Caffeine",
+                "url": "https://www.fda.gov/consumers/consumer-updates/spilling-beans-how-much-caffeine-too-much"
+              },
               {
                 "label": "PsychonautWiki — Caffeine",
                 "url": "https://psychonautwiki.org/wiki/Caffeine"
-              },
-              {
-                "label": "SaferParty — Koffein",
-                "url": "https://www.saferparty.ch/substanzen/koffein"
               }
             ]
           },
@@ -1888,7 +1997,9 @@
       "Insomnia from delayed clearance",
       "Anxiety and jitters",
       "Dehydration (diuretic effect)"
-    ]
+    ],
+    "mcda": null,
+    "visualizer_note": "Low overall harm; mainly disrupts sleep with mild cardiac strain. Fatal overdose needs extreme doses (grams)."
   },
   "2cb": {
     "id": "2cb",
@@ -2009,7 +2120,8 @@
       "cardiotoxicity": 3,
       "dehydration": 3,
       "sleep_deprivation": 4,
-      "impulsivity": 2
+      "impulsivity": 2,
+      "lethality": 2
     },
     "sleep_strategy": "Shorter than LSD. Standard recovery protocol sufficient.",
     "phases": {
@@ -2017,7 +2129,7 @@
         "essential": [
           {
             "short": "Dose: Use a milligram scale. A 2 mg difference is significant.",
-            "detail": "2C-B has an exceptionally steep dose-response curve. At 5–15 mg it is an entactogen; at 20 mg+ it becomes an overwhelming psychedelic. A 3 mg deviation can shift a manageable state into a crisis. Never estimate by sight.",
+            "detail": "2C-B has an exceptionally steep dose-response curve. Around 5–15 mg it is largely entactogenic; above ~15 mg the psychedelic effects come forward, and by ~20 mg+ they can be overwhelming. A 2–3 mg difference can shift a manageable state into a crisis. Never estimate by sight — the most accurate method is volumetric dosing (dissolving a precisely weighed amount in a known volume of liquid).",
             "sources": [
               {
                 "label": "PsychonautWiki — 2C-B",
@@ -2030,13 +2142,27 @@
             ]
           },
           {
+            "short": "⚠️ Test it: \"pink cocaine\" / Tusi is usually NOT 2C-B.",
+            "detail": "Powders and pills sold as 2C-B are frequently something else. \"Tusi\" / \"tuci\" / \"pink cocaine\" in particular rarely contains 2C-B — it is typically a ketamine + MDMA (± caffeine) mixture, and drug-checking services have found 2C-B tablets cut with the precursor 2C-H. Use a reagent test or a drug-checking service before dosing.",
+            "sources": [
+              {
+                "label": "DanceSafe — 2C-B",
+                "url": "https://dancesafe.org/2c-b/"
+              },
+              {
+                "label": "Drugchecking Berlin — Alerts",
+                "url": "https://drugchecking.berlin/aktuelle-warnungen"
+              }
+            ]
+          },
+          {
             "short": "Stomach: Empty stomach reduces nausea.",
             "detail": "2C-B is known for intense gastrointestinal distress during onset. An empty stomach minimizes nausea and reduces the likelihood of vomiting during the come-up phase."
           }
         ],
         "bonus": [
           {
-            "short": "Supplements: Ginger (250–500 mg) for nausea prevention.",
+            "short": "Supplements (optional): ginger (250–500 mg) can help with nausea.",
             "detail": "Ginger taken 30 minutes before significantly reduces nausea by acting on serotonin receptors in the GI tract — the same mechanism targeted by pharmaceutical antiemetics."
           }
         ]
@@ -2063,7 +2189,7 @@
       "after": {
         "essential": [
           {
-            "short": "Recovery: Standard meal + magnesium.",
+            "short": "Recovery: a normal meal — some people add magnesium.",
             "detail": "2C-B mimics serotonin at the receptor site rather than forcing massive endogenous release (like MDMA). The neurological comedown is significantly milder."
           }
         ],
@@ -2092,8 +2218,11 @@
     "risks": [
       "Nausea and vomiting during onset",
       "Dosing errors (steep dose-response curve)",
+      "Frequently mis-sold ('pink cocaine' is rarely 2C-B)",
       "Intense visual overwhelm at higher doses"
-    ]
+    ],
+    "mcda": null,
+    "visualizer_note": "Generally low harm at correct doses, but a steep dose-response and frequent mis-selling ('pink cocaine') drive the risk."
   },
   "4mmc": {
     "id": "4mmc",
@@ -2105,21 +2234,21 @@
     "dosing": {
       "Insufflated": {
         "unit": "mg",
-        "threshold": 15,
+        "threshold": 5,
         "light": {
-          "min": 25,
-          "max": 75
+          "min": 15,
+          "max": 45
         },
         "common": {
-          "min": 75,
-          "max": 125
+          "min": 45,
+          "max": 80
         },
         "strong": {
-          "min": 125,
-          "max": 175
+          "min": 80,
+          "max": 125
         },
-        "heavy": 175,
-        "note": "Extremely compulsive. Pre-weigh your total limit.",
+        "heavy": 125,
+        "note": "Snorted doses are far lower than oral. 4-MMC is very compulsive, so some people choose to pre-measure a total limit for the session.",
         "source": "https://psychonautwiki.org/wiki/Mephedrone"
       },
       "Oral": {
@@ -2213,14 +2342,15 @@
       "cardiotoxicity": 8,
       "dehydration": 6,
       "sleep_deprivation": 7,
-      "impulsivity": 8
+      "impulsivity": 8,
+      "lethality": 5
     },
     "sleep_strategy": "Very difficult. Stop redosing hours before planned sleep.",
     "phases": {
       "before": {
         "essential": [
           {
-            "short": "⚠️ Control: Pre-weigh your limit. Do not bring a full supply.",
+            "short": "Control: Because 4-MMC's peak is short and compulsive, many people find it helps to pre-measure a set amount and leave the rest at home.",
             "detail": "The primary danger of 4-MMC is its profound psychological compulsivity. The euphoric peak dissipates within 45–60 minutes, leaving an overwhelming urge to redose. Physical boundaries — only carrying a pre-measured amount — are the most effective harm reduction strategy.",
             "sources": [
               {
@@ -2228,11 +2358,25 @@
                 "url": "https://www.saferparty.ch/substanzen/4-mmc"
               }
             ]
+          },
+          {
+            "short": "⚠️ Identity: \"4-MMC\" is now frequently a different cathinone. Test it.",
+            "detail": "European drug-checking services repeatedly find powder sold as 4-MMC (or 3-MMC) that contains no mephedrone at all — commonly 3-CMC, 4-CMC, or N-ethylpentedrone. These are barely researched, strongly compulsive, and in some cases linked to deaths. Appearance and smell are no guide. Use a drug-checking service where available.",
+            "sources": [
+              {
+                "label": "Drugchecking Berlin — Alerts",
+                "url": "https://drugchecking.berlin/aktuelle-warnungen"
+              },
+              {
+                "label": "The Loop — Drug Alerts",
+                "url": "https://wearetheloop.org/drug-alerts"
+              }
+            ]
           }
         ],
         "bonus": [
           {
-            "short": "Supplements: Antioxidants (ALA, Vitamin C) pre-load.",
+            "short": "Supplements (optional): some people pre-load antioxidants (ALA, vitamin C); neuroprotection is unproven in humans.",
             "detail": "4-MMC generates massive oxidative stress through its action on monoamine transporters. Pre-loading antioxidants provides some neuroprotective buffer against free radical damage."
           }
         ]
@@ -2241,8 +2385,8 @@
         "focus": "Temperature monitoring and resisting compulsive redosing.",
         "essential": [
           {
-            "short": "Heat: Monitor temperature closely. Cool down every 45 minutes.",
-            "detail": "4-MMC triggers extreme hyperthermia and tachycardia simultaneously. Core body temperature must be actively managed. Taking breaks in ventilated areas is mandatory."
+            "short": "Heat: Keep an eye on your temperature and cool down regularly.",
+            "detail": "4-MMC triggers extreme hyperthermia and tachycardia simultaneously. Core body temperature is worth watching. Taking breaks in ventilated areas helps keep it down."
           },
           {
             "short": "Heart: Vasoconstriction is severe. Watch extremities.",
@@ -2253,7 +2397,11 @@
             "detail": "Preclinical (animal) studies suggest that combining 4-MMC with alcohol may increase oxidative stress and neuronal damage; this has not been confirmed in human trials. The combination also masks intoxication — encouraging heavier use of both — and adds cardiovascular strain.",
             "sources": [
               {
-                "label": "Neurotoxicity Induced by Mephedrone — Review (PMC/NIH)",
+                "label": "Ciudad-Roberts et al. 2016 — Ethanol + mephedrone neurotoxicity (mice)",
+                "url": "https://www.sciencedirect.com/science/article/abs/pii/S0041008X15301654"
+              },
+              {
+                "label": "Mephedrone neurotoxicity — Review (PMC/NIH)",
                 "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5771050/"
               }
             ]
@@ -2273,7 +2421,7 @@
         ],
         "bonus": [
           {
-            "short": "Supplements: Strong antioxidants + magnesium.",
+            "short": "Supplements (optional): antioxidants and magnesium.",
             "detail": "High doses of Vitamin C and Alpha-Lipoic Acid help clear the massive free radical accumulation. Magnesium counteracts severe vascular constriction and neuromuscular tension."
           }
         ]
@@ -2287,7 +2435,7 @@
         ],
         "bonus": [
           {
-            "short": "Recovery: 5-HTP (24+ hours later), L-Tyrosine, balanced meals.",
+            "short": "Recovery (optional): balanced meals; some people take 5-HTP (only 24+ hours later) and L-Tyrosine.",
             "detail": "5-HTP provides serotonin precursors, L-Tyrosine provides dopamine precursors. Combined with tryptophan-rich proteins and complex carbohydrates, this supports the slow regeneration of both depleted neurotransmitter systems."
           }
         ]
@@ -2297,19 +2445,25 @@
       "Compulsive redosing (extremely addictive pattern)",
       "Severe peripheral vasoconstriction",
       "Dangerous cardiac stress",
-      "Extreme neurotoxicity (especially with alcohol)"
-    ]
+      "Neurotoxicity (worsened by alcohol in animal studies)"
+    ],
+    "mcda": {
+      "score": 13,
+      "rank": 13,
+      "of": 20
+    },
+    "visualizer_note": "Very high cardiac strain and compulsive redosing; deaths have occurred, and mis-selling as unknown cathinones adds risk."
   },
   "ghb": {
     "id": "ghb",
-    "name": "GHB / GBL",
+    "name": "GHB",
     "type": "Depressant",
     "emoji": "💧",
     "color": "#6366f1",
     "duration": 3,
     "dosing": {
       "Oral": {
-        "unit": "mL (concentrate varies 250–500 mg/mL; see critical note)",
+        "unit": "mL GHB solution (concentration varies ~200–600 mg/mL — see note; GBL is a separate profile)",
         "threshold": 0.5,
         "light": {
           "min": 1,
@@ -2324,7 +2478,7 @@
           "max": 3
         },
         "heavy": 3,
-        "note": "⚠️ CRITICAL: Purity and concentration vary wildly across batches (average ~377 mg/mL but wide variation). Dose nearly impossible to estimate. Start conservatively with new batches.",
+        "note": "⚠️ CRITICAL: These volumes assume GHB solution. GBL is roughly 2–3× stronger by volume — the same mL of GBL can be a 2–3× overdose. Concentration also varies wildly between batches (~200–600 mg/mL, average ~377), so volume alone cannot be trusted. Always start with a low test dose from any new batch or source.",
         "source": "https://www.jellinek.nl/en/alcohol-drugs-behavior/ghb/"
       }
     },
@@ -2368,7 +2522,8 @@
       "cardiotoxicity": 5,
       "dehydration": 2,
       "sleep_deprivation": 2,
-      "impulsivity": 6
+      "impulsivity": 6,
+      "lethality": 8
     },
     "sleep_strategy": "Sudden, involuntary sleep onset. Prevent aspiration by using recovery position with sober companion.",
     "phases": {
@@ -2409,6 +2564,20 @@
               {
                 "label": "Jellinek — GHB",
                 "url": "https://www.jellinek.nl/en/alcohol-drugs-behavior/ghb/"
+              }
+            ]
+          },
+          {
+            "short": "⚠️ GHB ≠ GBL: GBL is a separate, stronger substance — see its own profile.",
+            "detail": "GBL converts to GHB in the body but, by volume, is roughly 2–3× stronger and faster-acting, so the same millilitres can be a 2–3× overdose. This table is for GHB only — use the dedicated GBL profile for GBL dosing. If you do not know whether a liquid is GHB or GBL, treat it as GBL and start very low.",
+            "sources": [
+              {
+                "label": "Jellinek — GHB",
+                "url": "https://www.jellinek.nl/en/alcohol-drugs-behavior/ghb/"
+              },
+              {
+                "label": "Release — GHB/GBL",
+                "url": "https://www.release.org.uk/drugs/ghb-and-gbl"
               }
             ]
           }
@@ -2497,7 +2666,233 @@
       "Rapid dependence (physical and psychological)",
       "Severe withdrawal requiring medical supervision",
       "Memory loss (anterograde amnesia)"
-    ]
+    ],
+    "mcda": {
+      "score": 18,
+      "rank": 9,
+      "of": 20
+    },
+    "visualizer_note": "The low 'strain' bars hide the real danger — an extremely narrow dose window and respiratory-depression overdose, especially with alcohol."
+  },
+  "gbl": {
+    "id": "gbl",
+    "name": "GBL",
+    "type": "Depressant",
+    "emoji": "🧪",
+    "color": "#818cf8",
+    "duration": 2,
+    "dosing": {
+      "Oral": {
+        "unit": "mL pure GBL — extremely potent by volume",
+        "threshold": 0.3,
+        "light": {
+          "min": 0.5,
+          "max": 0.9
+        },
+        "common": {
+          "min": 0.9,
+          "max": 1.5
+        },
+        "strong": {
+          "min": 1.5,
+          "max": 2
+        },
+        "heavy": 2,
+        "note": "⚠️ GBL is ~2–3× stronger by volume than GHB and faster-acting (1 mL ≈ 1.66 g GHB salt). NEVER apply a GHB dose to GBL. Effects hit in 3–10 min; over ~2 mL can cause sudden heavy sleep. Always dilute in a soft drink (neat GBL is caustic and burns), measure with a 0.1 mL syringe, and start with a low test dose from any new batch.",
+        "source": "https://psychonautwiki.org/wiki/GBL"
+      }
+    },
+    "routes": [
+      {
+        "name": "Oral",
+        "displayName": "Drinking (diluted)",
+        "emoji": "🧪",
+        "isDefault": true,
+        "phases": {
+          "onset": {
+            "min": 0.05,
+            "max": 0.17,
+            "label": "Onset"
+          },
+          "come_up": {
+            "min": 0.08,
+            "max": 0.17,
+            "label": "Come-up"
+          },
+          "peak": {
+            "min": 0.5,
+            "max": 1,
+            "label": "Peak"
+          },
+          "come_down": {
+            "min": 0.5,
+            "max": 1,
+            "label": "Come-down"
+          },
+          "after_effects": {
+            "min": 2,
+            "max": 6,
+            "label": "After-effects"
+          }
+        }
+      }
+    ],
+    "visualizer": {
+      "neurotoxicity": 4,
+      "cardiotoxicity": 5,
+      "dehydration": 2,
+      "sleep_deprivation": 2,
+      "impulsivity": 6,
+      "lethality": 8
+    },
+    "sleep_strategy": "Sudden, involuntary sleep onset — even faster than GHB. Never use near sleep without a sober companion; use the recovery position.",
+    "phases": {
+      "before": {
+        "essential": [
+          {
+            "short": "⚠️ GBL is NOT GHB: it is ~2–3× stronger by volume and hits in minutes.",
+            "detail": "GBL is a precursor the body rapidly converts to GHB. By volume it is roughly 2–3× stronger and faster-acting (1 mL ≈ 1.66 g GHB salt), so a volume that is a common GHB dose can be a serious GBL overdose. Never carry over GHB dosing. If you are unsure which liquid you have, treat it as GBL and start very low.",
+            "sources": [
+              {
+                "label": "PsychonautWiki — GBL",
+                "url": "https://psychonautwiki.org/wiki/GBL"
+              },
+              {
+                "label": "Release — GHB/GBL",
+                "url": "https://www.release.org.uk/drugs/ghb-and-gbl"
+              }
+            ]
+          },
+          {
+            "short": "⚠️ CRITICAL: The margin between a normal dose and overdose is tiny — often under 0.5 mL.",
+            "detail": "GBL is a CNS depressant with an extremely narrow window. Because it is so concentrated, a difference of a fraction of a millilitre matters: loss of consciousness and respiratory depression can follow a small increase in dose. This is not a substance to estimate by eye.",
+            "sources": [
+              {
+                "label": "checkit! Wien — GHB/GBL",
+                "url": "https://checkit.wien/substanz/ghb-gbl/"
+              },
+              {
+                "label": "Jellinek — GHB",
+                "url": "https://www.jellinek.nl/en/alcohol-drugs-behavior/ghb/"
+              }
+            ]
+          },
+          {
+            "short": "⚠️ Never use with alcohol or any other depressant (benzodiazepines, opioids, pregabalin).",
+            "detail": "GBL (as GHB) combined with other CNS depressants causes catastrophic respiratory depression. Even small amounts with alcohol can cause unconsciousness; vomiting while unconscious leads to fatal aspiration. This combination is the leading cause of GHB/GBL deaths.",
+            "sources": [
+              {
+                "label": "checkit! Wien — GHB/GBL",
+                "url": "https://checkit.wien/substanz/ghb-gbl/"
+              },
+              {
+                "label": "Jellinek — GHB",
+                "url": "https://www.jellinek.nl/en/alcohol-drugs-behavior/ghb/"
+              }
+            ]
+          },
+          {
+            "short": "Dilute it: mix a measured dose into a soft drink — never swallow GBL neat.",
+            "detail": "Undiluted GBL is caustic and can burn the mouth, throat and stomach. Always dilute a measured dose in a non-alcoholic soft drink, measure with a 0.1 mL syringe, keep a written note of what you took and when, and start low with any new batch.",
+            "sources": [
+              {
+                "label": "PsychonautWiki — GBL",
+                "url": "https://psychonautwiki.org/wiki/GBL"
+              }
+            ]
+          }
+        ],
+        "bonus": []
+      },
+      "during": {
+        "focus": "Preventing overdose and respiratory arrest.",
+        "essential": [
+          {
+            "short": "⚠️ Overdose signs → CALL 112 IMMEDIATELY: cannot be woken, irregular or stopped breathing, choking, seizure-like movements.",
+            "detail": "GBL overdose causes sudden unconsciousness and respiratory suppression. Because it suppresses the gag reflex, vomiting while unconscious is silent and leads to aspiration — fatal without immediate help. Put the person in the recovery position and call emergency services the moment breathing becomes irregular or they cannot be woken.",
+            "sources": [
+              {
+                "label": "Jellinek — GHB",
+                "url": "https://www.jellinek.nl/en/alcohol-drugs-behavior/ghb/"
+              }
+            ]
+          },
+          {
+            "short": "⚠️ NO REDOSING when effects fade — GBL is still in your blood.",
+            "detail": "Subjective effects fade within 1–2 hours, but the drug is still active. Taking another dose stacks on top of the first and pushes total blood levels toward overdose. Waiting out the urge is essential; most GBL/GHB hospitalisations follow redosing too soon.",
+            "sources": [
+              {
+                "label": "Jellinek — GHB",
+                "url": "https://www.jellinek.nl/en/alcohol-drugs-behavior/ghb/"
+              }
+            ]
+          },
+          {
+            "short": "Sober companion: MANDATORY. Someone must stay alert and watch breathing.",
+            "detail": "A completely sober person must watch everyone using GBL — monitor breathing, prevent extra doses, watch for overdose signs, and call 112 if anything seems wrong. Never use GBL alone."
+          }
+        ],
+        "bonus": [
+          {
+            "short": "Hydration: non-alcoholic drinks only, max ~0.5 L/hour.",
+            "detail": "Keep hydration moderate and strictly non-alcoholic. Over-hydration adds little benefit and any alcohol is dangerous with GBL."
+          }
+        ]
+      },
+      "after": {
+        "essential": [
+          {
+            "short": "⚠️ Expect sudden, involuntary sleep — use the recovery position (on the side).",
+            "detail": "Sleep onset on GBL is often abrupt and unavoidable. Lie on your side so that if vomiting occurs, gravity keeps the airway clear. A sober person should keep watching breathing until you are fully alert.",
+            "sources": [
+              {
+                "label": "checkit! Wien — GHB/GBL",
+                "url": "https://checkit.wien/substanz/ghb-gbl/"
+              }
+            ]
+          },
+          {
+            "short": "⚠️ Dependence forms fast: daily use can cause dependence within weeks.",
+            "detail": "Regular (especially daily) GBL/GHB use causes rapid physical dependence. Withdrawal is severe — anxiety, panic, insomnia for days, trembling, nausea, and delirium with hallucinations — and must be managed under medical supervision. Do not stop abruptly after a period of frequent use.",
+            "sources": [
+              {
+                "label": "Jellinek — GHB",
+                "url": "https://www.jellinek.nl/en/alcohol-drugs-behavior/ghb/"
+              },
+              {
+                "label": "checkit! Wien — GHB/GBL",
+                "url": "https://checkit.wien/substanz/ghb-gbl/"
+              }
+            ]
+          }
+        ],
+        "bonus": []
+      },
+      "next_morning": {
+        "essential": [
+          {
+            "short": "Recovery: rehydrate and eat normally once fully alert.",
+            "detail": "GBL leaves the body quickly, but disrupted sleep and the intensity of the experience cause fatigue. Rehydrate with electrolyte drinks and resume normal eating once you are fully awake and oriented."
+          }
+        ],
+        "bonus": []
+      }
+    },
+    "risks": [
+      "EXTREMELY narrow therapeutic window — overdose from a fraction of a millilitre",
+      "Faster onset and higher potency than GHB — easy to misjudge",
+      "Respiratory arrest and death (especially with alcohol or depressants)",
+      "Choking/aspiration during sudden unconsciousness",
+      "Caustic if taken undiluted (burns mouth/throat)",
+      "Rapid dependence and severe withdrawal (medical supervision required)"
+    ],
+    "mcda": {
+      "score": 18,
+      "rank": 9,
+      "of": 20,
+      "note": "assessed together with GHB"
+    },
+    "visualizer_note": "Same lethal profile as GHB but harder to dose (stronger by volume, faster onset) — the narrow-window overdose risk is the headline."
   },
   "heroin": {
     "id": "heroin",
@@ -2523,7 +2918,7 @@
           "max": 30
         },
         "heavy": 30,
-        "note": "⚠️ Street purity varies wildly (10–72%). Always start with a tiny test dose from any new batch. Lethal dose for opioid-naive individuals: ~30 mg pure diamorphine IV, ~60 mg pure by other routes.",
+        "note": "⚠️ These tiers are street-weight at typical purity; actual diamorphine content is far lower and varies wildly (10–72%). Start with a tiny test dose from any new batch. For reference, a lethal dose of PURE diamorphine in opioid-naive people is only ~30 mg IV / ~60 mg by other routes — do not confuse this with the street-weight tiers above.",
         "source": "https://wiki.tripsit.me/wiki/Heroin"
       },
       "Insufflated": {
@@ -2542,7 +2937,7 @@
           "max": 30
         },
         "heavy": 30,
-        "note": "Causes nasal mucosa and septum damage. Use personal, rounded-tip tubes. Rinse nasal passages after use.",
+        "note": "Snorted doses are typically a little higher than smoked. Causes nasal mucosa and septum damage — use personal, rounded-tip tubes and rinse nasal passages after use.",
         "source": "https://www.saferparty.ch/substanzen/heroin"
       }
     },
@@ -2618,7 +3013,8 @@
       "cardiotoxicity": 3,
       "dehydration": 2,
       "sleep_deprivation": 1,
-      "impulsivity": 7
+      "impulsivity": 7,
+      "lethality": 8
     },
     "sleep_strategy": "Heroin induces sedation and sleep. Place the person in recovery position to prevent aspiration. Never leave someone nodding off unmonitored.",
     "phases": {
@@ -2626,7 +3022,7 @@
         "essential": [
           {
             "short": "⚠️ LETHAL OVERDOSE RISK: Street purity varies 10–72%. Any new batch, source, or period of abstinence (even 2 days) dramatically changes overdose threshold.",
-            "detail": "Heroin purity is wildly inconsistent. Average street purity in Germany is ~18.7% but ranges from 10–72%. Pharmaceutical-grade diamorphine is approximately 5× more potent than typical street heroin. After even brief periods of abstinence (2–5 days), opioid tolerance diminishes nearly completely — returning to a previous dose after a break is the single most common cause of fatal heroin overdose.",
+            "detail": "Heroin purity is wildly inconsistent. Average German street purity was ~18.7% (2021 data) and ranges from 10–72%; supply disruption since 2023 has made it even less predictable. Pharmaceutical diamorphine is near-pure — several times stronger by weight than typical street heroin. After even brief abstinence (2–5 days), opioid tolerance falls sharply — returning to a previous dose after a break is the single most common cause of fatal heroin overdose.",
             "sources": [
               {
                 "label": "Drugchecking Berlin — Heroin",
@@ -2635,6 +3031,20 @@
               {
                 "label": "SaferParty — Heroin",
                 "url": "https://www.saferparty.ch/substanzen/heroin"
+              }
+            ]
+          },
+          {
+            "short": "⚠️ Contamination: Street heroin may contain fentanyl or nitazenes. Test it; carry extra naloxone.",
+            "detail": "Synthetic opioids — fentanyl and especially nitazenes — increasingly turn up in the European heroin supply and are far stronger than heroin itself. They are a leading driver of recent overdose deaths across several EU countries. Fentanyl test strips detect fentanyl but not all nitazenes, so a negative test is not a guarantee. Because these opioids are potent and can outlast a single naloxone dose, carry several doses and be ready to re-administer.",
+            "sources": [
+              {
+                "label": "EUDA — Overdose deaths, nitazenes (2025)",
+                "url": "https://www.euda.europa.eu/"
+              },
+              {
+                "label": "The Loop — Drug Alerts",
+                "url": "https://wearetheloop.org/drug-alerts"
               }
             ]
           },
@@ -2811,10 +3221,17 @@
       "Aspiration (choking on vomit while unconscious)",
       "Extreme overdose risk after tolerance break (even 2 days)",
       "Wildly variable street purity (10–72%)",
+      "Contamination with fentanyl or nitazenes (far stronger; may resist naloxone)",
       "Rapid physical and psychological dependence",
       "Severe withdrawal requiring medical supervision",
       "Blood-borne infections from shared equipment (HIV, Hepatitis C)"
-    ]
+    ],
+    "mcda": {
+      "score": 55,
+      "rank": 2,
+      "of": 20
+    },
+    "visualizer_note": "The strain axes look mild, but respiratory-depression overdose is the dominant, ever-present risk — heightened by tolerance loss and fentanyl/nitazene contamination."
   },
   "methamphetamine": {
     "id": "methamphetamine",
@@ -2986,7 +3403,8 @@
       "cardiotoxicity": 8,
       "dehydration": 7,
       "sleep_deprivation": 8,
-      "impulsivity": 8
+      "impulsivity": 8,
+      "lethality": 6
     },
     "sleep_strategy": "Sleep may be impossible for 12–30+ hours. Do not redose to delay the comedown. Plan adequate recovery time. Benzodiazepines should NOT be used as sleep aids without medical supervision.",
     "phases": {
@@ -3017,7 +3435,7 @@
             ]
           },
           {
-            "short": "Eat a balanced meal before use. Supplement with vitamins C, D and minerals (iron, calcium, magnesium).",
+            "short": "Eat a balanced meal before use. Some people also take vitamins C and D and minerals (iron, calcium, magnesium).",
             "detail": "Methamphetamine suppresses hunger, thirst, and pain perception for 6–30+ hours. The body continues to burn calories and deplete nutrients throughout. Pre-loading with balanced nutrition and supplements mitigates the severe nutritional depletion that contributes to the harsh comedown.",
             "sources": [
               {
@@ -3130,15 +3548,15 @@
         ],
         "bonus": [
           {
-            "short": "Supplements: Vitamin C, magnesium, balanced meals with protein and carbohydrates.",
-            "detail": "Vitamin C supports dopamine synthesis recovery and may accelerate methamphetamine excretion. Magnesium counteracts vasoconstriction and muscle tension. Protein-rich meals provide amino acid precursors for neurotransmitter replenishment."
+            "short": "Supplements (optional): balanced meals with protein and carbs; some people add vitamin C and magnesium.",
+            "detail": "Vitamin C and magnesium support recovery: vitamin C for general antioxidant and nutrient replenishment (it does not meaningfully speed methamphetamine excretion, contrary to a common claim), and magnesium to counteract vasoconstriction and muscle tension. Protein-rich meals provide amino acid precursors for neurotransmitter replenishment."
           }
         ]
       },
       "next_morning": {
         "essential": [
           {
-            "short": "Recovery takes days, not hours. Do not use stimulants to function. Rest is mandatory.",
+            "short": "Recovery takes days, not hours. Using more stimulants to push through only deepens the crash — rest is what helps.",
             "detail": "The brain requires extended time to replenish depleted dopamine, noradrenaline, and serotonin stores. Using caffeine or other stimulants to push through the comedown delays recovery and compounds neurotoxicity. Plan for 24–48+ hours of rest and reduced function.",
             "sources": [
               {
@@ -3174,6 +3592,12 @@
       "Extreme neurotoxicity and suspected irreversible brain changes",
       "Severe comedown lasting 2–4 days (depression, anxiety, exhaustion)",
       "Significantly elevated Parkinson's disease risk with chronic use"
-    ]
+    ],
+    "mcda": {
+      "score": 33,
+      "rank": 4,
+      "of": 20
+    },
+    "visualizer_note": "Extreme across the board — high neurotoxicity, cardiac strain, addiction and overdose (stroke, cardiac arrest, hyperthermia)."
   }
 }

@@ -22,6 +22,7 @@ const COMBO_KEY_MAP = {
     '2cb':             '2c-x',
     '4mmc':            'mephedrone',
     'ghb':             'ghb/gbl',
+    'gbl':             'ghb/gbl',
     'heroin':          'opioids',
     'methamphetamine': 'amphetamines'
 };

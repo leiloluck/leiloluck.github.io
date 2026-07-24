@@ -6,7 +6,7 @@
 */
 
 // Display order by pharmacological class (stimulants → empathogens → psychedelics → dissociatives → depressants → opioids)
-const SUBSTANCE_ORDER = ['sober', 'caffeine', 'cocaine', 'amphetamine', 'methamphetamine', 'mdma', '4mmc', 'lsd', 'mushrooms', '2cb', 'ketamine', 'cannabis', 'alcohol', 'ghb', 'heroin'];
+const SUBSTANCE_ORDER = ['sober', 'caffeine', 'cocaine', 'amphetamine', 'methamphetamine', 'mdma', '4mmc', 'lsd', 'mushrooms', '2cb', 'ketamine', 'cannabis', 'alcohol', 'ghb', 'gbl', 'heroin'];
 
 // State
 let currentProtocol = 'sober';
@@ -15,7 +15,7 @@ let durationChart = null;
 let currentIntensity = 'common';
 let currentRouteIndex = 0;
 let _durationRoutes = null; // current routes used in duration chart (for tooltip access)
-let currentTab = 'tab-risk';
+let currentTab = 'tab-protocol';
 
 // DOM refs (assigned after DOMContentLoaded)
 let navContainer, modeDisplay, introModifier, contentBefore, contentDuring,
@@ -136,8 +136,8 @@ const FOLDER_THEMES = {
     }
 };
 
-// Tab order for slide direction
-const TAB_ORDER = ['tab-risk', 'tab-protocol', 'tab-combos'];
+// Tab order for slide direction (Protocol leads — the practical guide comes first)
+const TAB_ORDER = ['tab-protocol', 'tab-risk', 'tab-combos'];
 
 // --- Tabs ---
 window.switchTab = function(tabId) {
@@ -176,22 +176,26 @@ window.switchTab = function(tabId) {
         folderBody.style.borderBottomColor = 'transparent';
     }
 
-    // Update tab buttons for "folder" styling
+    // Update tab buttons — each tab wears its own colour so they read as distinct even
+    // at rest; the active one deepens, lifts, and merges its bottom edge into the panel.
+    const tabBase = 'tab-btn flex-1 max-w-[150px] py-3 px-2 sm:px-4 text-[13px] sm:text-sm font-bold transition-all rounded-t-xl border-2 relative';
     document.querySelectorAll('.tab-btn').forEach(btn => {
+        const btnTabId = btn.id.replace('btn-', '');
+        const btnTheme = FOLDER_THEMES[btnTabId] || theme;
         if (btn.id === 'btn-' + tabId) {
-            // Active Folder Tab
-            btn.className = 'tab-btn flex-1 max-w-[150px] py-3 px-2 sm:px-4 text-[13px] sm:text-sm font-bold transition-all rounded-t-xl z-20 relative translate-y-[1px] shadow-[0_-4px_15px_rgba(0,0,0,0.3)]';
+            // Active tab — deep fill, raised, bottom border merges into the folder body
+            btn.className = tabBase + ' z-20 translate-y-[1px] shadow-[0_-6px_18px_rgba(0,0,0,0.35)]';
             btn.style.backgroundColor = theme.bg;
             btn.style.borderColor = theme.border;
             btn.style.borderBottomColor = 'transparent';
             btn.style.color = theme.text;
         } else {
-            // Inactive Tab
-            btn.className = 'tab-btn flex-1 max-w-[150px] py-3 px-2 sm:px-4 text-[13px] sm:text-sm font-bold transition-all bg-[#0a0a0a] text-gray-500 rounded-t-xl hover:bg-[#111] hover:text-gray-300 z-10 relative opacity-70 hover:opacity-100';
-            btn.style.backgroundColor = '#050505';
-            btn.style.borderColor = 'transparent';
-            btn.style.borderBottomColor = theme.border; // Sits on top of the active folder body
-            btn.style.color = '#71717a';
+            // Inactive tab — its own colour, muted (tinted fill, colour text + outline)
+            btn.className = tabBase + ' z-10';
+            btn.style.backgroundColor = hexAlpha(btnTheme.text, 0.06);
+            btn.style.borderColor = hexAlpha(btnTheme.border, 0.7);
+            btn.style.borderBottomColor = theme.border;
+            btn.style.color = hexAlpha(btnTheme.text, 0.75);
         }
     });
 };
@@ -308,9 +312,11 @@ function loadProtocol(id) {
 
     // 8. Charts
     updateCharts(data, id === 'sober');
+    renderRiskMeta(data);
 
     // 9. Drug Combinations
     renderCombosSection(data);
+    renderDangerCombos(data);
 }
 
 // --- Dosing Panel ---
@@ -420,14 +426,14 @@ function updateDosingDisplay(data) {
     // High-dose warning for strong + heavy
     if (currentIntensity === 'strong' || currentIntensity === 'heavy') {
         const warnings = {
-            mdma: '⚠️ Doses above 150 mg exponentially increase neurotoxicity risk without additional euphoria.',
-            cocaine: '⚠️ High doses significantly increase risk of cardiac events and compulsive redosing.',
-            amphetamine: '⚠️ High doses dramatically increase cardiovascular strain and hyperthermia risk.',
-            '4mmc': '⚠️ Higher doses dramatically increase compulsive redosing urge and neurotoxicity.',
-            '2cb': '⚠️ At this dose range, effects become overwhelming. Ensure safe environment.',
-            ketamine: '⚠️ High doses approach the "k-hole" — full dissociation. Never use alone.',
-            lsd: '⚠️ High doses dramatically increase risk of challenging experiences. Set & setting critical.',
-            alcohol: '⚠️ High doses severely impair judgment and motor control. Risk of aspiration if vomiting.'
+            mdma: 'Above ~150 mg, side-effects and neurotoxicity climb with little extra euphoria.',
+            cocaine: 'Higher doses raise the risk of cardiac strain and compulsive redosing.',
+            amphetamine: 'Higher doses raise cardiovascular strain and overheating risk.',
+            '4mmc': 'Higher doses strongly increase the urge to redose and the cardiac strain.',
+            '2cb': 'At this range effects can become overwhelming — a comfortable setting helps.',
+            ketamine: 'This approaches the "k-hole" (full dissociation) — best not to be alone.',
+            lsd: 'Higher doses make challenging experiences more likely — set & setting matter more.',
+            alcohol: 'Heavy doses strongly impair coordination; if vomiting, lie on your side (aspiration risk).'
         };
         if (warnings[data.id]) {
             doseWarning.textContent = warnings[data.id];
@@ -471,15 +477,6 @@ function setIntensity(level) {
     const data = protocols[currentProtocol];
     updateDosingDisplay(data);
     updateCharts(data);
-}
-
-// Intensity multipliers for risk visualization
-function getIntensityMultiplier() {
-    if (currentIntensity === 'threshold') return 0.35;
-    if (currentIntensity === 'light') return 0.65;
-    if (currentIntensity === 'strong') return 1.25;
-    if (currentIntensity === 'heavy') return 1.5;
-    return 1.0; // common
 }
 
 // --- Section Rendering (Essential + Bonus) ---
@@ -529,7 +526,7 @@ function renderItemListHtml(items, elementId, color, prefix) {
                 <span class="mr-2 mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:${hexAlpha(color, 0.5)}"></span>
                 <div class="flex-1">
                     <span>${shortFormatted}</span>
-                    <button onclick="toggleExpand('${uid}')" class="ml-2 text-xs opacity-60 hover:opacity-100 transition-opacity font-mono" style="color:${color}">
+                    <button onclick="toggleExpand('${uid}')" class="expand-toggle ml-1 text-xs opacity-60 hover:opacity-100 transition-opacity font-mono" style="color:${color}">
                         <span id="btn-${uid}">[+]</span>
                     </button>
                     <div id="${uid}" class="expandable-detail">
@@ -635,7 +632,7 @@ function renderCombosSection(data) {
                     </span>
                 </div>
                 ${hasDetail ? `
-                <button onclick="toggleExpand('${uid}')" class="ml-2 text-xs opacity-60 hover:opacity-100 transition-opacity font-mono flex-shrink-0" style="color:${data.color}">
+                <button onclick="toggleExpand('${uid}')" class="expand-toggle ml-1 text-xs opacity-60 hover:opacity-100 transition-opacity font-mono flex-shrink-0" style="color:${data.color}">
                     <span id="btn-${uid}">[+]</span>
                 </button>` : ''}
             </div>
@@ -653,6 +650,7 @@ function renderCombosSection(data) {
 // Axis definitions — shown in the risk-chart tooltip so each axis states its
 // scope explicitly (the labels are deliberately narrow proxies, not catch-alls).
 const AXIS_DESC = {
+    'Overdose / Lethality': 'Risk of death from the drug itself — overdose, respiratory depression, or a narrow dose-to-danger margin.',
     'Neurotoxicity': 'Risk of direct, lasting damage to neural tissue.',
     'Cardiotoxicity': 'Cardiovascular strain — heart rate, blood pressure, vasoconstriction.',
     'Dehydration': 'Fluid and electrolyte disruption.',
@@ -662,16 +660,21 @@ const AXIS_DESC = {
 
 // --- Charts (Dark Mode) ---
 function updateCharts(data, skipDuration = false) {
-    const multiplier = getIntensityMultiplier();
+    // Risk profile is a fixed per-substance estimate — deliberately NOT scaled by
+    // the dose tier. A uniform multiplier would fake a dose-response the data can't
+    // support. Higher doses raise every risk (especially overdose); that is stated
+    // in the caption rather than drawn as precise bar movement.
+    const v = data.visualizer;
     const scores = [
-        Math.min(8, Math.round(data.visualizer.neurotoxicity * multiplier)),
-        Math.min(8, Math.round(data.visualizer.cardiotoxicity * multiplier)),
-        Math.min(8, Math.round(data.visualizer.dehydration * multiplier)),
-        Math.min(8, Math.round(data.visualizer.sleep_deprivation * multiplier)),
-        Math.min(8, Math.round(data.visualizer.impulsivity * multiplier))
+        v.lethality != null ? v.lethality : 0,
+        v.neurotoxicity,
+        v.cardiotoxicity,
+        v.dehydration,
+        v.sleep_deprivation,
+        v.impulsivity
     ];
 
-    const labels = ['Neurotoxicity', 'Cardiotoxicity', 'Dehydration', 'Sleep Disruption', 'Compulsion'];
+    const labels = ['Overdose / Lethality', 'Neurotoxicity', 'Cardiotoxicity', 'Dehydration', 'Sleep Disruption', 'Compulsion'];
     const darkGridColor = 'rgba(255,255,255,0.06)';
     const darkLabelColor = '#71717a'; // zinc-500
 
@@ -759,7 +762,7 @@ function createHistogramChart(data, labels, scores, gridColor, labelColor) {
                             if (v > 2) t = 'Moderate';
                             if (v > 4) t = 'High';
                             if (v > 6) t = 'Very High';
-                            return `${t} (${v}/8)`;
+                            return t;
                         }
                     }
                 }
@@ -934,4 +937,51 @@ function hexAlpha(hex, alpha) {
     const g = parseInt(hex.slice(3, 5), 16);
     const b = parseInt(hex.slice(5, 7), 16);
     return `rgba(${r},${g},${b},${alpha})`;
+}
+
+// --- Risk-profile meta: per-substance rationale + independent MCDA harm score ---
+function ordinal(n) {
+    const s = ['th', 'st', 'nd', 'rd'], v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+function renderRiskMeta(data) {
+    const rat = document.getElementById('risk-rationale');
+    if (rat) rat.textContent = data.visualizer_note || '';
+
+    const chip = document.getElementById('mcda-chip');
+    if (!chip) return;
+    if (data.mcda) {
+        const m = data.mcda;
+        const extra = m.note ? ` (${m.note})` : '';
+        chip.innerHTML = '<span class="font-semibold text-gray-300">Independent expert harm ranking:</span> '
+            + `${m.score}/100 — ${ordinal(m.rank)} most harmful of ${m.of} drugs${extra}. `
+            + '<span class="text-gray-500">Overall harm to self &amp; others; Nutt 2010.</span>';
+    } else if (data.id === 'sober') {
+        chip.innerHTML = '';
+    } else {
+        chip.innerHTML = '<span class="text-gray-500">Not assessed by the Nutt (2010) expert harm ranking.</span>';
+    }
+}
+
+// --- Dangerous combinations, surfaced above the tabs (Dangerous + Unsafe tiers) ---
+function renderDangerCombos(data) {
+    const box = document.getElementById('danger-combos');
+    const list = document.getElementById('danger-combos-list');
+    if (!box || !list) return;
+    if (data.id === 'sober' || typeof comboData === 'undefined' || !comboData) {
+        box.classList.add('hidden');
+        return;
+    }
+    const combos = getSubstanceCombos(data.id).filter(c => c.status === 'Dangerous' || c.status === 'Unsafe');
+    if (!combos.length) {
+        box.classList.add('hidden');
+        return;
+    }
+    box.classList.remove('hidden');
+    list.innerHTML = combos.map(c => {
+        const r = c.riskInfo;
+        return `<span class="danger-combo-chip" style="border-color:${hexAlpha(r.color, 0.55)};color:${r.color}">`
+            + `${r.icon} ${c.displayEmoji} ${c.displayName} <span style="opacity:0.65">· ${r.label}</span></span>`;
+    }).join('');
 }

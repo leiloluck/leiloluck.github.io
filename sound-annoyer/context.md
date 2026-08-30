@@ -53,6 +53,19 @@ These are the explicit asks. Treat them as a checklist.
       `onended` fires, so `clearScheduled()` can still reach them. (They used to be
       dropped one second after their start time, which left up to ten seconds of sound
       coming out of a hidden speaker after you pressed STOP.)
+- [x] **Close button (X, top right)** — `shutdownApp()`. No web page can terminate its own
+      OS process; there is no such API, and on Android the system alone decides when to
+      reclaim a process. So the X does the part that actually matters: stops the queue,
+      stops the heartbeat and keep-alive, detaches the Media Session handlers (or the
+      lock-screen notification outlives the app), revokes the keep-alive blob, and calls
+      `audioCtx.close()` — `close()`, not `suspend()`, because that is what hands the audio
+      device back and drops the partial wakelock. Then `window.close()`. Per spec a script
+      may only close a window it opened, but an INSTALLED app window qualifies, so this
+      genuinely closes a WebAPK and silently does nothing in a plain tab — which the app
+      detects and explains rather than looking broken. `audioCtx` is nulled so
+      `ensureAudio()` rebuilds if the window survives, and `closing` gates
+      `applyUpdateIfSafe()` so a queued update cannot resurrect a closed app.
+
 - [x] **Changes apply immediately** — arming or disarming a sound, changing the interval
       or toggling chaos timing while running calls `rescheduleFromNow()`, which drops
       every not-yet-started hit and rebuilds the horizon. Without it the queue still held

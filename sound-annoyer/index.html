@@ -71,7 +71,12 @@
 
     <!-- Sound selection -->
     <section class="section sounds-section">
-      <p class="section-label">Sounds <span class="section-hint" id="sound-hint">tap to arm</span></p>
+      <p class="section-label">Sounds
+        <span class="label-right">
+          <span class="section-hint" id="sound-hint">tap to arm</span>
+          <button class="btn-tiny" id="select-all-btn" type="button">Select all</button>
+        </span>
+      </p>
       <div class="sound-grid" id="sound-group"></div>
     </section>
 
@@ -120,7 +125,7 @@
 
     <!-- Version + offline status (version is tappable: checks for an update) -->
     <section class="section settings-meta">
-      <button class="version" id="version" type="button" title="Check for updates">v26.08.30c</button>
+      <button class="version" id="version" type="button" title="Check for updates">v26.08.30d</button>
       <span class="offline-badge" id="offline-badge">✓ works offline</span>
     </section>
 

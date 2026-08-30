@@ -168,8 +168,13 @@ button {
 /* Title-bar close button — deliberately small: it is chrome, not content, and
    a fat X invites a mis-tap that would end the prank. */
 .btn-close {
-  width: 20px;
-  height: 18px;
+  /* Win98's real title-bar button is 16x14, which is far too small to hit on a
+     phone. The GLYPH stays small so the chrome still reads as 1998; the BUTTON is
+     grown to 30x26 and given an invisible tap area beyond that (see ::after), so
+     the target clears the ~44px guidance without looking like a modern app. */
+  position: relative;
+  width: 30px;
+  height: 26px;
   flex: 0 0 auto;
   display: flex;
   align-items: center;
@@ -180,6 +185,12 @@ button {
   color: var(--text);
   background: var(--surface);
   box-shadow: var(--raised);
+}
+/* Invisible hit-slop: 8px in every direction, so the real target is ~46x42. */
+.btn-close::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
 }
 .btn-close:active { box-shadow: var(--sunken); }
 @media (hover: hover) and (pointer: fine) {
@@ -200,24 +211,45 @@ button {
 }
 
 .tab {
+  position: relative;
   flex: 0 0 auto;
   min-height: 34px;
   padding: 8px 16px;
   font-size: 13px;
+  /* Unselected tabs sit BEHIND the page: darker, lower, and greyed. Bold text alone
+     was not enough of a signal — the two tabs read as equally active. */
+  background: #adadad;
+  color: #2b2b2b;
+  margin-top: 4px;
+  box-shadow: inset  1px  1px var(--btn-face),
+              inset -1px  0   var(--frame),
+              inset -2px  0   var(--btn-shadow);
+}
+.tab[aria-selected="true"] {
+  /* The selected tab is the page: same silver, taller, bolder, and it physically
+     erases the page's top border beneath it (::after) so the two become one surface.
+     That seam-break is what Win98 uses to show selection, and it is unambiguous. */
   background: var(--surface);
-  /* A tab is a raised panel with no bottom edge — it merges into its page. */
+  color: var(--text);
+  font-weight: bold;
+  margin-top: 0;
+  padding: 10px 18px 14px;
+  z-index: 3;
   box-shadow: inset  1px  1px var(--btn-hilite),
               inset  2px  0   var(--btn-face),
               inset -1px  0   var(--frame),
-              inset -2px  0   var(--btn-shadow),
-              inset  0   2px  var(--btn-face);
+              inset -2px  0   var(--btn-shadow);
 }
-.tab[aria-selected="true"] {
-  padding-top: 6px;
-  padding-bottom: 12px;
-  margin-top: -2px;            /* selected tabs sit proud and cover the seam */
-  font-weight: bold;
-  z-index: 3;
+/* Paints over the panel's top bevel so the active tab merges into the page. */
+.tab[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  bottom: -3px;
+  height: 4px;
+  background: var(--surface);
+  z-index: 4;
 }
 
 /* ── Tab page ────────────────────────────────────────────────────────────── */
@@ -245,6 +277,28 @@ button {
   gap: 8px;
 }
 .section-hint { font-weight: normal; font-size: 11px; color: var(--muted); }
+
+/* Right-hand cluster of the section label: the hint, then the select-all button. */
+.label-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: normal;
+}
+
+/* Small enough to sit inside the label row without pushing it around, big enough to
+   hit: the visible chip is 24px tall, with 7px of invisible slop on every side. */
+.btn-tiny {
+  position: relative;
+  min-height: 24px;
+  padding: 4px 9px;
+  font-size: 11px;
+  white-space: nowrap;
+  background: var(--surface);
+  box-shadow: var(--raised);
+}
+.btn-tiny::after { content: ""; position: absolute; inset: -7px; }
+.btn-tiny:active { box-shadow: var(--sunken); }
 
 /* ── Hero: a sunken status well, like a Win98 preview pane ───────────────── */
 
@@ -579,14 +633,32 @@ body.test-mode .sound-btn  { background-color: #d8d4bf; }
 .custom-display { justify-content: space-between; }
 .custom-input   { font-family: var(--sans); font-size: 20px; font-weight: bold; }
 
+/* The unit control renders BOTH units with the active one latched, so it reads as a
+   switch. As a single "MIN" label it looked like a static unit and users concluded
+   seconds were unsupported — they were always supported. */
 .custom-unit-btn {
-  min-height: 32px;
-  padding: 5px 10px;
+  display: flex;
+  gap: 2px;
+  min-height: 34px;
+  padding: 3px;
   font-size: 11px;
+  background: var(--surface);
+  box-shadow: var(--field);
+}
+.unit-opt {
+  display: flex;
+  align-items: center;
+  padding: 4px 9px;
+  font-weight: bold;
+  color: var(--text-dis);
+  text-shadow: 1px 1px 0 var(--btn-hilite);
+}
+.unit-opt.on {
+  color: var(--text);
+  text-shadow: none;
   background: var(--surface);
   box-shadow: var(--raised);
 }
-.custom-unit-btn:active { box-shadow: var(--sunken); }
 
 .custom-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
 .custom-keypad-btn {

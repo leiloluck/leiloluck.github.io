@@ -32,13 +32,21 @@ needed to pull this off:
 
 These are the explicit asks. Treat them as a checklist.
 
-- [ ] **Toggle sounds** — multi-select. Cat / dog / doorbell / knock to start; easy
-      to add more.
+- [x] **Toggle sounds** — multi-select. **First run arms the Cat only**, not all twelve:
+      arming everything made the grid read as "all selected" at a glance and hid the fact
+      that these are choices. A small **Select all** button sits in the section label; its
+      text states what the next tap does, so it reads **Deselect all** only once every
+      sound is armed, and it tracks manual taps too. Deselecting all keeps the Cat — the
+      app must never be left with nothing armed, or UNLEASH is dead with no visible
+      reason.
 - [ ] **Random intervals** — not a fixed metronome. The chosen interval is a *base*;
       each actual gap is randomized around it so it feels unpredictable.
 - [x] **Interval options** — a **5 second** option (tagged `test`, for checking the rig
       before you hide the speaker), then less frequent presets (**30 s**, **1 min**, …),
-      plus a **Custom** option (1–3600 s / 1–360 min) for anything else.
+      plus a **Custom** option (1–3600 s / 1–360 min) for anything else. The unit control
+      renders **both** SEC and MIN with the active one latched. As a lone "MIN" label it
+      read as a static unit rather than a switch, and the owner reasonably concluded
+      seconds were unsupported — they always were; only the affordance was missing.
 - [x] **No immediate repeats** — `pickNextSound()` bans the most recently scheduled
       sounds, as many as it can while still leaving a real choice (`AVOID_RECENT = 2`):
       **1 armed** repeats (there is no alternative); **2 armed** ban the last one, so they

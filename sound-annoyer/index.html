@@ -116,7 +116,7 @@
 
     <!-- Version + offline status (version is tappable: checks for an update) -->
     <section class="section settings-meta">
-      <button class="version" id="version" type="button" title="Check for updates">v26.08.30</button>
+      <button class="version" id="version" type="button" title="Check for updates">v26.08.30a</button>
       <span class="offline-badge" id="offline-badge">✓ works offline</span>
     </section>
 
@@ -198,6 +198,9 @@
     <!-- Only shown when the browser actually has a native prompt to give us. On Brave
          that prompt exists but only produces a shortcut, so the steps above recommend
          Chrome first and this stays as the deliberate second choice. -->
+    <!-- Android + Brave only: reopens this page in Chrome via an intent: URL, because
+         Chrome is what mints a real WebAPK (an actual installed app). Hidden elsewhere. -->
+    <button class="help-close-btn hidden" id="open-chrome-btn">Open in Chrome</button>
     <button class="help-close-btn hidden" id="install-proceed-btn">Install here anyway</button>
     <button class="help-close-btn" id="install-close-btn">Got it</button>
   </section>

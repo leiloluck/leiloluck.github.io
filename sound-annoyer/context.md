@@ -39,9 +39,15 @@ These are the explicit asks. Treat them as a checklist.
 - [x] **Interval options** — a **5 second** option (tagged `test`, for checking the rig
       before you hide the speaker), then less frequent presets (**30 s**, **1 min**, …),
       plus a **Custom** option (1–3600 s / 1–360 min) for anything else.
-- [ ] **No immediate repeats** — when multiple sounds are selected, never play the
-      same sound twice in a row (shuffle with anti-repeat). If only one sound is
-      selected, it may repeat every time.
+- [x] **No immediate repeats** — `pickNextSound()` bans the most recently scheduled
+      sounds, as many as it can while still leaving a real choice (`AVOID_RECENT = 2`):
+      **1 armed** repeats (there is no alternative); **2 armed** ban the last one, so they
+      strictly alternate; **3 or more armed** ban the last two. Beware the boundary: at
+      exactly 3 armed sounds banning two leaves a single candidate, so the ORDER becomes a
+      fixed rotation (A B C A B C) and only the interval stays random — arm a fourth sound
+      for an unpredictable order. `rescheduleFromNow()` rebuilds the history from the hits
+      that actually survived, so toggling a sound mid-session cannot ban clips the listener
+      never heard.
 - [x] **Runs until stopped** — start/stop control; keeps going indefinitely. STOP also
       silences a clip that is *already playing*: entries stay in `scheduled` until their
       `onended` fires, so `clearScheduled()` can still reach them. (They used to be

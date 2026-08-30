@@ -81,24 +81,59 @@ triggered by a JS timer:
 stops and forgets them all on **pause**, **stop**, and **sound switch** so stale
 beats never leak into a later session.
 
-**Keeping the context awake.** Two layers:
+**Keeping the context awake.** Two layers that do *different* jobs — both run in
+**both** sound modes (as of v26.08.30; `startSilentKeepAlive()` used to be
+interval-only, which is a large part of why the end bell went missing):
 
-- `startKeepAlive()` plays a silent looping Web Audio buffer for the whole session.
-  Enough on Android/desktop; harmless in `loop` mode (which already has continuous
-  media).
-- `startSilentKeepAlive()` (interval mode only) plays a real silent looping
-  `<audio>` element built from a generated WAV `Blob` (`makeSilentWavBlob`, served
-  as a `blob:` URL because the CSP permits `blob:` but not `data:` media). **iOS
-  suspends the AudioContext whenever no media element is playing**, and a Web Audio
-  buffer does not count — only a playing `<audio>` element holds the platform audio
-  session open. This is what makes interval-mode bells survive a locked screen on
-  iPhone. Both keep-alives are torn down on pause/stop/end and on sound switch.
+- `startKeepAlive()` loops a faint **25 Hz Web Audio tone at amplitude 0.002**. Its job
+  is to clear Chrome's audibility gate — an exact constant, mean-square power
+  ≥ `-72.24719896` dBFS (RMS ≥ 2⁻¹²), in `services/audio/output_stream.cc`. Ours sits
+  at −57 dBFS, 15 dB clear. Passing that gate is what stops Chrome throttling timers
+  and **freezing the page**; a frozen page's AudioContext stops too, and every
+  pre-scheduled bell dies with it. It must never be digital silence.
+- `startSilentKeepAlive()` loops a real `<audio>` element carrying the same faint tone
+  from a generated 10-second WAV `Blob` (served as a `blob:` URL because the CSP
+  permits `blob:` but not `data:` media). Its job is the **platform audio session**.
+  On iOS, WebKit suspends the AudioContext whenever no media element is playing. On
+  **Android 17** (stable 2026-06-16) background audio without a foreground service is
+  *silently muted*, and Chrome only runs its `mediaPlayback` foreground service while a
+  media notification is showing — which requires a real media element **longer than
+  5 seconds**. A bare AudioContext is `kAmbient` and is explicitly ignored for Android
+  audio focus. The 10 s clip length is therefore load-bearing.
 
-`tick()` (the rAF loop) now only updates the visible countdown and disables the
-play button during the fade-out window. If the screen is locked it simply doesn't
-run; the audio still ends correctly because it was scheduled on the audio clock.
-`onSessionEnd()` no longer plays anything — it only tidies up the UI and stops the
-silent playback once the page is visible again.
+  **Why it must run in `loop` mode too, even though the soundtrack is a media element:**
+  the soundtrack goes through the fade gain, so it is silent for the last 10 seconds of
+  every session — exactly when the end bell is due. This element bypasses the gain node.
+
+Both keep-alives are torn down on pause, stop, end, and sound switch.
+
+**Recovering a suspended context.** `audioCtx.onstatechange` resumes the context if the
+OS suspends it (audio focus lost to a call or a notification), and a `visibilitychange`
+handler does the same on return to the foreground. The Page Lifecycle `resume` event
+only fires after an actual *freeze* — it does not fire on a plain suspend — so without
+these a single interruption silently ended the session in total silence. This was the
+concrete cause of "turning off the screen doesn't bring the final sound".
+
+**`navigator.audioSession.type = 'playback'`** is set when available (Safari 16.4+).
+WebKit's `shouldOverrideBackgroundPlaybackRestriction()` returns true *only* for that
+session type, so it is the one lever that makes backgrounded playback work on iPhone.
+
+**Ending the session is also on the audio clock.** `tick()` (the rAF loop) only updates
+the visible countdown and disables the play button during the fade-out. While the screen
+is off it does not run at all — so `onSessionEnd()` does not run either, and the old
+build kept the keep-alive, the soundtrack element and the whole graph alive until the
+user next picked the phone up. `scheduleAudioFrom()` now also schedules a silent
+one-frame **end sentinel** at `end + 4 s`; its `onended` calls `releaseAudioHold()`,
+which stops both keep-alives, pauses the track and zeroes the gain. `onSessionEnd()`
+calls the same function when the screen comes back — it is idempotent.
+
+**The bell is decoded at page load, not at session start.** `scheduleHit()` drops every
+hit while `bellBuffer` is `null`, and the 1.5 MB bell used to only start downloading
+inside `startSession()` — so the first session of every page load scheduled no interval
+beats and no end bell, and relied on a re-schedule once the decode landed. `ensureAudio()`
+now runs during init. The bell is also **precached by the service worker**, because it is
+not background music: it *is* the end chime, and without it the session ends in silence.
+A failed decode is surfaced in the status line instead of being swallowed.
 
 ### Fade types
 
@@ -160,14 +195,18 @@ tappable version label:
   `matchMedia('(display-mode: standalone)')` `||` `navigator.standalone` (no localStorage
   flag — viewing in a browser correctly still offers install).
 - **Update** and the **tappable version** both call `runUpdate()` — the manual jump to
-  the newest build. **Offline-safe:** if `navigator.onLine === false` it does nothing
-  destructive (wiping caches with no network would brick the app) and just flashes
-  "Offline — cached ✓". Online it clears caches, unregisters the SW, and reloads. **Do
-  not remove this offline guard.**
-- **Download for offline** — fetches the large `.mp3`s (the soundtrack is ~44 MB, too big
+  the newest build. It escalates gently: probe real connectivity → hand over an already
+  waiting worker → `reg.update()` → and only if the page's `APP_VERSION` still disagrees
+  with the worker's `VERSION`, wipe *this app's* caches and re-register. **Offline-safe:
+  do not remove this guard** — wiping caches with no network bricks the app. The probe
+  fetches an actual byte rather than trusting `navigator.onLine`, which reports `true`
+  on a captive portal or a dead uplink.
+- **Download for offline** — fetches the large `.mp3` (the soundtrack is ~44 MB, too big
   to precache) so the full app works without a connection; shows "Audio offline ✓" once
-  cached. The app *shell* is already offline via the cache-first SW; this is only for the
-  audio.
+  cached. It now checks **this app's own caches** for the actual soundtrack URL. The old
+  version asked "is any `.mp3` cached anywhere on the origin?" — and SoundAnnoyer, same
+  origin, caches twelve of them, so the button reported "already downloaded" for a file
+  that had never been fetched and the app failed silently offline.
 
 **Android Chrome:** native prompt + `appinstalled` + `display: standalone` + Media Session.
 **iOS Safari:** no `beforeinstallprompt`, so Install opens the Add-to-Home-Screen steps;
@@ -181,7 +220,34 @@ Cache name includes `VERSION` constant — bump it to force cache invalidation a
 
 **App shell** (HTML, CSS, JS, manifest, icons): pre-cached on the install event via `PRECACHE`, then served **cache-first** (`serveShell`) so the installed app boots and runs with zero network. On a cache miss it fetches and caches; uncached navigations fall back to `./index.html`.
 
-**Freshness / auto-update:** comes from the SW lifecycle, not a per-launch network hit. The SW calls `skipWaiting()` + `clients.claim()`; `app.js` registers with `updateViaCache:'none'`, calls `registration.update()` on load and on each `visibilitychange` to visible, and reloads the page once on `controllerchange` (guarded so it never fires on first install or mid-session). So a bumped `VERSION` precaches a new version-keyed cache in the background and takes over within one launch — never interrupting a running session. The **Update** button / version tap are the manual jump (online only; see PWA section).
+### Caches
+
+Two caches, and the split matters:
+
+- `meditation-timer-<VERSION>` — the shell. Version-keyed, replaced wholesale on every
+  bump, so index.html / app.js / styles.css always come from one deploy and cannot skew.
+- `meditation-timer-audio` — the bell and (once downloaded) the ~44 MB soundtrack.
+  **Unversioned and never evicted.** It used to live in the versioned cache, so every
+  single version bump silently threw away a 44 MB download the user had deliberately
+  asked for.
+
+`caches.keys()` is per **origin**, not per app, and this site hosts several. Every
+deletion — `activate`, `hardReset()`, anywhere — is prefix-scoped *and* skips the audio
+cache. The same applies to anything that *reads* the origin's storage: `isAudioCached()`
+checks the specific `type: 'loop'` file in our own audio cache. It previously asked "is
+any .mp3 cached anywhere?", which SoundAnnoyer's twelve sounds answered for it, and then
+matched any `SOUNDS[].file` — which the precached bell answered for it. Either way the
+button reported "Audio offline ✓" for a soundtrack that had never been fetched.
+
+**Precaching uses `cache: 'reload'`.** A plain `addAll()` fetches through the browser's HTTP cache, and GitHub Pages serves everything `Cache-Control: max-age=600` — so a worker installing within ten minutes of a deploy could bake *old* bytes into the *new* version's cache and, because cache-first never revalidates, pin the app to a stale build under a fresh version number permanently. This was the real cause of "I open it and get the old version".
+
+**Old-cache eviction is prefix-scoped** to `meditation-timer-`. `caches.keys()` is per-origin and this site hosts several apps; the old unscoped filter deleted SoundAnnoyer's cache on every update here, and SoundAnnoyer's returned the favour by deleting the 44 MB soundtrack the user had explicitly downloaded.
+
+**The bell (`Single bowl sound.mp3`, 1.5 MB) IS precached** — into the *audio* cache, best-effort, and only if not already there. Keeping it out of the atomic shell `addAll` means a flaky connection can't block a shell update; keeping it out of the versioned cache means it isn't re-downloaded on every bump. Only the ~44 MB soundtrack is left for the user to fetch on demand. See the audio-engine section for why the bell must be offline at all.
+
+**Freshness / auto-update:** comes from the SW lifecycle, not a per-launch network hit. The SW deliberately does **not** call `skipWaiting()` on install: the shell is cache-first, so a worker that activates mid-session would serve new JS/CSS to a page running the old code. Instead the new worker waits, and `app.js` sends it `SKIP_WAITING` the moment `state === 'idle'` — from session stop, session end, and on becoming visible — after which `controllerchange` reloads unconditionally. The previous build had this backwards: it let the worker take over immediately and deferred the *reload*, which was then simply dropped, so an update arriving during a session never landed at all.
+
+`app.js` registers with `updateViaCache:'none'` and re-checks on load, on foreground and on `online`, throttled to once a minute. It also compares its own `APP_VERSION` against the worker's `VERSION` and self-heals a mismatch once per browsing session.
 
 **Audio (.mp3)**: NOT pre-cached (files are large). Strategy:
 - If cached: serve full `200` response (browsers accept `200` in place of `206` for `<audio loop>`)

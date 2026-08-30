@@ -160,11 +160,21 @@ This is the engine. The service worker sits between the browser and the network 
 └─────────────────────────────────────────────────────────┘
 ```
 
-### Why Network-First for the shell?
+### ⚠️ Correction (v26.08.30): network-first is the WRONG default for an interdependent shell
 
-If you use cache-first for HTML/JS, **users get stuck on old versions**. They open the app, the SW serves the cached copy, and they never see your updates. Network-first means: every time they're online, they get the freshest code. The cache is only a safety net for offline.
+The reasoning above — "cache-first means users get stuck on old versions" — is the intuitive answer and it is wrong for the shell of a no-build app. Both apps here are now **cache-first from a version-keyed cache**, and that is the correct architecture. Here is why:
 
-### Why Cache-First for assets?
+`index.html` references `js/app.js` and `css/styles.css` by **unhashed** names. With no build step there are no content hashes, so those three files have no way to prove they belong to the same deploy. GitHub Pages puts a flat `max-age=600` on all of them.
+
+- **Network-first for navigations is a skew trap.** You fetch a fresh `index.html`, but `app.js` comes from the browser's HTTP cache and is up to 10 minutes older. New HTML + old JS = a silently broken UI. This is Jake Archibald's `max-age` race condition, reproduced inside your own service worker.
+- **Stale-while-revalidate has exactly the same problem** — HTML and JS revalidate on independent schedules, so you will eventually pair v3 HTML with v2 JS.
+- **Cache-first from one atomically-populated, version-named cache is internally consistent by construction.** The whole shell is written by a single `addAll()` into `myapp-<version>`; every request is served from that one cache; the set therefore always matches itself. It is also what "must work fully offline" actually requires: zero network on the critical path, no timeouts, no race with a captive portal.
+
+Freshness then comes **exclusively from the worker lifecycle**: a new `sw.js` → a new cache name → a new atomic precache → a clean switch-over. See `versioning.md` §8–9 for the two bugs that made this fail in practice (`cache: 'reload'`, and prefix-scoping the eviction).
+
+**Network-first is still right for *leaf* resources** with no version coupling — a standalone JSON feed, a single icon. Never for a shell whose parts must match. (Pig Game is network-first because its CSS and JS are inlined into `index.html`, so there is only one shell file and nothing to skew.)
+
+### Why Cache-First for assets too?
 
 Large files (44 MB meditation soundtrack, MP3 sounds) don't change. Re-downloading them on every load is wasteful and slow. Cache-first serves them instantly.
 

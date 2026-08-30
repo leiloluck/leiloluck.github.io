@@ -40,7 +40,53 @@
   --page-pad-x:  clamp(12px, 4vw, 20px);
 }
 
-html { min-height: 100%; }
+
+/* ── Touch: every tappable surface ───────────────────────────────────────────
+   touch-action:manipulation removes double-tap-to-zoom (and with it the tap delay) —
+   it was previously set on only about half the controls, so repeated taps on the
+   keypad or the skip button could zoom the page. user-select:none stops a slightly
+   long press popping the text-selection toolbar over the controls. The tap highlight
+   is suppressed because every control below defines its own :active state; without
+   one, removing the highlight would make buttons feel dead. */
+button,
+.modal-backdrop {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Touch feedback. The tap highlight is suppressed above, so without this every button
+   would feel dead on a phone — pressing one would produce no acknowledgement at all
+   until whatever it does happens. Applies to every control that has not defined its own
+   :active; the more specific rules further down override it. */
+button:active:not(:disabled),
+.modal-backdrop:active {
+  filter: brightness(1.25);
+  transform: scale(0.985);
+}
+
+button {
+  transition: filter 90ms ease, transform 90ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button { transition: none; }
+  button:active:not(:disabled) { transform: none; }
+}
+
+/* ── Touch: hover is sticky, :active is not ──────────────────────────────────
+   On a touchscreen :hover latches when you tap and only clears when you tap
+   something else, so a button you pressed keeps looking pressed. Every :hover rule
+   in this file is therefore gated behind a real pointer; the pressed feedback that
+   touch actually gets is :active, defined alongside each control. */
+html {
+  min-height: 100%;
+  /* A downward flick at the top of the page should not reload the app — especially
+     not while a session is running. Keeps the rubber-band glow, drops pull-to-refresh. */
+  overscroll-behavior-y: contain;
+  -webkit-text-size-adjust: 100%;
+}
 
 body {
   background:
@@ -54,8 +100,9 @@ body {
   /* The whole page scrolls when the content is taller than the viewport (e.g. in a
      browser with a visible address bar), so nothing — including the footer — is ever
      stuck out of frame. On a tall screen it still fills nicely as one view. */
-  min-height: 100vh;
-  min-height: 100dvh;
+  min-height: 100vh;   /* fallback for engines without the newer units */
+  min-height: 100svh;  /* small viewport: fits with the URL bar shown, so no reflow
+                          when Chrome's address bar slides away mid-scroll */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -67,15 +114,18 @@ body {
   width: 100%;
   max-width: 470px;
   flex: 1 0 auto;
-  min-height: 100dvh;
+  min-height: 100svh;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  gap: clamp(8px, 1.4dvh, 14px);
+  gap: clamp(8px, 1.4svh, 14px);
   padding-top: max(env(safe-area-inset-top, 0px), 14px);
-  padding-bottom: max(env(safe-area-inset-bottom, 0px), 12px);
-  padding-left: var(--page-pad-x);
-  padding-right: var(--page-pad-x);
+  /* safe-area-max-inset-* is the constant maximum; the plain inset is dynamic and
+     shrinks as Chrome's bottom chin retracts, which reflows the page mid-scroll and
+     briefly drops the last control row into the gesture-nav strip. */
+  padding-bottom: max(env(safe-area-max-inset-bottom, env(safe-area-inset-bottom, 0px)), 12px);
+  padding-left: max(var(--page-pad-x), env(safe-area-inset-left, 0px));
+  padding-right: max(var(--page-pad-x), env(safe-area-inset-right, 0px));
 }
 
 /* ── Header ── */
@@ -159,7 +209,7 @@ body {
   touch-action: manipulation;
   transition: background var(--fade), color var(--fade);
 }
-.tab:not([aria-selected="true"]):hover { color: var(--text); }
+@media (hover: hover) and (pointer: fine) { .tab:not([aria-selected="true"]):hover { color: var(--text); } }
 .tab[aria-selected="true"] {
   background: linear-gradient(135deg, var(--primary), var(--primary-2));
   color: #fff;
@@ -170,7 +220,7 @@ body {
 .panel {
   display: flex;
   flex-direction: column;
-  gap: clamp(8px, 1.4dvh, 14px);
+  gap: clamp(8px, 1.4svh, 14px);
 }
 
 /* ── Hero / status card ── */
@@ -182,8 +232,8 @@ body {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  min-height: clamp(76px, 12dvh, 124px);
-  padding: clamp(6px, 1dvh, 12px);
+  min-height: clamp(76px, 12svh, 124px);
+  padding: clamp(6px, 1svh, 12px);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -254,9 +304,9 @@ body.running .hero-sub {
 .btn-launch {
   flex: 1;
   min-width: 0;
-  padding: clamp(13px, 2dvh, 17px);
+  padding: clamp(13px, 2svh, 17px);
   font-family: var(--sans);
-  font-size: clamp(15px, 2.1dvh, 17px);
+  font-size: clamp(15px, 2.1svh, 17px);
   font-weight: 800;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -270,7 +320,7 @@ body.running .hero-sub {
   transition: filter var(--fade), box-shadow var(--fade), background var(--fade);
 }
 
-.btn-launch:hover:not(:disabled) { filter: brightness(1.08); box-shadow: 0 12px 32px rgba(79, 110, 247, 0.45); }
+@media (hover: hover) and (pointer: fine) { .btn-launch:hover:not(:disabled) { filter: brightness(1.08); box-shadow: 0 12px 32px rgba(79, 110, 247, 0.45); } }
 .btn-launch:active:not(:disabled) { transform: translateY(1px); }
 .btn-launch:disabled { background: var(--surface-2); color: var(--muted); box-shadow: none; cursor: default; }
 
@@ -292,7 +342,7 @@ body.running .btn-launch {
   cursor: pointer;
   transition: filter var(--fade), background var(--fade), border-color var(--fade);
 }
-.btn-skip:hover { background: rgba(79, 110, 247, 0.24); }
+@media (hover: hover) and (pointer: fine) { .btn-skip:hover { background: rgba(79, 110, 247, 0.24); } }
 .btn-skip:active { transform: translateY(1px); }
 
 /* ── Section ── */
@@ -354,7 +404,7 @@ body.running .btn-launch {
   transition: border-color var(--fade), background var(--fade), transform 80ms ease, box-shadow var(--fade);
 }
 
-.sound-btn:hover { border-color: var(--primary-line); }
+@media (hover: hover) and (pointer: fine) { .sound-btn:hover { border-color: var(--primary-line); } }
 .sound-btn:active { transform: scale(0.97); }
 
 .sound-btn .s-emoji {
@@ -392,7 +442,7 @@ body.running .btn-launch {
 
 /* Test mode: tapping a sound PLAYS it. Orange accents signal the changed behaviour. */
 body.test-mode .sound-btn { border-style: dashed; border-color: var(--orange-soft); }
-body.test-mode .sound-btn:hover { border-color: var(--orange); }
+@media (hover: hover) and (pointer: fine) { body.test-mode .sound-btn:hover { border-color: var(--orange); } }
 body.test-mode #sound-hint { color: var(--orange); }
 
 .sound-btn.playing {
@@ -443,7 +493,7 @@ body.test-mode #sound-hint { color: var(--orange); }
   font-weight: 600;
 }
 
-.interval-btn:hover:not(.selected) { border-color: var(--primary-line); color: var(--text); }
+@media (hover: hover) and (pointer: fine) { .interval-btn:hover:not(.selected) { border-color: var(--primary-line); color: var(--text); } }
 
 .interval-btn.selected {
   background: linear-gradient(135deg, var(--primary), var(--primary-2));
@@ -478,7 +528,7 @@ body.test-mode #sound-hint { color: var(--orange); }
   transition: border-color var(--fade);
 }
 
-.toggle:hover { border-color: var(--primary-line); }
+@media (hover: hover) and (pointer: fine) { .toggle:hover { border-color: var(--primary-line); } }
 
 .toggle-track {
   flex-shrink: 0;
@@ -537,7 +587,7 @@ body.test-mode #sound-hint { color: var(--orange); }
   transition: border-color var(--fade), color var(--fade), background var(--fade);
 }
 
-.btn-small:hover:not(:disabled) { border-color: var(--primary-line); }
+@media (hover: hover) and (pointer: fine) { .btn-small:hover:not(:disabled) { border-color: var(--primary-line); } }
 .btn-small:disabled { opacity: 0.5; cursor: default; }
 
 .settings-meta {
@@ -565,7 +615,7 @@ body.test-mode #sound-hint { color: var(--orange); }
   touch-action: manipulation;
   transition: color var(--fade), border-color var(--fade), opacity var(--fade);
 }
-.version:hover { color: var(--text); opacity: 1; border-color: var(--border-hi); }
+@media (hover: hover) and (pointer: fine) { .version:hover { color: var(--text); opacity: 1; border-color: var(--border-hi); } }
 
 .offline-badge {
   font-size: 11px;
@@ -585,13 +635,24 @@ body.modal-open { overflow: hidden; }
   position: fixed;
   inset: 0;
   z-index: 40;
-  display: grid;
-  place-items: center;
+  /* Flex + `margin: auto` on the panel, NOT `place-items: center`. A centred grid item
+     taller than its container overflows off BOTH edges and neither is reachable — so a
+     modal taller than the screen (the custom-interval keypad on a 360x640 phone, or any
+     of them in landscape) simply loses its Save and Cancel buttons. This scrolls
+     instead, and still centres whenever it fits. */
+  display: flex;
+  justify-content: center;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 18px;
+  padding-top: max(18px, env(safe-area-inset-top, 0px));
+  padding-bottom: max(18px, env(safe-area-inset-bottom, 0px));
 }
 
 .modal-backdrop {
-  position: absolute;
+  /* fixed, not absolute: inside a scrollable layer an absolute backdrop only covers the
+     first viewport-height of the scroll area. */
+  position: fixed;
   inset: 0;
   border: 0;
   background: rgba(5, 8, 16, 0.72);
@@ -602,6 +663,8 @@ body.modal-open { overflow: hidden; }
 .custom-modal,
 .help-modal {
   position: relative;
+  /* centres inside the scrollable layer when it fits, scrolls when it doesn't */
+  margin: auto;
   width: min(100%, 366px);
   border: 1px solid var(--border-hi);
   background: linear-gradient(180deg, var(--surface-2), var(--surface));
@@ -673,7 +736,7 @@ body.modal-open { overflow: hidden; }
   cursor: pointer;
   transition: background var(--fade);
 }
-.custom-unit-btn:hover { background: rgba(79, 110, 247, 0.24); }
+@media (hover: hover) and (pointer: fine) { .custom-unit-btn:hover { background: rgba(79, 110, 247, 0.24); } }
 
 .custom-keypad {
   display: grid;
@@ -693,7 +756,7 @@ body.modal-open { overflow: hidden; }
   border-radius: var(--radius-sm);
   transition: background var(--fade), border-color var(--fade);
 }
-.custom-keypad-btn:hover { border-color: var(--primary-line); background: var(--surface-2); }
+@media (hover: hover) and (pointer: fine) { .custom-keypad-btn:hover { border-color: var(--primary-line); background: var(--surface-2); } }
 .custom-keypad-btn-muted { color: var(--muted); font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 600; }
 
 .custom-modal-error { min-height: 18px; color: var(--danger); font-size: 12px; }
@@ -702,9 +765,9 @@ body.modal-open { overflow: hidden; }
 
 .custom-modal-btn { width: 100%; padding: 13px; font-family: var(--sans); font-size: 14px; font-weight: 700; cursor: pointer; border-radius: var(--pill); }
 .btn-cancel { border: 1px solid var(--border-hi); color: var(--muted); background: transparent; }
-.btn-cancel:hover { border-color: var(--primary-line); color: var(--text); }
+@media (hover: hover) and (pointer: fine) { .btn-cancel:hover { border-color: var(--primary-line); color: var(--text); } }
 .btn-save { border: none; color: #fff; background: linear-gradient(135deg, var(--primary), var(--primary-2)); box-shadow: 0 8px 20px rgba(79, 110, 247, 0.3); }
-.btn-save:hover { filter: brightness(1.08); }
+@media (hover: hover) and (pointer: fine) { .btn-save:hover { filter: brightness(1.08); } }
 
 /* ── Help modal extras ── */
 
@@ -718,7 +781,7 @@ body.modal-open { overflow: hidden; }
   cursor: pointer;
   padding: 0 0 12px;
 }
-.help-details-btn:hover { text-decoration: underline; }
+@media (hover: hover) and (pointer: fine) { .help-details-btn:hover { text-decoration: underline; } }
 
 .help-details { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
 .help-details p { color: var(--muted); font-size: 12.5px; line-height: 1.55; }
@@ -736,7 +799,7 @@ body.modal-open { overflow: hidden; }
   cursor: pointer;
   box-shadow: 0 8px 20px rgba(79, 110, 247, 0.3);
 }
-.help-close-btn:hover { filter: brightness(1.08); }
+@media (hover: hover) and (pointer: fine) { .help-close-btn:hover { filter: brightness(1.08); } }
 
 /* ── Install instructions ── */
 
@@ -778,7 +841,7 @@ body.modal-open { overflow: hidden; }
 /* ── Responsive ── */
 
 @media (max-height: 680px) {
-  .hero { min-height: clamp(56px, 8dvh, 96px); }
+  .hero { min-height: clamp(56px, 8svh, 96px); }
   .hero-emoji { font-size: clamp(32px, 9vw, 50px); }
   .tagline { display: none; }
 }

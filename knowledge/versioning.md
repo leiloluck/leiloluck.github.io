@@ -301,25 +301,109 @@ The new SW activates as soon as it finishes installing. `controllerchange` fires
 
 ### Why Doesn't Everyone Use `skipWaiting()`?
 
-Because for a traditional multi-page website, an immediate reload could lose form data or interrupt a checkout flow. For a single-page PWA, the trade-off is worth it — freshness is more important than avoiding a one-time reload.
+Because for a traditional multi-page website, an immediate reload could lose form data or interrupt a checkout flow.
+
+### ⚠️ Where to put `skipWaiting()` — corrected v26.08.30
+
+**An earlier version of this document told you to call `skipWaiting()` inside `install`. Both apps did, and it was wrong.** With a **cache-first** shell, the pieces of the shell are only guaranteed to match each other *within one version-keyed cache*. A worker that activates while a page is still running starts serving the **new** `app.js` / `styles.css` to a page executing the **old** code.
+
+That was already bad. It became a real bug when combined with a *conditional* reload:
+
+```js
+// The broken combination that shipped in v26.07.13:
+// sw.js
+self.addEventListener('install', e => e.waitUntil(precache().then(() => self.skipWaiting())));
+// app.js
+navigator.serviceWorker.addEventListener('controllerchange', () => {
+  if (running) return;      // ← "don't interrupt the session"
+  location.reload();
+});
+```
+
+The new worker takes over regardless — the guard only skips the *reload*. So during a session you get new assets served to old code, and because the deferred reload was simply dropped, **the update never landed at all**, not even after the session ended.
+
+**The rule: defer the switch, not the reload.**
+
+```js
+// sw.js — no skipWaiting() in install. The new worker waits.
+self.addEventListener('install', e => e.waitUntil(precache()));
+self.addEventListener('message', e => {
+  if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
+});
+
+// app.js — hand over only when it is safe, then reload unconditionally.
+let waitingReg = null;
+function applyUpdateIfSafe() {
+  if (!waitingReg || sessionIsRunning()) return;
+  const w = waitingReg.waiting; waitingReg = null;
+  if (w) w.postMessage({ type: 'SKIP_WAITING' });   // → controllerchange → reload
+}
+navigator.serviceWorker.addEventListener('controllerchange', () => {
+  if (!hadController || reloading) return;
+  reloading = true; location.reload();              // unconditional, on purpose
+});
+```
+
+Then call `applyUpdateIfSafe()` from every point where the app returns to idle (session stop, session end, page becoming visible). An update that arrives mid-session is applied the moment the session finishes.
 
 ---
 
 ## 9. GitHub Pages & HTTP Caching
 
-GitHub Pages sets `Cache-Control: max-age=600` (10 minutes) on most files. This means:
+Measured live against `leiloluck.github.io` on 2026-08-30 (Fastly edge), not folklore:
 
-- The browser may serve a 10-minute-old `index.html` without even asking the server.
-- But the network-first SW ignores this — it fetches from the network and gets whatever GitHub serves.
-- `sw.js` itself respects HTTP caching UNLESS you use `updateViaCache: 'none'` in the register call.
+| Fact | Consequence |
+|---|---|
+| **Every file** — HTML, JS, JSON, `sw.js`, images — is served `Cache-Control: max-age=600`. No `immutable`, no `no-cache`, no per-type policy. | Worst-case staleness of any HTTP-cached response is 10 minutes. |
+| The ETag is `hex(sitePublishTime)-hex(byteLength)`, and the **time half is identical for every file in the repo**. | Every deploy re-stamps every file, including unchanged ones. A redeploy is therefore detectable from any file's ETag. |
+| **Query strings are not part of Fastly's cache key.** `?v=123` returned `x-cache: HIT` with the same ETag on its first ever request. | `?v=hash` busting defeats the *browser* cache only. It does **not** get you fresher bytes from Pages. Use `cache: 'reload'`. |
+| You cannot set any header — no `_headers`, no `Service-Worker-Allowed`, no `Clear-Site-Data`. | One `sw.js` per app folder is the only possible layout. A self-unregistering tombstone worker is the only kill switch. |
+| 404s carry no `Cache-Control` and return HTML with status 404. | A typo'd path in `cache.addAll()` rejects the whole install — which is the correct failure mode; see below. |
 
-**Recommendation:** Always use `updateViaCache: 'none'` for the SW registration:
+### 🔴 The bug this caused: precaching stale bytes
+
+`cache.addAll()` fetches through the browser's HTTP cache like any other `fetch()`. So a worker installing within 10 minutes of a deploy could pull an **old** `index.html` / `app.js` out of the HTTP cache and write it into the **new** version's cache. Because the shell is then served cache-first and never revalidated, the app is pinned to a stale build **under a fresh version number, permanently**.
+
+This is the actual, root cause of "I open the app and still get the old version". Both apps had it until v26.08.30. The fix is one line:
+
+```js
+const fresh = url => new Request(url, { cache: 'reload' });   // bypass the HTTP cache
+await cache.addAll(SHELL.map(fresh));
+```
+
+(`cache: 'no-cache'` is the bandwidth-friendlier variant — it permits a 304 — but since Pages re-stamps every ETag on every deploy you re-download anyway, so `'reload'` is simpler and strictly safer.)
+
+### 🔴 The second bug: `caches.keys()` is per-ORIGIN, not per-app
+
+`leiloluck.github.io` hosts several apps under one origin, so `caches.keys()` returns **every app's caches**. The stock eviction snippet —
+
+```js
+keys.filter(k => k !== CACHE).map(k => caches.delete(k))   // ❌
+```
+
+— means every SoundAnnoyer update deleted the Meditation Timer's cache, *including the 44 MB soundtrack the user had explicitly downloaded for offline use*, and vice versa. Always prefix-scope:
+
+```js
+const CACHE_PREFIX = 'sound-annoyer-';
+const CACHE = CACHE_PREFIX + VERSION;
+keys.filter(k => k.startsWith(CACHE_PREFIX) && k !== CACHE).map(k => caches.delete(k))   // ✅
+```
+
+The same applies to anything else that walks the origin's storage. `meditation-timer` used to ask "is any `.mp3` cached anywhere?" to decide whether its soundtrack was downloaded — and SoundAnnoyer's twelve prank sounds made the answer "yes", so it hid its download button for a file that had never been fetched.
+
+### `updateViaCache: 'none'`
+
+Always register with it:
 
 ```javascript
 navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' });
 ```
 
-This ensures the browser always revalidates `sw.js` with the server, so a bumped `VERSION` is detected on the next update check (which happens on load and on every visibility change).
+The Chrome 68+ default (`'imports'`) already bypasses the HTTP cache for the top-level worker script, so on Pages this is mostly belt-and-braces — **except when the worker uses `importScripts()`**. Imports *are* served from the HTTP cache under the default. Pig Game's worker does `importScripts('./version.js')` and derives its cache name from `APP_VERSION`, so a `version.js` served from the 10-minute HTTP cache made the new worker compute the *old* cache name and the update quietly did nothing.
+
+### Guarding the manual bump
+
+Three files per app must agree, with no build step to enforce it, and the failure mode is silent and permanent (see §5.2 above). `tools/check_versions.py` verifies the lockstep and flags an app whose sources are newer than its version. Run it before every push; `--bump` sets every app to today.
 
 ---
 

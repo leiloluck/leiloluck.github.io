@@ -277,14 +277,43 @@ skip the sounds cache.
 
 ---
 
-## Style
+## Style — Windows 98 (explicit override of the site style guide)
 
-Deliberately **not** the generic dark-AI-website look. SoundAnnoyer has a
-mischievous "gremlin" personality: near-black background, acid-green + hot-pink
-accents, monospace numerals, playful copy ("UNLEASH", "STOP THE MADNESS"), emoji as
-the visual anchor for each sound (🐱 🐶 🔔 🚪). Still respects the site rules: dark,
-high-contrast, thin-outline buttons, responsive on mobile and desktop, minimal but
-with intent.
+**This subpage overrides the root style guide.** `CLAUDE.md` sets a dark, minimal
+theme site-wide "unless a subpage's `context.md` specifies otherwise" — this is that
+specification. The owner asked for a Windows 98 skin here because the joke lands
+better in a UI that looks like it escaped from 1998, and because the app is a prank
+toy, not a utility. The previous dark "gremlin" theme (near-black, acid-green and
+hot-pink accents) lives in git history if it is ever wanted back.
+
+The look is not decoration but a system, and copying it half-way reads as a mistake
+rather than a style. Every surface is exactly one of three things:
+
+* **Raised** — you can press it. Buttons, tabs, keypad keys.
+* **Sunken** — it holds content, or it is currently pressed. Wells, fields, the
+  status bar, and any armed/selected button.
+* **Flat** — background.
+
+`css/styles.css` defines the four genuine bevel recipes as custom properties
+(`--raised`, `--sunken`, `--window`, `--field`), each a four-shadow stack of 1px
+outer and 1px inner edges. They match 98.css, which in turn mirrors the Win32
+`DrawEdge()` edges. The palette is the real `COLOR_*` system colours: `#008080`
+desktop teal, `#c0c0c0` button face, `#000080`→`#1084d0` active title bar. No
+border-radius anywhere. Armed sound buttons wear the 50% dither wash Win98 uses for
+a latched toolbar button. The three settings toggles are rendered as Win98
+checkboxes — the honest 1998 translation of a switch — with the tick drawn from two
+rotated rules so nothing extra has to be cached for offline.
+
+**Deliberate deviations from 1998, all for usability on a phone:**
+touch targets are 36–60px rather than 21px; body text is 11–13px rather than a flat
+11px; safe-area insets and `svh` units are kept. Chrome (title bar, close button)
+stays authentically small — it is not what you tap mid-prank.
+
+`manifest.json` follows the skin: `theme_color` `#000080` (the title bar) and
+`background_color` `#008080` (the teal desktop, used for the splash screen).
+
+The reskin is CSS-only. Every class name and state hook (`.armed`, `.selected`,
+`aria-checked`, `body.running`, …) is unchanged, so `js/app.js` was not touched.
 
 ---
 

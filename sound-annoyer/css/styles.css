@@ -1,9 +1,36 @@
-/* styles.css — SoundAnnoyer
-   "Nightshift" concept: a clean, modern fitness-dashboard look adapted to dark mode.
-   Periwinkle / indigo accents on deep navy, soft rounded cards, pill-shaped buttons.
-   Two tabs (Annoy / Settings) under a sticky segmented control. The WHOLE page
-   scrolls as one — there is no nested scroll container, so a touch that lands on a
-   sound button never traps the scroll. */
+/* styles.css — SoundAnnoyer, Windows 98 dress.
+   ---------------------------------------------------------------------------
+   NOTE ON THE SITE STYLE GUIDE: the root CLAUDE.md sets a dark, minimal theme
+   site-wide "unless a subpage's context.md specifies otherwise". The owner
+   asked for a Windows 98 skin here specifically; context.md records that
+   override. This file is the only place the old dark theme lived, and git
+   history holds it if it is ever wanted back.
+
+   Every class name, state hook and layout contract from the previous stylesheet
+   is preserved verbatim, so js/app.js is untouched by this reskin. The state
+   hooks the JS actually sets, and which therefore MUST keep working:
+
+     body.running / body.fired / body.test-mode / body.modal-open
+     .sound-btn.armed / .sound-btn.playing / .sound-btn.demo
+     .interval-btn.selected
+     .tab[aria-selected="true"]
+     .toggle[aria-checked="true"]
+     .offline-badge.is-offline
+     .hidden
+
+   The look is Windows 98 chrome, which is not decoration but a system: every
+   surface is either RAISED (a thing you can press), SUNKEN (a thing that holds
+   content, or is currently pressed), or FLAT. The bevels below are the genuine
+   four-shadow recipes — a 1px outer and 1px inner edge on each axis — matching
+   98.css, which in turn mirrors the Win32 DrawEdge() edges.
+
+   Deliberate deviations from 1998, all in service of "still easily navigable":
+     * Touch targets are 36-60px, not 21px. A real Win98 button is unusable on
+       a phone. Chrome (title bar, close button) stays small; anything you tap
+       during a prank does not.
+     * Font sizes are 11-13px rather than a flat 11px.
+     * Safe-area insets and svh units are kept — 1998 had no notch.
+   --------------------------------------------------------------------------- */
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -12,878 +39,597 @@
 }
 
 :root {
-  --bg:          #0b0f1a;
-  --bg-2:        #0e1322;
-  --surface:     #151b2b;
-  --surface-2:   #1b2238;
-  --border:      #242d45;
-  --border-hi:   #313c5c;
+  /* ── The Windows 98 system palette ──────────────────────────────────────
+     These are the actual COLOR_* system colours, not an approximation. */
+  --desktop:      #008080;   /* COLOR_BACKGROUND — the famous teal */
+  --surface:      #c0c0c0;   /* COLOR_BTNFACE    — silver, the whole UI */
+  --btn-face:     #dfdfdf;   /* inner light bevel */
+  --btn-hilite:   #ffffff;   /* COLOR_3DHILIGHT */
+  --btn-shadow:   #808080;   /* COLOR_BTNSHADOW */
+  --frame:        #0a0a0a;   /* COLOR_3DDKSHADOW / window frame */
 
-  --primary:     #4f6ef7;   /* periwinkle / indigo — the screenshot's main blue */
-  --primary-2:   #6d8bff;   /* gradient highlight */
-  --primary-soft: rgba(79, 110, 247, 0.14);
-  --primary-line: rgba(79, 110, 247, 0.45);
+  --title-a1:     #000080;   /* COLOR_ACTIVECAPTION — navy */
+  --title-a2:     #1084d0;   /* COLOR_GRADIENTACTIVECAPTION */
 
-  --orange:      #ff9f43;   /* secondary accent (test mode) */
-  --orange-soft: rgba(255, 159, 67, 0.16);
-  --danger:      #ff5d6c;   /* running / stop */
-  --danger-soft: rgba(255, 93, 108, 0.15);
+  --text:         #000000;
+  --muted:        #404040;
+  --text-dis:     #808080;   /* COLOR_GRAYTEXT — always with a white emboss */
+  --sel-bg:       #000080;
+  --danger:       #a80000;
+  --warn:         #808000;
 
-  --text:        #eaeefb;
-  --muted:       #97a1bf;
-  --fade:        150ms ease;
-  --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, sans-serif;
+  /* ── The four bevels. Order matters: outer edge first, then inner. ────── */
+  /* A thing you can press. */
+  --raised: inset -1px -1px var(--frame),      inset  1px  1px var(--btn-hilite),
+            inset -2px -2px var(--btn-shadow), inset  2px  2px var(--btn-face);
+  /* The same thing, held down. Light and dark simply swap sides. */
+  --sunken: inset -1px -1px var(--btn-hilite), inset  1px  1px var(--frame),
+            inset -2px -2px var(--btn-face),   inset  2px  2px var(--btn-shadow);
+  /* A window or panel — softer than a button: no black on the inner edge. */
+  --window: inset -1px -1px var(--frame),      inset  1px  1px var(--btn-face),
+            inset -2px -2px var(--btn-shadow), inset  2px  2px var(--btn-hilite);
+  /* A field that holds content (text box, list, well). Deepest of the four. */
+  --field:  inset -1px -1px var(--btn-hilite), inset  1px  1px var(--btn-shadow),
+            inset -2px -2px var(--btn-face),   inset  2px  2px var(--frame);
+  /* Status bar cell — a single hairline groove. */
+  --status: inset -1px -1px var(--btn-face),   inset  1px  1px var(--btn-shadow);
 
-  --radius:      16px;
-  --radius-sm:   12px;
-  --pill:        999px;
-  --page-pad-x:  clamp(12px, 4vw, 20px);
+  /* MS Sans Serif is long gone; Tahoma is its closest survivor and still ships
+     on Windows. Everything after it is a graceful decline, ending at the
+     platform sans (Roboto on Android). The bevels carry the era, not the
+     glyphs — so no webfont, which would also have to be cached for offline. */
+  --sans: Tahoma, "MS Sans Serif", "Microsoft Sans Serif", Geneva, Verdana, sans-serif;
+
+  --page-pad-x: clamp(6px, 2vw, 16px);
 }
 
-
-/* ── Touch: every tappable surface ───────────────────────────────────────────
-   touch-action:manipulation removes double-tap-to-zoom (and with it the tap delay) —
-   it was previously set on only about half the controls, so repeated taps on the
-   keypad or the skip button could zoom the page. user-select:none stops a slightly
-   long press popping the text-selection toolbar over the controls. The tap highlight
-   is suppressed because every control below defines its own :active state; without
-   one, removing the highlight would make buttons feel dead. */
-button,
-.modal-backdrop {
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-/* Touch feedback. The tap highlight is suppressed above, so without this every button
-   would feel dead on a phone — pressing one would produce no acknowledgement at all
-   until whatever it does happens. Applies to every control that has not defined its own
-   :active; the more specific rules further down override it. */
-button:active:not(:disabled),
-.modal-backdrop:active {
-  filter: brightness(1.25);
-  transform: scale(0.985);
-}
-
-button {
-  transition: filter 90ms ease, transform 90ms ease;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  button { transition: none; }
-  button:active:not(:disabled) { transform: none; }
-}
-
-/* ── Touch: hover is sticky, :active is not ──────────────────────────────────
-   On a touchscreen :hover latches when you tap and only clears when you tap
-   something else, so a button you pressed keeps looking pressed. Every :hover rule
-   in this file is therefore gated behind a real pointer; the pressed feedback that
-   touch actually gets is :active, defined alongside each control. */
 html {
-  min-height: 100%;
-  /* A downward flick at the top of the page should not reload the app — especially
-     not while a session is running. Keeps the rubber-band glow, drops pull-to-refresh. */
-  overscroll-behavior-y: contain;
   -webkit-text-size-adjust: 100%;
+  overscroll-behavior-y: contain;
 }
 
 body {
-  background:
-    radial-gradient(120% 75% at 50% -8%, rgba(79, 110, 247, 0.13), transparent 60%),
-    radial-gradient(90% 60% at 100% 108%, rgba(109, 139, 255, 0.08), transparent 55%),
-    linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
-  color: var(--text);
-  font-family: var(--sans);
-  font-size: 14px;
-  line-height: 1.45;
-  /* The whole page scrolls when the content is taller than the viewport (e.g. in a
-     browser with a visible address bar), so nothing — including the footer — is ever
-     stuck out of frame. On a tall screen it still fills nicely as one view. */
-  min-height: 100vh;   /* fallback for engines without the newer units */
-  min-height: 100svh;  /* small viewport: fits with the URL bar shown, so no reflow
-                          when Chrome's address bar slides away mid-scroll */
+  min-height: 100svh;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
+  justify-content: center;
+  align-items: flex-start;
+  font-family: var(--sans);
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--text);
+  background: var(--desktop);          /* the teal desktop */
+  padding: max(env(safe-area-inset-top, 0px), 0px)
+           max(var(--page-pad-x), env(safe-area-inset-right, 0px))
+           max(env(safe-area-max-inset-bottom, env(safe-area-inset-bottom, 0px)), 0px)
+           max(var(--page-pad-x), env(safe-area-inset-left, 0px));
 }
+
+/* Kill the sticky :hover touch devices leave behind, and the blue tap flash. */
+button {
+  font-family: inherit;
+  font-size: inherit;
+  color: var(--text);
+  background: none;
+  border: 0;
+  border-radius: 0;          /* 1998 had no rounded corners. None. Anywhere. */
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+/* ── The application window ──────────────────────────────────────────────── */
 
 .app {
   width: 100%;
   max-width: 470px;
-  flex: 1 0 auto;
   min-height: 100svh;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-  gap: clamp(8px, 1.4svh, 14px);
-  padding-top: max(env(safe-area-inset-top, 0px), 14px);
-  /* safe-area-max-inset-* is the constant maximum; the plain inset is dynamic and
-     shrinks as Chrome's bottom chin retracts, which reflows the page mid-scroll and
-     briefly drops the last control row into the gesture-nav strip. */
-  padding-bottom: max(env(safe-area-max-inset-bottom, env(safe-area-inset-bottom, 0px)), 12px);
-  padding-left: max(var(--page-pad-x), env(safe-area-inset-left, 0px));
-  padding-right: max(var(--page-pad-x), env(safe-area-inset-right, 0px));
+  background: var(--surface);
+  box-shadow: var(--window);
+  padding: 3px;
 }
 
-/* ── Header ── */
+/* ── Title bar (the .header) ─────────────────────────────────────────────── */
 
 .header {
-  position: relative;          /* anchor for .btn-close */
   flex-shrink: 0;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;         /* was a centred column; a title bar is a row */
   align-items: center;
-  text-align: center;
-}
-
-/* Close (X), top right. Absolute so it never shifts the centred logo. 44px is the
-   minimum comfortable touch target; the glyph itself is smaller so it stays discreet. */
-.btn-close {
-  position: absolute;
-  top: -2px;
-  right: 0;
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  line-height: 1;
-  color: var(--muted);
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 10px;
-  cursor: pointer;
-}
-.btn-close:active {
-  border-color: var(--border-hi);
-  background: var(--surface);
-}
-@media (hover: hover) and (pointer: fine) {
-  .btn-close:hover {
-    color: var(--danger);
-    border-color: var(--border-hi);
-    background: var(--surface);
-  }
+  justify-content: space-between;
+  gap: 6px;
+  padding: 3px 3px 4px 4px;
+  background: linear-gradient(90deg, var(--title-a1), var(--title-a2));
 }
 
 .logo {
-  font-size: clamp(20px, 5.6vw, 27px);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1;
-  color: var(--text);
+  font-size: 12px;
+  font-weight: bold;
+  color: #fff;
+  letter-spacing: 0.2px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
 }
-
-.logo-annoy {
-  background: linear-gradient(120deg, var(--primary), var(--primary-2));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
+.logo-annoy { color: #fff; }
 .logo-imp {
-  display: inline-block;
-  margin-left: 6px;
-  -webkit-text-fill-color: initial;
+  font-size: 13px;
   animation: imp-wiggle 3.6s ease-in-out infinite;
+  transform-origin: 50% 70%;
 }
-
 @keyframes imp-wiggle {
   0%, 88%, 100% { transform: rotate(0deg); }
-  92% { transform: rotate(-14deg); }
-  96% { transform: rotate(12deg); }
+  92%           { transform: rotate(-14deg); }
+  96%           { transform: rotate(12deg); }
 }
 
-.tagline {
-  margin-top: 5px;
+/* Title-bar close button — deliberately small: it is chrome, not content, and
+   a fat X invites a mis-tap that would end the prank. */
+.btn-close {
+  width: 20px;
+  height: 18px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 11px;
-  color: var(--muted);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-weight: bold;
+  line-height: 1;
+  color: var(--text);
+  background: var(--surface);
+  box-shadow: var(--raised);
+}
+.btn-close:active { box-shadow: var(--sunken); }
+@media (hover: hover) and (pointer: fine) {
+  .btn-close:hover { background: #cfcfcf; }
 }
 
-/* ── Tabs (segmented control) ── */
-/* Sticky so it stays reachable if the page ever scrolls. The bg-coloured box-shadow
-   (clipped vertically) is an opaque full-width band that masks content scrolling
-   underneath, so the pill reads as floating on the page background. */
+/* ── Tabs ────────────────────────────────────────────────────────────────── */
+
 .tabs {
-  position: sticky;
-  top: env(safe-area-inset-top, 0px);
-  z-index: 5;
   flex-shrink: 0;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
-  padding: 5px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--pill);
-  box-shadow: 0 0 0 100vmax var(--bg);
-  clip-path: inset(0 -100vmax);
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  padding: 5px 0 0 4px;
+  margin-bottom: -2px;         /* the selected tab bleeds into the page below */
+  position: relative;
+  z-index: 2;
 }
 
 .tab {
-  appearance: none;
-  border: none;
-  background: transparent;
-  color: var(--muted);
-  font-family: var(--sans);
+  flex: 0 0 auto;
+  min-height: 34px;
+  padding: 8px 16px;
   font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  padding: 9px 8px;
-  border-radius: var(--pill);
-  cursor: pointer;
-  touch-action: manipulation;
-  transition: background var(--fade), color var(--fade);
+  background: var(--surface);
+  /* A tab is a raised panel with no bottom edge — it merges into its page. */
+  box-shadow: inset  1px  1px var(--btn-hilite),
+              inset  2px  0   var(--btn-face),
+              inset -1px  0   var(--frame),
+              inset -2px  0   var(--btn-shadow),
+              inset  0   2px  var(--btn-face);
 }
-@media (hover: hover) and (pointer: fine) { .tab:not([aria-selected="true"]):hover { color: var(--text); } }
 .tab[aria-selected="true"] {
-  background: linear-gradient(135deg, var(--primary), var(--primary-2));
-  color: #fff;
-  box-shadow: 0 6px 16px rgba(79, 110, 247, 0.3);
+  padding-top: 6px;
+  padding-bottom: 12px;
+  margin-top: -2px;            /* selected tabs sit proud and cover the seam */
+  font-weight: bold;
+  z-index: 3;
 }
 
-/* ── Panels ── */
+/* ── Tab page ────────────────────────────────────────────────────────────── */
+
 .panel {
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  gap: clamp(8px, 1.4svh, 14px);
+  gap: 10px;
+  padding: 12px 10px;
+  background: var(--surface);
+  box-shadow: var(--window);
+  position: relative;
+  z-index: 1;
 }
 
-/* ── Hero / status card ── */
+.section { display: flex; flex-direction: column; gap: 7px; }
+
+.section-label {
+  font-size: 12px;
+  font-weight: bold;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.section-hint { font-weight: normal; font-size: 11px; color: var(--muted); }
+
+/* ── Hero: a sunken status well, like a Win98 preview pane ───────────────── */
 
 .hero {
-  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 10px;
+  text-align: center;
+  background: var(--btn-hilite);
+  box-shadow: var(--field);
+}
+.hero-emoji  { font-size: 42px; line-height: 1; }
+.hero-status { font-size: 13px; font-weight: bold; }
+.hero-sub    { font-size: 11px; color: var(--muted); min-height: 14px; }
+
+body.running .hero-emoji  { animation: hero-pulse 1.8s ease-in-out infinite; }
+body.running .hero-status { color: var(--sel-bg); }
+body.running .hero-sub    { color: var(--text); }
+body.fired   .hero-emoji  { animation: hero-jolt 360ms ease; }
+@keyframes hero-pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.09)} }
+@keyframes hero-jolt  { 0%{transform:scale(1)} 35%{transform:scale(1.28) rotate(-7deg)}
+                        60%{transform:scale(.96) rotate(4deg)} 100%{transform:scale(1)} }
+
+/* ── The big button ──────────────────────────────────────────────────────── */
+
+.launch-section { display: flex; flex-direction: column; gap: 8px; }
+
+.btn-launch {
+  width: 100%;
+  min-height: 54px;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: bold;
+  letter-spacing: 0.4px;
+  background: var(--surface);
+  box-shadow: var(--raised);
+}
+.btn-launch:active:not(:disabled) { box-shadow: var(--sunken); }
+.btn-launch:disabled {
+  /* The authentic Win98 disabled label: grey text embossed with a white
+     shadow one pixel down-right. Nothing else in the era looks like it. */
+  color: var(--text-dis);
+  text-shadow: 1px 1px 0 var(--btn-hilite);
+  cursor: default;
+}
+body.running .btn-launch { color: var(--danger); }
+
+.btn-skip {
+  width: 100%;
+  min-height: 42px;
+  padding: 9px;
+  font-size: 13px;
+  background: var(--surface);
+  box-shadow: var(--raised);
+}
+.btn-skip:active { box-shadow: var(--sunken); }
+
+/* ── Sound + interval grids, each in a sunken well ───────────────────────── */
+
+.sounds-section { gap: 7px; }
+
+.sound-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 5px;
+  padding: 6px;
+  background: var(--surface);
+  box-shadow: var(--field);
+}
+
+.sound-btn {
+  min-height: 62px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  min-height: clamp(76px, 12svh, 124px);
-  padding: clamp(6px, 1svh, 12px);
+  gap: 2px;
+  padding: 7px 4px;
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  box-shadow: var(--raised);
 }
+.sound-btn .s-emoji { font-size: 20px; line-height: 1; }
+.sound-btn .s-label { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.sound-btn .s-name  { font-size: 11px; text-align: center; }
 
-.hero-emoji {
-  font-size: clamp(38px, 11vw, 58px);
-  line-height: 1;
-  transition: transform var(--fade);
-}
-
-body.running .hero-emoji { animation: hero-pulse 1.8s ease-in-out infinite; }
-@keyframes hero-pulse {
-  0%, 100% { transform: scale(1); }
-  50%      { transform: scale(1.07); }
-}
-
-body.fired .hero-emoji { animation: hero-jolt 360ms ease; }
-@keyframes hero-jolt {
-  0%   { transform: scale(1); }
-  30%  { transform: scale(1.32) rotate(8deg); }
-  60%  { transform: scale(0.96) rotate(-6deg); }
-  100% { transform: scale(1); }
-}
-
-.hero-status {
-  font-size: 13px;
-  color: var(--text);
-  letter-spacing: 0.01em;
-  text-align: center;
-  min-height: 18px;
-}
-
-body.running .hero-status {
-  color: var(--primary-2);
-  font-weight: 700;
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.hero-sub {
-  font-size: 12px;
-  color: var(--muted);
-  text-align: center;
-  min-height: 16px;
-  font-variant-numeric: tabular-nums;
-}
-
-/* While running, the countdown to the next sound is the focal point: big, spaced,
-   accent-coloured. */
-body.running .hero-sub {
-  font-size: clamp(22px, 6vw, 30px);
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  color: var(--text);
-  margin-top: 3px;
-}
-
-/* ── Launch button (big pill) ── */
-
-.launch-section {
-  flex-shrink: 0;
-  display: flex;
-  gap: 8px;
-}
-
-.btn-launch {
-  flex: 1;
-  min-width: 0;
-  padding: clamp(13px, 2svh, 17px);
-  font-family: var(--sans);
-  font-size: clamp(15px, 2.1svh, 17px);
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #fff;
-  border: none;
-  border-radius: var(--pill);
-  background: linear-gradient(135deg, var(--primary), var(--primary-2));
-  box-shadow: 0 10px 26px rgba(79, 110, 247, 0.35);
-  cursor: pointer;
-  touch-action: manipulation;
-  transition: filter var(--fade), box-shadow var(--fade), background var(--fade);
-}
-
-@media (hover: hover) and (pointer: fine) { .btn-launch:hover:not(:disabled) { filter: brightness(1.08); box-shadow: 0 12px 32px rgba(79, 110, 247, 0.45); } }
-.btn-launch:active:not(:disabled) { transform: translateY(1px); }
-.btn-launch:disabled { background: var(--surface-2); color: var(--muted); box-shadow: none; cursor: default; }
-
-body.running .btn-launch {
-  background: linear-gradient(135deg, var(--danger), #ff7a86);
-  box-shadow: 0 10px 26px rgba(255, 93, 108, 0.35);
-}
-
-/* Skip-ahead button — only shown while running, sits beside the (shrunk) stop button */
-.btn-skip {
-  flex-shrink: 0;
-  width: 60px;
-  border: 1px solid var(--primary-line);
-  border-radius: var(--pill);
-  background: var(--primary-soft);
-  color: var(--primary-2);
-  font-size: 19px;
-  line-height: 1;
-  cursor: pointer;
-  transition: filter var(--fade), background var(--fade), border-color var(--fade);
-}
-@media (hover: hover) and (pointer: fine) { .btn-skip:hover { background: rgba(79, 110, 247, 0.24); } }
-.btn-skip:active { transform: translateY(1px); }
-
-/* ── Section ── */
-
-.section { flex-shrink: 0; }
-
-.section-label {
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 7px;
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-}
-
-.section-hint {
-  font-size: 10px;
-  letter-spacing: 0.02em;
-  color: var(--primary-2);
-  text-transform: none;
-  font-weight: 600;
-}
-
-/* ── Sounds (scrollable region) ── */
-
-.sounds-section {
-  display: flex;
-  flex-direction: column;
-}
-
-/* Plain auto-height grid — NOT its own scroll container. The whole page scrolls as
-   one, so a touch that lands on a sound button can still drag-scroll the page (the
-   old overflow/overscroll-contain here trapped the scroll). */
-.sound-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 7px;
-  align-content: start;
-  padding: 1px 2px 4px;
-}
-
-/* Pill-style chips: emoji badge + name (no sub-text) */
-.sound-btn {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 8px 11px;
-  min-height: 50px;
-  background: var(--surface);
-  border: 1px solid var(--border-hi);
-  color: var(--text);
-  font-family: var(--sans);
-  cursor: pointer;
-  border-radius: var(--radius-sm);
-  text-align: left;
-  touch-action: manipulation;
-  transition: border-color var(--fade), background var(--fade), transform 80ms ease, box-shadow var(--fade);
-}
-
-@media (hover: hover) and (pointer: fine) { .sound-btn:hover { border-color: var(--primary-line); } }
-.sound-btn:active { transform: scale(0.97); }
-
-.sound-btn .s-emoji {
-  flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  display: grid;
-  place-items: center;
-  font-size: 19px;
-  line-height: 1;
-  background: var(--surface-2);
-  border-radius: 9px;
-  transition: background var(--fade);
-}
-
-.sound-btn .s-label { display: flex; flex-direction: column; min-width: 0; }
-.sound-btn .s-name {
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1.15;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Armed = filled indigo */
+/* Armed = a latched toolbar button: held down, wearing the 50% dither wash
+   Win98 uses for a checked toolbar item. */
 .sound-btn.armed {
-  background: linear-gradient(135deg, var(--primary), var(--primary-2));
-  border-color: transparent;
-  box-shadow: 0 6px 16px rgba(79, 110, 247, 0.28);
+  box-shadow: var(--sunken);
+  background-color: #c0c0c0;
+  background-image:
+    linear-gradient(45deg, var(--btn-hilite) 25%, transparent 25%, transparent 75%, var(--btn-hilite) 75%),
+    linear-gradient(45deg, var(--btn-hilite) 25%, transparent 25%, transparent 75%, var(--btn-hilite) 75%);
+  background-size: 2px 2px;
+  background-position: 0 0, 1px 1px;
 }
-.sound-btn.armed .s-name { color: #fff; }
-.sound-btn.armed .s-emoji { background: rgba(255, 255, 255, 0.18); }
-
-/* Test mode: tapping a sound PLAYS it. Orange accents signal the changed behaviour. */
-body.test-mode .sound-btn { border-style: dashed; border-color: var(--orange-soft); }
-@media (hover: hover) and (pointer: fine) { body.test-mode .sound-btn:hover { border-color: var(--orange); } }
-body.test-mode #sound-hint { color: var(--orange); }
-
-.sound-btn.playing {
-  animation: sound-pop 420ms ease;
-  border-color: var(--orange) !important;
-  border-style: solid !important;
-  box-shadow: 0 0 0 2px var(--orange-soft);
-}
-@keyframes sound-pop {
-  0%   { transform: scale(1); }
-  35%  { transform: scale(1.06); }
-  100% { transform: scale(1); }
-}
-
-/* ── Interval pills ── */
+.sound-btn.armed .s-emoji { transform: scale(1.06); }
+.sound-btn.armed .s-name  { font-weight: bold; }
+.sound-btn:active         { box-shadow: var(--sunken); }
+.sound-btn.playing        { animation: sound-pop 420ms ease; }
+@keyframes sound-pop { 0%{transform:scale(1)} 30%{transform:scale(1.1)} 100%{transform:scale(1)} }
 
 .interval-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 6px;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 5px;
+  padding: 6px;
+  background: var(--surface);
+  box-shadow: var(--field);
 }
 
 .interval-btn {
-  padding: 9px 4px;
-  background: var(--surface);
-  border: 1px solid var(--border-hi);
-  color: var(--muted);
-  font-family: var(--sans);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  border-radius: var(--pill);
-  text-align: center;
-  touch-action: manipulation;
-  transition: border-color var(--fade), color var(--fade), background var(--fade);
+  min-height: 44px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 1px;
-  min-width: 0;
+  padding: 6px 4px;
+  font-size: 12px;
+  background: var(--surface);
+  box-shadow: var(--raised);
 }
-
 .interval-btn .i-tag {
-  font-size: 8px;
-  letter-spacing: 0.06em;
+  font-size: 9px;
   text-transform: uppercase;
-  opacity: 0.7;
-  font-weight: 600;
+  letter-spacing: 0.4px;
+  color: var(--warn);
+  font-weight: bold;
 }
-
-@media (hover: hover) and (pointer: fine) { .interval-btn:hover:not(.selected) { border-color: var(--primary-line); color: var(--text); } }
-
 .interval-btn.selected {
-  background: linear-gradient(135deg, var(--primary), var(--primary-2));
-  border-color: transparent;
-  color: #fff;
-  box-shadow: 0 6px 16px rgba(79, 110, 247, 0.3);
+  box-shadow: var(--sunken);
+  font-weight: bold;
+  background-color: #d6d6d6;
 }
+.interval-btn:active { box-shadow: var(--sunken); }
 
-/* ── Toggles ── */
+/* Test mode tints the sounds well, the way a Win98 app flags an active mode. */
+body.test-mode #sound-hint { color: var(--warn); font-weight: bold; }
+body.test-mode .sound-btn  { background-color: #d8d4bf; }
 
-.toggle-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 7px;
-}
-.toggle-grid .toggle-start { grid-column: 1 / -1; }
+/* ── Toggles, rendered as Win98 checkboxes ───────────────────────────────────
+   The markup is button > span.toggle-track > span.toggle-thumb plus a text
+   block. There is no sliding switch in 1998 — the honest translation is a
+   checkbox, so .toggle-track becomes the 13px well and .toggle-thumb the tick.
+   State still comes from aria-checked, exactly as before. */
+
+.toggle-grid { gap: 4px; }
 
 .toggle {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  align-items: flex-start;
+  gap: 9px;
   width: 100%;
-  padding: 9px 12px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-family: var(--sans);
-  color: var(--text);
+  min-height: 46px;
+  padding: 9px 8px;
   text-align: left;
-  touch-action: manipulation;
-  transition: border-color var(--fade);
 }
-
-@media (hover: hover) and (pointer: fine) { .toggle:hover { border-color: var(--primary-line); } }
+.toggle:active { background: rgba(0, 0, 128, 0.07); }
 
 .toggle-track {
-  flex-shrink: 0;
-  width: 38px;
-  height: 22px;
-  border-radius: var(--pill);
-  background: var(--surface-2);
-  border: 1px solid var(--border-hi);
+  flex: 0 0 auto;
   position: relative;
-  transition: background var(--fade), border-color var(--fade);
+  width: 13px;
+  height: 13px;
+  margin-top: 3px;
+  background: var(--btn-hilite);
+  box-shadow: var(--field);
 }
+.toggle-thumb { position: absolute; inset: 0; display: block; opacity: 0; }
+/* The checkmark, drawn with two rotated rules — no image, no font dependency,
+   nothing extra to cache for offline. */
+.toggle-thumb::before,
+.toggle-thumb::after { content: ""; position: absolute; background: var(--text); }
+.toggle-thumb::before { width: 2px; height: 5px; left: 3px; top: 6px; transform: rotate(-45deg); }
+.toggle-thumb::after  { width: 2px; height: 9px; left: 7px; top: 2px; transform: rotate(38deg); }
 
-.toggle-thumb {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--muted);
-  transition: transform var(--fade), background var(--fade);
-}
+.toggle[aria-checked="true"] .toggle-thumb { opacity: 1; }
+.toggle[aria-checked="true"] .toggle-track { background: var(--btn-hilite); }
+/* Test mode is the one "careful, this is loud" switch — tint its well. */
+.toggle-test[aria-checked="true"] .toggle-track { background: #ffffcc; }
+.toggle-test[aria-checked="true"] .toggle-thumb::before,
+.toggle-test[aria-checked="true"] .toggle-thumb::after { background: #806000; }
 
-.toggle[aria-checked="true"] .toggle-track { background: var(--primary-soft); border-color: var(--primary-line); }
-.toggle[aria-checked="true"] .toggle-thumb { transform: translateX(16px); background: var(--primary); }
+.toggle-text  { display: flex; flex-direction: column; gap: 1px; }
+.toggle-title { font-size: 13px; }
+.toggle-sub   { font-size: 11px; color: var(--muted); }
+.toggle-grid .toggle-start { margin-bottom: 2px; }
 
-/* Test-mode toggle reads orange when on (distinct from the indigo ones). */
-.toggle-test[aria-checked="true"] .toggle-track { background: var(--orange-soft); border-color: rgba(255, 159, 67, 0.5); }
-.toggle-test[aria-checked="true"] .toggle-thumb { background: var(--orange); }
+/* ── Small buttons + settings ────────────────────────────────────────────── */
 
-.toggle-text { display: flex; flex-direction: column; min-width: 0; }
-.toggle-title { font-size: 12.5px; font-weight: 700; line-height: 1.15; }
-.toggle-sub { font-size: 10px; color: var(--muted); line-height: 1.2; margin-top: 1px; }
-
-/* ── Settings: actions + meta ── */
-
-.settings-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.settings-actions .btn-small { flex: 1 1 auto; }
+.settings-actions { display: flex; flex-direction: row; flex-wrap: wrap; gap: 6px; }
+.settings-actions .btn-small { flex: 1 1 118px; }
 
 .btn-small {
+  min-height: 38px;
+  padding: 8px 12px;
+  font-size: 12px;
   background: var(--surface);
-  border: 1px solid var(--border-hi);
-  color: var(--text);
-  font-size: 12.5px;
-  font-family: var(--sans);
-  font-weight: 600;
-  padding: 12px 14px;
-  cursor: pointer;
-  letter-spacing: 0.02em;
-  border-radius: var(--pill);
-  touch-action: manipulation;
-  transition: border-color var(--fade), color var(--fade), background var(--fade);
+  box-shadow: var(--raised);
+}
+.btn-small:active:not(:disabled) { box-shadow: var(--sunken); }
+.btn-small:disabled {
+  color: var(--text-dis);
+  text-shadow: 1px 1px 0 var(--btn-hilite);
+  cursor: default;
 }
 
-@media (hover: hover) and (pointer: fine) { .btn-small:hover:not(:disabled) { border-color: var(--primary-line); } }
-.btn-small:disabled { opacity: 0.5; cursor: default; }
+/* ── Status bar ──────────────────────────────────────────────────────────── */
 
 .settings-meta {
+  flex-direction: row;
+  align-items: stretch;
+  gap: 2px;
+  margin-top: auto;
+  padding-top: 6px;
+}
+.version,
+.offline-badge {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding-top: 2px;
-}
-
-/* Tappable version → checks for an update (see app.js). */
-.version {
-  appearance: none;
-  background: transparent;
-  border: 1px solid transparent;
-  font-family: var(--sans);
+  min-height: 22px;
+  padding: 3px 7px;
   font-size: 11px;
   color: var(--muted);
-  opacity: 0.75;
-  letter-spacing: 0.04em;
-  font-variant-numeric: tabular-nums;
-  cursor: pointer;
-  padding: 6px 11px;
-  border-radius: var(--pill);
-  touch-action: manipulation;
-  transition: color var(--fade), border-color var(--fade), opacity var(--fade);
+  background: var(--surface);
+  box-shadow: var(--status);
 }
-@media (hover: hover) and (pointer: fine) { .version:hover { color: var(--text); opacity: 1; border-color: var(--border-hi); } }
+.version { flex: 1 1 auto; }
+.offline-badge { flex: 0 0 auto; }
+.offline-badge.is-offline { color: var(--danger); font-weight: bold; }
 
-.offline-badge {
-  font-size: 11px;
-  color: var(--muted);
-  opacity: 0.7;
-  letter-spacing: 0.03em;
-}
-.offline-badge.is-offline { color: var(--orange); opacity: 0.95; }
-
-.hidden { display: none !important; }
-
-/* ── Modals ── */
-
-body.modal-open { overflow: hidden; }
+/* ── Dialogs ─────────────────────────────────────────────────────────────── */
 
 .modal-layer {
   position: fixed;
   inset: 0;
-  z-index: 40;
-  /* Flex + `margin: auto` on the panel, NOT `place-items: center`. A centred grid item
-     taller than its container overflows off BOTH edges and neither is reachable — so a
-     modal taller than the screen (the custom-interval keypad on a 360x640 phone, or any
-     of them in landscape) simply loses its Save and Cancel buttons. This scrolls
-     instead, and still centres whenever it fits. */
+  z-index: 60;
   display: flex;
   justify-content: center;
+  /* Load-bearing: without an overflow here a dialog taller than the screen
+     loses its buttons off both edges with no way to reach them. */
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 18px;
   padding-top: max(18px, env(safe-area-inset-top, 0px));
   padding-bottom: max(18px, env(safe-area-inset-bottom, 0px));
+  padding-left: max(10px, env(safe-area-inset-left, 0px));
+  padding-right: max(10px, env(safe-area-inset-right, 0px));
 }
-
 .modal-backdrop {
-  /* fixed, not absolute: inside a scrollable layer an absolute backdrop only covers the
-     first viewport-height of the scroll area. */
-  position: fixed;
+  position: fixed;             /* fixed, not absolute — see above */
   inset: 0;
-  border: 0;
-  background: rgba(5, 8, 16, 0.72);
-  backdrop-filter: blur(8px);
-  cursor: pointer;
+  background: rgba(0, 0, 64, 0.45);
+  cursor: default;
 }
+.modal-backdrop:active { background: rgba(0, 0, 64, 0.5); }
 
 .custom-modal,
 .help-modal {
   position: relative;
-  /* centres inside the scrollable layer when it fits, scrolls when it doesn't */
   margin: auto;
-  width: min(100%, 366px);
-  border: 1px solid var(--border-hi);
-  background: linear-gradient(180deg, var(--surface-2), var(--surface));
-  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.55);
-  padding: 22px;
-  border-radius: var(--radius);
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  padding: 3px;
+  background: var(--surface);
+  /* Dialogs float, so give them the hard 1998 drop shadow. */
+  box-shadow: var(--window), 4px 4px 0 rgba(0, 0, 0, 0.35);
 }
 
+/* The kicker text is already the dialog's name, so it becomes the title bar. */
 .custom-modal-kicker,
 .help-modal-kicker {
-  font-size: 10px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--primary-2);
-  margin-bottom: 8px;
-  font-weight: 700;
+  margin-bottom: 7px;
+  padding: 3px 3px 4px 5px;
+  font-size: 12px;
+  font-weight: bold;
+  color: #fff;
+  background: linear-gradient(90deg, var(--title-a1), var(--title-a2));
 }
 
 .custom-modal h2,
-.help-modal h2 { font-size: 23px; font-weight: 800; line-height: 1.1; margin-bottom: 10px; letter-spacing: -0.01em; }
+.help-modal h2 { margin: 0 8px 5px; font-size: 13px; font-weight: bold; }
 
 .custom-modal-copy,
-.help-summary { color: var(--muted); font-size: 13px; margin-bottom: 16px; line-height: 1.5; }
+.help-summary { margin: 0 8px 9px; font-size: 12px; }
 
-.custom-modal-form { display: flex; flex-direction: column; gap: 12px; }
+.help-details   { margin: 0 8px 8px; }
+.help-details p { margin-bottom: 7px; font-size: 12px; }
 
-.custom-modal-label {
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--muted);
+.help-details-btn,
+.help-close-btn,
+.custom-modal-btn {
+  min-height: 38px;
+  padding: 8px 14px;
+  font-size: 12px;
+  background: var(--surface);
+  box-shadow: var(--raised);
 }
+.help-details-btn { margin: 0 8px 8px; }
+.help-close-btn   { margin: 0 8px 8px; align-self: flex-end; min-width: 94px; }
+.help-details-btn:active,
+.help-close-btn:active,
+.custom-modal-btn:active { box-shadow: var(--sunken); }
+
+.install-steps { margin: 0 8px 9px; padding-left: 4px; list-style: none; counter-reset: step; }
+.install-steps li {
+  position: relative;
+  margin-bottom: 6px;
+  padding-left: 20px;
+  font-size: 12px;
+  counter-increment: step;
+}
+.install-steps li::before { content: counter(step) "."; position: absolute; left: 0; font-weight: bold; }
+
+/* ── Custom-interval dialog ──────────────────────────────────────────────── */
+
+.custom-modal-form  { display: flex; flex-direction: column; gap: 8px; padding: 0 8px 8px; }
+.custom-modal-label { font-size: 12px; }
 
 .custom-input-wrap {
   display: flex;
   align-items: center;
-  gap: 10px;
-  border: 1px solid var(--border-hi);
-  background: var(--bg-2);
-  padding: 12px 14px;
-  border-radius: var(--radius-sm);
+  gap: 6px;
+  padding: 6px 8px;
+  background: var(--btn-hilite);
+  box-shadow: var(--field);
 }
+.custom-display { justify-content: space-between; }
+.custom-input   { font-family: var(--sans); font-size: 20px; font-weight: bold; }
 
-.custom-display { justify-content: space-between; min-height: 64px; }
-
-.custom-input {
-  width: 100%;
-  border: 0;
-  background: transparent;
-  color: var(--text);
-  font: inherit;
-  font-size: 30px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
-
-/* MIN / SEC unit toggle inside the display */
 .custom-unit-btn {
-  flex-shrink: 0;
-  border: 1px solid var(--primary-line);
-  background: var(--primary-soft);
-  color: var(--primary-2);
-  font-family: var(--sans);
+  min-height: 32px;
+  padding: 5px 10px;
   font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  padding: 7px 12px;
-  border-radius: var(--pill);
-  cursor: pointer;
-  transition: background var(--fade);
-}
-@media (hover: hover) and (pointer: fine) { .custom-unit-btn:hover { background: rgba(79, 110, 247, 0.24); } }
-
-.custom-keypad {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.custom-keypad-btn {
-  min-height: 52px;
-  border: 1px solid var(--border-hi);
   background: var(--surface);
-  color: var(--text);
-  font: inherit;
-  font-size: 19px;
-  font-weight: 600;
-  cursor: pointer;
-  border-radius: var(--radius-sm);
-  transition: background var(--fade), border-color var(--fade);
+  box-shadow: var(--raised);
 }
-@media (hover: hover) and (pointer: fine) { .custom-keypad-btn:hover { border-color: var(--primary-line); background: var(--surface-2); } }
-.custom-keypad-btn-muted { color: var(--muted); font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 600; }
+.custom-unit-btn:active { box-shadow: var(--sunken); }
 
-.custom-modal-error { min-height: 18px; color: var(--danger); font-size: 12px; }
-
-.custom-modal-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-
-.custom-modal-btn { width: 100%; padding: 13px; font-family: var(--sans); font-size: 14px; font-weight: 700; cursor: pointer; border-radius: var(--pill); }
-.btn-cancel { border: 1px solid var(--border-hi); color: var(--muted); background: transparent; }
-@media (hover: hover) and (pointer: fine) { .btn-cancel:hover { border-color: var(--primary-line); color: var(--text); } }
-.btn-save { border: none; color: #fff; background: linear-gradient(135deg, var(--primary), var(--primary-2)); box-shadow: 0 8px 20px rgba(79, 110, 247, 0.3); }
-@media (hover: hover) and (pointer: fine) { .btn-save:hover { filter: brightness(1.08); } }
-
-/* ── Help modal extras ── */
-
-.help-details-btn {
-  background: none;
-  border: none;
-  color: var(--primary-2);
-  font-family: var(--sans);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 0 0 12px;
+.custom-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.custom-keypad-btn {
+  min-height: 48px;
+  font-size: 16px;
+  background: var(--surface);
+  box-shadow: var(--raised);
 }
-@media (hover: hover) and (pointer: fine) { .help-details-btn:hover { text-decoration: underline; } }
+.custom-keypad-btn:active { box-shadow: var(--sunken); }
+.custom-keypad-btn-muted  { font-size: 11px; }
 
-.help-details { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
-.help-details p { color: var(--muted); font-size: 12.5px; line-height: 1.55; }
-
-.help-close-btn {
-  width: 100%;
-  padding: 13px;
-  border: none;
-  border-radius: var(--pill);
-  color: #fff;
-  background: linear-gradient(135deg, var(--primary), var(--primary-2));
-  font-family: var(--sans);
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 8px 20px rgba(79, 110, 247, 0.3);
+.custom-modal-error {
+  min-height: 15px;
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--danger);
 }
-@media (hover: hover) and (pointer: fine) { .help-close-btn:hover { filter: brightness(1.08); } }
+.custom-modal-actions { display: flex; justify-content: flex-end; gap: 6px; }
+.custom-modal-btn     { min-width: 86px; }
+.btn-cancel, .btn-save { background: var(--surface); }
 
-/* ── Install instructions ── */
+/* ── Utility ─────────────────────────────────────────────────────────────── */
 
-.install-steps {
-  list-style: none;
-  counter-reset: step;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin: 4px 0 18px;
-}
-.install-steps li {
-  position: relative;
-  padding-left: 34px;
-  color: var(--text);
-  font-size: 13px;
-  line-height: 1.5;
-  min-height: 24px;
-  display: flex;
-  align-items: center;
-}
-.install-steps li::before {
-  counter-increment: step;
-  content: counter(step);
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 24px;
-  height: 24px;
-  display: grid;
-  place-items: center;
-  font-size: 12px;
-  font-weight: 700;
-  color: #fff;
-  background: linear-gradient(135deg, var(--primary), var(--primary-2));
-  border-radius: 50%;
-}
+.hidden { display: none !important; }
+body.modal-open { overflow: hidden; }
+.tagline { font-size: 11px; color: var(--muted); }
 
-/* ── Responsive ── */
+/* Focus: Win98's 1px dotted rectangle, not a glowing ring. */
+button:focus-visible { outline: 1px dotted var(--text); outline-offset: -4px; }
 
-@media (max-height: 680px) {
-  .hero { min-height: clamp(56px, 8svh, 96px); }
-  .hero-emoji { font-size: clamp(32px, 9vw, 50px); }
-  .tagline { display: none; }
-}
+/* The dialog containers carry tabindex="-1" and are focused programmatically when
+   they open, which makes Chrome paint its default blue focus ring around the whole
+   window. Suppress it on the container only — every control inside keeps its own
+   focus indicator, so nothing is lost for keyboard users. */
+.custom-modal:focus,
+.help-modal:focus,
+.custom-modal:focus-visible,
+.help-modal:focus-visible { outline: none; }
 
-@media (max-width: 360px) {
-  .sound-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .sound-btn { padding: 8px; gap: 7px; }
-  .sound-btn .s-name { font-size: 12px; }
-}
-
-@media (min-width: 560px) {
-  .app { max-width: 500px; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }

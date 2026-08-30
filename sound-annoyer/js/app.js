@@ -34,7 +34,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.08.30b';
+const APP_VERSION = 'v26.08.30c';
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 // Drop real files into resources/ (see resources/README.md). Until a matching file
@@ -598,7 +598,6 @@ function shutdownApp() {
   }, 250);
 }
 
-elCloseBtn.addEventListener('click', shutdownApp);
 
 // Two separate jobs, deliberately split so neither costs battery when it isn't needed:
 //
@@ -836,6 +835,10 @@ const elInstallSummary      = document.getElementById('install-modal-summary');
 const elInstallSteps        = document.getElementById('install-steps');
 const elInstallCloseBtn     = document.getElementById('install-close-btn');
 const elCloseBtn            = document.getElementById('close-btn');
+// Wired here, not beside shutdownApp(): the handle is a `const` declared in this
+// block, so referencing it any earlier is a temporal-dead-zone ReferenceError
+// that aborts the whole script at load and leaves the page completely dead.
+elCloseBtn.addEventListener('click', shutdownApp);
 const elInstallProceedBtn   = document.getElementById('install-proceed-btn');
 const elOpenChromeBtn       = document.getElementById('open-chrome-btn');
 

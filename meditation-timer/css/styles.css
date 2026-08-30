@@ -1,5 +1,5 @@
 /* styles.css — Meditation Timer
-   Warm dark palette, single screen layout (100dvh), no scroll. */
+   Warm dark palette, single screen layout (100svh), no scroll. */
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -18,18 +18,61 @@
   --muted:     #8a7060;
   --fade:      180ms ease;
   --page-pad-x: clamp(14px, 4vw, 20px);
-  --header-gap: clamp(2px, 0.5dvh, 4px);
-  --section-gap: clamp(8px, 1.4dvh, 14px);
-  --control-gap: clamp(6px, 1dvh, 8px);
-  --play-pad-y: clamp(11px, 1.6dvh, 14px);
+  --header-gap: clamp(2px, 0.5svh, 4px);
+  --section-gap: clamp(8px, 1.4svh, 14px);
+  --control-gap: clamp(6px, 1svh, 8px);
+  --play-pad-y: clamp(11px, 1.6svh, 14px);
   --play-pad-x: clamp(16px, 3vw, 20px);
-  --button-pad-y: clamp(8px, 1.2dvh, 9px);
+  --button-pad-y: clamp(8px, 1.2svh, 9px);
   --button-pad-x: clamp(9px, 2.5vw, 10px);
-  --footer-pad-top: clamp(2px, 0.5dvh, 4px);
+  --footer-pad-top: clamp(2px, 0.5svh, 4px);
 }
 
+
+/* ── Touch: every tappable surface ───────────────────────────────────────────
+   touch-action:manipulation removes double-tap-to-zoom (and with it the tap delay) —
+   it was previously set on only about half the controls, so repeated taps on the
+   keypad or the skip button could zoom the page. user-select:none stops a slightly
+   long press popping the text-selection toolbar over the controls. The tap highlight
+   is suppressed because every control below defines its own :active state; without
+   one, removing the highlight would make buttons feel dead. */
+button,
+.modal-backdrop {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Touch feedback. The tap highlight is suppressed above, so without this every button
+   would feel dead on a phone — pressing one would produce no acknowledgement at all
+   until whatever it does happens. Applies to every control that has not defined its own
+   :active; the more specific rules further down override it. */
+button:active:not(:disabled),
+.modal-backdrop:active {
+  filter: brightness(1.25);
+  transform: scale(0.985);
+}
+
+button {
+  transition: filter 90ms ease, transform 90ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button { transition: none; }
+  button:active:not(:disabled) { transform: none; }
+}
+
+/* ── Touch: hover is sticky, :active is not ──────────────────────────────────
+   On a touchscreen :hover latches when you tap and only clears when you tap
+   something else, so a button you pressed keeps looking pressed. Every :hover rule
+   in this file is therefore gated behind a real pointer; the pressed feedback that
+   touch actually gets is :active, defined alongside each control. */
 html {
   min-height: 100%;
+  /* No pull-to-refresh: a flick at the top must never reload mid-meditation. */
+  overscroll-behavior-y: contain;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -39,8 +82,9 @@ body {
   font-size: 15px;
   line-height: 1.4;
   /* Fill exactly the visible screen */
-  min-height: 100vh; /* fallback */
-  min-height: 100dvh;
+  min-height: 100vh;  /* fallback for engines without the newer units */
+  min-height: 100svh; /* small viewport: fits with the URL bar shown, so the layout
+                         does not reflow every time Chrome's address bar slides */
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
@@ -58,14 +102,17 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  gap: clamp(6px, 1dvh, 10px);
+  gap: clamp(6px, 1svh, 10px);
   /* Respect notch / home indicator */
   padding-top: max(env(safe-area-inset-top, 0px), 12px);
-  padding-bottom: max(env(safe-area-inset-bottom, 0px), 10px);
-  padding-left: var(--page-pad-x);
-  padding-right: var(--page-pad-x);
+  /* safe-area-max-inset-* is the constant maximum; the plain inset is dynamic and
+     shrinks as Chrome's bottom chin retracts, which reflows the page mid-scroll and
+     briefly drops the last control row into the gesture-nav strip. */
+  padding-bottom: max(env(safe-area-max-inset-bottom, env(safe-area-inset-bottom, 0px)), 10px);
+  padding-left: max(var(--page-pad-x), env(safe-area-inset-left, 0px));
+  padding-right: max(var(--page-pad-x), env(safe-area-inset-right, 0px));
   min-height: 100vh;
-  min-height: 100dvh;
+  min-height: 100svh;
   overflow: visible;
 }
 
@@ -99,13 +146,13 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: clamp(3px, 0.7dvh, 5px);
-  min-height: clamp(118px, 20dvh, 180px);
-  padding: clamp(2px, 0.6dvh, 6px) 0;
+  gap: clamp(3px, 0.7svh, 5px);
+  min-height: clamp(118px, 20svh, 180px);
+  padding: clamp(2px, 0.6svh, 6px) 0;
 }
 
 .countdown {
-  font-size: clamp(48px, min(14vw, 10dvh), 132px);
+  font-size: clamp(48px, min(14vw, 10svh), 132px);
   font-weight: 200;
   letter-spacing: 0.04em;
   color: var(--text);
@@ -143,7 +190,7 @@ body {
 
 .play-section {
   flex-shrink: 0;
-  padding-bottom: clamp(4px, 0.8dvh, 10px);
+  padding-bottom: clamp(4px, 0.8svh, 10px);
 }
 
 .play-controls {
@@ -154,7 +201,7 @@ body {
 .btn-play {
   flex: 1;
   padding: var(--play-pad-y) var(--play-pad-x);
-  font-size: clamp(14px, 1.9dvh, 15px);
+  font-size: clamp(14px, 1.9svh, 15px);
   letter-spacing: 0.1em;
   border: 1px solid var(--accent);
   color: var(--accent);
@@ -164,8 +211,10 @@ body {
   transition: background var(--fade), color var(--fade);
 }
 
-.btn-play:hover:not(:disabled) {
-  background: var(--accent-bg);
+@media (hover: hover) and (pointer: fine) {
+  .btn-play:hover:not(:disabled) {
+    background: var(--accent-bg);
+  }
 }
 
 .btn-play:disabled {
@@ -176,7 +225,7 @@ body {
 
 .btn-reset {
   padding: var(--play-pad-y) var(--play-pad-x);
-  font-size: clamp(14px, 1.9dvh, 15px);
+  font-size: clamp(14px, 1.9svh, 15px);
   letter-spacing: 0.1em;
   border: 1px solid var(--border);
   color: var(--muted);
@@ -186,16 +235,18 @@ body {
   transition: border-color var(--fade), color var(--fade);
 }
 
-.btn-reset:hover {
-  border-color: var(--accent-dim);
-  color: var(--text);
+@media (hover: hover) and (pointer: fine) {
+  .btn-reset:hover {
+    border-color: var(--accent-dim);
+    color: var(--text);
+  }
 }
 
 /* ── Section ── */
 
 .section {
   flex-shrink: 0;
-  margin-bottom: clamp(4px, 0.8dvh, 8px);
+  margin-bottom: clamp(4px, 0.8svh, 8px);
 }
 
 .section-label {
@@ -203,7 +254,7 @@ body {
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--muted);
-  margin-bottom: clamp(3px, 0.5dvh, 5px);
+  margin-bottom: clamp(3px, 0.5svh, 5px);
 }
 
 /* ── Button group ── */
@@ -251,11 +302,11 @@ body {
 .btn {
   flex: 1 1 auto;
   min-width: 60px;
-  padding: clamp(7px, 1dvh, 8px) clamp(8px, 2vw, 9px);
+  padding: clamp(7px, 1svh, 8px) clamp(8px, 2vw, 9px);
   background: transparent;
   border: 1px solid var(--border);
   color: var(--muted);
-  font-size: clamp(11px, 1.55dvh, 12px);
+  font-size: clamp(11px, 1.55svh, 12px);
   font-family: inherit;
   cursor: pointer;
   transition: border-color var(--fade), color var(--fade), background var(--fade);
@@ -263,9 +314,11 @@ body {
   white-space: nowrap;
 }
 
-.btn:hover:not(:disabled) {
-  border-color: var(--accent-dim);
-  color: var(--text);
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover:not(:disabled) {
+    border-color: var(--accent-dim);
+    color: var(--text);
+  }
 }
 
 /* Selected: solid amber background for clear visibility */
@@ -276,8 +329,10 @@ body {
   font-weight: 500;
 }
 
-.btn.selected:hover:not(:disabled) {
-  background: rgba(201, 147, 74, 0.25);
+@media (hover: hover) and (pointer: fine) {
+  .btn.selected:hover:not(:disabled) {
+    background: rgba(201, 147, 74, 0.25);
+  }
 }
 
 .btn:disabled {
@@ -300,7 +355,7 @@ body {
   bottom: 0;
   z-index: 5;
   padding-top: 8px;
-  padding-bottom: max(env(safe-area-inset-bottom, 0px), 4px);
+  padding-bottom: max(env(safe-area-max-inset-bottom, env(safe-area-inset-bottom, 0px)), 4px);
   background: linear-gradient(to top, var(--bg) 60%, rgba(18, 14, 10, 0));
 }
 
@@ -308,17 +363,22 @@ body {
   background: transparent;
   border: 1px solid var(--border);
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   font-family: inherit;
-  padding: 4px 8px;
+  /* WCAG 2.2 AA (2.5.8) puts the minimum tap target at 24x24 CSS px; at 4px padding and
+     10px text these footer buttons came out around 23px. */
+  padding: 7px 10px;
+  min-height: 32px;
   cursor: pointer;
   letter-spacing: 0.04em;
   transition: border-color var(--fade), color var(--fade);
 }
 
-.btn-small:hover:not(:disabled) {
-  border-color: var(--muted);
-  color: var(--text);
+@media (hover: hover) and (pointer: fine) {
+  .btn-small:hover:not(:disabled) {
+    border-color: var(--muted);
+    color: var(--text);
+  }
 }
 
 .btn-small:disabled {
@@ -332,6 +392,7 @@ body {
 
 /* Tappable version → checks for an update (see app.js). */
 .version {
+  min-height: 32px;
   appearance: none;
   background: transparent;
   border: 1px solid transparent;
@@ -344,7 +405,7 @@ body {
   padding: 4px 8px;
   transition: color var(--fade), border-color var(--fade), opacity var(--fade);
 }
-.version:hover { color: var(--text); opacity: 1; border-color: var(--border); }
+@media (hover: hover) and (pointer: fine) { .version:hover { color: var(--text); opacity: 1; border-color: var(--border); } }
 
 /* ── Install instructions ── */
 .install-steps {
@@ -389,13 +450,22 @@ body.modal-open {
   position: fixed;
   inset: 0;
   z-index: 20;
-  display: grid;
-  place-items: center;
+  /* Flex + `margin: auto` on the panel, NOT `place-items: center`. A centred grid item
+     that is taller than the container overflows off BOTH edges and neither is reachable,
+     so a modal taller than the screen (the custom-interval keypad on a 360x640 phone, or
+     anything at all in landscape) simply loses its Save and Cancel buttons. This scrolls
+     instead, and still centres whenever it fits. */
+  display: flex;
+  justify-content: center;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 18px;
+  padding-top: max(18px, env(safe-area-inset-top, 0px));
+  padding-bottom: max(18px, env(safe-area-inset-bottom, 0px));
 }
 
 .modal-backdrop {
-  position: absolute;
+  position: fixed;
   inset: 0;
   border: 0;
   background: rgba(0, 0, 0, 0.72);
@@ -405,6 +475,9 @@ body.modal-open {
 
 .custom-modal {
   position: relative;
+  /* margin:auto centres the panel inside the scrollable layer when it fits, and keeps
+     both overflow edges reachable when it doesn't. */
+  margin: auto;
   width: min(100%, 360px);
   border: 1px solid rgba(201, 147, 74, 0.32);
   background:
@@ -497,9 +570,11 @@ body.modal-open {
   transition: background var(--fade), border-color var(--fade), color var(--fade);
 }
 
-.custom-keypad-btn:hover {
-  border-color: var(--accent-dim);
-  background: rgba(201, 147, 74, 0.08);
+@media (hover: hover) and (pointer: fine) {
+  .custom-keypad-btn:hover {
+    border-color: var(--accent-dim);
+    background: rgba(201, 147, 74, 0.08);
+  }
 }
 
 .custom-keypad-btn-muted {
@@ -561,14 +636,14 @@ body.session-complete::before {
 @media (max-height: 600px) {
   .app {
     padding-top: max(env(safe-area-inset-top, 0px), 10px);
-    padding-bottom: max(env(safe-area-inset-bottom, 0px), 8px);
+    padding-bottom: max(env(safe-area-max-inset-bottom, env(safe-area-inset-bottom, 0px)), 8px);
   }
 
   .countdown-section {
-    min-height: clamp(120px, 22dvh, 180px);
+    min-height: clamp(120px, 22svh, 180px);
   }
 
-  .countdown { font-size: clamp(42px, min(12vw, 8dvh), 64px); }
+  .countdown { font-size: clamp(42px, min(12vw, 8svh), 64px); }
   .bell-hint,
   .duration-label,
   .status,
@@ -591,14 +666,17 @@ body.session-complete::before {
   }
 
   .countdown-section {
-    min-height: clamp(96px, 16dvh, 132px);
+    min-height: clamp(96px, 16svh, 132px);
     justify-content: flex-start;
   }
 
   .countdown {
-    font-size: clamp(40px, min(11vw, 7dvh), 56px);
+    font-size: clamp(40px, min(11vw, 7svh), 56px);
   }
 
+  /* Was 9px. That is below the legible floor for muted text on a dark background, and
+     this query catches essentially every phone. 11px keeps the layout compact and can
+     actually be read. */
   .duration-label,
   .status,
   .bell-hint,
@@ -606,7 +684,7 @@ body.session-complete::before {
   .section-label,
   .version,
   .btn-small {
-    font-size: 9px;
+    font-size: 11px;
   }
 
   .play-section {
@@ -628,7 +706,7 @@ body.session-complete::before {
   }
 
   .countdown-section {
-    padding: clamp(12px, 2dvh, 20px) 0;
+    padding: clamp(12px, 2svh, 20px) 0;
   }
 
   .btn,

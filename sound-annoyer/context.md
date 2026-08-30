@@ -36,13 +36,22 @@ These are the explicit asks. Treat them as a checklist.
       to add more.
 - [ ] **Random intervals** — not a fixed metronome. The chosen interval is a *base*;
       each actual gap is randomized around it so it feels unpredictable.
-- [ ] **Interval options** — a **5 second** option (for debugging), then less
-      frequent presets (**30 s**, **1 min**, etc.), plus a **Custom** option to set
-      any interval.
+- [x] **Interval options** — a **5 second** option (tagged `test`, for checking the rig
+      before you hide the speaker), then less frequent presets (**30 s**, **1 min**, …),
+      plus a **Custom** option (1–3600 s / 1–360 min) for anything else.
 - [ ] **No immediate repeats** — when multiple sounds are selected, never play the
       same sound twice in a row (shuffle with anti-repeat). If only one sound is
       selected, it may repeat every time.
-- [ ] **Runs until stopped** — start/stop control; keeps going indefinitely.
+- [x] **Runs until stopped** — start/stop control; keeps going indefinitely. STOP also
+      silences a clip that is *already playing*: entries stay in `scheduled` until their
+      `onended` fires, so `clearScheduled()` can still reach them. (They used to be
+      dropped one second after their start time, which left up to ten seconds of sound
+      coming out of a hidden speaker after you pressed STOP.)
+- [x] **Changes apply immediately** — arming or disarming a sound, changing the interval
+      or toggling chaos timing while running calls `rescheduleFromNow()`, which drops
+      every not-yet-started hit and rebuilds the horizon. Without it the queue still held
+      up to 30 minutes of hits built from the *old* settings, so a change appeared to do
+      nothing at all.
 - [ ] **Works while the phone is locked / screen off.** This is the whole point.
       (Literal "phone turned off" = powered down is impossible for any web app;
       this means screen locked / app backgrounded.)
@@ -61,6 +70,11 @@ These are the explicit asks. Treat them as a checklist.
 - [ ] **Installable on Android *and* iPhone** — a real home-screen install. Android /
       desktop use the native prompt; iPhone Safari has no prompt, so the Install button
       shows "Add to Home Screen" steps. Runs standalone + offline once installed.
+      **Browser matters:** only Chrome (with Google Mobile Services) and Samsung
+      Internet mint a WebAPK — a real Android app package. **Brave produces a shortcut
+      instead**, so Android never gives the app its own entry under Settings → Apps and
+      there is no per-app battery toggle to set to Unrestricted. Brave is detected and
+      the install sheet says so.
 - [ ] **Version number tied to the current date** — format `vYY.MM.DD`
       (e.g. `v26.06.18`, year.month.day). Bump it on every change.
 - [ ] **Owner supplies the sound files** as `.mp3`s dropped into `resources/`. The
@@ -85,19 +99,26 @@ This is the hard part and mirrors the proven approach in `../meditation-timer/`.
   *replenish* the horizon. A locked phone therefore keeps annoying people for the
   whole horizon even if JS never wakes; in practice the phone gets touched and the
   horizon is topped up continuously.
-- **Keep-alive.** A continuous **faint 25 Hz tone, clearly nonzero but very quiet**
-  loops for the whole session (a Web Audio buffer plus a looping `<audio>` element
-  carrying the same clip). It must **NOT** be digital silence: Chrome exempts a page
-  from background freezing only while it counts as "playing audio" (documented in
-  Chrome's Page Lifecycle API), and that audibility check is power-based — a literal
-  all-zero stream does not qualify, confirmed by prior art solving this exact
-  problem (`t-mullen/silent-audio`). A frozen page's AudioContext stops too, killing
-  every pre-scheduled sound. (v26.06.19 shipped a zero-filled buffer and died on
-  lock exactly this way.) 25 Hz at this level stays imperceptible in the room: small
-  speakers physically can't reproduce it, and it sits below the human hearing
-  threshold at that frequency even on big ones — unlike the broadband noise of an
-  earlier build, which became audible hiss on a cranked speaker. Full writeup incl.
-  sources: `knowledge/locked-screen-audio.md`. Waking the speaker
+- **Keep-alive — two halves, each doing a different job.** Both run for the whole
+  session and **neither is optional**:
+  1. A **Web Audio 25 Hz tone at amplitude 0.002**. This clears Chrome's audibility
+     gate, which is an exact constant: mean-square power ≥ `-72.24719896` dBFS, i.e.
+     RMS ≥ 2⁻¹² (`services/audio/output_stream.cc`). Ours sits at −57 dBFS — 15 dB of
+     margin — and is inaudible (small speakers can't reproduce 25 Hz at all). Clearing
+     that gate is what stops Chrome throttling timers and **freezing the page**; a
+     frozen page's AudioContext stops too and every pre-scheduled sound dies with it.
+     It must **NOT** be digital silence — v26.06.19 shipped a zero-filled buffer and
+     died on lock exactly this way.
+  2. A looping **`<audio>` element** carrying the same faint tone, **10 seconds long**.
+     Since **Android 17** (stable 2026-06-16) background audio without a foreground
+     service is *silently muted*, and Chrome only runs its `mediaPlayback` foreground
+     service while it shows a media notification — which requires a real media element
+     with a duration **over 5 seconds**. A bare AudioContext is `kAmbient` and is
+     explicitly ignored for Android audio focus. So on a current Android this element
+     is what keeps the sound audible at all; the Web Audio half is what keeps the page
+     unfrozen. The 10 s clip length is load-bearing, not arbitrary.
+
+  Full writeup incl. sources: `knowledge/locked-screen-audio.md`. Waking the speaker
   is still the primer's job — see below.
 - **Wake primer.** ~0.6 s before each real sound, a short, quiet primer tone is
   scheduled. This is what actually wakes a dozing BT speaker so the sound's onset
@@ -105,28 +126,84 @@ This is the hard part and mirrors the proven approach in `../meditation-timer/`.
   (Trade-off: if a specific speaker sleeps hard during a long gap, its first onset
   after waking could be slightly soft; the primer minimises this.)
 - **Media Session API** metadata is set so the OS treats this as active media
-  playback (helps keep the session alive and shows on the lock screen).
+  playback (helps keep the session alive and shows on the lock screen). It grants no
+  exemption on its own — it is metadata on top of an existing player.
+- **Battery.** `new AudioContext({ latencyHint: 'playback' })` is the single biggest
+  win: on Android it selects `AAUDIO_PERFORMANCE_MODE_POWER_SAVING` and a ~21 ms
+  buffer instead of the raw hardware buffer, cutting device callbacks from 200-500/s
+  to ~47/s. Nothing here needs low latency. The countdown runs on
+  `requestAnimationFrame` (which the browser stops dead when the page is hidden, so a
+  pocketed phone spends nothing on it) rather than the old 1 Hz `setInterval`; the
+  schedule top-up is driven by each sound's own `onended` with a 60 s interval only as
+  a safety net. What remains — an open audio track holding the CPU out of suspend —
+  is the unavoidable price of playing anything at all with the screen off.
+- **Context recovery.** `audioCtx.onstatechange` resumes a context the OS suspended
+  (audio focus lost to a call or notification), and `visibilitychange` + the Page
+  Lifecycle `resume` event top the schedule back up. Without this a single interruption
+  silently ended the session.
+- **iOS.** `navigator.audioSession.type = 'playback'` is set when available. WebKit's
+  `shouldOverrideBackgroundPlaybackRestriction()` returns true *only* for that session
+  type, so it is the one lever that makes backgrounded playback possible on an iPhone.
 
 ### Randomization
 
-- `gap = base × U(0.5, 1.5)` when randomize is on (default), floored to a sane
-  minimum. Average stays ≈ the chosen interval, but timing is unpredictable.
+- `gap = base × U(0.75, 1.25)` when randomize is on (default), floored to
+  `MIN_GAP_MS`. Average stays ≈ the chosen interval, but timing is unpredictable.
+  (The UI and the help text quote the same range; an earlier draft of this file said
+  0.5–1.5, which never matched the code.)
 - A toggle can switch to exact, fixed intervals.
+- If the app is backgrounded for longer than the scheduling horizon, `nextHitTime`
+  falls behind `currentTime`. It is clamped forward to one fresh gap on the next fill;
+  without that clamp every missed hit was queued and collapsed onto the same instant,
+  firing up to `MAX_AHEAD` sounds simultaneously when the phone woke up.
+
+### Caches
+
+Two caches, and the split matters:
+
+- `sound-annoyer-<VERSION>` — the shell. Version-keyed, replaced wholesale on every bump,
+  so index.html / app.js / styles.css are always from one deploy and can never skew.
+- `sound-annoyer-sounds` — the twelve mp3s. **Unversioned and never evicted.** They are
+  1.3 MB and change far less often than the code; keeping them in the versioned cache
+  meant every bump silently re-downloaded all of them over mobile data.
+
+`caches.keys()` is per **origin**, not per app, and this site hosts several. Every
+deletion — in `activate`, in `hardReset()`, anywhere — must be prefix-scoped, and must
+skip the sounds cache.
 
 ### Offline-first + freshness
 
 - **Cache-first service worker** (`sw.js`). On install it precaches the whole shell,
   the icons, **and every sound**, so the installed app boots and plays with zero
   network. Every same-origin request is served from cache first (instant, offline).
-- Freshness comes from the **SW lifecycle**, not a per-launch network hit: bump
-  `VERSION` → the new worker precaches a new version-keyed cache in the background →
-  it takes over and the page reloads **once** when it gains control (never
-  mid-session). Registered with `updateViaCache:'none'` so a bumped `sw.js` is
-  detected promptly behind GitHub Pages' HTTP caching.
-- The **Update** button (and the tappable **version** label) are the manual jump to
-  newest: online they wipe caches + unregister the SW and reload; **offline they do
-  nothing destructive** (wiping with no network would brick the app) and just confirm
-  the cached build. This offline guard is essential — do not remove it.
+- **Precaching uses `cache: 'reload'`.** This is not a detail. A plain `addAll()`
+  fetches through the browser's HTTP cache, and GitHub Pages serves everything with
+  `Cache-Control: max-age=600` — so a worker installing within ten minutes of a deploy
+  could bake *old* bytes into the *new* version's cache and, because cache-first never
+  revalidates, pin the app to a stale build under a fresh version number **forever**.
+  That was the real cause of "I open it and get the old version".
+- **Old-cache eviction is prefix-scoped** to `sound-annoyer-`. `caches.keys()` is
+  per-origin, and this site hosts several apps: the old unscoped filter deleted the
+  Meditation Timer's cache — including its 44 MB downloaded soundtrack — on every
+  SoundAnnoyer update, and vice versa.
+- **`skipWaiting()` is NOT called on install.** The shell is cache-first, so a worker
+  that activates mid-session serves the new JS/CSS to a page running the old code. The
+  new worker waits; `js/app.js` sends it `SKIP_WAITING` the moment no session is
+  running, and the reload then follows unconditionally. An update that arrives during a
+  run is applied when the run ends instead of being dropped (which is what the previous
+  build did — it deferred the *reload* while letting the worker take over anyway).
+- Registered with `updateViaCache:'none'` so a bumped `sw.js` is detected promptly.
+- **Self-heal.** The page asks the active worker for its `VERSION` and compares it with
+  `APP_VERSION`. A mismatch means the cache is serving a shell from a different deploy;
+  the app repairs itself once per browsing session (guarded against reload loops).
+- The **Update** button (and the tappable **version** label) escalate gently: probe
+  real connectivity → hand over an already-waiting worker → `reg.update()` → only if
+  the versions still disagree, wipe *this app's* caches and re-register. **Offline it
+  does nothing destructive** and just confirms the cached build. That guard is
+  essential — and it now probes a real byte rather than trusting `navigator.onLine`,
+  which reports `true` on a captive portal or a dead uplink.
+- `tools/check_versions.py` enforces the three-file version lockstep; run it before
+  every push (`--bump` sets both apps to today).
 
 ### Sounds / resources
 
@@ -197,7 +274,7 @@ with intent.
 | File | Purpose |
 |---|---|
 | `index.html` | UI shell (two tab panels + modals), CSP, PWA meta. No inline scripts/styles. |
-| `css/styles.css` | Theme, tabbed layout, single-page scroll, responsive. |
+| `css/styles.css` | Theme, tabbed layout, single-page scroll, responsive. Sized in `svh`, not `dvh` — `dvh` is re-evaluated every time Chrome's URL bar slides, so a `dvh`-sized shell repaints mid-scroll. Every `:hover` rule is gated behind `@media (hover: hover) and (pointer: fine)`, because on touch `:hover` latches on tap and stays. |
 | `js/app.js` | Audio engine, random scheduler, anti-repeat shuffle, tabs, smart install (native prompt / iOS instructions), offline-safe update, BT wake. |
 | `manifest.json` | PWA manifest. |
 | `sw.js` | Service worker: cache-first / offline-first, precaches shell + all sounds, version-keyed cache. |
@@ -209,3 +286,14 @@ with intent.
 Bump the version on **every** change, in lockstep, in three places:
 `index.html` (the Settings `.version` button), `sw.js` (`VERSION`), and `js/app.js`
 (`APP_VERSION`). Format `vYY.MM.DD` (year.month.day, e.g. `v26.06.18`).
+
+Forgetting is silent and permanent — the browser only reinstalls a worker whose script
+changed byte-for-byte, so an unbumped deploy never reaches anyone who already has the
+app. Guard it:
+
+```
+python3 ../tools/check_versions.py          # verify lockstep across both apps
+python3 ../tools/check_versions.py --bump   # set both to today
+```
+
+It also flags an app whose source files are newer than its version string.

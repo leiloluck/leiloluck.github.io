@@ -116,7 +116,7 @@
 
     <!-- Version + offline status (version is tappable: checks for an update) -->
     <section class="section settings-meta">
-      <button class="version" id="version" type="button" title="Check for updates">v26.07.13c</button>
+      <button class="version" id="version" type="button" title="Check for updates">v26.08.30</button>
       <span class="offline-badge" id="offline-badge">✓ works offline</span>
     </section>
 
@@ -177,7 +177,8 @@
     <div class="help-details hidden" id="help-details">
       <p>Sounds play at random intervals around the time you set. With chaos timing on, each gap is between 0.75x and 1.25x the base interval - irregular enough that nobody can predict when the next one hits.</p>
       <p>Everything is pre-scheduled on the audio clock, so sounds keep playing through a locked screen in almost all cases. No timers, no polling.</p>
-      <p><strong>For the most reliable results:</strong> install SoundAnnoyer (Settings → Install to Home Screen) instead of running it in a browser tab, then check that Android isn't battery-restricting it — Settings → Apps → SoundAnnoyer → Battery → Unrestricted. (Once installed, it shows up there under its own name, separate from Chrome.)</p>
+      <p><strong>For the most reliable results:</strong> install SoundAnnoyer from <strong>Chrome</strong> (Settings → Install to Home Screen) rather than running it in a browser tab, then check that Android isn't battery-restricting it — Settings → Apps → SoundAnnoyer → Battery → Unrestricted. Once installed from Chrome it appears there under its own name, separate from the browser.</p>
+      <p><strong>Brave:</strong> Brave can only add a shortcut, not a real installed app, so Android never gives SoundAnnoyer its own battery setting and background sounds are more likely to be cut off. The app still works — but install from Chrome if you want it to survive a pocketed phone.</p>
       <p>Works over Bluetooth. Connect your speaker before hitting UNLEASH. A near-silent signal runs in the background to keep the speaker awake during long gaps.</p>
       <p>Use Test Mode to preview each sound before hiding the device. It exits the active session automatically.</p>
     </div>
@@ -194,6 +195,10 @@
     <h2 id="install-modal-title">Add to your home screen</h2>
     <p class="help-summary" id="install-modal-summary">Install SoundAnnoyer as an app. Works fully offline, and locked-screen playback is more reliable once installed.</p>
     <ol class="install-steps" id="install-steps"></ol>
+    <!-- Only shown when the browser actually has a native prompt to give us. On Brave
+         that prompt exists but only produces a shortcut, so the steps above recommend
+         Chrome first and this stays as the deliberate second choice. -->
+    <button class="help-close-btn hidden" id="install-proceed-btn">Install here anyway</button>
     <button class="help-close-btn" id="install-close-btn">Got it</button>
   </section>
 </div>

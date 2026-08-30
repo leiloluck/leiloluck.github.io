@@ -34,7 +34,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.07.13c';
+const APP_VERSION = 'v26.08.30';
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 // Drop real files into resources/ (see resources/README.md). Until a matching file
@@ -80,6 +80,7 @@ const SOUNDS = [
 // ── Interval presets (ms) ────────────────────────────────────────────────────
 
 const PRESETS = [
+  { ms: 5000,    label: '5 sec',  tag: 'test' },
   { ms: 30000,   label: '30 sec', tag: '' },
   { ms: 60000,   label: '1 min',  tag: '' },
   { ms: 120000,  label: '2 min',  tag: '' },
@@ -93,18 +94,27 @@ const PRESETS = [
 // ── Scheduling constants ─────────────────────────────────────────────────────
 
 const PRIMER_LEAD  = 0.6;     // s — wake primer fires this long before each sound
-const HORIZON_SEC  = 1800;    // schedule up to 30 min ahead (survives a locked screen)
-const MAX_AHEAD    = 180;     // …but never queue more than this many hits at once
+const FIRST_LEAD   = 0.75;    // s — an immediate sound still gets a full primer first
+// A frozen page's AudioContext stops rendering, so pre-scheduling cannot outlive a
+// freeze anyway; the horizon only has to cover JS being *throttled*, which is at worst
+// one wake-up a minute. Ten minutes is ample, and halving it halves the number of source
+// nodes hanging off the audio graph for the whole session.
+const HORIZON_SEC  = 600;     // schedule 10 min ahead
+const MAX_AHEAD    = 90;      // …but never queue more than this many hits at once
 const MIN_GAP_MS   = 1500;    // floor so randomization can't bunch sounds up
 const PRIMER_AMP   = 0.05;    // quiet BT wake blip (only fires briefly before a sound)
 const PRIMER_FREQ  = 120;     // Hz — low, felt more than heard
 const PRIMER_DUR   = 0.13;    // s
 
+const HEARTBEAT_MS = 60000;   // schedule-top-up safety net (see startHeartbeat)
+
 const KEEPALIVE_FREQ = 25;    // Hz — subsonic; real speakers can't reproduce it
-const KEEPALIVE_AMP  = 0.002; // clearly nonzero (Chrome's audibility check needs
-                              // that — see file header), yet below the human
-                              // hearing threshold at 25 Hz. Not a tuned dBFS
-                              // target — see knowledge/locked-screen-audio.md §2.
+const KEEPALIVE_AMP  = 0.002; // Chrome's audibility gate is exact: mean-square power
+                              // >= -72.24719896 dBFS, i.e. RMS >= 2^-12 (1/4096), in
+                              // services/audio/output_stream.cc. A 0.002 sine has RMS
+                              // 1.41e-3 -> -57 dBFS: 15 dB of margin over the gate,
+                              // and still ~57 dB below full scale, so inaudible.
+                              // Do NOT lower this toward the gate, and NEVER to zero.
 
 // ── State ────────────────────────────────────────────────────────────────────
 
@@ -133,7 +143,39 @@ let heartbeatId      = null;
 
 function ensureAudio() {
   if (audioCtx) return;
-  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  // latencyHint:'playback' is the single biggest battery win available here, and it is
+  // not just a hint: in Chrome it maps to AAUDIO_PERFORMANCE_MODE_POWER_SAVING on
+  // Android and to a ~21 ms (1024-frame) buffer instead of the raw hardware buffer.
+  // That is roughly 47 device callbacks per second instead of 200-500 — a 5-10x cut in
+  // CPU wakeups, for free, because nothing here is latency-sensitive: every sound is
+  // scheduled seconds to minutes ahead of when it plays.
+  // renderSizeHint aligns the render quantum with the device burst (Chrome 153+);
+  // unknown dictionary members are ignored, so older engines just skip it.
+  for (const opts of [{ latencyHint: 'playback', renderSizeHint: 'hardware' },
+                      { latencyHint: 'playback' },
+                      undefined]) {
+    try { audioCtx = opts ? new Ctx(opts) : new Ctx(); break; } catch (e) { /* try simpler */ }
+  }
+
+  // iOS/Safari only (16.4+). WebKit backgrounds an AudioContext the instant the page is
+  // hidden *unless* the audio session type is 'playback' — this exact property is the
+  // literal condition in WebCore's shouldOverrideBackgroundPlaybackRestriction(). It is
+  // the one lever that makes locked-screen playback work at all on an iPhone.
+  try {
+    if (navigator.audioSession) navigator.audioSession.type = 'playback';
+  } catch {}
+
+  // If the OS suspends the context (audio focus lost to a call/notification while
+  // locked), every pre-scheduled sound is dead until it is resumed. Take it back.
+  audioCtx.onstatechange = () => {
+    if (!running || !audioCtx) return;
+    // iOS reports 'interrupted' (a phone call, Siri); Android reports 'suspended'.
+    // Handling only the latter meant one incoming call silently ended the session.
+    if (audioCtx.state === 'suspended' || audioCtx.state === 'interrupted') {
+      audioCtx.resume().then(fillSchedule).catch(() => {});
+    }
+  };
 
   masterGain = audioCtx.createGain();
   masterGain.gain.value = 1;
@@ -183,7 +225,11 @@ function loadFirstAvailable(sound, i) {
       sound.buffer = decoded;
       sound.isDemo = false;
       sound.loadedFile = sound.files[i];
-      renderSounds();
+      // Update just this button. The old code called renderSounds() here, which wipes and
+      // rebuilds all twelve — once per sound as its mp3 lands, so the whole grid was torn
+      // down a dozen times during boot. A tap that landed on a button in the moment
+      // between its removal and its replacement went nowhere.
+      refreshSoundBtn(sound);
     })
     .catch(() => loadFirstAvailable(sound, i + 1));
 }
@@ -274,10 +320,13 @@ function makeKeepAliveWavBlob(seconds = 10, sampleRate = 8000) {
 
 // ── Scheduling ───────────────────────────────────────────────────────────────
 
-function computeGapMs() {
+function computeGapMs(lastSound) {
   const base = selectedIntervalMs;
   const gap = randomize ? base * (0.75 + Math.random() * 0.5) : base;
-  return Math.max(MIN_GAP_MS, gap);
+  // Never let the next hit start before the previous clip has finished — at the 5-second
+  // preset a three-second sound would otherwise talk over itself.
+  const clipMs = lastSound && lastSound.buffer ? lastSound.buffer.duration * 1000 : 0;
+  return Math.max(MIN_GAP_MS, clipMs + 250, gap);
 }
 
 function getArmedSounds() {
@@ -314,10 +363,10 @@ function scheduleHit(sound, when) {
   const entry = { soundSrc, primerSrc, when, soundId: sound.id };
   soundSrc.onended = () => {
     scheduled = scheduled.filter(e => e !== entry);
-    if (document.visibilityState === 'visible') onFiredVisible(sound);
     fillSchedule();   // top up as each one completes (foreground)
   };
   scheduled.push(entry);
+  return entry;
 }
 
 // Fill the schedule out to the horizon (bounded by MAX_AHEAD).
@@ -325,17 +374,52 @@ function fillSchedule() {
   if (!running || !audioCtx) return;
 
   const now = audioCtx.currentTime;
-  scheduled = scheduled.filter(e => e.when > now - 1);
+  // Only drop entries whose onended must have been missed (a very long sound is well
+  // under a minute). Anything more aggressive than this makes a playing sound
+  // unreachable by clearScheduled(), so STOP stops scheduling but not the noise.
+  scheduled = scheduled.filter(e => e.when > now - 60);
 
   const list = getArmedSounds();
   if (list.length === 0) { stopAnnoying(); return; }
+
+  // If the page was frozen (or simply backgrounded) for longer than the horizon,
+  // nextHitTime is far in the past. Without this clamp the loop below would queue
+  // every missed hit and scheduleHit would collapse them all onto `now` — a wall of
+  // up to MAX_AHEAD sounds firing simultaneously the moment the phone wakes up.
+  // Drop the backlog and resume one fresh gap from here.
+  if (nextHitTime < now) nextHitTime = now + computeGapMs() / 1000;
 
   while (nextHitTime < now + HORIZON_SEC && scheduled.length < MAX_AHEAD) {
     const sound = pickNextSound(list);
     scheduleHit(sound, nextHitTime);
     lastScheduledId = sound.id;
-    nextHitTime += computeGapMs() / 1000;
+    nextHitTime += computeGapMs(sound) / 1000;
   }
+}
+
+// Drop every hit that has not started yet and rebuild the horizon from the current
+// settings. Used when the armed sounds or the interval change mid-session: without it the
+// already-scheduled 30 minutes of hits keep using the OLD settings and the change appears
+// to do nothing at all.
+function rescheduleFromNow() {
+  if (!running || !audioCtx) return;
+  const now = audioCtx.currentTime;
+  const keep = [];
+  scheduled.forEach(e => {
+    if (e.when <= now + 0.05) { keep.push(e); return; }   // already started — let it finish
+    [e.soundSrc, e.primerSrc].forEach(src => {
+      if (!src) return;
+      try { src.onended = null; } catch {}
+      try { src.stop(); } catch {}
+      try { src.disconnect(); } catch {}
+    });
+  });
+  scheduled = keep;
+  const list = getArmedSounds();
+  if (!list.length) { stopAnnoying(); return; }
+  nextHitTime = now + computeGapMs() / 1000;
+  fillSchedule();
+  updateRunningStatus();
 }
 
 function clearScheduled() {
@@ -363,6 +447,15 @@ function startAnnoying() {
     return;
   }
 
+  // Test mode and a live session are mutually exclusive: renderTestMode() already stops a
+  // run when test mode is switched on, but UNLEASH could still start one while it was on,
+  // leaving every sound tap playing a preview instead of arming.
+  if (testMode) {
+    testMode = false;
+    saveState();
+    renderTestMode();
+  }
+
   running = true;
   document.body.classList.add('running');
   lastScheduledId = null;
@@ -373,11 +466,15 @@ function startAnnoying() {
   if (startWithSound) {
     // Fire one sound right away (confirms it works / lets you gauge the volume).
     const first     = pickNextSound(list);
-    const firstWhen = audioCtx.currentTime + 0.1;
-    scheduleHit(first, firstWhen);
+    // Far enough out to leave room for the wake primer. The Bluetooth speaker has been
+    // idle up to this point, so this is the hit that most needs waking — and it was the
+    // one hit that never got a primer at all.
+    const firstWhen = audioCtx.currentTime + FIRST_LEAD;
+    const entry     = scheduleHit(first, firstWhen);
+    if (entry) entry.fired = true;      // flashed right here; don't flash again on the tick
     onFiredVisible(first);
     lastScheduledId = first.id;
-    nextHitTime = firstWhen + (first.buffer?.duration ?? 0.5) + computeGapMs() / 1000;
+    nextHitTime = firstWhen + (first.buffer?.duration ?? 0.5) + computeGapMs(first) / 1000;
   } else {
     // Discreet start: stay silent for the first interval so hitting UNLEASH isn't
     // given away by an immediate sound.
@@ -399,27 +496,60 @@ function stopAnnoying() {
   stopKeepAlive();
   stopHeartbeat();
   if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'none';
+  // An open output stream holds a partial wakelock (roughly 12 mW -> 70 mW on an idle
+  // device). Nothing released it before, so STOP left the phone awake indefinitely.
+  // ensureAudio() / resume() bring it straight back on the next UNLEASH.
+  if (audioCtx && audioCtx.state === 'running') audioCtx.suspend().catch(() => {});
 
   setLaunchBtn();
   elHeroStatus.textContent = 'stopped - silence restored';
   elHeroSub.textContent = '';
   elHeroEmoji.textContent = '😼';
+
+  applyUpdateIfSafe(1500);   // a new build that landed mid-session lands now
 }
 
+// Two separate jobs, deliberately split so neither costs battery when it isn't needed:
+//
+//   * The countdown is cosmetic. It runs on requestAnimationFrame, which the browser
+//     stops entirely the moment the page is hidden — so a pocketed phone spends zero
+//     CPU on it. (The old build ran a 1 Hz setInterval that kept ticking, resuming the
+//     context and writing to the DOM every second forever.)
+//   * Topping the schedule up is not cosmetic, but it barely needs to run: every
+//     scheduled sound tops the horizon up again from its own `onended`, and we also
+//     top up on visibilitychange and on Page Lifecycle `resume`. The interval below is
+//     only a safety net, so it ticks slowly.
 function startHeartbeat() {
   stopHeartbeat();
-  // Foreground tick: tops up the schedule and updates the countdown. Throttled when
-  // locked, which is fine — the pre-scheduled horizon carries the locked screen.
   heartbeatId = setInterval(() => {
     if (!running) return;
-    audioCtx.resume();
+    if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
     fillSchedule();
-    updateRunningStatus();
-  }, 1000);
+  }, HEARTBEAT_MS);
+  startCountdownLoop();
 }
 
 function stopHeartbeat() {
   if (heartbeatId) { clearInterval(heartbeatId); heartbeatId = null; }
+  stopCountdownLoop();
+}
+
+let countdownRaf = null;
+let lastCountdownPaint = 0;
+
+function startCountdownLoop() {
+  stopCountdownLoop();
+  const frame = ts => {
+    if (!running) { countdownRaf = null; return; }
+    // The countdown only shows whole seconds; repainting it 60x a second is wasted work.
+    if (ts - lastCountdownPaint >= 250) { lastCountdownPaint = ts; updateRunningStatus(); }
+    countdownRaf = requestAnimationFrame(frame);
+  };
+  countdownRaf = requestAnimationFrame(frame);
+}
+
+function stopCountdownLoop() {
+  if (countdownRaf) { cancelAnimationFrame(countdownRaf); countdownRaf = null; }
 }
 
 // ── Sound tap: arm/disarm, or preview in test mode ───────────────────────────
@@ -437,7 +567,8 @@ function previewSound(sound, btn) {
   ensureAudio();
   audioCtx.resume();
   startKeepAlive();
-  scheduleHit(sound, audioCtx.currentTime + PRIMER_LEAD + 0.05);
+  const entry = scheduleHit(sound, audioCtx.currentTime + FIRST_LEAD);
+  if (entry) entry.fired = true;
   onFiredVisible(sound);
 
   if (btn) {
@@ -613,6 +744,7 @@ const elInstallModalDismiss = document.getElementById('install-modal-dismiss');
 const elInstallSummary      = document.getElementById('install-modal-summary');
 const elInstallSteps        = document.getElementById('install-steps');
 const elInstallCloseBtn     = document.getElementById('install-close-btn');
+const elInstallProceedBtn   = document.getElementById('install-proceed-btn');
 
 const elHelpModalLayer   = document.getElementById('help-modal-layer');
 const elHelpModal        = document.getElementById('help-modal');
@@ -661,18 +793,36 @@ function formatCountdown(sec) {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
+let lastCountdownText = '';
+
 function updateRunningStatus() {
   if (!running) return;
   elHeroStatus.textContent = 'ARMED - chaos incoming';
   const now = audioCtx.currentTime;
+
+  // Flash the emoji when a hit actually STARTS. It used to be driven by onended, so the
+  // visual arrived when the sound finished — up to ten seconds late on a long clip.
+  scheduled.forEach(e => {
+    if (!e.fired && e.when <= now) {
+      e.fired = true;
+      if (document.visibilityState === 'visible') {
+        const sound = SOUNDS.find(x => x.id === e.soundId);
+        if (sound) onFiredVisible(sound);
+      }
+    }
+  });
+
   const upcoming = scheduled
     .map(e => e.when)
     .filter(w => w > now)
     .sort((a, b) => a - b)[0];
-  if (upcoming) {
-    elHeroSub.textContent = `next in ${formatCountdown(upcoming - now)}`;
-  } else {
-    elHeroSub.textContent = 'scheduling…';
+  const text = upcoming ? `next in ${formatCountdown(upcoming - now)}` : 'scheduling…';
+  // Only touch the DOM when the displayed value actually changes: hero-sub is
+  // aria-live="polite", and rewriting it four times a second made a screen reader read
+  // the countdown continuously.
+  if (text !== lastCountdownText) {
+    lastCountdownText = text;
+    elHeroSub.textContent = text;
   }
 }
 
@@ -691,6 +841,8 @@ function setLaunchBtn() {
 
 // ── UI: sound buttons ────────────────────────────────────────────────────────
 
+// Rebuild the whole grid. Only for changes that affect every button (test mode, a fresh
+// load of saved state) — for a single sound use refreshSoundBtn().
 function renderSounds() {
   elSoundGroup.innerHTML = '';
   SOUNDS.forEach(sound => {
@@ -712,17 +864,29 @@ function renderSounds() {
 
     btn.append(emoji, label);
     btn.addEventListener('click', () => onSoundClick(sound, btn));
+    sound.btn = btn;
     elSoundGroup.appendChild(btn);
   });
+}
+
+// In-place state update for one sound's button — no teardown, so a tap in flight is
+// never lost and the pulse animation isn't interrupted.
+function refreshSoundBtn(sound) {
+  const btn = sound.btn;
+  if (!btn) return;
+  btn.classList.toggle('armed', armed.has(sound.id));
+  btn.classList.toggle('demo', !!sound.isDemo);
+  btn.setAttribute('aria-pressed', armed.has(sound.id) ? 'true' : 'false');
 }
 
 function toggleSound(id) {
   if (armed.has(id)) armed.delete(id); else armed.add(id);
   saveState();
-  renderSounds();
+  const sound = SOUNDS.find(s => s.id === id);
+  if (sound) refreshSoundBtn(sound);      // in place: never rebuild under the finger
   setLaunchBtn();
   if (!running) elHeroStatus.textContent = idleStatus();
-  // Live update: if running, the change is picked up on the next fill cycle anyway.
+  else rescheduleFromNow();               // takes effect immediately, not in 30 minutes
 }
 
 // ── UI: interval buttons ─────────────────────────────────────────────────────
@@ -732,7 +896,7 @@ function renderIntervals() {
 
   PRESETS.forEach(p => {
     const btn = makeIntervalBtn(p.label, p.tag, selectedIntervalMs === p.ms && !isCustomSelected());
-    btn.addEventListener('click', () => setInterval_(p.ms, false));
+    btn.addEventListener('click', () => setInterval_(p.ms));
     elIntervalGroup.appendChild(btn);
   });
 
@@ -766,10 +930,11 @@ function isCustomSelected() {
     && !PRESETS.some(p => p.ms === selectedIntervalMs);
 }
 
-function setInterval_(ms, isCustom) {
+function setInterval_(ms) {
   selectedIntervalMs = ms;
   saveState();
   renderIntervals();
+  rescheduleFromNow();   // a running session picks the new gap up straight away
 }
 
 function formatSeconds(sec) {
@@ -824,16 +989,14 @@ function toggleCustomUnit() {
   const val = parseInt(customDraft, 10);
   if (customUnit === 'min') {
     customUnit  = 'sec';
-    customDraft = (val && val > 0) ? String(val * 60) : '';
+    // min -> sec is exact, but the seconds field allows at most 3600.
+    customDraft = (val && val > 0) ? String(Math.min(val * 60, 3600)) : '';
   } else {
-    const secs = val && val > 0 ? val : 0;
-    if (secs > 0 && secs % 60 === 0) {
-      customUnit  = 'min';
-      customDraft = String(secs / 60);
-    } else {
-      customUnit  = 'min';
-      customDraft = '';
-    }
+    customUnit = 'min';
+    // sec -> min used to blank the field for anything that wasn't a whole number of
+    // minutes, so typing 90 and tapping MIN silently threw the number away. Round to the
+    // nearest minute (never below 1) and keep the value.
+    customDraft = (val && val > 0) ? String(Math.max(1, Math.min(360, Math.round(val / 60)))) : '';
   }
   elCustomError.textContent = '';
   renderCustomDisplay();
@@ -864,6 +1027,7 @@ function submitCustom() {
   selectedIntervalMs = customSeconds * 1000;
   saveState();
   renderIntervals();
+  rescheduleFromNow();
   closeCustomModal();
 }
 
@@ -947,6 +1111,7 @@ elRandomToggle.addEventListener('click', () => {
   randomize = !randomize;
   saveState();
   renderRandomize();
+  rescheduleFromNow();
 });
 
 // ── UI: test mode toggle ─────────────────────────────────────────────────────
@@ -998,11 +1163,12 @@ function skipNow() {
   audioCtx.resume();
   clearScheduled();
   const s = pickNextSound(list);
-  const when = audioCtx.currentTime + 0.08;
-  scheduleHit(s, when);
+  const when = audioCtx.currentTime + FIRST_LEAD;   // room for the wake primer
+  const entry = scheduleHit(s, when);
+  if (entry) entry.fired = true;
   onFiredVisible(s);
   lastScheduledId = s.id;
-  nextHitTime = when + (s.buffer?.duration ?? 0.5) + computeGapMs() / 1000;
+  nextHitTime = when + (s.buffer?.duration ?? 0.5) + computeGapMs(s) / 1000;
   fillSchedule();
   updateRunningStatus();
 }
@@ -1031,6 +1197,9 @@ function loadState() {
   try { s = JSON.parse(localStorage.getItem(STATE_KEY)); } catch {}
   if (s && Array.isArray(s.armed)) {
     s.armed.forEach(id => { if (SOUNDS.some(x => x.id === id)) armed.add(id); });
+    // Saved ids that no longer exist (a renamed sound, an older schema) used to leave the
+    // app with nothing armed and no hint why. Fall back to the first-run behaviour.
+    if (!armed.size && s.armed.length) SOUNDS.forEach(x => armed.add(x.id));
     if (typeof s.intervalMs === 'number') selectedIntervalMs = s.intervalMs;
     if (typeof s.customSeconds === 'number') customSeconds = s.customSeconds;
     if (typeof s.randomize === 'boolean') randomize = s.randomize;
@@ -1057,7 +1226,10 @@ function loadState() {
 let deferredPrompt = window.deferredPrompt || null;
 
 function isStandalone() {
-  return window.matchMedia('(display-mode: standalone)').matches
+  // Not just 'standalone': display_override lists minimal-ui, and Android can launch a
+  // WebAPK fullscreen. Any of them means we are running as an installed app.
+  return ['standalone', 'minimal-ui', 'fullscreen', 'window-controls-overlay']
+           .some(mode => window.matchMedia(`(display-mode: ${mode})`).matches)
       || window.navigator.standalone === true;
 }
 
@@ -1068,38 +1240,89 @@ function isIOS() {
       || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 }
 
+// Brave matters here in a way it doesn't for an ordinary PWA. Only Chrome (on a device
+// with Google Mobile Services) and Samsung Internet mint a WebAPK — a real Android app
+// package. Brave, despite being Chromium and despite firing beforeinstallprompt, only
+// creates a home-screen shortcut. No app-drawer entry, and — the part that actually bites
+// this app — no entry under Settings → Apps, so there is no per-app battery-optimization
+// toggle to set to Unrestricted. Locked-screen playback is measurably less reliable there.
+let isBrave = false;
+if (navigator.brave && navigator.brave.isBrave) {
+  navigator.brave.isBrave().then(v => { isBrave = !!v; }).catch(() => {});
+}
+
+const INSTALLED_KEY = 'soundannoyer-installed';
+
+function wasInstalled() {
+  try { return localStorage.getItem(INSTALLED_KEY) === '1'; } catch { return false; }
+}
+
 function refreshInstallUI() {
   if (isStandalone()) {
+    // Definitive: we ARE the installed app. Nothing to do here.
     elInstallBtn.textContent = '✓ Installed';
     elInstallBtn.disabled = true;
-  } else {
-    elInstallBtn.textContent = '📲 Install to Home Screen';
-    elInstallBtn.disabled = false;
+    return;
   }
+  // isStandalone() is only true inside the installed app, so the ordinary tab the user
+  // installed FROM used to keep offering to install something they already had. The
+  // remembered appinstalled flag fixes the label — but deliberately does NOT disable the
+  // button. A remembered flag can outlive the install (they uninstalled, they cleared the
+  // app, they are on a second device), and a permanently dead Install button is exactly
+  // the "install is broken" symptom this whole pass exists to remove.
+  elInstallBtn.textContent = wasInstalled() ? '✓ Installed — install again?' : '📲 Install to Home Screen';
+  elInstallBtn.disabled = false;
 }
 
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();          // keep our own button in charge of the prompt
   deferredPrompt = e;
   window.deferredPrompt = e;
+  // Chrome does not fire this event while the app IS installed, so receiving it proves
+  // it is not — which is how the remembered flag recovers if the user uninstalls.
+  try { localStorage.removeItem(INSTALLED_KEY); } catch {}
+  refreshInstallUI();
 });
 
 window.addEventListener('appinstalled', () => {
   deferredPrompt = null;
+  window.deferredPrompt = null;
+  try { localStorage.setItem(INSTALLED_KEY, '1'); } catch {}
   closeInstallModal();
   refreshInstallUI();
 });
 
+// Fire the browser's own install dialog. prompt() is one-shot per event instance and
+// needs transient user activation, so this must run inside a click handler.
+async function firePrompt() {
+  const e = deferredPrompt;
+  if (!e) return false;
+  deferredPrompt = null;
+  window.deferredPrompt = null;
+  try {
+    await e.prompt();
+    await e.userChoice;
+  } catch {
+    // prompt() can reject without consuming the event (no transient activation, for
+    // instance). Put it back so the next tap still gets the native dialog rather than
+    // silently doing nothing.
+    deferredPrompt = e;
+    window.deferredPrompt = e;
+    refreshInstallUI();
+    return false;
+  }
+  refreshInstallUI();
+  return true;
+}
+
 elInstallBtn.addEventListener('click', async () => {
   if (isStandalone()) return;
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    await deferredPrompt.userChoice;
-    deferredPrompt = null;
-    refreshInstallUI();
-  } else {
-    openInstallModal();        // iOS, or Android/desktop with no live prompt
-  }
+  // Brave DOES fire beforeinstallprompt (it is Chromium) but only ever produces a
+  // home-screen shortcut. Going straight to the native dialog there would silently give
+  // the user the worse outcome and they would never see the explanation, so on Brave we
+  // always show the sheet first and let them choose.
+  if (deferredPrompt && !isBrave) { firePrompt(); return; }
+  openInstallModal();          // iOS, Brave, or no live prompt
 });
 
 // Install instructions modal (platform-specific steps).
@@ -1112,6 +1335,13 @@ function installSteps() {
     ];
   }
   if (/android/i.test(navigator.userAgent || '')) {
+    if (isBrave) {
+      return [
+        'Brave can only add a shortcut, not a real installed app.',
+        'For reliable locked-screen sounds, open this page in Chrome instead.',
+        'Then: menu (⋮) → "Install app" → Confirm.',
+      ];
+    }
     return [
       'Open the browser menu (⋮, top-right).',
       'Tap "Install app" or "Add to Home screen".',
@@ -1126,12 +1356,20 @@ function installSteps() {
 }
 
 function openInstallModal() {
+  elInstallSummary.textContent = isBrave
+    ? 'Heads up: Brave only makes a shortcut, so Android gives the app no battery '
+      + 'settings of its own — sounds are more likely to stop while the screen is off. '
+      + 'Install from Chrome for the reliable version.'
+    : 'Install SoundAnnoyer as an app. Works fully offline, and locked-screen playback '
+      + 'is more reliable once installed.';
   elInstallSteps.innerHTML = '';
   installSteps().forEach(step => {
     const li = document.createElement('li');
     li.textContent = step;
     elInstallSteps.appendChild(li);
   });
+  // Offer the native dialog as the explicit second choice when one is available.
+  elInstallProceedBtn.classList.toggle('hidden', !deferredPrompt);
   elInstallModalLayer.classList.remove('hidden');
   document.body.classList.add('modal-open');
   requestAnimationFrame(() => elInstallModal.focus());
@@ -1144,13 +1382,33 @@ function closeInstallModal() {
 
 elInstallModalDismiss.addEventListener('click', closeInstallModal);
 elInstallCloseBtn.addEventListener('click', closeInstallModal);
+elInstallProceedBtn.addEventListener('click', async () => {
+  closeInstallModal();
+  await firePrompt();
+});
 
-// ── PWA: update (offline-safe) ───────────────────────────────────────────────
-// Online  → wipe caches + service workers and reload to the freshest build.
-// Offline → do NOTHING destructive (wiping with no network would brick the app);
-//           just confirm we're still running from the offline cache.
+// ── PWA: update + freshness (offline-safe, app-scoped) ───────────────────────
+//
+// The contract from context.md: never permanently stuck on a stale build when online,
+// never bricked when offline. Three mechanisms, weakest-to-strongest:
+//
+//   1. Automatic — the service worker lifecycle. A bumped VERSION in sw.js installs a
+//      new worker, which precaches with cache:'reload' and takes over; controllerchange
+//      then reloads us once into the new build (never mid-session).
+//   2. Self-heal — if this page's APP_VERSION and the active worker's VERSION disagree,
+//      the precache is serving a shell from a different deploy. That is the failure mode
+//      that used to strand the app on an old build forever. We detect it and recover.
+//   3. Manual — the Update button / tappable version, below.
+
+const CACHE_PREFIX = 'sound-annoyer-';   // only ever touch OUR caches: caches.keys() is
+                                         // per-origin and this site hosts several apps.
+const AUDIO_CACHE = CACHE_PREFIX + 'sounds';   // must match sw.js — unversioned on purpose
+const DRIFT_KEY = 'soundannoyer-drift-recovered';
+
+let swReg = null;                        // our own registration, once it resolves
 
 let updateMsgTimer = null;
+let updateBusy = false;
 
 function flashInstallStatus(msg, isOffline) {
   if (isOffline) elOfflineBadge.classList.add('is-offline');
@@ -1158,28 +1416,161 @@ function flashInstallStatus(msg, isOffline) {
   clearTimeout(updateMsgTimer);
   updateMsgTimer = setTimeout(() => {
     elUpdateBtn.textContent = 'Update';
+    elUpdateBtn.disabled = false;
     refreshOfflineBadge();
   }, 2600);
 }
 
-async function runUpdate() {
-  if (navigator.onLine === false) {
-    flashInstallStatus('Offline — cached ✓', true);
+// navigator.onLine only reports whether a network interface exists — a captive portal,
+// a dead uplink or an offline BT-only connection all still say `true`. Deleting the
+// caches on that word alone would brick the installed app, so probe a real byte.
+async function isReallyOnline() {
+  if (navigator.onLine === false) return false;
+  try {
+    const r = await fetch(`./manifest.json?probe=${Date.now()}`, { cache: 'no-store' });
+    return r.ok;
+  } catch { return false; }
+}
+
+// Ask the controlling worker which VERSION it was built from.
+function getSwVersion(timeoutMs = 2000) {
+  return new Promise(resolve => {
+    const sw = navigator.serviceWorker && navigator.serviceWorker.controller;
+    if (!sw) return resolve(null);
+    const ch = new MessageChannel();
+    const done = setTimeout(() => resolve(null), timeoutMs);
+    ch.port1.onmessage = e => { clearTimeout(done); resolve((e.data && e.data.version) || null); };
+    try { sw.postMessage({ type: 'GET_VERSION' }, [ch.port2]); }
+    catch { clearTimeout(done); resolve(null); }
+  });
+}
+
+// Tell a waiting worker to take over. controllerchange then reloads the page. If that
+// never happens (the worker failed to activate), un-stick the button rather than leaving
+// it disabled and saying "Updating…" forever.
+function handOverToWaitingWorker(reg) {
+  elUpdateBtn.textContent = 'Updating…';
+  reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+  setTimeout(() => {
+    if (document.visibilityState !== 'hidden') flashInstallStatus('Update stalled — retry', false);
+  }, 8000);
+}
+
+// A worker is still downloading. Hand over as soon as it finishes installing.
+function awaitInstallThenHandOver(reg) {
+  const sw = reg.installing;
+  elUpdateBtn.textContent = 'Downloading…';
+  sw.addEventListener('statechange', () => {
+    if (sw.state === 'installed' && reg.waiting && !running) handOverToWaitingWorker(reg);
+    else if (sw.state === 'redundant') flashInstallStatus('Update failed — retry', false);
+  });
+  setTimeout(() => {
+    if (elUpdateBtn.textContent === 'Downloading…') flashInstallStatus('Still downloading…', false);
+  }, 15000);
+}
+
+// What VERSION does the deployed sw.js say, right now, over the network? This does not
+// trust the registration, the cache, or the running page — which is exactly the point:
+// it is the one check that can still tell "you are stale" when every local signal agrees
+// with itself and is simply out of date.
+async function deployedVersion() {
+  try {
+    const r = await fetch(`./sw.js?probe=${Date.now()}`, { cache: 'no-store' });
+    if (!r.ok) return null;
+    const m = (await r.text()).match(/const VERSION\s*=\s*'([^']+)'/);
+    return m ? m[1] : null;
+  } catch { return null; }
+}
+
+// Last resort: drop this app's caches and registration, then reload from the network.
+// Only ever called after isReallyOnline() has confirmed a live connection.
+async function hardReset() {
+  // Re-check first: the window between deleting the shell and re-fetching it is the one
+  // moment the app has no offline copy at all, and the earlier probe may be seconds old.
+  if (!await isReallyOnline()) {
+    flashInstallStatus('Offline — kept cache', true);
     return;
   }
-  elUpdateBtn.textContent = 'Updating…';
-  elUpdateBtn.disabled = true;
   try {
     if ('caches' in window) {
       const keys = await caches.keys();
-      await Promise.all(keys.map(k => caches.delete(k)));
+      // Never the sounds cache: those are unchanged assets and re-fetching 1.3 MB to
+      // repair a code problem is pure waste (and breaks offline until it completes).
+      await Promise.all(
+        keys.filter(k => k.startsWith(CACHE_PREFIX) && k !== AUDIO_CACHE)
+            .map(k => caches.delete(k))
+      );
     }
     if ('serviceWorker' in navigator) {
-      const regs = await navigator.serviceWorker.getRegistrations();
-      await Promise.all(regs.map(r => r.unregister()));
+      const reg = await navigator.serviceWorker.getRegistration();   // ours only
+      if (reg) await reg.unregister();
     }
   } catch {}
   window.location.reload();
+}
+
+async function runUpdate() {
+  if (updateBusy) return;
+  updateBusy = true;
+  elUpdateBtn.disabled = true;
+  elUpdateBtn.textContent = 'Checking…';
+
+  try {
+    if (!await isReallyOnline()) {
+      flashInstallStatus('Offline — cached ✓', true);
+      return;
+    }
+
+    const reg = swReg || ('serviceWorker' in navigator
+      ? await navigator.serviceWorker.getRegistration()
+      : null);
+
+    // Applying an update reloads the page, which would cut a running session dead. The
+    // whole point of this app is that it keeps going until you stop it, so a stray tap
+    // must never end a prank: remember the update and let stopAnnoying() apply it.
+    if (running && reg && (reg.waiting || reg.installing)) {
+      waitingReg = reg;
+      flashInstallStatus('Update ready — after STOP', false);
+      return;
+    }
+
+    // A new build may already be installed and waiting from an earlier check.
+    if (reg && reg.waiting) {
+      handOverToWaitingWorker(reg);
+      return;                           // controllerchange reloads us
+    }
+
+    // Non-destructive first: re-check sw.js. If a newer build is deployed the worker
+    // installs and waits; we then hand over. Nothing is deleted, so a connection that
+    // dies mid-check leaves the app fully intact.
+    if (reg) {
+      await reg.update();
+      if (running && (reg.installing || reg.waiting)) {
+        waitingReg = reg;
+        flashInstallStatus('Update ready — after STOP', false);
+        return;
+      }
+      if (reg.waiting)    { handOverToWaitingWorker(reg); return; }
+      if (reg.installing) { awaitInstallThenHandOver(reg); return; }
+    }
+
+    // No newer worker was found. Before claiming we are current, verify it against the
+    // deployed file rather than against local state — the failure this whole section
+    // exists for is precisely "everything local agrees, and all of it is old".
+    const swVersion = await getSwVersion();
+    const live = await deployedVersion();
+    if ((live && live !== APP_VERSION) || (swVersion && swVersion !== APP_VERSION)) {
+      elUpdateBtn.textContent = 'Repairing…';
+      await hardReset();
+      return;
+    }
+
+    flashInstallStatus(`Newest ✓ ${APP_VERSION}`, false);
+  } catch {
+    flashInstallStatus('Check failed — retry', false);
+  } finally {
+    updateBusy = false;
+  }
 }
 
 elUpdateBtn.addEventListener('click', runUpdate);
@@ -1215,43 +1606,147 @@ elHeroStatus.textContent = idleStatus();
 ensureAudio();
 
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && running && audioCtx) {
-    audioCtx.resume();
+  if (document.visibilityState !== 'visible') return;
+  if (running && audioCtx) {
+    audioCtx.resume().catch(() => {});
     fillSchedule();
     updateRunningStatus();
+    startCountdownLoop();          // rAF is stopped while hidden; restart it
   }
+  applyUpdateIfSafe();             // a build that landed mid-session applies once idle
 });
 
 // Page Lifecycle: if Android froze the page anyway (e.g. audio focus was lost
 // while locked), top the schedule back up the moment the page is thawed.
 document.addEventListener('resume', () => {
   if (running && audioCtx) {
-    audioCtx.resume();
+    audioCtx.resume().catch(() => {});
     fillSchedule();
   }
 });
 
 // ── Service worker: register + stay on the newest build ───────────────────────
-// The SW (sw.js) is cache-first / offline-first. Freshness comes from the worker
-// lifecycle: we pull a new worker promptly (reg.update) and reload once when it takes
-// control — never mid-session.
+//
+// Deliberate design (the previous build got this subtly wrong):
+//
+//   The shell is served cache-first from a version-keyed cache, so index.html, app.js
+//   and styles.css are only ever internally consistent *within one cache*. A worker
+//   that activates mid-session therefore starts serving the NEW shell to a page still
+//   running the OLD code. So sw.js does not call skipWaiting() on install; the new
+//   worker sits in `waiting` until this page says it is safe to switch, and then the
+//   switch and the reload happen together.
+//
+//   Previously the reload was the thing that got deferred while the worker switched
+//   immediately — and because the deferred reload was simply dropped, an update applied
+//   during a session never landed at all.
+
+let waitingReg = null;     // registration holding a worker that is ready to take over
+let pendingReload = false; // another window switched workers while we were running
+
+// A controller already exists → an 'installed' worker is an update, not a first install.
+// 'redundant' means the install failed: stay quiet, the old worker still serves the app
+// and the next check retries.
+function watchInstalling(reg, sw) {
+  sw.addEventListener('statechange', () => {
+    if (sw.state === 'installed' && navigator.serviceWorker.controller) noteUpdateReady(reg);
+  });
+}
+
+// Switch to the new build — but never while sounds are running.
+function applyUpdateIfSafe(delayMs = 0) {
+  // A worker swapped in by another window: just reload once we are idle.
+  if (pendingReload && !running) {
+    pendingReload = false;
+    setTimeout(() => {
+      // A session started during the delay: put the flag back rather than dropping the
+      // reload on the floor. It lands the next time we are idle.
+      if (running) { pendingReload = true; return; }
+      window.location.reload();
+    }, delayMs);
+    return;
+  }
+  if (!waitingReg || running) return;
+  const reg = waitingReg;
+  waitingReg = null;
+  // The handover reloads the page. Let the "stopped - silence restored" line be read
+  // first — a reload landing straight on top of it looks like a crash.
+  setTimeout(() => {
+    if (running) { waitingReg = reg; return; }   // a new session started: wait again
+    if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });   // → reload
+  }, delayMs);
+}
+
+function noteUpdateReady(reg) {
+  if (!reg || !reg.waiting) return;
+  waitingReg = reg;
+  applyUpdateIfSafe();
+}
 
 if ('serviceWorker' in navigator) {
   const hadController = !!navigator.serviceWorker.controller;
-  let refreshing = false;
+  let reloading = false;
 
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (!hadController || refreshing || running) return;
-    refreshing = true;
+    // !hadController = the very first worker claiming a fresh page; there is no newer
+    // build to reload into, and reloading here would just be a gratuitous refresh.
+    if (!hadController || reloading) return;
+    // Within this window we control the timing (we only send SKIP_WAITING when idle), but
+    // clients.claim() also fires here when ANOTHER window applies the update. Reloading
+    // then would kill a prank running in this one. The new worker has already taken over
+    // either way; running the loaded page a little longer against the new cache is
+    // harmless, because nothing further is fetched during a session.
+    if (running) { pendingReload = true; return; }
+    reloading = true;
     window.location.reload();
   });
 
-  // updateViaCache:'none' → the sw.js script is always revalidated on update checks,
-  // so a bumped VERSION is detected promptly even behind GitHub Pages' HTTP caching.
+  // updateViaCache:'none' → the sw.js script is always revalidated on update checks, so
+  // a bumped VERSION is detected promptly even behind GitHub Pages' max-age=600.
   navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).then(reg => {
-    reg.update();
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') reg.update();
+    swReg = reg;
+
+    // A worker may already be waiting from a previous visit, or already be installing
+    // from the browser's own navigation update check, before any event of ours fires.
+    if (reg.waiting && navigator.serviceWorker.controller) noteUpdateReady(reg);
+    else if (reg.installing) watchInstalling(reg, reg.installing);
+
+    reg.addEventListener('updatefound', () => {
+      if (reg.installing) watchInstalling(reg, reg.installing);
     });
+
+    // Check for a new build on load, on foreground and when the network comes back —
+    // throttled, since each check is a real network round trip.
+    let lastCheck = 0;
+    const check = () => {
+      if (Date.now() - lastCheck < 60000) return;
+      lastCheck = Date.now();
+      reg.update().catch(() => {});
+    };
+    check();
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') check();
+    });
+    window.addEventListener('online', check);
+  }).catch(() => {});
+
+  // Self-heal the stale-shell trap: if the active worker was built from a different
+  // deploy than this page's JS, the cache is serving a mismatched shell. Recover once
+  // per browsing session (guarded so an inconsistent deploy can't cause a reload loop).
+  navigator.serviceWorker.ready.then(async () => {
+    const swVersion = await getSwVersion();
+    if (!swVersion || swVersion === APP_VERSION) return;
+    if (running) return;
+    // Remember the exact pair we tried. If a deploy really is internally inconsistent,
+    // repairing cannot fix it — and retrying every launch would mean wiping the cache and
+    // reloading forever. Recording the pair (not just "tried once") means a LATER, genuine
+    // mismatch is still repaired.
+    const pair = `${APP_VERSION}|${swVersion}`;
+    try {
+      if (localStorage.getItem(DRIFT_KEY) === pair) return;
+      localStorage.setItem(DRIFT_KEY, pair);
+    } catch {
+      return;   // no storage → no loop protection → do not start one
+    }
+    if (await isReallyOnline()) hardReset();
   }).catch(() => {});
 }

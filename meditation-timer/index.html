@@ -75,7 +75,7 @@
     <button class="btn-small" id="install-btn">Install app</button>
     <button class="btn-small" id="update-btn">Update</button>
     <button class="btn-small hidden" id="offline-btn">Download for offline</button>
-    <button class="version" id="version" type="button" title="Check for updates">v26.07.13b</button>
+    <button class="version" id="version" type="button" title="Check for updates">v26.08.30</button>
   </footer>
 
 </main>
@@ -130,6 +130,10 @@
     <h2 id="install-modal-title">Add to your home screen</h2>
     <p class="custom-modal-copy">Install Meditation Timer as an app. Once installed it opens on its own and works offline.</p>
     <ol class="install-steps" id="install-steps"></ol>
+    <!-- Only shown when the browser actually has a native prompt to give us. On Brave
+         that prompt exists but only produces a shortcut, so the steps recommend Chrome
+         and this stays as the deliberate second choice. -->
+    <button class="btn-small hidden" id="install-proceed-btn" type="button">Install here anyway</button>
     <button class="btn-play custom-modal-btn" id="install-close-btn" type="button">Got it</button>
   </section>
 </div>

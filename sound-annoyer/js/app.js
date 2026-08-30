@@ -34,7 +34,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.08.30';
+const APP_VERSION = 'v26.08.30a';
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 // Drop real files into resources/ (see resources/README.md). Until a matching file
@@ -136,7 +136,7 @@ let keepAliveUrl = null;   // blob: URL for the generated keep-alive clip
 
 let scheduled        = [];   // { soundSrc, primerSrc, when, soundId }
 let nextHitTime      = 0;    // ctx time of the next hit still to be scheduled
-let lastScheduledId  = null; // anti-repeat
+let recentIds        = [];   // most-recent-first ids of scheduled hits (anti-repeat)
 let heartbeatId      = null;
 
 // ── Audio setup ──────────────────────────────────────────────────────────────
@@ -333,12 +333,32 @@ function getArmedSounds() {
   return SOUNDS.filter(s => armed.has(s.id) && s.buffer);
 }
 
+// How many of the most recently scheduled sounds to keep out of the running.
+const AVOID_RECENT = 2;
+
+function rememberPick(id) {
+  recentIds.unshift(id);
+  if (recentIds.length > AVOID_RECENT) recentIds.length = AVOID_RECENT;
+}
+
+// Pick the next sound, avoiding the ones just played so a listener never hears the same
+// clip twice running (or an A-B-A bounce once there are enough sounds to do better).
+//
+// We can only ever ban N-1 of N armed sounds, or there would be nothing left to choose:
+//   1 armed  -> ban none, it repeats (there is no alternative)
+//   2 armed  -> ban the last one     -> strict alternation
+//   3+ armed -> ban the last two
+// Note that at exactly 3 armed sounds this leaves a single candidate every time, so the
+// ORDER becomes a fixed rotation — the randomness then lives entirely in the interval.
+// Arm a fourth sound to get an unpredictable order back.
 function pickNextSound(list) {
   if (list.length === 1) return list[0];
-  let pick;
-  do { pick = list[Math.floor(Math.random() * list.length)]; }
-  while (pick.id === lastScheduledId);
-  return pick;
+  const ban  = new Set(recentIds.slice(0, Math.min(AVOID_RECENT, list.length - 1)));
+  const pool = list.filter(s => !ban.has(s.id));
+  // pool cannot be empty by construction; fall back rather than return undefined if a
+  // future change to the ban rule ever makes it so.
+  const from = pool.length ? pool : list;
+  return from[Math.floor(Math.random() * from.length)];
 }
 
 // Schedule one sound (plus its wake primer) at an absolute AudioContext time.
@@ -392,7 +412,7 @@ function fillSchedule() {
   while (nextHitTime < now + HORIZON_SEC && scheduled.length < MAX_AHEAD) {
     const sound = pickNextSound(list);
     scheduleHit(sound, nextHitTime);
-    lastScheduledId = sound.id;
+    rememberPick(sound.id);
     nextHitTime += computeGapMs(sound) / 1000;
   }
 }
@@ -415,6 +435,10 @@ function rescheduleFromNow() {
     });
   });
   scheduled = keep;
+  // The hits we just dropped never made a sound, so they must not count as "recently
+  // played" — otherwise toggling a sound mid-session bans clips the listener never heard.
+  // `keep` is in ascending time order, so the tail is the most recent.
+  recentIds = keep.slice(-AVOID_RECENT).map(e => e.soundId).reverse();
   const list = getArmedSounds();
   if (!list.length) { stopAnnoying(); return; }
   nextHitTime = now + computeGapMs() / 1000;
@@ -458,7 +482,7 @@ function startAnnoying() {
 
   running = true;
   document.body.classList.add('running');
-  lastScheduledId = null;
+  recentIds = [];
   clearScheduled();
   startKeepAlive();
   setMediaSession();
@@ -473,7 +497,7 @@ function startAnnoying() {
     const entry     = scheduleHit(first, firstWhen);
     if (entry) entry.fired = true;      // flashed right here; don't flash again on the tick
     onFiredVisible(first);
-    lastScheduledId = first.id;
+    rememberPick(first.id);
     nextHitTime = firstWhen + (first.buffer?.duration ?? 0.5) + computeGapMs(first) / 1000;
   } else {
     // Discreet start: stay silent for the first interval so hitting UNLEASH isn't
@@ -745,6 +769,7 @@ const elInstallSummary      = document.getElementById('install-modal-summary');
 const elInstallSteps        = document.getElementById('install-steps');
 const elInstallCloseBtn     = document.getElementById('install-close-btn');
 const elInstallProceedBtn   = document.getElementById('install-proceed-btn');
+const elOpenChromeBtn       = document.getElementById('open-chrome-btn');
 
 const elHelpModalLayer   = document.getElementById('help-modal-layer');
 const elHelpModal        = document.getElementById('help-modal');
@@ -1167,7 +1192,7 @@ function skipNow() {
   const entry = scheduleHit(s, when);
   if (entry) entry.fired = true;
   onFiredVisible(s);
-  lastScheduledId = s.id;
+  rememberPick(s.id);
   nextHitTime = when + (s.buffer?.duration ?? 0.5) + computeGapMs(s) / 1000;
   fillSchedule();
   updateRunningStatus();
@@ -1368,6 +1393,11 @@ function openInstallModal() {
     li.textContent = step;
     elInstallSteps.appendChild(li);
   });
+  // Only Chrome (with Google Mobile Services) and Samsung Internet mint a WebAPK — a
+  // real Android package with its own app-drawer and Settings -> Apps entry, and so its
+  // own battery toggle. Brave makes a bare shortcut, so offer a one-tap hop to Chrome.
+  const canHopToChrome = isBrave && /android/i.test(navigator.userAgent || '');
+  elOpenChromeBtn.classList.toggle('hidden', !canHopToChrome);
   // Offer the native dialog as the explicit second choice when one is available.
   elInstallProceedBtn.classList.toggle('hidden', !deferredPrompt);
   elInstallModalLayer.classList.remove('hidden');
@@ -1385,6 +1415,17 @@ elInstallCloseBtn.addEventListener('click', closeInstallModal);
 elInstallProceedBtn.addEventListener('click', async () => {
   closeInstallModal();
   await firePrompt();
+});
+
+// Reopen this exact page in Chrome. An Android `intent:` URL with an explicit package is
+// the only way a web page can hand itself to another browser; if Chrome is not installed
+// the intent falls through to the Play Store listing via S.browser_fallback_url.
+elOpenChromeBtn.addEventListener('click', () => {
+  const here = location.href.replace(/^https?:\/\//, '');
+  const store = 'https://play.google.com/store/apps/details?id=com.android.chrome';
+  location.href = 'intent://' + here
+    + '#Intent;scheme=https;package=com.android.chrome'
+    + ';S.browser_fallback_url=' + encodeURIComponent(store) + ';end';
 });
 
 // ── PWA: update + freshness (offline-safe, app-scoped) ───────────────────────

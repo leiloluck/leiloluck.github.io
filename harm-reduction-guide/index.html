@@ -3,7 +3,7 @@
 
 <head>
     <!--
-        index.html — Harm Reduction Protocols Dashboard
+        index.html: Harm Reduction Protocols Dashboard
         Structure: HTML layout only. All styles in css/styles.css, data in data/protocols.json, logic in js/app.js.
         Content source: resources/Festival Harm Reduction Guide.md
     -->
@@ -22,21 +22,21 @@
 <body class="text-gray-300 font-sans leading-relaxed">
 
 
-    <!-- Disclaimer Banner — also the only place the emergency / first-aid info lives, tucked behind a button. -->
+    <!-- Disclaimer Banner. Also the only place the emergency / first-aid info lives, tucked behind a button. -->
     <div class="disclaimer-banner px-4 py-3 text-center text-sm text-green-300">
         <span class="mr-1">ℹ️</span>
         This guide is for <strong>educational and harm reduction purposes only</strong>. It does not endorse substance use.
         <details class="emergency-details">
             <summary>🆘 Emergency &amp; first aid</summary>
             <div class="emergency-panel">
-                <p class="ep-line"><strong>Call now</strong> —
+                <p class="ep-line"><strong>Call now:</strong>
                     <a href="tel:112" class="emergency-call">112</a> (EU) ·
                     <a href="tel:999" class="emergency-call">999</a> UK ·
                     <a href="tel:911" class="emergency-call">911</a> US/CA ·
                     <a href="tel:000" class="emergency-call">000</a> AU</p>
                 <p class="ep-line"><strong>Call if someone</strong> is unconscious and can't be woken · breathing is slow, irregular or has stopped, or lips look blue · is having a seizure lasting over 5 minutes · is burning-up hot and confused (heatstroke) · is rigid, twitching or feverish after MDMA (serotonin syndrome).</p>
-                <p class="ep-line"><strong>While you wait:</strong> if they are unconscious but breathing, put them in the recovery position (on their side) and tilt the head back to keep the airway open. If they are not breathing, start CPR (30 chest compressions to 2 breaths; hands-only is fine). For a suspected opioid overdose, give naloxone if you have it — then still call. Stay with them and tell responders what was taken (they are bound by confidentiality).</p>
-                <a href="https://drugchecking.berlin/substanzen/erste-hilfe" target="_blank" rel="noopener" class="ep-source">Source: Drugchecking Berlin — First Aid / Erste Hilfe</a>
+                <p class="ep-line"><strong>While you wait:</strong> if they are unconscious but breathing, put them in the recovery position (on their side) and tilt the head back to keep the airway open. If they are not breathing, start CPR (30 chest compressions to 2 breaths; hands-only is fine). For a suspected opioid overdose, give naloxone if you have it, then still call. Stay with them and tell responders what was taken (they are bound by confidentiality).</p>
+                <a href="https://drugchecking.berlin/substanzen/erste-hilfe" target="_blank" rel="noopener" class="ep-source">Source: Drugchecking Berlin, First Aid / Erste Hilfe</a>
             </div>
         </details>
     </div>
@@ -107,7 +107,7 @@
                 <p class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-3">Context</p>
                 <p class="text-sm text-gray-400 leading-relaxed">
                     This protocol applies to a <strong class="text-gray-200">long night out</strong> without any
-                    substance — typically 4–12+ hours of dancing and sustained physical exertion in warm, crowded
+                    substance, typically 4 to 12+ hours of dancing and sustained physical exertion in warm, crowded
                     environments with disrupted or absent sleep. Even fully sober, this is a significant physiological
                     load.
                 </p>
@@ -142,13 +142,16 @@
                     </div>
                     <div id="timeline-note" class="mt-1 text-[10px] text-gray-600 italic text-center">Estimates based on
                         PsychonautWiki data.</div>
-                    <!-- Phase duration legend — injected by JS -->
+                    <!-- Phase duration legend, injected by JS -->
                     <div id="timeline-legend"></div>
                 </div>
 
                 <!-- Unified Dosing Tier Selector -->
                 <div id="dosing-tiers" class="mb-3">
-                    <p class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2">Dose</p>
+                    <div class="flex items-baseline justify-between gap-3 mb-2">
+                        <p class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Dose</p>
+                        <p id="dose-unit-label" class="text-[10px] font-semibold tracking-wider text-right"></p>
+                    </div>
                     <div class="flex gap-1 w-full">
                         <button id="tier-threshold" onclick="setIntensity('threshold')"
                             class="tier-btn flex-1 py-2 px-1 cursor-pointer transition-all duration-200 border-2 text-center"
@@ -208,7 +211,7 @@
 
             <!-- TAB CONTENT: Risk Profile -->
             <div id="tab-risk" class="tab-content space-y-8 hidden">
-                <!-- FIRST: Common Risks — the source-derived, factual risks (amber, hidden for sober) -->
+                <!-- FIRST: Common Risks, the source-derived factual risks (amber, hidden for sober) -->
                 <div id="emergency-flags" class="hidden p-5 border"
                     style="background:rgba(234,179,8,0.06);border-color:rgba(234,179,8,0.2);">
                     <h3 class="font-bold mb-2 text-sm" style="color:rgba(234,179,8,0.85)">
@@ -220,14 +223,63 @@
                     </ul>
                 </div>
 
-                <!-- AFTER: Estimated Risk Profile — an editorial estimate, shown after the sourced risks -->
+                <!-- AFTER: Estimated Risk Profile. An editorial estimate, shown after the sourced risks. -->
                 <section class="card-transition">
-                    <div class="flex items-center mb-4">
+                    <div class="flex items-center gap-2 mb-4">
+                        <button id="risk-info-btn" type="button" class="risk-info-btn" aria-expanded="false"
+                            aria-controls="risk-info-panel" aria-label="Where these ratings come from">i</button>
                         <h3 class="text-xl font-bold text-gray-100">Estimated Risk Profile 📊</h3>
                     </div>
                     <!-- Canvas Container -->
                     <div
                         class="section-card bg-[#1a1a19] border-2 border-[#2a2a28] overflow-hidden transition-all duration-300 p-6">
+                        <!-- Provenance panel, opened by the i button next to the heading -->
+                        <div id="risk-info-panel" class="risk-info-panel" hidden>
+                            <p class="rip-lead">We read the sources on this page and then made a judgement call.
+                                That is all these bars are. Nobody measured them.</p>
+                            <p>The reading comes from the sources under Common Risks above, plus PsychonautWiki,
+                                Erowid, TripSit, DanceSafe and the published literature. A person makes the call,
+                                so treat a bar as a rough sketch, never as a number.</p>
+                            <p><strong>They are not a score.</strong> Do not add them up and do not rank two drugs
+                                by how much colour they show. Each bar says only how much of that one thing this
+                                drug tends to bring. Dose, your body, mixing and setting change all of it. The one
+                                researched number here is the expert harm ranking above the chart, from
+                                <a href="https://pubmed.ncbi.nlm.nih.gov/21036393/" target="_blank"
+                                    rel="noopener">Nutt, King &amp; Phillips (2010)</a>.</p>
+                            <p><strong>Scale:</strong> None, Low, Moderate, High, Very&nbsp;High. Deliberately
+                                coarse, because the judgement behind it has no finer precision. Bars are drawn at
+                                the middle of their band, so two drugs in the same band look the same.</p>
+                            <p><strong>The six risks:</strong></p>
+                            <ul class="rip-axes">
+                                <li><strong class="rip-axis">Overdose / Lethality:</strong> dying from the drug
+                                    itself, through overdose, stopped breathing, or a small gap between a normal
+                                    dose and a dangerous one.</li>
+                                <li><strong class="rip-axis">Neurotoxicity:</strong> lasting damage to nerve tissue,
+                                    which builds up over repeated use.</li>
+                                <li><strong class="rip-axis">Cardiotoxicity:</strong> strain and damage to the heart
+                                    and blood vessels.</li>
+                                <li><strong class="rip-axis">Fluid &amp; heat balance:</strong> losing control of
+                                    fluids, salts or body temperature. This can fail in both directions: too little
+                                    water, or too much of it.</li>
+                                <li><strong class="rip-axis">Sleep Disruption:</strong> how strongly it blocks or
+                                    spoils sleep around the time you use.</li>
+                                <li><strong class="rip-axis">Compulsion:</strong> loss of control over your own
+                                    behaviour, covering both disinhibition and the pull to keep redosing.</li>
+                            </ul>
+                            <p class="rip-foot">Higher doses raise every one of these, especially overdose. The
+                                sourced detail sits in Common Risks above and in the Protocol and Combinations
+                                tabs.</p>
+                        </div>
+
+                        <!-- Independent MCDA overall-harm reference (injected by JS). Sits ABOVE
+                             the chart so the sourced number leads and the estimate follows. -->
+                        <div id="mcda-chip" class="mb-3 text-xs text-gray-400 leading-relaxed"></div>
+
+                        <p class="mb-3 text-xs font-semibold" style="color:#d1d5db">
+                            Read one bar at a time. Do not add them up, and do not rank two drugs by how much
+                            colour they show.
+                        </p>
+
                         <div class="relative h-72 w-full">
                             <canvas id="riskChart"></canvas>
                         </div>
@@ -237,30 +289,11 @@
                         <!-- Per-substance rationale (injected by JS) -->
                         <p id="risk-rationale" class="mt-3 text-sm text-gray-300 leading-relaxed"></p>
 
-                        <!-- Independent MCDA overall-harm reference (injected by JS) -->
-                        <div id="mcda-chip" class="mt-3 text-xs text-gray-400 leading-relaxed"></div>
 
                         <p class="mt-3 text-xs text-gray-400 italic leading-relaxed">
-                            These are qualitative editorial estimates (None → Very&nbsp;High), not measured figures,
-                            and they show a fixed profile — they are not scaled by the dose you pick above (higher
-                            doses raise every risk, especially overdose). The source-linked detail lives in Common
-                            Risks (above) and the Protocol &amp; Combinations tabs.
+                            Our own estimate, not measured data, and not scaled by the dose above.
+                            <button type="button" class="risk-info-inline" onclick="toggleRiskInfo()">Where this comes from</button>
                         </p>
-
-                        <details class="mt-3 text-xs text-gray-400">
-                            <summary class="cursor-pointer text-gray-300 hover:text-gray-100 select-none">How these ratings are decided</summary>
-                            <div class="mt-2 space-y-2 leading-relaxed">
-                                <p><strong class="text-gray-300">Scale:</strong> each bar is rated None / Low / Moderate / High / Very&nbsp;High — deliberately coarse, because the underlying judgement has no finer precision.</p>
-                                <p><strong class="text-gray-300">Axes:</strong>
-                                    <strong>Overdose / Lethality</strong> — risk of death from the drug itself (overdose, breathing failure, narrow dose-to-danger margin);
-                                    <strong>Neurotoxicity</strong> — lasting damage to neural tissue;
-                                    <strong>Cardiotoxicity</strong> — heart-rate, blood-pressure and vascular strain;
-                                    <strong>Dehydration</strong> — fluid and electrolyte disruption;
-                                    <strong>Sleep Disruption</strong> — how strongly it prevents or degrades sleep around use;
-                                    <strong>Compulsion</strong> — loss of behavioural control (disinhibition and compulsive redosing).</p>
-                                <p>Ratings summarise the sourced Common Risks for each substance. The <strong>Overdose / Lethality</strong> axis follows the "drug-specific mortality" dimension from the peer-reviewed harm analysis of <a href="https://pubmed.ncbi.nlm.nih.gov/21036393/" target="_blank" rel="noopener" class="underline hover:text-gray-200">Nutt, King &amp; Phillips (2010)</a>, which is also the source of the independent overall-harm ranking shown with each chart.</p>
-                            </div>
-                        </details>
                     </div>
                 </section>
 
@@ -268,13 +301,13 @@
 
             <!-- TAB CONTENT: Combinations -->
             <div id="tab-combos" class="tab-content space-y-8 hidden">
-                <!-- Dangerous combinations — pinned to the top of this tab (most important first) -->
+                <!-- Dangerous combinations, pinned to the top of this tab (most important first) -->
                 <div id="danger-combos" class="hidden p-4 rounded-xl"
                     style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.4)">
-                    <p class="text-sm font-bold mb-2" style="color:#fca5a5">⚠️ Do not mix — dangerous combinations</p>
+                    <p class="text-sm font-bold mb-2" style="color:#fca5a5">⚠️ Do not mix: dangerous combinations</p>
                     <div id="danger-combos-list" class="flex flex-wrap gap-2"></div>
                 </div>
-                <!-- Sober baseline: no substance selected yet — simple placeholder instead of an empty tab -->
+                <!-- Sober baseline: no substance selected yet, simple placeholder instead of an empty tab -->
                 <div id="combos-placeholder" class="hidden section-card bg-[#1a1a19] border-2 border-[#2a2a28] p-6 text-center text-sm text-gray-500">
                     Drug combinations will be displayed here once you select a substance.
                 </div>
@@ -289,7 +322,7 @@
                             <p class="text-xs text-gray-500 mb-4">
                                 Interaction data from <a href="https://combo.tripsit.me" target="_blank" rel="noopener"
                                     class="underline hover:text-gray-400">TripSit Drug Combination Chart</a>.
-                                This is a quick reference — always do additional research for your specific situation.
+                                This is a quick reference. Always do your own research for your specific situation.
                             </p>
                             <div id="combos-list">
                                 <!-- Injected via JS -->
@@ -402,7 +435,7 @@
                     target="_blank" class="underline hover:text-gray-400">SaferParty</a>, <a href="https://tripsit.me"
                     target="_blank" class="underline hover:text-gray-400">TripSit</a>, <a href="https://dancesafe.org"
                     target="_blank" class="underline hover:text-gray-400">DanceSafe</a>.</p>
-            <p class="mt-3 text-gray-700 font-mono tracking-wide">v26.07.24e · content reviewed 2026-07-24</p>
+            <p class="mt-3 text-gray-700 font-mono tracking-wide">v26.08.30a · content reviewed 2026-08-30</p>
         </footer>
 
     </div>

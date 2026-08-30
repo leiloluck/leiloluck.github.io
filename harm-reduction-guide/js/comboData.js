@@ -1,5 +1,5 @@
 /*
-    comboData.js — Drug combination data layer.
+    comboData.js: Drug combination data layer.
     Loads TripSit combos.json and provides lookup functions.
     Source: https://combo.tripsit.me / https://github.com/TripSit/drugs
 */
@@ -34,7 +34,7 @@ const COMBO_KEY_MAP = {
 // (COMBO_DISPLAY_INFO removed to strictly only use app substances)
 
 // ────────────────────────────────────────────
-// Risk levels — sort order and visual metadata
+// Risk levels: sort order and visual metadata
 // ────────────────────────────────────────────
 const RISK_LEVELS = {
     'Dangerous':              { order: 1, label: 'DANGEROUS',             icon: '☠️', color: '#ef4444' },
@@ -49,13 +49,13 @@ const RISK_GROUP_HEADERS = {
     1: '☠️ Dangerous Combinations',
     2: '⚠️ Unsafe Combinations',
     3: '⚡ Caution Required',
-    4: '🔗 Low Risk — Synergy',
-    5: '📉 Low Risk — Decreased Effects',
-    6: '✅ Low Risk — Neutral'
+    4: '🔗 Low Risk, Synergy',
+    5: '📉 Low Risk, Decreased Effects',
+    6: '✅ Low Risk, Neutral'
 };
 
 // ────────────────────────────────────────────
-// Curated combinations — fill documented gaps in TripSit's dataset.
+// Curated combinations fill documented gaps in TripSit's dataset.
 // TripSit has no entries for several mephedrone (4-MMC) pairings, so the
 // most relevant ones are supplied here, each source-cited and flagged
 // `curated:true` so the UI can mark them as non-TripSit. Used only as a
@@ -65,11 +65,11 @@ const CURATED_COMBOS = {
     'mephedrone': {
         'amphetamines': {
             status: 'Unsafe',
-            note: "Two strong stimulants stacked together. PsychonautWiki warns this can drive heart rate and blood pressure to dangerous levels and compounds hyperthermia and neurotoxicity. Best avoided — if combined, keep doses low and watch for chest pain or overheating.",
+            note: "Two strong stimulants stacked together. PsychonautWiki warns this can drive heart rate and blood pressure to dangerous levels and compounds hyperthermia and neurotoxicity. Best avoided. If you do combine them, keep doses low and watch for chest pain or overheating.",
             curated: true,
             sources: [
-                { title: 'PsychonautWiki — Mephedrone', url: 'https://psychonautwiki.org/wiki/Mephedrone' },
-                { title: 'checkit! — 4-MMC / Mephedron', url: 'https://checkit.wien/substanz/mephedron-4-mmc/' }
+                { title: 'PsychonautWiki: Mephedrone', url: 'https://psychonautwiki.org/wiki/Mephedrone' },
+                { title: 'checkit!: 4-MMC / Mephedron', url: 'https://checkit.wien/substanz/mephedron-4-mmc/' }
             ]
         },
         'cocaine': {
@@ -77,7 +77,7 @@ const CURATED_COMBOS = {
             note: "Both are potent stimulants; PsychonautWiki specifically flags mephedrone + cocaine as able to push heart rate and blood pressure to dangerous levels. Cocaine adds vasoconstriction and cardiotoxicity on top of mephedrone's own cardiac strain.",
             curated: true,
             sources: [
-                { title: 'PsychonautWiki — Mephedrone', url: 'https://psychonautwiki.org/wiki/Mephedrone' }
+                { title: 'PsychonautWiki: Mephedrone', url: 'https://psychonautwiki.org/wiki/Mephedrone' }
             ]
         },
         'alcohol': {
@@ -85,8 +85,8 @@ const CURATED_COMBOS = {
             note: "Mephedrone masks alcohol's depressant effects, making accidental over-drinking easy. Animal studies also suggest co-use may worsen neurotoxicity (not confirmed in humans). Pace alcohol carefully and keep hydrated.",
             curated: true,
             sources: [
-                { title: 'PsychonautWiki — Mephedrone', url: 'https://psychonautwiki.org/wiki/Mephedrone' },
-                { title: 'Neurotoxicity Induced by Mephedrone — Review (PMC/NIH)', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC5771050/' }
+                { title: 'PsychonautWiki: Mephedrone', url: 'https://psychonautwiki.org/wiki/Mephedrone' },
+                { title: 'Neurotoxicity Induced by Mephedrone: Review (PMC/NIH)', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC5771050/' }
             ]
         },
         'ketamine': {
@@ -94,7 +94,7 @@ const CURATED_COMBOS = {
             note: "Stimulant + dissociative. Both can provoke confusion, mania or psychosis, and PsychonautWiki notes the risk may be multiplied when combined. Stimulation can also mask ketamine's sedation, encouraging redosing. Use low doses in a calm setting.",
             curated: true,
             sources: [
-                { title: 'PsychonautWiki — Mephedrone', url: 'https://psychonautwiki.org/wiki/Mephedrone' }
+                { title: 'PsychonautWiki: Mephedrone', url: 'https://psychonautwiki.org/wiki/Mephedrone' }
             ]
         }
     }
@@ -117,7 +117,7 @@ async function loadComboData() {
 }
 
 // ────────────────────────────────────────────
-// Lookup — bidirectional
+// Lookup, bidirectional
 // ────────────────────────────────────────────
 function getComboEntry(keyA, keyB) {
     // TripSit data takes precedence wherever it exists.

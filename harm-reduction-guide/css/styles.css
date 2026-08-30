@@ -1,5 +1,5 @@
 /*
-    styles.css — Dark mode styles for Harm Reduction Protocols Dashboard.
+    styles.css: Dark mode styles for Harm Reduction Protocols Dashboard.
     Handles: transitions, expandable items, scrollbar, dark chart containers.
     Design: Sharp-cornered, high-contrast, OKLCH color palette.
 */
@@ -25,7 +25,7 @@ html {
     position: relative;
 }
 
-/* Subtle color accent overlay — fades in when a substance is selected */
+/* Subtle color accent overlay: fades in when a substance is selected */
 html::before {
     content: '';
     position: fixed;
@@ -94,7 +94,7 @@ body {
     width: 100%;
 }
 
-/* ===== Focus visibility (keyboard) — WCAG 2.4.7 ===== */
+/* ===== Focus visibility (keyboard): WCAG 2.4.7 ===== */
 :focus-visible {
     outline: 2px solid #f5f5f4 !important;
     outline-offset: 2px;
@@ -116,7 +116,7 @@ body {
     background: rgba(255, 255, 255, 0.1);
 }
 
-/* ===== Dosing Panel — Route Buttons ===== */
+/* ===== Dosing Panel: Route Buttons ===== */
 .route-btn {
     background: rgba(255, 255, 255, 0.06);
     border-color: rgba(255, 255, 255, 0.18);
@@ -135,10 +135,8 @@ body {
 }
 
 .route-btn:hover {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.35);
-    color: rgba(255, 255, 255, 0.9);
-    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.5);
+    filter: brightness(1.35);
+    opacity: 1 !important;
 }
 
 .route-btn:active {
@@ -146,7 +144,7 @@ body {
     box-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
 }
 
-/* ===== Dosing Panel — Tier Buttons ===== */
+/* ===== Dosing Panel: Tier Buttons ===== */
 .tier-btn {
     background: var(--tier-bg, rgba(255, 255, 255, 0.04));
     border-color: rgba(255, 255, 255, 0.1);
@@ -159,10 +157,8 @@ body {
 }
 
 .tier-btn:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.25);
-    color: var(--tier-color, rgba(255, 255, 255, 0.7));
-    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.5);
+    filter: brightness(1.35);
+    opacity: 1 !important;
 }
 
 .tier-btn:active {
@@ -196,7 +192,7 @@ body {
     flex-shrink: 0;
 }
 
-/* ===== Cards — Softly rounded ===== */
+/* ===== Cards: Softly rounded ===== */
 .section-card,
 #dosing-card,
 #active-substance-header,
@@ -223,7 +219,7 @@ body {
     left: -70%;
     width: 50%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
     animation: navBtnSweep 3s ease-in-out infinite;
     pointer-events: none;
 }
@@ -276,7 +272,7 @@ body {
     font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, monospace;
 }
 
-/* ===== Tabs — coloured, distinct active state ===== */
+/* ===== Tabs: coloured, distinct active state ===== */
 .tab-btn { cursor: pointer; }
 .tab-btn:hover { filter: brightness(1.18); }
 
@@ -412,4 +408,104 @@ body {
         transition-duration: 0.01ms !important;
         scroll-behavior: auto !important;
     }
+}
+
+/* ===== Risk Profile: provenance info button + panel ===== */
+.risk-info-btn {
+    flex-shrink: 0;
+    width: 1.35rem;
+    height: 1.35rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.7);
+    font-family: Georgia, 'Times New Roman', serif;
+    font-style: italic;
+    font-weight: 700;
+    font-size: 0.8rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.risk-info-btn:hover {
+    border-color: rgba(255, 255, 255, 0.75);
+    background: rgba(255, 255, 255, 0.12);
+    color: #f5f5f4;
+}
+
+.risk-info-btn[aria-expanded="true"] {
+    border-color: var(--accent-color);
+    background: var(--accent-color);
+    color: #12120f;
+}
+
+.risk-info-inline {
+    color: #9ca3af;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+    font-style: normal;
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: inherit;
+}
+
+.risk-info-inline:hover {
+    color: #e5e7eb;
+}
+
+.risk-info-panel {
+    margin-bottom: 1.25rem;
+    padding: 0.9rem 1rem;
+    border-radius: 10px;
+    background: #151514;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-left: 3px solid var(--accent-color);
+    font-size: 0.75rem;
+    line-height: 1.6;
+    color: #9ca3af;
+}
+
+.risk-info-panel p {
+    margin-bottom: 0.6rem;
+}
+
+.risk-info-panel p:last-child {
+    margin-bottom: 0;
+}
+
+.risk-info-panel .rip-lead {
+    color: #e5e7eb;
+    font-weight: 600;
+}
+
+.risk-info-panel strong {
+    color: #d1d5db;
+}
+
+.risk-info-panel .rip-axis {
+    color: #e5e7eb;
+}
+
+.risk-info-panel .rip-axes {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.risk-info-panel .rip-axes li {
+    margin-top: 0.25rem;
+}
+
+.risk-info-panel .rip-foot {
+    color: #6b7280;
+    font-style: italic;
+}
+
+.risk-info-panel a {
+    color: #d1d5db;
+    text-decoration: underline;
+    text-underline-offset: 2px;
 }

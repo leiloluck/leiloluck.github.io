@@ -1,5 +1,5 @@
 /*
-    app.js — Application logic for Harm Reduction Protocols Dashboard.
+    app.js: Application logic for Harm Reduction Protocols Dashboard.
     Handles: Navigation, content rendering, expandable items, color theming, Chart.js config (dark mode),
              scroll-reactive OKLCH background gradient, effect timeline legend.
     Depends on: data.js (must be loaded first), Chart.js CDN, Tailwind CDN.
@@ -57,6 +57,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     doseSourceLink = document.getElementById('dose-source-link');
     doseDisplayText = document.getElementById('dose-display-text');
 
+    const riskInfoBtn = document.getElementById('risk-info-btn');
+    if (riskInfoBtn) riskInfoBtn.addEventListener('click', toggleRiskInfo);
+
     // Sticky Header Scroll Listener
     window.addEventListener('scroll', () => {
         const stickyHeader = document.getElementById('sticky-header');
@@ -71,7 +74,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const data = await loadProtocolData();
     if (!data) return;
 
-    // Load combo data (non-blocking — combos are supplementary)
+    // Load combo data (non-blocking, combos are supplementary)
     await loadComboData();
 
     initNavigation();
@@ -98,13 +101,7 @@ function initNavigation() {
         applyButtonDefault(btn, proto.color);
 
         btn.onmouseenter = () => {
-            if (btn.dataset.id !== currentProtocol) {
-                btn.style.backgroundColor = hexAlpha(proto.color, 0.2);
-                btn.style.borderColor = hexAlpha(proto.color, 0.7);
-                btn.style.color = proto.color;
-                btn.style.boxShadow = `0 4px 0 ${hexAlpha(proto.color, 0.6)}, 0 8px 18px ${hexAlpha(proto.color, 0.12)}`;
-                btn.style.transform = 'translateY(0)';
-            }
+            if (btn.dataset.id !== currentProtocol) applyButtonHover(btn, proto.color);
         };
         btn.onmouseleave = () => {
             if (btn.dataset.id !== currentProtocol) {
@@ -136,7 +133,7 @@ const FOLDER_THEMES = {
     }
 };
 
-// Tab order for slide direction (Protocol leads — the practical guide comes first)
+// Tab order for slide direction (Protocol leads, the practical guide comes first)
 const TAB_ORDER = ['tab-protocol', 'tab-risk', 'tab-combos'];
 
 // --- Tabs ---
@@ -168,6 +165,12 @@ window.switchTab = function(tabId) {
         }
     }
 
+    // Charts are built while their tab is display:none, so Chart.js measures a
+    // 0x0 container and writes width:0;height:0 onto the canvas. Resizing once the
+    // tab is actually on screen is what makes the chart appear.
+    if (riskChart) riskChart.resize();
+    if (durationChart) durationChart.resize();
+
     // Update the folder body background and border
     const folderBody = document.getElementById('tab-folder-body');
     if (folderBody) {
@@ -176,21 +179,21 @@ window.switchTab = function(tabId) {
         folderBody.style.borderBottomColor = 'transparent';
     }
 
-    // Update tab buttons — each tab wears its own colour so they read as distinct even
+    // Update tab buttons. Each tab wears its own colour so they read as distinct even
     // at rest; the active one deepens, lifts, and merges its bottom edge into the panel.
     const tabBase = 'tab-btn flex-1 max-w-[150px] py-3 px-2 sm:px-4 text-[13px] sm:text-sm font-bold transition-all rounded-t-xl border-2 relative';
     document.querySelectorAll('.tab-btn').forEach(btn => {
         const btnTabId = btn.id.replace('btn-', '');
         const btnTheme = FOLDER_THEMES[btnTabId] || theme;
         if (btn.id === 'btn-' + tabId) {
-            // Active tab — deep fill, raised, bottom border merges into the folder body
+            // Active tab: deep fill, raised, bottom border merges into the folder body
             btn.className = tabBase + ' z-20 translate-y-[1px] shadow-[0_-6px_18px_rgba(0,0,0,0.35)]';
             btn.style.backgroundColor = theme.bg;
             btn.style.borderColor = theme.border;
             btn.style.borderBottomColor = 'transparent';
             btn.style.color = theme.text;
         } else {
-            // Inactive tab — its own colour, muted (tinted fill, colour text + outline)
+            // Inactive tab: its own colour, muted (tinted fill, colour text + outline)
             btn.className = tabBase + ' z-10';
             btn.style.backgroundColor = hexAlpha(btnTheme.text, 0.06);
             btn.style.borderColor = hexAlpha(btnTheme.border, 0.7);
@@ -200,24 +203,41 @@ window.switchTab = function(tabId) {
     });
 };
 
+// Rest and selected states are deliberately far apart. At rest a button is a dim
+// outline on near-black; selected, it is filled solid with its accent, carries
+// text in whichever of black/white contrasts, and sits inside a bright ring plus
+// a wide glow. The reader should never have to compare two buttons to tell which
+// one is on.
 function applyButtonDefault(btn, color) {
     btn.className = 'p-3 text-sm font-bold transition-all duration-150 border-2 cursor-pointer rounded-xl';
     if (btn.dataset.wide) btn.className += ' col-span-2 sm:col-span-1';
-    btn.style.backgroundColor = hexAlpha(color, 0.1);
-    btn.style.borderColor = hexAlpha(color, 0.45);
-    btn.style.color = hexAlpha(color, 0.85);
-    btn.style.boxShadow = `0 4px 0 ${hexAlpha(color, 0.5)}, 0 6px 16px ${hexAlpha(color, 0.08)}`;
+    btn.style.backgroundColor = 'rgba(255,255,255,0.025)';
+    btn.style.borderColor = hexAlpha(color, 0.3);
+    btn.style.color = mixHex(color, '#ffffff', 0.3);
+    btn.style.opacity = '0.6';
+    btn.style.boxShadow = '0 3px 0 rgba(0,0,0,0.5)';
+    btn.style.transform = 'translateY(0)';
+}
+
+function applyButtonHover(btn, color) {
+    btn.style.backgroundColor = hexAlpha(color, 0.16);
+    btn.style.borderColor = hexAlpha(color, 0.75);
+    btn.style.color = mixHex(color, '#ffffff', 0.2);
+    btn.style.opacity = '0.95';
+    btn.style.boxShadow = `0 3px 0 rgba(0,0,0,0.5), 0 0 14px ${hexAlpha(color, 0.25)}`;
     btn.style.transform = 'translateY(0)';
 }
 
 function applyButtonActive(btn, color) {
     btn.className = 'p-3 text-sm font-bold transition-all duration-150 border-2 cursor-pointer rounded-xl nav-btn-active';
     if (btn.dataset.wide) btn.className += ' col-span-2 sm:col-span-1';
-    btn.style.backgroundColor = hexAlpha(color, 0.25);
-    btn.style.borderColor = color;
-    btn.style.color = color;
-    btn.style.boxShadow = `0 4px 0 ${hexAlpha(color, 0.5)}, 0 0 18px ${hexAlpha(color, 0.4)}, 0 0 40px ${hexAlpha(color, 0.15)}`;
-    btn.style.transform = 'translateY(0)';
+    const fill = selectedFill(color);
+    btn.style.backgroundColor = fill;
+    btn.style.borderColor = mixHex(fill, '#ffffff', 0.6);
+    btn.style.color = contrastText(fill);
+    btn.style.opacity = '1';
+    btn.style.boxShadow = `0 0 0 3px ${hexAlpha(color, 0.35)}, 0 5px 0 rgba(0,0,0,0.55), 0 0 24px ${hexAlpha(color, 0.8)}, 0 0 60px ${hexAlpha(color, 0.4)}`;
+    btn.style.transform = 'translateY(-2px)';
 }
 
 
@@ -244,7 +264,7 @@ function loadProtocol(id) {
     activeHeader.style.borderColor = hexAlpha(data.color, 0.35);
     activeHeaderName.style.color = data.color;
 
-    // 2b. Background accent shift — subtle radial glow matching selected substance
+    // 2b. Background accent shift: subtle radial glow matching selected substance
     document.documentElement.style.setProperty('--accent-color', data.color);
     if (data.id === 'sober') {
         document.documentElement.classList.remove('accent-active');
@@ -359,26 +379,37 @@ function updateDosingDisplay(data) {
     // Update route button states
     routeButtons.querySelectorAll('.route-btn').forEach((btn, i) => {
         if (i === currentRouteIndex) {
-            btn.style.backgroundColor = hexAlpha(color, 0.2);
-            btn.style.borderColor = color;
-            btn.style.color = color;
-            btn.style.boxShadow = `0 4px 0 ${hexAlpha(color, 0.5)}, 0 0 14px ${hexAlpha(color, 0.4)}`;
-            btn.style.transform = 'translateY(0)';
+            const fill = selectedFill(color);
+            btn.style.backgroundColor = fill;
+            btn.style.borderColor = mixHex(fill, '#ffffff', 0.6);
+            btn.style.color = contrastText(fill);
+            btn.style.opacity = '1';
+            btn.style.boxShadow = `0 0 0 3px ${hexAlpha(color, 0.3)}, 0 4px 0 rgba(0,0,0,0.5), 0 0 20px ${hexAlpha(color, 0.7)}`;
+            btn.style.transform = 'translateY(-2px)';
         } else {
-            btn.style.backgroundColor = 'rgba(255,255,255,0.06)';
-            btn.style.borderColor = 'rgba(255,255,255,0.18)';
-            btn.style.color = 'rgba(255,255,255,0.6)';
-            btn.style.boxShadow = '0 4px 0 rgba(0,0,0,0.45)';
+            btn.style.backgroundColor = 'rgba(255,255,255,0.025)';
+            btn.style.borderColor = 'rgba(255,255,255,0.14)';
+            btn.style.color = 'rgba(255,255,255,0.45)';
+            btn.style.opacity = '0.7';
+            btn.style.boxShadow = '0 3px 0 rgba(0,0,0,0.5)';
             btn.style.transform = 'translateY(0)';
         }
     });
 
-    // Populate tier button values
-    document.getElementById('val-threshold').textContent = dose.threshold != null ? `${dose.threshold} ${unit}` : '–';
-    document.getElementById('val-light').textContent = dose.light ? `${dose.light.min}–${dose.light.max} ${unit}` : '–';
-    document.getElementById('val-common').textContent = dose.common ? `${dose.common.min}–${dose.common.max} ${unit}` : '–';
-    document.getElementById('val-strong').textContent = dose.strong ? `${dose.strong.min}–${dose.strong.max} ${unit}` : '–';
-    document.getElementById('val-heavy').textContent = dose.heavy != null ? `${dose.heavy}+ ${unit}` : '–';
+    // The unit is stated once above the row; the buttons carry numbers only, so a
+    // long unit string ('mg diazepam-eq.') can no longer overflow five small boxes.
+    const unitLabel = document.getElementById('dose-unit-label');
+    if (unitLabel) {
+        unitLabel.textContent = unit;
+        unitLabel.style.color = hexAlpha(color, 0.9);
+    }
+
+    // Populate tier button values (numbers only)
+    document.getElementById('val-threshold').textContent = dose.threshold != null ? `${dose.threshold}` : '–';
+    document.getElementById('val-light').textContent = dose.light ? `${dose.light.min}–${dose.light.max}` : '–';
+    document.getElementById('val-common').textContent = dose.common ? `${dose.common.min}–${dose.common.max}` : '–';
+    document.getElementById('val-strong').textContent = dose.strong ? `${dose.strong.min}–${dose.strong.max}` : '–';
+    document.getElementById('val-heavy').textContent = dose.heavy != null ? `${dose.heavy}+` : '–';
 
     // Highlight selected tier button
     const tiers = ['threshold', 'light', 'common', 'strong', 'heavy'];
@@ -386,17 +417,21 @@ function updateDosingDisplay(data) {
         const btn = document.getElementById('tier-' + lvl);
         if (!btn) return;
         const tierColor = getComputedStyle(btn).getPropertyValue('--tier-color').trim();
+        const tc = tierColor || color;
         if (lvl === currentIntensity) {
-            btn.style.backgroundColor = hexAlpha(tierColor || color, 0.25);
-            btn.style.borderColor = tierColor || color;
-            btn.style.color = tierColor || color;
-            btn.style.boxShadow = `0 4px 0 ${hexAlpha(tierColor || color, 0.5)}, 0 0 14px ${hexAlpha(tierColor || color, 0.4)}`;
-            btn.style.transform = 'translateY(0)';
+            const fill = selectedFill(tc);
+            btn.style.backgroundColor = fill;
+            btn.style.borderColor = mixHex(fill, '#ffffff', 0.6);
+            btn.style.color = contrastText(fill);
+            btn.style.opacity = '1';
+            btn.style.boxShadow = `0 0 0 3px ${hexAlpha(tc, 0.3)}, 0 4px 0 rgba(0,0,0,0.5), 0 0 20px ${hexAlpha(tc, 0.7)}`;
+            btn.style.transform = 'translateY(-2px)';
         } else {
-            btn.style.backgroundColor = 'var(--tier-bg)';
-            btn.style.borderColor = 'rgba(255,255,255,0.1)';
-            btn.style.color = 'rgba(255,255,255,0.4)';
-            btn.style.boxShadow = '0 4px 0 rgba(0,0,0,0.45)';
+            btn.style.backgroundColor = 'rgba(255,255,255,0.025)';
+            btn.style.borderColor = hexAlpha(tc, 0.28);
+            btn.style.color = mixHex(tc, '#ffffff', 0.3);
+            btn.style.opacity = '0.6';
+            btn.style.boxShadow = '0 3px 0 rgba(0,0,0,0.5)';
             btn.style.transform = 'translateY(0)';
         }
     });
@@ -431,12 +466,12 @@ function updateDosingDisplay(data) {
             amphetamine: 'Higher doses raise cardiovascular strain and overheating risk.',
             '4mmc': 'Higher doses strongly increase the urge to redose and the cardiac strain.',
             'cmc': 'Higher doses sharply increase the urge to redose and the cardiac strain.',
-            '2cb': 'At this range effects can become overwhelming — a comfortable setting helps.',
-            ketamine: 'This approaches the "k-hole" (full dissociation) — best not to be alone.',
-            lsd: 'Higher doses make challenging experiences more likely — set & setting matter more.',
+            '2cb': 'At this range effects can become overwhelming, so a calm setting helps.',
+            ketamine: 'This approaches the "k-hole" (full dissociation), so it is best not to be alone.',
+            lsd: 'Higher doses make challenging experiences more likely, so your mindset and setting matter more.',
             alcohol: 'Heavy doses strongly impair coordination; if vomiting, lie on your side (aspiration risk).',
             benzodiazepines: 'Higher doses deepen sedation and, with any other depressant, the risk of stopped breathing.',
-            dmt: 'This is breakthrough territory — total and overwhelming; have a sober sitter and stay seated or lying down.',
+            dmt: 'This is breakthrough territory, total and overwhelming. Have a sober sitter and stay seated or lying down.',
             nitrous: 'More balloons in one session raise the cumulative nerve-damage and hypoxia risk, not the high.'
         };
         if (warnings[data.id]) {
@@ -452,7 +487,7 @@ function updateDosingDisplay(data) {
     // Source link
     if (dose.source) {
         doseSourceLink.href = dose.source;
-        doseSourceLink.textContent = `Source: PsychonautWiki — ${data.name} dosing`;
+        doseSourceLink.textContent = `Source: PsychonautWiki, ${data.name} dosing`;
         doseSourceLink.parentElement.classList.remove('hidden');
     }
 
@@ -586,11 +621,11 @@ function renderCombosSection(data) {
         return;
     }
 
-    // Substances with no combination data (e.g. poppers — not in the TripSit chart):
+    // Substances with no combination data (e.g. poppers, not in the TripSit chart):
     // point the reader to the Protocol tab instead of showing an empty panel.
     const combos = comboData ? getSubstanceCombos(data.id) : [];
     if (combos.length === 0) {
-        showPlaceholder(`No combination chart is available for ${data.name} — see the Protocol tab for its key interaction warnings.`);
+        showPlaceholder(`No combination chart is available for ${data.name}. See the Protocol tab for its key interaction warnings.`);
         return;
     }
 
@@ -628,7 +663,7 @@ function renderCombosSection(data) {
                 + `</div>`;
         }
         if (combo.curated) {
-            sourcesHtml += `<div class="mt-1 pl-3 text-[10px] italic opacity-40" style="color:${data.color}">Curated from the cited sources — this pairing is not in the TripSit dataset.</div>`;
+            sourcesHtml += `<div class="mt-1 pl-3 text-[10px] italic opacity-40" style="color:${data.color}">Curated from the cited sources. This pairing is not in the TripSit dataset.</div>`;
         } else {
             sourcesHtml += `<div class="mt-1 pl-3"><a href="https://combo.tripsit.me" target="_blank" rel="noopener" class="text-[10px] opacity-30 hover:opacity-60 underline transition-opacity" style="color:${data.color}">TripSit Drug Combination Chart</a></div>`;
         }
@@ -661,25 +696,25 @@ function renderCombosSection(data) {
     list.innerHTML = html;
 }
 
-// Axis definitions — shown in the risk-chart tooltip so each axis states its
+// Axis definitions, shown in the risk-chart tooltip so each axis states its
 // scope explicitly (the labels are deliberately narrow proxies, not catch-alls).
 const AXIS_DESC = {
-    'Overdose / Lethality': 'Risk of death from the drug itself — overdose, respiratory depression, or a narrow dose-to-danger margin.',
+    'Overdose / Lethality': 'Risk of dying from the drug itself: overdose, stopped breathing, or a small gap between a normal dose and a dangerous one.',
     'Neurotoxicity': 'Risk of direct, lasting damage to neural tissue.',
-    'Cardiotoxicity': 'Cardiovascular strain — heart rate, blood pressure, vasoconstriction.',
-    'Dehydration': 'Fluid and electrolyte disruption.',
-    'Sleep Disruption': 'How strongly it prevents or degrades sleep during and after use (not the same as long-term sleep harm).',
-    'Compulsion': 'Loss of behavioural control — disinhibition and compulsive redosing.'
+    'Cardiotoxicity': 'Strain on the heart and blood vessels: heart rate, blood pressure, narrowed vessels.',
+    'Fluid & heat balance': 'Losing control of fluids, salts or body temperature. This can fail in both directions: too little water, or too much of it.',
+    'Sleep Disruption': 'How strongly it blocks or spoils sleep around the time you use. Not the same as long-term sleep harm.',
+    'Compulsion': 'Loss of control over your own behaviour: disinhibition and the pull to keep redosing.'
 };
 
 // --- Charts (Dark Mode) ---
 function updateCharts(data, skipDuration = false) {
-    // Risk profile is a fixed per-substance estimate — deliberately NOT scaled by
+    // Risk profile is a fixed per-substance estimate, deliberately NOT scaled by
     // the dose tier. A uniform multiplier would fake a dose-response the data can't
     // support. Higher doses raise every risk (especially overdose); that is stated
     // in the caption rather than drawn as precise bar movement.
     const v = data.visualizer;
-    const scores = [
+    const raw = [
         v.lethality != null ? v.lethality : 0,
         v.neurotoxicity,
         v.cardiotoxicity,
@@ -687,8 +722,12 @@ function updateCharts(data, skipDuration = false) {
         v.sleep_deprivation,
         v.impulsivity
     ];
+    // Draw the band, not the number. The page states these are five coarse bands,
+    // so a 7 and an 8 must render at the same length: bar length was quietly
+    // implying a precision the bands disclaim.
+    const scores = raw.map(bandMidpoint);
 
-    const labels = ['Overdose / Lethality', 'Neurotoxicity', 'Cardiotoxicity', 'Dehydration', 'Sleep Disruption', 'Compulsion'];
+    const labels = ['Overdose / Lethality', 'Neurotoxicity', 'Cardiotoxicity', 'Fluid & heat balance', 'Sleep Disruption', 'Compulsion'];
     const darkGridColor = 'rgba(255,255,255,0.06)';
     const darkLabelColor = '#71717a'; // zinc-500
 
@@ -711,6 +750,15 @@ function updateCharts(data, skipDuration = false) {
     }
 
     if (!skipDuration) updateDurationChart(data, darkGridColor, darkLabelColor);
+}
+
+// None / Low / Moderate / High / Very High -> the middle of each band.
+function bandMidpoint(score) {
+    if (score <= 0) return 0;
+    if (score <= 2) return 1;
+    if (score <= 4) return 3;
+    if (score <= 6) return 5;
+    return 7;
 }
 
 function getHistogramColor(score) {
@@ -750,7 +798,7 @@ function createHistogramChart(data, labels, scores, gridColor, labelColor) {
                         callback: function (value) {
                             if (value === 0) return 'None';
                             if (value === 2) return 'Low';
-                            if (value === 4) return 'Medium';
+                            if (value === 4) return 'Moderate';
                             if (value === 6) return 'High';
                             if (value === 8) return 'Very High';
                             return '';
@@ -834,7 +882,7 @@ function updateDurationChart(data, darkGridColor, darkLabelColor) {
     }));
 
     if (durationChart) {
-        // Update in place — smooth morph, no restart animation
+        // Update in place for a smooth morph, no restart animation
         durationChart.data.labels = newLabels;
         PHASE_ORDER.forEach((p, i) => {
             durationChart.data.datasets[i].data = newDatasets[i].data;
@@ -953,6 +1001,48 @@ function hexAlpha(hex, alpha) {
     return `rgba(${r},${g},${b},${alpha})`;
 }
 
+function hexToRgb(hex) {
+    return [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16)];
+}
+
+// Mix a hex colour toward another by t (0..1). Used to lift dim accents to a
+// readable weight at rest, and to lighten very dark accents enough to carry
+// dark text when a button is selected.
+function mixHex(hex, toward, t) {
+    const a = hexToRgb(hex), b = hexToRgb(toward);
+    const m = a.map((v, i) => Math.round(v + (b[i] - v) * t));
+    return '#' + m.map(v => v.toString(16).padStart(2, '0')).join('');
+}
+
+// WCAG relative luminance decides whether a filled button gets black or white text.
+function luminance(hex) {
+    const [r, g, b] = hexToRgb(hex).map(v => {
+        const c = v / 255;
+        return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+function contrastText(hex) {
+    return luminance(hex) > 0.35 ? '#12120f' : '#ffffff';
+}
+
+// A selected button is filled with its accent at full strength. Very dark accents
+// (deep indigo, crimson) are lifted first so the fill still reads as "lit up".
+function selectedFill(hex) {
+    return luminance(hex) < 0.14 ? mixHex(hex, '#ffffff', 0.3) : hex;
+}
+
+// --- Risk-profile provenance panel (the "i" beside the chart heading) ---
+window.toggleRiskInfo = function() {
+    const panel = document.getElementById('risk-info-panel');
+    const btn = document.getElementById('risk-info-btn');
+    if (!panel) return;
+    const open = panel.hidden;
+    panel.hidden = !open;
+    if (btn) btn.setAttribute('aria-expanded', String(open));
+};
+
 // --- Risk-profile meta: per-substance rationale + independent MCDA harm score ---
 function ordinal(n) {
     const s = ['th', 'st', 'nd', 'rd'], v = n % 100;
@@ -969,7 +1059,7 @@ function renderRiskMeta(data) {
         const m = data.mcda;
         const extra = m.note ? ` (${m.note})` : '';
         chip.innerHTML = '<span class="font-semibold text-gray-300">Independent expert harm ranking:</span> '
-            + `${m.score}/100 — ${ordinal(m.rank)} most harmful of ${m.of} drugs${extra}. `
+            + `${m.score}/100, ${ordinal(m.rank)} most harmful of ${m.of} drugs${extra}. `
             + '<span class="text-gray-500">Overall harm to self &amp; others; Nutt 2010.</span>';
     } else if (data.id === 'sober') {
         chip.innerHTML = '';

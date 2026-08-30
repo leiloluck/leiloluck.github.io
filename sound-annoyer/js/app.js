@@ -34,7 +34,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.08.30c';
+const APP_VERSION = 'v26.08.30d';
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 // Drop real files into resources/ (see resources/README.md). Until a matching file
@@ -808,6 +808,7 @@ const elLaunch      = document.getElementById('btn-launch');
 const elSkip        = document.getElementById('btn-skip');
 const elSoundGroup  = document.getElementById('sound-group');
 const elSoundHint   = document.getElementById('sound-hint');
+const elSelectAllBtn = document.getElementById('select-all-btn');
 const elIntervalGroup = document.getElementById('interval-group');
 const elRandomToggle  = document.getElementById('randomize-toggle');
 const elRandomSub   = document.getElementById('randomize-sub');
@@ -980,6 +981,7 @@ function toggleSound(id) {
   saveState();
   const sound = SOUNDS.find(s => s.id === id);
   if (sound) refreshSoundBtn(sound);      // in place: never rebuild under the finger
+  updateSelectAllBtn();
   setLaunchBtn();
   if (!running) elHeroStatus.textContent = idleStatus();
   else rescheduleFromNow();               // takes effect immediately, not in 30 minutes
@@ -1078,7 +1080,17 @@ function closeCustomModal() {
 
 function renderCustomDisplay() {
   elCustomValue.textContent = customDraft || '--';
-  elCustomUnitBtn.textContent = customUnit === 'min' ? 'MIN' : 'SEC';
+  // Seconds were always supported, but a lone "MIN" reads as a unit label rather than a
+  // control, so nobody found the switch. Show both options with the active one latched.
+  elCustomUnitBtn.innerHTML = '';
+  for (const u of ['sec', 'min']) {
+    const span = document.createElement('span');
+    span.className = 'unit-opt' + (customUnit === u ? ' on' : '');
+    span.textContent = u.toUpperCase();
+    elCustomUnitBtn.appendChild(span);
+  }
+  elCustomUnitBtn.setAttribute('aria-label',
+    'Unit: ' + (customUnit === 'min' ? 'minutes' : 'seconds') + '. Tap to switch.');
 }
 
 function toggleCustomUnit() {
@@ -1226,6 +1238,36 @@ function updateSoundHint() {
   elSoundHint.textContent = testMode ? '🔊 tap to hear' : 'tap to arm';
 }
 
+// Select all / Deselect all. One button, and its label states what the NEXT tap does,
+// so it flips to "Deselect all" only once every sound is armed.
+function allArmed() {
+  return SOUNDS.length > 0 && armed.size >= SOUNDS.length;
+}
+
+function updateSelectAllBtn() {
+  elSelectAllBtn.textContent = allArmed() ? 'Deselect all' : 'Select all';
+}
+
+function toggleSelectAll() {
+  if (allArmed()) {
+    armed.clear();
+    // Never strand the app with nothing armed: UNLEASH would be dead and the reason
+    // would not be obvious. Deselecting everything keeps the cat, the same floor the
+    // first run starts from.
+    armed.add((SOUNDS.find(x => x.id === 'cat') || SOUNDS[0]).id);
+  } else {
+    SOUNDS.forEach(x => armed.add(x.id));
+  }
+  saveState();
+  SOUNDS.forEach(refreshSoundBtn);        // in place; never rebuild under the finger
+  updateSelectAllBtn();
+  setLaunchBtn();
+  if (!running) elHeroStatus.textContent = idleStatus();
+  else rescheduleFromNow();               // mid-session changes apply immediately
+}
+
+elSelectAllBtn.addEventListener('click', toggleSelectAll);
+
 elTestToggle.addEventListener('click', () => {
   testMode = !testMode;
   saveState();
@@ -1295,7 +1337,7 @@ function loadState() {
     s.armed.forEach(id => { if (SOUNDS.some(x => x.id === id)) armed.add(id); });
     // Saved ids that no longer exist (a renamed sound, an older schema) used to leave the
     // app with nothing armed and no hint why. Fall back to the first-run behaviour.
-    if (!armed.size && s.armed.length) SOUNDS.forEach(x => armed.add(x.id));
+    if (!armed.size && s.armed.length) armed.add((SOUNDS.find(x => x.id === 'cat') || SOUNDS[0]).id);
     if (typeof s.intervalMs === 'number') selectedIntervalMs = s.intervalMs;
     if (typeof s.customSeconds === 'number') customSeconds = s.customSeconds;
     if (typeof s.randomize === 'boolean') randomize = s.randomize;
@@ -1308,8 +1350,10 @@ function loadState() {
     const matchesCustom = customSeconds && selectedIntervalMs === customSeconds * 1000;
     if (!matchesPreset && !matchesCustom) selectedIntervalMs = 240000;
   } else {
-    // First run: arm everything, 30s, chaos on — works out of the box.
-    SOUNDS.forEach(x => armed.add(x.id));
+    // First run: arm ONE sound (the cat — the app's signature prank), not all twelve.
+    // Arming everything made the grid read as "all selected" at a glance and buried the
+    // fact that these are choices; starting from one makes the toggling obvious.
+    armed.add((SOUNDS.find(x => x.id === 'cat') || SOUNDS[0]).id);
   }
 }
 
@@ -1706,6 +1750,7 @@ refreshOfflineBadge();
 
 loadState();
 renderSounds();
+updateSelectAllBtn();
 renderIntervals();
 renderRandomize();
 renderTestMode();

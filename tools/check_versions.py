@@ -157,7 +157,10 @@ def check_manifest(app: pathlib.Path) -> list[str]:
         src = icon.get("src", "")
         if src.startswith(("http://", "https://", "data:")):
             continue
-        if not (app / src.lstrip("./")).exists():
+        # Icon srcs carry a ?v= stamp so Chrome's WebAPK updater sees a changed URL and
+        # re-mints the installed app; the query is not part of the filename on disk.
+        path = src.split("?", 1)[0].split("#", 1)[0]
+        if not (app / path.lstrip("./")).exists():
             problems.append(f"icon file not found: {src}")
     return problems
 

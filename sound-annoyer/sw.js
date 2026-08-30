@@ -34,7 +34,7 @@
 
 'use strict';
 
-const VERSION      = 'v26.08.30d';
+const VERSION      = 'v26.08.31';
 const CACHE_PREFIX = 'sound-annoyer-';           // never touch caches outside this prefix
 const CACHE        = CACHE_PREFIX + VERSION;
 const AUDIO_CACHE  = CACHE_PREFIX + 'sounds';    // unversioned on purpose — see header

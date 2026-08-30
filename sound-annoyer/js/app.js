@@ -34,7 +34,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.08.30a';
+const APP_VERSION = 'v26.08.30b';
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 // Drop real files into resources/ (see resources/README.md). Until a matching file
@@ -482,6 +482,9 @@ function startAnnoying() {
 
   running = true;
   document.body.classList.add('running');
+  // If a close was refused (a plain tab) the app is still alive and in use again, so
+  // let deferred updates through once more.
+  closing = false;
   recentIds = [];
   clearScheduled();
   startKeepAlive();
@@ -532,6 +535,70 @@ function stopAnnoying() {
 
   applyUpdateIfSafe(1500);   // a new build that landed mid-session lands now
 }
+
+// ── Close ────────────────────────────────────────────────────────────────────
+//
+// A web page cannot terminate its own OS process. Nothing in any browser exposes that,
+// and on Android the system alone decides when to reclaim a process. What it CAN do is
+// make the app stop holding things, which is the part that actually matters here: no
+// queued sounds, no keep-alive, no lock-screen controls, and above all no open audio
+// output stream — that last one is what pins a partial wakelock and keeps the phone from
+// sleeping. After this the app is inert whether or not the window itself goes away.
+//
+// window.close() then closes the window. Per spec a script may only close a window it
+// opened — but an INSTALLED app window counts, which is precisely why installing matters.
+// In an ordinary browser tab it silently does nothing, so we detect that and say so
+// rather than leaving a button that looks broken.
+let closing = false;
+
+function shutdownApp() {
+  closing = true;
+  stopAnnoying();          // no-op when idle; stops the queue and suspends when running
+  stopHeartbeat();
+  stopKeepAlive();
+
+  // Drop the lock-screen controls, or the media notification outlives the app.
+  if ('mediaSession' in navigator) {
+    try {
+      ['play', 'pause', 'stop', 'previoustrack', 'nexttrack']
+        .forEach(a => navigator.mediaSession.setActionHandler(a, null));
+      navigator.mediaSession.metadata = null;
+      navigator.mediaSession.playbackState = 'none';
+    } catch {}
+  }
+
+  // Release the keep-alive element and the blob: URL backing it.
+  if (keepAliveEl) {
+    try { keepAliveEl.pause(); keepAliveEl.removeAttribute('src'); keepAliveEl.load(); } catch {}
+  }
+  if (keepAliveUrl) {
+    try { URL.revokeObjectURL(keepAliveUrl); } catch {}
+    keepAliveUrl = null;
+  }
+
+  // close(), not suspend(): this is what hands the audio device back to the OS. Null the
+  // reference too — ensureAudio() early-returns on a truthy audioCtx, so leaving a closed
+  // one there would make UNLEASH silently dead if the window turns out to survive.
+  if (audioCtx) {
+    const ctx = audioCtx;
+    audioCtx = null;
+    try { ctx.close(); } catch {}
+  }
+
+  try { window.close(); } catch {}
+
+  // Still running a frame later? Then close() was refused — a plain tab. Say so.
+  setTimeout(() => {
+    if (!closing) return;
+    elHeroEmoji.textContent  = '😴';
+    elHeroStatus.textContent = 'closed - audio released';
+    elHeroSub.textContent    = isStandalone()
+      ? 'Swipe the app away to finish.'
+      : 'A browser tab cannot close itself - close it yourself. Install the app for a real close.';
+  }, 250);
+}
+
+elCloseBtn.addEventListener('click', shutdownApp);
 
 // Two separate jobs, deliberately split so neither costs battery when it isn't needed:
 //
@@ -768,6 +835,7 @@ const elInstallModalDismiss = document.getElementById('install-modal-dismiss');
 const elInstallSummary      = document.getElementById('install-modal-summary');
 const elInstallSteps        = document.getElementById('install-steps');
 const elInstallCloseBtn     = document.getElementById('install-close-btn');
+const elCloseBtn            = document.getElementById('close-btn');
 const elInstallProceedBtn   = document.getElementById('install-proceed-btn');
 const elOpenChromeBtn       = document.getElementById('open-chrome-btn');
 
@@ -1695,6 +1763,7 @@ function watchInstalling(reg, sw) {
 
 // Switch to the new build — but never while sounds are running.
 function applyUpdateIfSafe(delayMs = 0) {
+  if (closing) return;   // shutting down; a reload would resurrect the app
   // A worker swapped in by another window: just reload once we are idle.
   if (pendingReload && !running) {
     pendingReload = false;

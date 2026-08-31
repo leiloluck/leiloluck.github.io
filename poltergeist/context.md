@@ -327,6 +327,53 @@ scaled so the pixels stay square at 192/512/180 and the maskable 512.
 
 ---
 
+## Relative audio (app-only volume)
+
+`masterGain` is the app's own gain node, wholly separate from the device volume, so the
+prank can sit under music that is already playing. The slider is squared before it hits
+the node (`volumeGain()`), because perceived loudness is roughly cubic and a linear
+slider feels dead at the quiet end. Changes ramp with `setTargetAtTime`; a step change on
+a live gain node clicks. `input` applies live while dragging, `change` writes to storage,
+so a drag is one save rather than fifty.
+
+Only SOUNDS pass through it. The wake primer and the keep-alive have their own gains on
+purpose: the keep-alive must stay above Chrome's audibility threshold or the whole
+locked-screen mechanism collapses, so it must not be scalable to zero by this slider.
+
+## Speaker state and the hero art
+
+The hero shows the pixel ghost and speaker. The speaker's three wave arcs are separate
+`<g class="wave wave-N">` groups, hidden by default:
+
+* stopped: no waves at all. This is the clearest state signal in the UI.
+* running: wave 1 solid, waves 2 and 3 on a two-frame `steps(1, end)` alternation.
+
+The hero used to swap in the fired sound's emoji, which destroyed the artwork and named
+what had ALREADY played. It now pulses the art and names the UPCOMING sound in `hero-sub`
+("next sound: mosquito in 2:14"). The prankster wants to know what is coming; the victims
+are the ones who should be surprised.
+
+## Notification / lock-screen controls
+
+The Media Session API has a fixed action vocabulary and there is **no close action**, so
+the three requested controls map onto the three that exist:
+
+| Requested | Action  | Shown when |
+|-----------|---------|-----------|
+| Resume    | `play`  | stopped   |
+| Stop      | `pause` | running   |
+| Close     | `stop`  | always    |
+
+`play` and `pause` never appear together: the platform picks one from `playbackState`,
+which gives the alternation for free. Setting a handler to `null` REMOVES that button, so
+the shade only offers what currently makes sense. Seek and track actions are explicitly
+nulled or they push the real controls out of the compact view.
+
+`stopAnnoying()` sets `playbackState = 'paused'`, never `'none'`: `'none'` dismisses the
+notification outright and takes Resume with it.
+
+---
+
 ## Copy rules
 
 * **No em dashes or en dashes in any reader-visible text.** Owner's instruction. Use a

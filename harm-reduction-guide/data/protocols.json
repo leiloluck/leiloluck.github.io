@@ -40,7 +40,7 @@
           },
           {
             "short": "Nap: Consider a 20–90 minute afternoon nap.",
-            "detail": "A late-afternoon nap adds to your sleep reserve without disrupting nighttime sleep onset, provided it ends before 5 PM."
+            "detail": "An early-afternoon nap adds to your sleep reserve. Late naps are the ones that push back sleep onset, so nap early if you still plan to sleep that night."
           }
         ]
       },
@@ -48,8 +48,28 @@
         "focus": "Hydration balance and electrolyte maintenance.",
         "essential": [
           {
-            "short": "Hydration: Water + electrolytes (sodium/potassium). Avoid plain water only.",
-            "detail": "Sweat contains roughly 200–700 mg of sodium per hour. Drinking large volumes of plain water without replacing lost salts dilutes blood sodium and risks exertional hyponatremia, a potentially fatal condition causing headaches, confusion and seizures. Just as important: do not over-drink. Match your intake to thirst and to how much you are sweating rather than forcing fluids."
+            "short": "Hydration: Drink to thirst, with electrolytes. Do not force extra water down.",
+            "detail": "You can lose roughly 500 to 1500 mg of sodium an hour in sweat, more if you sweat heavily. The dangerous failure here is the opposite of dehydration: drinking more fluid than you sweat out dilutes your blood sodium and causes exertional hyponatremia, which can be fatal and starts with headache, confusion and seizures. Sports drinks do not prevent it, because they are also dilute. Drinking to thirst does. Electrolytes still help with cramping and general recovery.",
+            "sources": [
+              {
+                "label": "3rd International Exercise-Associated Hyponatremia Consensus (Hew-Butler et al. 2015)",
+                "url": "https://pubmed.ncbi.nlm.nih.gov/25623389/"
+              },
+              {
+                "label": "Baker et al. 2019: normative sweat sodium loss data",
+                "url": "https://pubmed.ncbi.nlm.nih.gov/30758029/"
+              }
+            ]
+          },
+          {
+            "short": "Heat: Take cool breaks and step out of the crowd before you feel unwell.",
+            "detail": "Hours of dancing in a hot, dense crowd loads your body faster than it can shed heat. Warning signs are cramping, nausea, a pounding headache and stopping sweating. Confusion or a stumbling walk in a hot person is heat stroke, which is a medical emergency: cool them fast and call for help.",
+            "sources": [
+              {
+                "label": "StatPearls: Exertional heat stroke",
+                "url": "https://www.ncbi.nlm.nih.gov/books/NBK537135/"
+              }
+            ]
           },
           {
             "short": "Nutrition: Simple carbohydrates (fruit, applesauce) for rapid energy.",
@@ -73,11 +93,23 @@
         "bonus": [
           {
             "short": "Recovery meal: Slow-digesting protein (casein/yogurt) + complex carbohydrates.",
-            "detail": "Consuming 20–40 g of casein protein before sleep provides a steady stream of amino acids for overnight muscle repair. Combining protein with carbohydrates supports tryptophan transport, enhancing serotonin and melatonin production for better sleep."
+            "detail": "20 to 40 g of slow protein such as casein before sleep gives a steady supply of amino acids for overnight muscle repair. Carbohydrate is what helps tryptophan reach the brain, where it becomes serotonin and then melatonin; protein works against that step, so expect the sleep benefit to be small.",
+            "sources": [
+              {
+                "label": "Fernstrom & Wurtman: brain serotonin and diet composition",
+                "url": "https://pubmed.ncbi.nlm.nih.gov/5539836/"
+              }
+            ]
           },
           {
             "short": "Supplements: Consider magnesium 1–2 hours before bed.",
-            "detail": "Magnesium acts as a natural calcium antagonist at the neuromuscular junction, facilitating muscle relaxation. It also stimulates GABA receptors, reducing excitatory neural activity and promoting deeper sleep."
+            "detail": "Magnesium relaxes muscle by acting as a calcium antagonist at the neuromuscular junction. In the brain it blocks the NMDA receptor and mildly boosts GABA, which calms nerve activity. Sleep trials are small and low quality, so expect a modest effect at best.",
+            "sources": [
+              {
+                "label": "Mah & Pitre: magnesium for insomnia, systematic review",
+                "url": "https://pubmed.ncbi.nlm.nih.gov/34719398/"
+              }
+            ]
           }
         ]
       },
@@ -85,7 +117,13 @@
         "essential": [
           {
             "short": "Wake up: Expose eyes to natural sunlight promptly.",
-            "detail": "Remaining in bed past normal waking hours disrupts alignment between peripheral circadian clocks and the brain's master clock, causing prolonged grogginess, impaired cognition, and depressed mood."
+            "detail": "Morning light is what re-anchors your body clock. Grogginess comes mostly from being woken out of deep sleep, which is more likely after a short night. If you do sleep in, get daylight on your eyes as soon as you are up.",
+            "sources": [
+              {
+                "label": "StatPearls: Physiology, Sleep Stages",
+                "url": "https://www.ncbi.nlm.nih.gov/books/NBK526132/"
+              }
+            ]
           }
         ],
         "bonus": [
@@ -101,12 +139,14 @@
       }
     },
     "risks": [
+      "Overheating and heat exhaustion from hours of dancing in a hot, crowded room",
+      "Exercise-associated hyponatremia from drinking more than you sweat out",
       "Exhaustion from prolonged exertion",
       "Dehydration and electrolyte imbalance",
       "Sleep deprivation and circadian disruption"
     ],
     "mcda": null,
-    "visualizer_note": "Baseline physical strain only, with no drug toxicity. The real risks of a long night are dehydration and sleep loss."
+    "visualizer_note": "Baseline physical strain only, with no drug toxicity. The real risks of a long night are overheating, fluid balance in both directions, and sleep loss."
   },
   "alcohol": {
     "id": "alcohol",
@@ -172,9 +212,9 @@
       }
     ],
     "visualizer": {
-      "neurotoxicity": 4,
+      "neurotoxicity": 6,
       "cardiotoxicity": 3,
-      "dehydration": 8,
+      "dehydration": 6,
       "sleep_deprivation": 7,
       "impulsivity": 6,
       "lethality": 6
@@ -185,7 +225,7 @@
         "essential": [
           {
             "short": "Meal: Eat a substantial meal with fat and protein before drinking.",
-            "detail": "Alcohol absorption depends heavily on stomach contents. Drinking on an empty stomach causes rapid absorption through the gastric mucosa, producing a dangerous blood alcohol spike. Fats and proteins delay gastric emptying, forcing slower absorption.",
+            "detail": "Alcohol absorption depends heavily on stomach contents. On an empty stomach the drink passes quickly into the small intestine, where most alcohol is absorbed, producing a sharp blood alcohol spike. Fat and protein slow the stomach emptying, which flattens that spike.",
             "sources": [
               {
                 "label": "PsychonautWiki: Alcohol",
@@ -240,7 +280,7 @@
         "bonus": [
           {
             "short": "Note: Alcohol suppresses ADH, causing significant fluid loss.",
-            "detail": "Without ADH, the kidneys cannot reabsorb water. Every alcoholic drink accelerates dehydration. Relying on beer or cocktails for hydration worsens fatigue and hangover symptoms."
+            "detail": "With less ADH the kidneys hold back less water, mainly while your blood alcohol is rising, so the effect is short-lived rather than continuous. Beer roughly breaks even on fluid; spirits do not, so keep water in the mix."
           }
         ]
       },
@@ -248,11 +288,27 @@
         "essential": [
           {
             "short": "Hydration: 500 ml water + electrolytes before bed.",
-            "detail": "Replacing the electrolyte deficit (sodium and potassium) is the most effective method for preventing severe headaches and muscle spasms. An electrolyte supplement is far more effective than plain water."
+            "detail": "Fluids before bed ease next-day thirst, dry mouth and dizziness. They do not prevent the hangover itself: hangover severity does not track electrolyte levels or how much water someone drank.",
+            "sources": [
+              {
+                "label": "Penning et al. 2010: hangover severity and biochemical markers",
+                "url": "https://pubmed.ncbi.nlm.nih.gov/19943391/"
+              }
+            ]
           },
           {
             "short": "Position: Sleep on your side if intoxicated.",
-            "detail": "The recovery position keeps the airway open. If you vomit while asleep, gravity stops it entering the lungs, which can otherwise be fatal."
+            "detail": "The recovery position lowers the risk of choking on vomit, which can kill. It does not fix alcohol poisoning. If someone cannot be woken, is breathing slowly or irregularly, or looks cold, clammy or blue, call emergency services. Never leave someone to sleep it off alone.",
+            "sources": [
+              {
+                "label": "DanceSafe: Alcohol",
+                "url": "https://dancesafe.org/alcohol/"
+              },
+              {
+                "label": "Drugchecking Berlin: First Aid / Erste Hilfe",
+                "url": "https://drugchecking.berlin/substanzen/erste-hilfe"
+              }
+            ]
           }
         ],
         "bonus": [
@@ -266,15 +322,11 @@
         "essential": [
           {
             "short": "Recovery: Electrolytes and B-vitamins.",
-            "detail": "Alcohol depletes B-vitamins (especially B1/thiamine and B6), which are critical for nervous system function. Replenishing electrolytes and B-vitamins addresses the primary biochemical deficits causing hangover symptoms.",
+            "detail": "Thiamine (B1) loss comes from long-term heavy drinking, not from one night out. A hangover is driven mainly by acetaldehyde and inflammation, so vitamins do not undo it. Reviews of hangover cures found no reliable evidence for B vitamins. Eat and drink normally instead.",
             "sources": [
               {
-                "label": "PsychonautWiki: Alcohol",
-                "url": "https://psychonautwiki.org/wiki/Alcohol"
-              },
-              {
-                "label": "DanceSafe: Alcohol",
-                "url": "https://dancesafe.org/alcohol/"
+                "label": "Systematic review of clinical interventions for alcohol hangover",
+                "url": "https://pubmed.ncbi.nlm.nih.gov/32245988/"
               }
             ]
           },
@@ -292,7 +344,8 @@
       }
     },
     "risks": [
-      "Severe dehydration from ADH suppression",
+      "Alcohol poisoning: unconsciousness, slowed breathing and choking on vomit",
+      "Dehydration and fluid loss from ADH suppression",
       "REM sleep suppression and fragmentation",
       "Behavioral disinhibition",
       "Liver stress and gastric irritation"
@@ -328,7 +381,7 @@
           "max": 5
         },
         "heavy": 5,
-        "note": "Counted in cream chargers (about 8 g each, roughly one balloon), not mg. In grams (PsychonautWiki/TripSit): threshold about 4 g, light 4–8 g, common 8–16 g, strong 16–40 g, heavy 40 g and up. IMPORTANT: these tiers only describe how intense one sitting feels. They do not bound the nerve-damage risk, which tracks the TOTAL number of balloons per session and per week, not the size of any single hit. There is no known safe cumulative amount. People who develop nerve damage are usually heavy or regular users getting through many chargers, or using large catering tanks where it is very easy to lose count. The toxic dose is undefined.",
+        "note": "Counted in cream chargers (about 8 g each, roughly one balloon), not mg. In grams (PsychonautWiki): threshold about 4 g, light 4–8 g, common 8–16 g, strong 16–40 g, heavy 40 g and up. IMPORTANT: these tiers only describe how intense one sitting feels. They do not bound the nerve-damage risk, which tracks the TOTAL number of balloons per session and per week, not the size of any single hit. There is no known safe cumulative amount. People who develop nerve damage are usually heavy or regular users getting through many chargers, or using large catering tanks where it is very easy to lose count. The toxic dose is undefined.",
         "source": "https://psychonautwiki.org/wiki/Nitrous_Oxide"
       }
     },
@@ -355,7 +408,7 @@
         "essential": [
           {
             "short": "Setting: Sit down before you inhale.",
-            "detail": "Nitrous causes an abrupt loss of balance and can make you faint. Sitting down, ideally on the floor and away from roads, water, edges and hard corners, means that if you pass out you slump rather than fall. Falls are the most common nitrous injury.",
+            "detail": "Nitrous causes an abrupt loss of balance and can make you faint. Sitting down, ideally on the floor and away from roads, water, edges and hard corners, means that if you pass out you slump rather than fall. Falls are the most common acute nitrous injury.",
             "sources": [
               {
                 "label": "Crew: Nitrous oxide",
@@ -385,7 +438,7 @@
         "bonus": [
           {
             "short": "Equipment: Use a balloon and a proper cracker or dispenser. Never inhale straight from a charger or tank.",
-            "detail": "Gas leaving a charger or tank is under high pressure and extremely cold, and can freeze (frostbite / cold-burn) the lips, mouth, throat and lungs. Releasing it into a balloon first lets it warm and drop in pressure to something safe to breathe. Cheap plastic dispensers have also burst under pressure.",
+            "detail": "Gas leaving a charger or tank is under high pressure and extremely cold, and leaves the container at around -40 to -55 C, so it can cold-burn the nose, lips, mouth, throat and lungs. The swelling that follows can block the airway, which is life-threatening. Releasing it into a balloon first lets it warm and drop in pressure to something safe to breathe. Cheap plastic dispensers have also burst under pressure.",
             "sources": [
               {
                 "label": "Crew: Nitrous oxide",
@@ -610,7 +663,7 @@
       "dehydration": 1,
       "sleep_deprivation": 1,
       "impulsivity": 3,
-      "lethality": 4
+      "lethality": 3
     },
     "sleep_strategy": "Poppers do not disturb sleep on their own, because the effect is gone within a couple of minutes. Any wakefulness comes from the setting (sex, clubbing, other drugs), not the poppers.",
     "phases": {
@@ -636,7 +689,7 @@
           },
           {
             "short": "⚠️ Inhale only, never swallow: drinking poppers can be fatal.",
-            "detail": "Swallowing alkyl nitrites causes methaemoglobinaemia, in which the blood can no longer carry oxygen, leading to blue skin, coma and death. UK coroners recorded at least 10 swallowing deaths, with methaemoglobin levels of 38–46%. Keep the bottle well away from drinks and out of reach of others.",
+            "detail": "Swallowing alkyl nitrites causes methaemoglobinaemia, in which the blood can no longer carry oxygen, leading to blue skin, coma and death. A UK review found at least 10 swallowing deaths, with methaemoglobin measured in only two of them, at 38% and 46%. Keep the bottle well away from drinks and out of reach of others.",
             "sources": [
               {
                 "label": "Corkery et al. 2025: UK poppers deaths (PMC)",
@@ -823,7 +876,7 @@
         "essential": [
           {
             "short": "Vision: if colours look off, or you notice a central blur or a blind spot, stop using, because poppers can damage the retina.",
-            "detail": "'Poppers maculopathy' is retinal photoreceptor damage linked especially to isopropyl nitrite (more common since the 2006 formula shift). It often improves after stopping but can be lasting, so treat any vision change as a signal to stop.",
+            "detail": "'Poppers maculopathy' is retinal photoreceptor damage linked especially to isopropyl nitrite (more common since the 2007 formula change). It often improves after stopping but can be lasting, so treat any vision change as a signal to stop.",
             "sources": [
               {
                 "label": "PsychonautWiki: Poppers",
@@ -909,20 +962,20 @@
     "dosing": {
       "Smoked": {
         "unit": "mg THC",
-        "threshold": 1,
+        "threshold": 0.4,
         "light": {
+          "min": 0.4,
+          "max": 2
+        },
+        "common": {
           "min": 2,
           "max": 4
         },
-        "common": {
+        "strong": {
           "min": 4,
           "max": 10
         },
-        "strong": {
-          "min": 10,
-          "max": 25
-        },
-        "heavy": 25,
+        "heavy": 10,
         "source": "https://psychonautwiki.org/wiki/Cannabis"
       },
       "Oral (Edible)": {
@@ -934,13 +987,13 @@
         },
         "common": {
           "min": 5,
-          "max": 15
+          "max": 10
         },
         "strong": {
-          "min": 15,
-          "max": 30
+          "min": 10,
+          "max": 25
         },
-        "heavy": 30,
+        "heavy": 25,
         "source": "https://psychonautwiki.org/wiki/Cannabis"
       }
     },
@@ -1013,7 +1066,7 @@
     ],
     "visualizer": {
       "neurotoxicity": 1,
-      "cardiotoxicity": 2,
+      "cardiotoxicity": 3,
       "dehydration": 2,
       "sleep_deprivation": 3,
       "impulsivity": 3,
@@ -1062,7 +1115,7 @@
           },
           {
             "short": "Caution: Avoid mixing with tobacco or alcohol.",
-            "detail": "Cannabis + tobacco amplifies respiratory depression and nausea. Cannabis + alcohol compounds CNS depression and vasodilation, often causing severe vertigo and vomiting.",
+            "detail": "Cannabis does not depress breathing, so tobacco mainly adds dependence, tar and carbon monoxide, plus nausea and dizziness. Alcohol is the riskier mix: it raises blood THC and adds its own vessel widening, so vertigo and vomiting are common.",
             "sources": [
               {
                 "label": "SaferParty: Cannabis",
@@ -1086,7 +1139,7 @@
         "essential": [
           {
             "short": "Appetite stimulation: Avoid overeating processed food before bed.",
-            "detail": "Cannabis stimulates hypothalamic appetite pathways. However, binge-eating processed foods spikes insulin and core body temperature, actively preventing deep restorative sleep."
+            "detail": "Cannabis stimulates hypothalamic appetite pathways. However, a very large late meal is linked to more night waking and a slower drop into sleep, so keep the snack modest."
           }
         ],
         "bonus": [
@@ -1096,7 +1149,7 @@
           },
           {
             "short": "Relaxation: Gentle stretching may help relieve mild tension.",
-            "detail": "Cannabis can cause mild muscle tension. Gentle stretching combined with the substance's natural relaxant properties helps prepare the body for sleep."
+            "detail": "Cannabis relaxes muscles rather than tensing them. Gentle stretching still eases tension you brought with you and helps settle the body for sleep."
           }
         ]
       },
@@ -1104,7 +1157,7 @@
         "essential": [
           {
             "short": "Residual effects: Cannabis aftereffects are common. Hydrate and move.",
-            "detail": "Residual cannabinoids can produce morning fogginess and lethargy. Physical movement and water intake accelerate clearance and help restore alertness."
+            "detail": "Residual cannabinoids can produce morning fogginess and lethargy. Water and movement help you feel more alert, but neither speeds up how fast THC leaves the body: it is stored in fat and cleared over days."
           }
         ],
         "bonus": [
@@ -1118,6 +1171,7 @@
     "risks": [
       "Orthostatic hypotension (faintness/dizziness)",
       "Anxiety or paranoia episodes",
+      "Edible overdose from redosing before the effects arrive",
       "Adulteration with synthetic cannabinoids"
     ],
     "mcda": {
@@ -1151,7 +1205,7 @@
           "max": 60
         },
         "heavy": 60,
-        "note": "These tiers are for VAPORIZED or smoked freebase DMT. Swallowed DMT does nothing on its own, because gut enzymes (monoamine oxidase) destroy it, so oral use only works combined with an MAOI (ayahuasca, pharmahuasca or changa). That is a completely different experience: much longer, roughly 2–10 h depending on the preparation, dependent on the MAOI, and with a far riskier interaction profile (see risks and combinations). Vaporized strength varies a lot with purity and technique, and a full 'breakthrough' is often 40 mg or more, though poor vaporizing wastes material. Figures follow PsychonautWiki. TripSit lists somewhat lower tiers (common about 15–25 mg), which reflects real-world variance, so start low.",
+        "note": "These tiers are for VAPORIZED or smoked freebase DMT. Swallowed DMT does nothing on its own, because gut enzymes (monoamine oxidase) destroy it, so oral use only works combined with an MAOI (ayahuasca or pharmahuasca; changa is smoked, not swallowed). That is a completely different experience: much longer, roughly 2–10 h depending on the preparation, dependent on the MAOI, and with a far riskier interaction profile (see risks and combinations). Vaporized strength varies a lot with purity and technique, and a full 'breakthrough' is often 40 mg or more, though poor vaporizing wastes material. Figures follow PsychonautWiki. TripSit lists somewhat lower tiers (common about 15–25 mg), which reflects real-world variance, so start low.",
         "source": "https://psychonautwiki.org/wiki/DMT"
       }
     },
@@ -1192,7 +1246,7 @@
     ],
     "visualizer": {
       "neurotoxicity": 0,
-      "cardiotoxicity": 2,
+      "cardiotoxicity": 3,
       "dehydration": 2,
       "sleep_deprivation": 2,
       "impulsivity": 2,
@@ -1246,15 +1300,15 @@
           },
           {
             "short": "⚠️ Lithium and tramadol: Do not combine, because both sharply raise seizure risk.",
-            "detail": "Analysis of large numbers of experience reports links classic psychedelics taken with lithium to a high rate of seizures and psychosis; TripSit rates this pairing Dangerous. Tramadol independently lowers the seizure threshold (TripSit: Unsafe). Combining either with DMT risks a seizure.",
+            "detail": "In 62 online reports of a classic psychedelic taken with lithium, 47% involved seizures and 39% needed medical care. TripSit rates this pairing Dangerous. Tramadol independently lowers the seizure threshold (TripSit: Unsafe). Combining either with DMT risks a seizure.",
             "sources": [
               {
                 "label": "Nayak et al. 2021: Psychedelics + Lithium and Seizures",
                 "url": "https://doi.org/10.1055/a-1524-2794"
               },
               {
-                "label": "TripSit: DMT",
-                "url": "https://wiki.tripsit.me/wiki/DMT"
+                "label": "TripSit: Drug Combinations",
+                "url": "https://combo.tripsit.me"
               },
               {
                 "label": "PsychonautWiki: DMT",
@@ -1373,7 +1427,7 @@
         "bonus": [
           {
             "short": "Redosing: Effects fade fast and tolerance barely builds, but each dose repeats the hit to your heart.",
-            "detail": "DMT shows little acute tolerance, so redosing 'works' in a way it wouldn't for most psychedelics. But every dose repeats the sharp heart-rate and blood-pressure spike, so space doses out and don't chase the experience back-to-back.",
+            "detail": "DMT shows little acute tolerance, so redosing 'works' in a way it would not for most psychedelics. Blood pressure still rises with each dose, though the heart-rate jump shrinks on quick repeats, so space doses out and do not chase the experience back to back.",
             "sources": [
               {
                 "label": "PsychonautWiki: DMT (tolerance & toxicity)",
@@ -1415,10 +1469,10 @@
       }
     },
     "risks": [
-      "Overwhelming / frightening breakthrough experience",
+      "Overwhelming or frightening breakthrough; can trigger psychosis in those predisposed",
       "Total loss of motor control at peak (fall / injury risk)",
       "Sharp transient rise in heart rate & blood pressure",
-      "Serotonin syndrome / hypertensive crisis if combined with an MAOI (ayahuasca) or serotonergic meds",
+      "Serotonin syndrome or blood-pressure crisis: an MAOI (ayahuasca) plus SSRIs, stimulants or tyramine-rich foods",
       "Seizure risk with lithium or tramadol"
     ],
     "mcda": null,
@@ -1551,7 +1605,7 @@
         "essential": [
           {
             "short": "Stomach: Best to avoid eating in the ~90 minutes before, since ketamine can cause nausea and vomiting.",
-            "detail": "Ketamine frequently induces nausea and vomiting. At dissociative doses, the gag reflex is severely suppressed. Vomiting while dissociated can lead to aspiration and asphyxiation.",
+            "detail": "Ketamine frequently causes nausea and vomiting. At dissociative doses you cannot move, sit up or clear your own airway, so vomit can block it. Being on your side is what protects you.",
             "sources": [
               {
                 "label": "PsychonautWiki: Ketamine",
@@ -1565,13 +1619,13 @@
           },
           {
             "short": "Safety: Test your substance.",
-            "detail": "Ketamine can be adulterated with research chemicals or other dissociatives with longer durations and different safety profiles. Reagent testing or drug-checking services help verify identity."
+            "detail": "Powder sold as ketamine is often a close analogue such as 2-FDCK or DCK. Standard reagents cannot tell these apart from ketamine, so use a Morris reagent kit or a lab drug-checking service."
           }
         ],
         "bonus": [
           {
             "short": "Preparation: Crush to fine powder to protect nasal tissue.",
-            "detail": "Crystalline shards are poorly absorbed and cause severe micro-abrasions, leading to chronic sinus irritation, nosebleeds, and bacterial infections."
+            "detail": "Large crystals dissolve slowly and scratch the nasal lining. Repeated snorting of coarse powder causes irritation and nosebleeds, so crush it fine first."
           }
         ]
       },
@@ -1598,7 +1652,7 @@
           },
           {
             "short": "Balance: Sit down immediately if you feel unsteady.",
-            "detail": "Ketamine causes severe ataxia (loss of motor control) and spatial disorientation. Falls are the most common injury. If balance feels impaired, sit in a safe environment immediately."
+            "detail": "Ketamine causes severe ataxia (loss of motor control) and spatial disorientation. Falling over is a common way people get hurt. If balance feels impaired, sit in a safe environment immediately."
           }
         ]
       },
@@ -1616,7 +1670,7 @@
         "bonus": [
           {
             "short": "Supplements: Delay magnesium until the next day.",
-            "detail": "Ketamine is itself a potent NMDA antagonist and muscle relaxant. Taking magnesium (which also acts via NMDA antagonism) immediately after use is redundant and may increase morning lethargy."
+            "detail": "Magnesium is used against MDMA jaw clenching, which ketamine does not cause. Ketamine also raises muscle tone rather than relaxing it, so magnesium does nothing useful on the night. Leave it for the next day if you want it."
           }
         ]
       },
@@ -1638,7 +1692,8 @@
     "risks": [
       "Bladder damage (ketamine cystitis)",
       "Aspiration from vomiting while dissociated",
-      "Physical injury due to anesthesia",
+      "Deep sedation, vomiting and choking if mixed with alcohol, GHB/GBL, benzos or opioids",
+      "Physical injury due to anaesthesia",
       "Loss of motor control"
     ],
     "mcda": {
@@ -1724,11 +1779,11 @@
         "essential": [
           {
             "short": "Test: Ehrlich reagent kit (rule out NBOMe). Additionally, DOx compounds (effects lasting up to 48 hours) are also substituted as LSD.",
-            "detail": "The illicit market often substitutes LSD with 25I-NBOMe or DOx compounds, which can cause fatal heart events, seizures and severe narrowing of blood vessels at doses under a milligram. An Ehrlich reagent test turns purple for LSD. UK festival testing has repeatedly found NBOMe pills sold as LSD, carrying a real overdose risk, and DOx compounds with effects lasting up to 48 hours.",
+            "detail": "The illicit market sometimes substitutes LSD with 25I-NBOMe or DOx compounds, which can cause fatal heart events, seizures and severe narrowing of blood vessels at doses under a milligram. An Ehrlich reagent test turns purple for LSD. The Loop found 25x-NBOMe sold as LSD at Boomtown 2018 with no LSD in it. NBOMe and DOx are the main blotter adulterants, and DOx effects can last 48 hours.",
             "sources": [
               {
-                "label": "DanceSafe: LSD",
-                "url": "https://dancesafe.org/lsd/"
+                "label": "DanceSafe: Always check your LSD",
+                "url": "https://dancesafe.org/08082017-testittuesday-alert-always-check-your-lsd/"
               },
               {
                 "label": "PsychonautWiki: LSD",
@@ -1757,7 +1812,7 @@
         "essential": [
           {
             "short": "Nutrition: Have fruit or smoothies regularly, because hunger signals are suppressed.",
-            "detail": "LSD induces intense sympathetic arousal that entirely suppresses hunger and thirst cues. Going 10–12 hours without eating risks sudden hypoglycemia."
+            "detail": "LSD blunts appetite, less strongly than stimulants do, and it is easy to simply forget to eat. Going 10 to 12 hours without food leaves you shaky and drained."
           },
           {
             "short": "Hydration: Set reminders to drink.",
@@ -1775,7 +1830,7 @@
         "essential": [
           {
             "short": "Mindset: Accept wakefulness. Do not try to force sleep.",
-            "detail": "LSD's binding to 5-HT2A receptors keeps the CNS highly stimulated long after subjective effects diminish. Attempting to force sleep is physiologically impossible and causes post-trip anxiety."
+            "detail": "Residual stimulation and difficulty sleeping are common for hours after the trip fades. Forcing sleep just builds frustration, so rest without expecting to sleep."
           },
           {
             "short": "Food: Protein + carbohydrates to restore caloric deficit.",
@@ -1799,23 +1854,23 @@
         "bonus": [
           {
             "short": "Afterglow: Expect residual visual effects and altered cognition for up to 24 hours.",
-            "detail": "LSD's long-acting serotonergic effects can persist well beyond the subjective peak. Residual perceptual changes (mild HPPD-like effects), cognitive reorganisation, and mood fluctuations are common on the recovery day. Avoid demanding cognitive or social tasks."
+            "detail": "Mild residual visuals, tiredness and mood swings are common the next day. Lasting HPPD is a separate and rare condition, not the same thing."
           }
         ]
       }
     },
     "risks": [
       "Psychological crisis (challenging trip)",
+      "Accidents from impaired judgement",
       "Peripheral vasoconstriction",
-      "Complete insomnia (8–12 hours)",
-      "Severe caloric deficit"
+      "Insomnia for 10 to 18 hours"
     ],
     "mcda": {
       "score": 7,
       "rank": 18,
       "of": 20
     },
-    "visualizer_note": "Physiologically very safe (near-zero overdose risk); the danger is psychological, plus total insomnia during effects. NBOMe substitutes are the real lethal risk."
+    "visualizer_note": "Physically very safe, with near-zero overdose risk. The danger is psychological, plus long insomnia during effects. Accidents and NBOMe sold as acid are the real lethal risks."
   },
   "mushrooms": {
     "id": "mushrooms",
@@ -1868,8 +1923,8 @@
             "label": "Peak"
           },
           "come_down": {
-            "min": 1,
-            "max": 2,
+            "min": 2.5,
+            "max": 3.5,
             "label": "Come-down"
           },
           "after_effects": {
@@ -1894,7 +1949,7 @@
         "essential": [
           {
             "short": "Set & Setting: Critical for preventing challenging trips.",
-            "detail": "Psilocybin amplifies emotions and environmental stimuli. Ensure a positive mindset and a safe, comfortable environment. Have a trusted trip-sitter present if possible."
+            "detail": "Psilocybin amplifies emotions and environmental stimuli. Ensure a positive mindset and a safe, comfortable environment. Have a trusted trip-sitter present if possible. Best avoided if you or a close relative has had psychosis or bipolar disorder."
           },
           {
             "short": "Dose: Start low (1–2 g dried) to gauge potency.",
@@ -1904,7 +1959,7 @@
         "bonus": [
           {
             "short": "Stomach: Light meal or fasting to reduce nausea.",
-            "detail": "Nausea on the come-up is mainly serotonergic, because psilocin stimulates serotonin receptors in the gut. The tough fungal fibre may play a secondary part. An empty or light stomach reduces the volume that can come back up. Ginger is a well-established anti-nausea remedy, and a tea or lemon-tek is often gentler than eating whole mushrooms.",
+            "detail": "Nausea on the come-up comes partly from psilocin acting on serotonin receptors in the gut and partly from the tough fungal fibre. An empty or light stomach reduces the volume that can come back up. Ginger is a well-established anti-nausea remedy, and a tea or lemon-tek is often gentler than eating whole mushrooms.",
             "sources": [
               {
                 "label": "PsychonautWiki: Psilocybin",
@@ -1957,15 +2012,15 @@
         "bonus": [
           {
             "short": "Rest: Allow for a relaxed schedule.",
-            "detail": "Psychological processing is energy-intensive. No specific physical hangover, but the mind may be tired."
+            "detail": "A mild headache is common as the effects fade and can last into the next day. The mind may be tired, but there is no physical hangover of the alcohol kind."
           }
         ]
       }
     },
     "risks": [
-      "Psychological distress (challenging trip)",
+      "Psychological distress (challenging trip); can trigger psychosis in vulnerable people",
       "Nausea and vomiting",
-      "Accidental poisoning (if foraging)",
+      "Fatal poisoning from misidentified wild mushrooms",
       "Confusion and disorientation"
     ],
     "mcda": {
@@ -2051,25 +2106,21 @@
         "essential": [
           {
             "short": "Test: Use a reagent kit; fentanyl strips are a sensible extra precaution.",
-            "detail": "In Europe, fentanyl contamination of cocaine is uncommon, unlike parts of North America, but it has caused deaths, so fentanyl test strips are a cheap and worthwhile precaution rather than a guarantee. More useful for identity and purity is a reagent kit (Marquis, Mecke or Morris) or a drug-checking service, which also flags common cutting agents.",
+            "detail": "In Europe, fentanyl contamination of cocaine is uncommon, unlike parts of North America, but it has caused deaths, so fentanyl test strips are a cheap precaution rather than a guarantee. A reagent kit (Morris, plus Marquis and Liebermann) only tells you whether it is cocaine. It cannot measure purity and will not reliably catch cuts such as levamisole or lidocaine, so use a lab drug-checking service for that.",
             "sources": [
               {
-                "label": "DanceSafe: Cocaine",
-                "url": "https://dancesafe.org/cocaine/"
+                "label": "DanceSafe: How to use reagent kits",
+                "url": "https://dancesafe.org/testing-kit-instructions/"
               },
               {
-                "label": "PsychonautWiki: Cocaine",
-                "url": "https://psychonautwiki.org/wiki/Cocaine"
-              },
-              {
-                "label": "Drugchecking Berlin: Cocaine/Crack",
+                "label": "Drugchecking Berlin: Kokain",
                 "url": "https://drugchecking.berlin/substanzen/kokain-crack"
               }
             ]
           },
           {
             "short": "⚠️ Levamisole: The most common dangerous cocaine adulterant.",
-            "detail": "A large share of street cocaine is cut with levamisole (a veterinary deworming agent). It can suppress the immune system (agranulocytosis) and cause skin necrosis and vasculitis. It cannot be seen or tasted; only lab-based drug checking detects it reliably. Unexplained sores, mouth ulcers, fever, or repeated infections after cocaine use warrant medical attention.",
+            "detail": "Some street cocaine is cut with levamisole, a veterinary deworming agent. European drug checking finds it in only a few percent of samples, while US rates are much higher. It can suppress white blood cells (agranulocytosis) and cause painful skin lesions, and the effect builds up with repeated use.",
             "sources": [
               {
                 "label": "PsychonautWiki: Cocaine",
@@ -2087,7 +2138,7 @@
           },
           {
             "short": "Hygiene: Use your own straw. Never share (Hepatitis C risk).",
-            "detail": "Micro-abrasions in the nasal cavity can transmit blood-borne pathogens like Hepatitis C. Sharing straws or bills is a primary vector for transmission. Use a personal, clean tool."
+            "detail": "Micro-abrasions in the nasal cavity can transmit blood-borne pathogens like Hepatitis C. Sharing straws or bills is a plausible route, and hepatitis C has been found on used sniffing tools. Use a personal, clean tool."
           }
         ],
         "bonus": [
@@ -2102,7 +2153,7 @@
         "essential": [
           {
             "short": "⚠️ Alcohol danger: Cocaethylene formation is lethal.",
-            "detail": "Combining cocaine + alcohol forms cocaethylene in the liver. This metabolite is significantly more cardiotoxic than cocaine alone, exponentially increasing the risk of sudden cardiac death.",
+            "detail": "Combining cocaine + alcohol forms cocaethylene in the liver. This metabolite is significantly more cardiotoxic than cocaine alone, raising the risk of sudden cardiac death roughly 18 to 25 fold.",
             "sources": [
               {
                 "label": "PsychonautWiki: Cocaine",
@@ -2150,7 +2201,7 @@
         "bonus": [
           {
             "short": "Nasal care: Thorough saline rinse.",
-            "detail": "Flushing the sinuses prevents residual caustic chemicals from damaging the septum overnight."
+            "detail": "Rinsing the nose clears leftover powder and keeps the lining moist. Septum damage comes mainly from repeated narrowing of the blood vessels starving the tissue of blood, so a rinse helps but does not undo that."
           }
         ]
       },
@@ -2158,13 +2209,19 @@
         "essential": [
           {
             "short": "Recovery: Rest and hydration.",
-            "detail": "Dopamine receptors are temporarily downregulated. Expect low mood and irritability. Sleep and time are the primary recovery mechanisms."
+            "detail": "Dopamine is temporarily depleted after a heavy session. Expect low mood and irritability. Sleep and time are the primary recovery mechanisms."
           }
         ],
         "bonus": [
           {
             "short": "Nasal check: Inspect for bleeding or scabs.",
-            "detail": "Apply vitamin E oil to soothe tissue. Persistent bleeding or crusting may indicate significant septum damage."
+            "detail": "Use a water-based saline gel rather than an oil. Oils repeatedly inhaled into the nose can settle in the lungs and cause lipoid pneumonia.",
+            "sources": [
+              {
+                "label": "StatPearls: Lipoid pneumonia",
+                "url": "https://www.ncbi.nlm.nih.gov/books/NBK556154/"
+              }
+            ]
           }
         ]
       }
@@ -2172,7 +2229,7 @@
     "risks": [
       "Severe cardiotoxicity (heart attack)",
       "Cocaethylene formation (with alcohol)",
-      "Adulteration (commonly levamisole; occasionally fentanyl)",
+      "Adulteration (levamisole, phenacetin, lidocaine, caffeine; rarely fentanyl in Europe)",
       "Compulsive redosing"
     ],
     "mcda": {
@@ -2192,9 +2249,28 @@
     "dosing": {
       "Oral": {
         "unit": "mg",
-        "threshold": 3,
+        "threshold": 5,
         "light": {
           "min": 5,
+          "max": 10
+        },
+        "common": {
+          "min": 10,
+          "max": 25
+        },
+        "strong": {
+          "min": 25,
+          "max": 50
+        },
+        "heavy": 50,
+        "note": "Street speed varies a lot in purity, so use a drug-checking service. SaferParty advises a ceiling of about 50 mg per 12 hours. Wet amphetamine paste must be fully dried before dosing, because leftover solvents are toxic.",
+        "source": "https://psychonautwiki.org/wiki/Amphetamine"
+      },
+      "Insufflated": {
+        "unit": "mg",
+        "threshold": 4,
+        "light": {
+          "min": 6,
           "max": 15
         },
         "common": {
@@ -2206,25 +2282,6 @@
           "max": 50
         },
         "heavy": 50,
-        "note": "Street speed varies a lot in purity, so use a drug-checking service. SaferParty advises a ceiling of about 50 mg per 12 hours. Wet amphetamine paste must be fully dried before dosing, because leftover solvents are toxic.",
-        "source": "https://psychonautwiki.org/wiki/Amphetamine"
-      },
-      "Insufflated": {
-        "unit": "mg",
-        "threshold": 2,
-        "light": {
-          "min": 3,
-          "max": 10
-        },
-        "common": {
-          "min": 10,
-          "max": 25
-        },
-        "strong": {
-          "min": 25,
-          "max": 40
-        },
-        "heavy": 40,
         "source": "https://psychonautwiki.org/wiki/Amphetamine"
       }
     },
@@ -2236,8 +2293,8 @@
         "isDefault": true,
         "phases": {
           "onset": {
-            "min": 0.25,
-            "max": 0.5,
+            "min": 0.5,
+            "max": 1,
             "label": "Onset"
           },
           "come_up": {
@@ -2273,18 +2330,18 @@
             "label": "Onset"
           },
           "come_up": {
-            "min": 0.08,
-            "max": 0.25,
+            "min": 0.5,
+            "max": 1.5,
             "label": "Come-up"
           },
           "peak": {
-            "min": 2,
-            "max": 4,
+            "min": 1,
+            "max": 2,
             "label": "Peak"
           },
           "come_down": {
-            "min": 1,
-            "max": 2,
+            "min": 1.5,
+            "max": 3,
             "label": "Come-down"
           },
           "after_effects": {
@@ -2309,13 +2366,13 @@
         "essential": [
           {
             "short": "Meal: Eat a large, nutritious meal beforehand, because your appetite will be fully suppressed.",
-            "detail": "Amphetamines suppress appetite entirely and make swallowing difficult. A nutritionally dense meal rich in complex carbohydrates and protein is the only way to ensure adequate energy for hours of stimulated activity."
+            "detail": "Amphetamines strongly suppress appetite and cause dry mouth, so eating during the session is hard. A meal of complex carbohydrates and protein beforehand is the easiest way to bank energy for hours of stimulated activity."
           }
         ],
         "bonus": [
           {
             "short": "Supplements (optional): some people pre-load magnesium for vasoconstriction and muscle tension.",
-            "detail": "Amphetamines cause severe vasoconstriction and muscle tension. Pre-loading magnesium provides a buffer against these effects and supports cardiovascular function."
+            "detail": "Amphetamines cause vasoconstriction and muscle tension. Magnesium is often taken for this, but no good human study shows an oral supplement blunts it."
           }
         ]
       },
@@ -2323,8 +2380,8 @@
         "focus": "Cardiac safety and core temperature management.",
         "essential": [
           {
-            "short": "Rest: Take regular breaks (roughly hourly is a good target) to let heart rate and temperature settle.",
-            "detail": "Amphetamines put intense, continuous strain on the heart and blood vessels, raising heart rate, blood pressure and body temperature. The dopamine flood masks pain and tiredness.",
+            "short": "Rest and fluids: break roughly hourly to cool down, and sip about half a litre an hour.",
+            "detail": "Amphetamines put intense, continuous strain on the heart and blood vessels, raising heart rate, blood pressure and body temperature, while the dopamine flood masks pain and tiredness. Regular breaks out of the heat let all three settle, and about half a litre of water or an isotonic drink an hour covers what you sweat out without overdoing it.",
             "sources": [
               {
                 "label": "PsychonautWiki: Amphetamine",
@@ -2332,13 +2389,13 @@
               },
               {
                 "label": "SaferParty: Amphetamin",
-                "url": "https://www.saferparty.ch/substanzen/amphetamin"
+                "url": "https://www.saferparty.ch/substanzen/amphetamin-speed"
               }
             ]
           },
           {
             "short": "Pain and fatigue are masked, so pace yourself and try not to push through strain or injury.",
-            "detail": "The dopamine flood completely blocks pain and fatigue perception. Users can sustain joint damage, muscle tears, or exertional heatstroke without any subjective warning signs.",
+            "detail": "Dopamine and noradrenaline release blunts pain and fatigue signals. The warnings get much quieter, so people push into joint damage, muscle tears or overheating before they notice.",
             "sources": [
               {
                 "label": "PsychonautWiki: Amphetamine",
@@ -2346,13 +2403,13 @@
               },
               {
                 "label": "SaferParty: Amphetamin",
-                "url": "https://www.saferparty.ch/substanzen/amphetamin"
+                "url": "https://www.saferparty.ch/substanzen/amphetamin-speed"
               }
             ]
           },
           {
-            "short": "⚠️ Never combine with MAOIs or serotonergic antidepressants.",
-            "detail": "Amphetamine with an MAOI, including moclobemide or the herb Syrian rue, can cause a dangerous blood-pressure surge and serotonin syndrome, which can be fatal. With SSRIs or SNRIs the risk of serotonin toxicity also rises. If you take any antidepressant or MAOI, do not use amphetamine without medical advice.",
+            "short": "⚠️ Never combine with MAOIs. Other antidepressants: ask a doctor first.",
+            "detail": "Amphetamine with an MAOI, including moclobemide or the herb Syrian rue, can cause a dangerous blood-pressure surge, which can be fatal. Do not use amphetamine at all with an MAOI. SSRIs and SNRIs are a much smaller concern: TripSit rates that pairing low risk and doctors often prescribe the two together, so ask your doctor rather than assume it is unsafe.",
             "sources": [
               {
                 "label": "Drugchecking Berlin: Amphetamine/Speed",
@@ -2382,17 +2439,17 @@
         "bonus": [
           {
             "short": "Supplements (optional): vitamin C for general recovery, not to 'flush out' the drug.",
-            "detail": "Gram-level vitamin C does not meaningfully acidify urine. That would need very high doses, around 12 g a day, with their own risks. So it does not speed up amphetamine clearance or shorten the comedown, despite the common claim. It is still useful for general antioxidant and nutrient replacement after a depleting night.",
+            "detail": "Gram-level vitamin C does not meaningfully acidify urine. Studies find even 4 g a day barely shifts it. So it does not speed up amphetamine clearance or shorten the comedown, despite the common claim. It is still useful for general antioxidant and nutrient replacement after a depleting night.",
             "sources": [
               {
                 "label": "SaferParty: Amphetamin",
-                "url": "https://www.saferparty.ch/substanzen/amphetamin"
+                "url": "https://www.saferparty.ch/substanzen/amphetamin-speed"
               }
             ]
           },
           {
             "short": "Supplements (optional): magnesium for muscle tightness.",
-            "detail": "Amphetamine-induced vasoconstriction causes severe muscle cramping and tension. Magnesium directly counteracts this by promoting smooth muscle relaxation."
+            "detail": "Jaw clenching and muscle tension come from the drug acting on the nervous system, not from narrowed blood vessels. Magnesium helps some people and replaces what a heavy night depletes, but the trial evidence for cramps is weak."
           }
         ]
       },
@@ -2406,7 +2463,7 @@
         "bonus": [
           {
             "short": "Recovery (optional): some people take L-Tyrosine the next day (a dopamine precursor; evidence is limited).",
-            "detail": "L-Tyrosine is the amino acid precursor to dopamine. Supplementing the next day provides building blocks for faster dopamine store replenishment."
+            "detail": "Tyrosine is what dopamine is built from, but the enzyme that converts it is already saturated at normal dietary levels, so extra tyrosine has not been shown to speed recovery."
           }
         ]
       }
@@ -2546,7 +2603,7 @@
       "impulsivity": 5,
       "lethality": 5
     },
-    "sleep_strategy": "Usually possible 6+ hours after last dose. Melatonin helps.",
+    "sleep_strategy": "Expect little or broken sleep the first night. It gets easier once the effects fully fade.",
     "phases": {
       "before": {
         "essential": [
@@ -2586,7 +2643,7 @@
           },
           {
             "short": "⚠️ CRITICAL: Pill identity & content are extremely unreliable. Samples sold as 'MDMA' may be caffeine, other stimulants, or contain no MDMA at all (at one 2021 UK festival, ~30% of 'MDMA' samples were caffeine). High-dose pills (250–300+ mg) circulate widely. Always test before consuming.",
-            "detail": "Identical-looking pills can contain completely different drugs. One batch might be genuine MDMA, and the next batch with the same logo might be caffeine, a synthetic cathinone (4-CMC), an NBOMe compound, PMA/PMMA, or even a nitazene opioid, which have been linked to deaths. Many modern pills also exceed 200 mg, far above the 150 mg guideline. Appearance and branding are NOT reliable, so test with a reagent kit or a drug-checking service.",
+            "detail": "Identical-looking pills can contain completely different drugs. One batch might be genuine MDMA, and the next batch with the same logo might be caffeine, a synthetic cathinone (4-CMC), an NBOMe compound, PMA/PMMA, or even a nitazene opioid, which have been linked to deaths. Many modern pills also exceed 200 mg, well above the 1.3 to 1.5 mg per kg body-weight ceiling. Appearance and branding are NOT reliable, so test with a reagent kit or a drug-checking service.",
             "sources": [
               {
                 "label": "The Loop: Drug Alerts",
@@ -2620,8 +2677,8 @@
         "focus": "Regulating core temperature and water intake.",
         "essential": [
           {
-            "short": "Hydration limit: 250 ml (1 cup) per hour if resting, 500 ml if active. Electrolyte drinks only (not plain water).",
-            "detail": "MDMA promotes the release of antidiuretic hormone (ADH), completely halting urination. Drinking excess water dilutes blood sodium rapidly, leading to MDMA-associated hyponatremia. This condition causes brain swelling and can be fatal; reported fatal cases have disproportionately involved women, who appear more susceptible. Use electrolyte-containing sports drinks, not plain water alone.",
+            "short": "Hydration: 300 to 500 ml an hour, at the higher end if dancing. Not too much, not too little.",
+            "detail": "MDMA raises antidiuretic hormone (ADH), so the kidneys hold on to water and urinating becomes difficult. Drinking past that point dilutes your blood sodium and causes hyponatremia, which has killed people at events. Electrolyte drinks or salty snacks are better than plain water alone, but the amount matters more than what is in it.",
             "sources": [
               {
                 "label": "TripSit: MDMA",
@@ -2667,7 +2724,7 @@
         "bonus": [
           {
             "short": "Supplements (optional): some people take vitamin C and magnesium during the roll.",
-            "detail": "Vitamin C provides ongoing antioxidant support. Magnesium helps prevent severe jaw clenching and muscle tension."
+            "detail": "Vitamin C is taken as an antioxidant and magnesium for jaw clenching. Neither has been tested in people for this, so treat both as optional."
           }
         ]
       },
@@ -2675,7 +2732,7 @@
         "essential": [
           {
             "short": "⚠️ Danger: Do NOT take 5-HTP within 24 hours of MDMA.",
-            "detail": "Taking 5-HTP while MDMA is still active creates a severe risk of serotonin syndrome, an acute, life-threatening state caused by too much serotonin. DanceSafe advises waiting at least 8 hours; we advise 24 hours to be safe. The brain needs up to 4 weeks to rebuild normal serotonin levels.",
+            "detail": "Taking 5-HTP while MDMA is still active can push serotonin too high and bring on mild to moderate serotonin syndrome. DanceSafe advises waiting at least 8 hours; we advise 24 hours to be safe. The brain needs up to 4 weeks to rebuild normal serotonin levels.",
             "sources": [
               {
                 "label": "checkit! Wien: Ecstasy/MDMA",
@@ -2715,11 +2772,11 @@
         "bonus": [
           {
             "short": "Recovery (optional): some people take 5-HTP with green tea extract (EGCG) after 24 h to support serotonin recovery.",
-            "detail": "After 24 hours, taking 5-HTP with EGCG (which ensures conversion happens in the brain, not the gut) accelerates the regeneration of depleted serotonin stores."
+            "detail": "The idea is that EGCG slows the breakdown of 5-HTP in the gut so more of it reaches the brain. This is untested in people, and at best it eases the low mood rather than speeding recovery. Wait a full 24 hours after your last dose either way."
           },
           {
             "short": "Nutrition: High-tryptophan foods.",
-            "detail": "Eggs, salmon, and turkey provide the amino acid building blocks for serotonin synthesis."
+            "detail": "Regular meals help you recover, but food alone does not raise brain serotonin much: the tryptophan in a high-protein meal competes with the other amino acids in it for the same route into the brain."
           }
         ]
       }
@@ -2727,12 +2784,12 @@
     "risks": [
       "Hyponatremia (water intoxication from ADH release)",
       "Hyperthermia (overheating)",
-      "Serotonin syndrome (if interacting with antidepressants MAOI/SSRI)",
+      "Serotonin syndrome with MAOIs (SSRIs mostly just blunt the effect)",
       "Severe serotonin depletion (neurochemical crash)"
     ],
     "mcda": {
       "score": 9,
-      "rank": 16,
+      "rank": 17,
       "of": 20
     },
     "visualizer_note": "Neurotoxic and dehydrating; the main killers are hyperthermia and water intoxication (hyponatremia), not a simple 'overdose'."
@@ -2747,21 +2804,21 @@
     "dosing": {
       "Oral": {
         "unit": "mg",
-        "threshold": 10,
+        "threshold": 20,
         "light": {
           "min": 20,
-          "max": 100
+          "max": 50
         },
         "common": {
-          "min": 100,
-          "max": 300
+          "min": 50,
+          "max": 150
         },
         "strong": {
-          "min": 300,
+          "min": 150,
           "max": 500
         },
         "heavy": 500,
-        "note": "1 cup coffee ≈ 90–200 mg. Max recommended: 400 mg/day.",
+        "note": "One cup of coffee is roughly 90 to 200 mg. EFSA: no safety concern up to 200 mg in one dose, or 400 mg across a day.",
         "source": "https://psychonautwiki.org/wiki/Caffeine"
       }
     },
@@ -2803,8 +2860,8 @@
     "visualizer": {
       "neurotoxicity": 0,
       "cardiotoxicity": 2,
-      "dehydration": 3,
-      "sleep_deprivation": 6,
+      "dehydration": 2,
+      "sleep_deprivation": 4,
       "impulsivity": 1,
       "lethality": 1
     },
@@ -2814,13 +2871,13 @@
         "essential": [
           {
             "short": "Timing: Stop intake 6–8 hours before planned sleep.",
-            "detail": "Caffeine has a half-life of 5–7 hours in healthy adults. Consuming 200 mg+ late ensures active concentrations well past dawn, entirely preventing slow-wave sleep required for muscle repair."
+            "detail": "Caffeine has a half-life of about 5 hours in healthy adults, ranging from 2 to 12 depending on the person. Taking 200 mg late leaves plenty still active at bedtime, which cuts deep slow-wave sleep and the tissue repair it supports."
           }
         ],
         "bonus": [
           {
             "short": "Hydration: Offset the diuretic effect.",
-            "detail": "Caffeine acts as both a mild diuretic and a peripheral vasoconstrictor. Consistent water intake alongside caffeine prevents compounding dehydration from physical activity."
+            "detail": "Drinking water alongside caffeine is still wise in the heat, though caffeine itself does not worsen the fluid loss from exercise."
           }
         ]
       },
@@ -2828,8 +2885,8 @@
         "focus": "Timing and moderation.",
         "essential": [
           {
-            "short": "Limit: Under 400 mg total (approximately 4 cups).",
-            "detail": "Above 400 mg/day, caffeine significantly increases the risk of anxiety, tremors, and gastrointestinal distress. Individual tolerance varies, but ~400 mg/day for healthy adults is the limit set by food-safety authorities (EFSA, US FDA).",
+            "short": "Limit: 200 mg at once, up to 400 mg across the day.",
+            "detail": "EFSA sees no safety concern up to 200 mg in a single dose, or 400 mg spread across a day, and the US FDA uses the same 400 mg daily figure. Above that, anxiety, tremor and stomach upset get more likely. Tolerance varies a lot between people.",
             "sources": [
               {
                 "label": "EFSA: Caffeine safety (2015)",
@@ -2863,7 +2920,7 @@
         "bonus": [
           {
             "short": "Hydration: Water with every caffeinated drink.",
-            "detail": "The diuretic effect of caffeine combined with sweat loss accelerates dehydration. Matching each caffeinated beverage with water maintains fluid balance."
+            "detail": "Caffeine's diuretic effect is mild, and studies show exercise cancels it out, so sweat is the real fluid loss. Drink for the dancing, not for the coffee."
           }
         ]
       },
@@ -2871,7 +2928,7 @@
         "essential": [
           {
             "short": "Sleep: If taken late, accept reduced sleep quality.",
-            "detail": "Caffeine blocks adenosine receptors, the signals that tell the brain it is tired. If caffeine is still active at bedtime, deep sleep will be badly impaired."
+            "detail": "Caffeine blocks the receptors for adenosine, the signal that tells the brain it is tired. If caffeine is still active at bedtime, deep slow-wave sleep is measurably reduced."
           }
         ],
         "bonus": [
@@ -2890,8 +2947,8 @@
         ],
         "bonus": [
           {
-            "short": "Timing: Wait 90 minutes before first coffee (cortisol reset).",
-            "detail": "The cortisol awakening response naturally peaks 30–90 minutes after waking. Consuming caffeine during this window interferes with the natural energy signal and creates dependency."
+            "short": "Timing: Delaying the first coffee is popular but unproven.",
+            "detail": "The cortisol wake-up rise peaks about 30 to 45 minutes after waking. No trial shows that coffee in that window blunts it or causes dependence. Dependence comes from regular daily use, not from the timing of the first cup."
           }
         ]
       }
@@ -3241,7 +3298,7 @@
       }
     ],
     "visualizer": {
-      "neurotoxicity": 8,
+      "neurotoxicity": 5,
       "cardiotoxicity": 8,
       "dehydration": 6,
       "sleep_deprivation": 7,
@@ -3258,7 +3315,7 @@
             "sources": [
               {
                 "label": "SaferParty: 4-MMC",
-                "url": "https://www.saferparty.ch/substanzen/4-mmc"
+                "url": "https://www.saferparty.ch/substanzen/mephedron"
               }
             ]
           },
@@ -3472,7 +3529,7 @@
       }
     ],
     "visualizer": {
-      "neurotoxicity": 7,
+      "neurotoxicity": 5,
       "cardiotoxicity": 7,
       "dehydration": 6,
       "sleep_deprivation": 7,
@@ -3732,7 +3789,7 @@
     ],
     "visualizer": {
       "neurotoxicity": 4,
-      "cardiotoxicity": 5,
+      "cardiotoxicity": 2,
       "dehydration": 2,
       "sleep_deprivation": 2,
       "impulsivity": 6,
@@ -3952,7 +4009,7 @@
     ],
     "visualizer": {
       "neurotoxicity": 4,
-      "cardiotoxicity": 5,
+      "cardiotoxicity": 2,
       "dehydration": 2,
       "sleep_deprivation": 2,
       "impulsivity": 6,
@@ -4330,7 +4387,7 @@
               },
               {
                 "label": "Drugchecking Berlin: Erste Hilfe",
-                "url": "https://drugchecking.berlin/erste-hilfe"
+                "url": "https://drugchecking.berlin/substanzen/erste-hilfe"
               }
             ]
           }
@@ -4568,7 +4625,7 @@
       "neurotoxicity": 2,
       "cardiotoxicity": 3,
       "dehydration": 2,
-      "sleep_deprivation": 1,
+      "sleep_deprivation": 3,
       "impulsivity": 7,
       "lethality": 8
     },

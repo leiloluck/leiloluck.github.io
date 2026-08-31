@@ -423,6 +423,12 @@ body.running .px-hero-speaker .wave-3 { animation: wave-3 750ms linear infinite;
 .volume-value { font-size: 11px; min-width: 34px; text-align: right; flex: 0 0 auto; }
 
 .volume-slider {
+  /* --vol (0-1) is written by applyVolume(); --fill turns it into the position of the
+     thumb's CENTRE, not of the raw percentage. A range thumb travels from half its own
+     width to (track - half), so a naive `left: 80%` fill overshoots the tab at high
+     values and undershoots at low ones. 6.5px is half the 13px thumb below. */
+  --vol: 0.8;
+  --fill: calc(6.5px + (100% - 13px) * var(--vol));
   flex: 1 1 auto;
   min-width: 0;
   height: 26px;
@@ -434,12 +440,20 @@ body.running .px-hero-speaker .wave-3 { animation: wave-3 750ms linear infinite;
 }
 .volume-slider::-webkit-slider-runnable-track {
   height: 8px;
-  background: var(--surface);
+  /* Navy is COLOR_HIGHLIGHT - the same blue Win98 fills a selection and a progress bar
+     with, so a filled trackbar reads as native rather than as a modern accent colour.
+     Hard stops, no blend: this is a 256-colour desktop. */
+  background: linear-gradient(to right,
+              var(--sel-bg) 0 var(--fill), var(--surface) var(--fill) 100%);
   box-shadow: var(--field);
 }
 .volume-slider::-moz-range-track {
   height: 8px;
-  background: var(--surface);
+  /* Navy is COLOR_HIGHLIGHT - the same blue Win98 fills a selection and a progress bar
+     with, so a filled trackbar reads as native rather than as a modern accent colour.
+     Hard stops, no blend: this is a 256-colour desktop. */
+  background: linear-gradient(to right,
+              var(--sel-bg) 0 var(--fill), var(--surface) var(--fill) 100%);
   box-shadow: var(--field);
 }
 /* The Win98 trackbar thumb: a tall raised tab, not a circle. */
@@ -476,8 +490,14 @@ body.fired   .hero-emoji  { animation: hero-jolt 360ms ease; }
 
 .launch-section { display: flex; flex-direction: column; gap: 8px; }
 
+/* Stop and "Play a sound now" share a line. flex-basis 0 splits it evenly, and
+   align-items:stretch (the default) makes the shorter button match the taller one. */
+.launch-row { display: flex; gap: 8px; }
+
 .btn-launch {
-  width: 100%;
+  flex: 1 1 0;
+  min-width: 0;          /* opt out of the min-content floor, or the labels skew the split */
+  order: 2;              /* visual order is skip, then stop — DOM order stays primary-first */
   min-height: 54px;
   padding: 12px;
   font-size: 16px;
@@ -494,13 +514,31 @@ body.fired   .hero-emoji  { animation: hero-jolt 360ms ease; }
   text-shadow: 1px 1px 0 var(--btn-hilite);
   cursor: default;
 }
-body.running .btn-launch { color: var(--danger); }
+/* Stop, while running: a red button with white bold text. The bevel is rebuilt in
+   reds rather than reusing --raised, because the silver highlight/shadow pair reads as
+   dirt over a red face. Same four-shadow recipe, same light-from-top-left logic. */
+body.running .btn-launch {
+  background: var(--danger);
+  color: #ffffff;
+  text-shadow: none;
+  box-shadow: inset -1px -1px var(--frame),   inset  1px  1px #ff9a9a,
+              inset -2px -2px #4d0000,        inset  2px  2px #d81414;
+}
+body.running .btn-launch:active:not(:disabled) {
+  box-shadow: inset -1px -1px #ff9a9a,        inset  1px  1px var(--frame),
+              inset -2px -2px #d81414,        inset  2px  2px #4d0000;
+}
 
 .btn-skip {
-  width: 100%;
+  flex: 1 1 0;
+  min-width: 0;
+  order: 1;
   min-height: 42px;
-  padding: 9px;
+  /* Horizontal padding must MATCH .btn-launch. Chrome adds a button's padding on top of
+     a flex-basis:0 box, so a 12px/9px mismatch splits the row 173/167 instead of 170/170. */
+  padding: 9px 12px;
   font-size: 13px;
+  font-weight: bold;
   background: var(--surface);
   box-shadow: var(--raised);
 }

@@ -34,7 +34,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.08.31e';
+const APP_VERSION = 'v26.08.31g';
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 // Drop real files into resources/ (see resources/README.md). Until a matching file
@@ -80,7 +80,7 @@ const SOUNDS = [
 // ── Interval presets (ms) ────────────────────────────────────────────────────
 
 const PRESETS = [
-  { ms: 5000,    label: '5 sec',  tag: 'test' },
+  { ms: 5000,    label: '5 sec',  tag: '' },
   { ms: 30000,   label: '30 sec', tag: '' },
   { ms: 60000,   label: '1 min',  tag: '' },
   { ms: 120000,  label: '2 min',  tag: '' },
@@ -338,6 +338,8 @@ function applyVolume(save) {
     } catch { masterGain.gain.value = volumeGain(); }
   }
   if (elVolumeValue) elVolumeValue.textContent = volumePct + '%';
+  // Drives the navy fill behind the thumb (see --fill in styles.css).
+  if (elVolume) elVolume.style.setProperty('--vol', String(volumePct / 100));
   if (save) saveState();
 }
 
@@ -1068,13 +1070,49 @@ function renderIntervals() {
     elIntervalGroup.appendChild(btn);
   });
 
-  // Custom cell - spans the full row
+  // Custom cell: sized in fitCustomCell() once the grid has actually laid out.
   const label = customSeconds ? formatMinutes(customSeconds) : 'Custom';
   const tag = customSeconds ? 'custom' : 'set';
-  const btn = makeIntervalBtn(label, tag, isCustomSelected());
-  btn.style.gridColumn = '1 / -1';
-  btn.addEventListener('click', openCustomModal);
-  elIntervalGroup.appendChild(btn);
+  elCustomCell = makeIntervalBtn(label, tag, isCustomSelected());
+  elCustomCell.addEventListener('click', openCustomModal);
+  elIntervalGroup.appendChild(elCustomCell);
+  fitCustomCell();
+}
+
+// The Custom button swallows the empty tail of the last preset row: 3 free cells -> it
+// spans 3, 1 free cell -> it takes that one, a full row -> it gets its own row entire.
+//
+// The span cannot be written as a static rule. The grid is repeat(auto-fill, minmax(...)),
+// so the column count is decided by the available width at layout time and changes when
+// the window resizes or the phone rotates. The only honest source is the computed style
+// after layout, which is why this is measured rather than declared.
+let elCustomCell = null;
+
+function gridColumnCount(el) {
+  // getComputedStyle resolves auto-fill to the used track list ("84px 84px ..."), so the
+  // number of entries IS the column count. A hidden panel has no tracks: it reports
+  // "none", and we simply wait for the ResizeObserver to fire when the tab is shown.
+  const tracks = getComputedStyle(el).gridTemplateColumns;
+  if (!tracks || tracks === 'none') return 0;
+  return tracks.split(' ').filter(Boolean).length;
+}
+
+function fitCustomCell() {
+  if (!elCustomCell) return;
+  const cols = gridColumnCount(elIntervalGroup);
+  if (!cols) return;
+  const tail = PRESETS.length % cols;               // cells already used in the last row
+  const span = tail === 0 ? cols : cols - tail;     // exact fit, so it never wraps early
+  const value = span > 1 ? `span ${span}` : '';
+  // Only write on a real change: this runs from a ResizeObserver, and an unconditional
+  // style write on every callback is how you get a resize loop.
+  if (elCustomCell.style.gridColumn !== value) elCustomCell.style.gridColumn = value;
+}
+
+if (window.ResizeObserver) {
+  new ResizeObserver(() => fitCustomCell()).observe(elIntervalGroup);
+} else {
+  window.addEventListener('resize', fitCustomCell);
 }
 
 function makeIntervalBtn(label, tag, selected) {

@@ -285,6 +285,27 @@ skip the sounds cache.
 
 ---
 
+## Copy rules
+
+* **No em dashes or en dashes in any reader-visible text.** Owner's instruction. Use a
+  comma or a full stop. This applies to `index.html` copy and to every string literal in
+  `js/app.js`; source *comments* are exempt.
+* Status text names the thing rather than narrating a mood: the idle hero reads
+  **"active noise confuser"**, not "idle, ready when you are".
+* Buttons say what they do: **Activate** / **Stop**, and **Play a sound now** for the
+  fire-one-immediately button (it was an unlabelled ⏭, which nobody could read).
+
+## Tabs
+
+Three: **🔊 Annoy**, **⚙ Settings**, **ⓘ** (info). The first two share the strip width
+(`flex: 1 1 0`) so each is a large touch target; the info tab is glyph-width. `showTab()`
+is table-driven (`TABS`), so adding a fourth is one line rather than another boolean.
+
+The info panel carries the one-paragraph description and three numbered steps. Keep it
+short: it exists so a first-time user knows what the app is for without reading Help.
+
+---
+
 ## Style — Windows 98 (explicit override of the site style guide)
 
 **This subpage overrides the root style guide.** `CLAUDE.md` sets a dark, minimal

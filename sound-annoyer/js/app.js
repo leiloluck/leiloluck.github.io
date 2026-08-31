@@ -34,7 +34,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.08.31';
+const APP_VERSION = 'v26.08.31a';
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 // Drop real files into resources/ (see resources/README.md). Until a matching file
@@ -529,9 +529,9 @@ function stopAnnoying() {
   if (audioCtx && audioCtx.state === 'running') audioCtx.suspend().catch(() => {});
 
   setLaunchBtn();
-  elHeroStatus.textContent = 'stopped - silence restored';
+  elHeroStatus.textContent = 'stopped, silence restored';
   elHeroSub.textContent = '';
-  elHeroEmoji.textContent = '😼';
+  elHeroEmoji.textContent = '🔊';
 
   applyUpdateIfSafe(1500);   // a new build that landed mid-session lands now
 }
@@ -591,7 +591,7 @@ function shutdownApp() {
   setTimeout(() => {
     if (!closing) return;
     elHeroEmoji.textContent  = '😴';
-    elHeroStatus.textContent = 'closed - audio released';
+    elHeroStatus.textContent = 'closed, audio released';
     elHeroSub.textContent    = isStandalone()
       ? 'Swipe the app away to finish.'
       : 'A browser tab cannot close itself - close it yourself. Install the app for a real close.';
@@ -827,6 +827,8 @@ const elTabAnnoy     = document.getElementById('tab-annoy');
 const elTabSettings  = document.getElementById('tab-settings');
 const elPanelAnnoy   = document.getElementById('panel-annoy');
 const elPanelSettings= document.getElementById('panel-settings');
+const elTabInfo      = document.getElementById('tab-info');
+const elPanelInfo    = document.getElementById('panel-info');
 
 // Install instructions modal
 const elInstallModalLayer   = document.getElementById('install-modal-layer');
@@ -874,8 +876,8 @@ function flashStatus(msg) {
 }
 
 function idleStatus() {
-  if (testMode) return 'test mode - tap a sound to hear it';
-  return getArmedSoundsCount() === 0 ? 'arm at least one sound' : 'idle - ready when you are';
+  if (testMode) return 'test mode, tap a sound to hear it';
+  return getArmedSoundsCount() === 0 ? 'select at least one sound' : 'active noise confuser';
 }
 
 function getArmedSoundsCount() {
@@ -894,7 +896,7 @@ let lastCountdownText = '';
 
 function updateRunningStatus() {
   if (!running) return;
-  elHeroStatus.textContent = 'ARMED - chaos incoming';
+  elHeroStatus.textContent = 'running, sounds incoming';
   const now = audioCtx.currentTime;
 
   // Flash the emoji when a hit actually STARTS. It used to be driven by onended, so the
@@ -932,7 +934,7 @@ function onFiredVisible(sound) {
 }
 
 function setLaunchBtn() {
-  elLaunch.textContent = running ? 'STOP' : 'UNLEASH';
+  elLaunch.textContent = running ? 'Stop' : 'Activate';
   elSkip.classList.toggle('hidden', !running);
 }
 
@@ -1162,22 +1164,28 @@ elHelpDetailsBtn.addEventListener('click', () => {
   elHelpDetailsBtn.textContent = nowHidden ? '+ more details' : '- less';
 });
 
-// ── UI: tabs (Annoy / Settings) ──────────────────────────────────────────────
-// Pure show/hide of two panels. Defaults to Annoy on load so the countdown is
-// visible while running.
+// ── UI: tabs (Annoy / Settings / Info) ───────────────────────────────────────
+// Pure show/hide. Defaults to Annoy on load so the countdown is visible while
+// running. Table-driven so a fourth tab is one line, not another boolean.
+
+const TABS = [
+  { name: 'annoy',    tab: () => elTabAnnoy,    panel: () => elPanelAnnoy },
+  { name: 'settings', tab: () => elTabSettings, panel: () => elPanelSettings },
+  { name: 'info',     tab: () => elTabInfo,     panel: () => elPanelInfo },
+];
 
 function showTab(name) {
-  const annoy = name !== 'settings';
-  elPanelAnnoy.classList.toggle('hidden', !annoy);
-  elPanelSettings.classList.toggle('hidden', annoy);
-  elTabAnnoy.setAttribute('aria-selected', annoy ? 'true' : 'false');
-  elTabSettings.setAttribute('aria-selected', annoy ? 'false' : 'true');
+  const target = TABS.some(t => t.name === name) ? name : 'annoy';
+  TABS.forEach(t => {
+    const on = t.name === target;
+    t.panel().classList.toggle('hidden', !on);
+    t.tab().setAttribute('aria-selected', on ? 'true' : 'false');
+  });
   // Jump back to the top when switching, in case the previous panel was scrolled.
   window.scrollTo(0, 0);
 }
 
-elTabAnnoy.addEventListener('click', () => showTab('annoy'));
-elTabSettings.addEventListener('click', () => showTab('settings'));
+TABS.forEach(t => t.tab().addEventListener('click', () => showTab(t.name)));
 
 // ────────────────────────────────────────────────────────────────────────────
 
@@ -1410,7 +1418,7 @@ function refreshInstallUI() {
   // button. A remembered flag can outlive the install (they uninstalled, they cleared the
   // app, they are on a second device), and a permanently dead Install button is exactly
   // the "install is broken" symptom this whole pass exists to remove.
-  elInstallBtn.textContent = wasInstalled() ? '✓ Installed — install again?' : '📲 Install to Home Screen';
+  elInstallBtn.textContent = wasInstalled() ? '✓ Installed, install again?' : '📲 Install to Home Screen';
   elInstallBtn.disabled = false;
 }
 
@@ -1470,7 +1478,7 @@ function installSteps() {
   if (isIOS()) {
     return [
       'Open this page in Safari (not another browser).',
-      'Tap the Share button — the square with an upward arrow.',
+      'Tap the Share button, the square with an upward arrow.',
       'Choose "Add to Home Screen", then tap "Add".',
     ];
   }
@@ -1485,20 +1493,20 @@ function installSteps() {
     return [
       'Open the browser menu (⋮, top-right).',
       'Tap "Install app" or "Add to Home screen".',
-      'Confirm — it installs and runs offline.',
+      'Confirm. It installs and runs offline.',
     ];
   }
   return [
     'Click the install icon in the address bar (⊕ / a small screen icon).',
     'Or open the browser menu and choose "Install SoundAnnoyer".',
-    'Confirm — it opens as its own app and runs offline.',
+    'Confirm. It opens as its own app and runs offline.',
   ];
 }
 
 function openInstallModal() {
   elInstallSummary.textContent = isBrave
     ? 'Heads up: Brave only makes a shortcut, so Android gives the app no battery '
-      + 'settings of its own — sounds are more likely to stop while the screen is off. '
+      + 'settings of its own, so sounds are more likely to stop while the screen is off. '
       + 'Install from Chrome for the reliable version.'
     : 'Install SoundAnnoyer as an app. Works fully offline, and locked-screen playback '
       + 'is more reliable once installed.';
@@ -1608,7 +1616,7 @@ function handOverToWaitingWorker(reg) {
   elUpdateBtn.textContent = 'Updating…';
   reg.waiting.postMessage({ type: 'SKIP_WAITING' });
   setTimeout(() => {
-    if (document.visibilityState !== 'hidden') flashInstallStatus('Update stalled — retry', false);
+    if (document.visibilityState !== 'hidden') flashInstallStatus('Update stalled, retry', false);
   }, 8000);
 }
 
@@ -1618,7 +1626,7 @@ function awaitInstallThenHandOver(reg) {
   elUpdateBtn.textContent = 'Downloading…';
   sw.addEventListener('statechange', () => {
     if (sw.state === 'installed' && reg.waiting && !running) handOverToWaitingWorker(reg);
-    else if (sw.state === 'redundant') flashInstallStatus('Update failed — retry', false);
+    else if (sw.state === 'redundant') flashInstallStatus('Update failed, retry', false);
   });
   setTimeout(() => {
     if (elUpdateBtn.textContent === 'Downloading…') flashInstallStatus('Still downloading…', false);
@@ -1644,7 +1652,7 @@ async function hardReset() {
   // Re-check first: the window between deleting the shell and re-fetching it is the one
   // moment the app has no offline copy at all, and the earlier probe may be seconds old.
   if (!await isReallyOnline()) {
-    flashInstallStatus('Offline — kept cache', true);
+    flashInstallStatus('Offline, kept cache', true);
     return;
   }
   try {
@@ -1673,7 +1681,7 @@ async function runUpdate() {
 
   try {
     if (!await isReallyOnline()) {
-      flashInstallStatus('Offline — cached ✓', true);
+      flashInstallStatus('Offline, cached ✓', true);
       return;
     }
 
@@ -1686,7 +1694,7 @@ async function runUpdate() {
     // must never end a prank: remember the update and let stopAnnoying() apply it.
     if (running && reg && (reg.waiting || reg.installing)) {
       waitingReg = reg;
-      flashInstallStatus('Update ready — after STOP', false);
+      flashInstallStatus('Update ready, press Stop', false);
       return;
     }
 
@@ -1703,7 +1711,7 @@ async function runUpdate() {
       await reg.update();
       if (running && (reg.installing || reg.waiting)) {
         waitingReg = reg;
-        flashInstallStatus('Update ready — after STOP', false);
+        flashInstallStatus('Update ready, press Stop', false);
         return;
       }
       if (reg.waiting)    { handOverToWaitingWorker(reg); return; }
@@ -1723,7 +1731,7 @@ async function runUpdate() {
 
     flashInstallStatus(`Newest ✓ ${APP_VERSION}`, false);
   } catch {
-    flashInstallStatus('Check failed — retry', false);
+    flashInstallStatus('Check failed, retry', false);
   } finally {
     updateBusy = false;
   }
@@ -1735,7 +1743,7 @@ elVersion.addEventListener('click', runUpdate);   // the "date button" checks fo
 // Offline indicator in Settings.
 function refreshOfflineBadge() {
   const offline = navigator.onLine === false;
-  elOfflineBadge.textContent = offline ? '⚠ offline — running cached' : '✓ works offline';
+  elOfflineBadge.textContent = offline ? '⚠ offline, running cached' : '✓ works offline';
   elOfflineBadge.classList.toggle('is-offline', offline);
 }
 window.addEventListener('online',  refreshOfflineBadge);

@@ -1,4 +1,4 @@
-/* app.js — SoundAnnoyer
+/* app.js — poltergeist.exe
    Fires prank sounds through a (Bluetooth) speaker at random intervals while the
    phone is locked. See ../context.md for the full brief.
 
@@ -34,7 +34,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.08.31a';
+const APP_VERSION = 'v26.08.31b';
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 // Drop real files into resources/ (see resources/README.md). Until a matching file
@@ -531,7 +531,7 @@ function stopAnnoying() {
   setLaunchBtn();
   elHeroStatus.textContent = 'stopped, silence restored';
   elHeroSub.textContent = '';
-  elHeroEmoji.textContent = '🔊';
+  setHeroIdleArt();
 
   applyUpdateIfSafe(1500);   // a new build that landed mid-session lands now
 }
@@ -679,7 +679,7 @@ function previewSound(sound, btn) {
 function setMediaSession() {
   if (!('mediaSession' in navigator)) return;
   navigator.mediaSession.metadata = new MediaMetadata({
-    title:  'SoundAnnoyer',
+    title:  'poltergeist.exe',
     artist: 'armed & dangerous',
     album:  'chaos incoming',
     artwork: [
@@ -802,6 +802,11 @@ function synthKnock(ctx) {
 // ── UI: elements ─────────────────────────────────────────────────────────────
 
 const elHeroEmoji   = document.getElementById('hero-emoji');
+// The hero holds inline pixel art at rest, but it is ALSO the flash target when a
+// sound fires (it briefly shows that sound's emoji). Snapshot the art once at load so
+// the idle look can be restored, instead of being destroyed by the first flash.
+const HERO_IDLE_ART = elHeroEmoji.innerHTML;
+function setHeroIdleArt() { elHeroEmoji.innerHTML = HERO_IDLE_ART; }
 const elHeroStatus  = document.getElementById('hero-status');
 const elHeroSub     = document.getElementById('hero-sub');
 const elLaunch      = document.getElementById('btn-launch');
@@ -1323,6 +1328,10 @@ elSkip.addEventListener('click', skipNow);
 
 // ── Persistence ──────────────────────────────────────────────────────────────
 
+// Storage keys keep their pre-rename names on purpose. localStorage is scoped to the
+// ORIGIN, not the path, so reusing them carries armed sounds, interval and toggles
+// across the move from /sound-annoyer/ to /poltergeist/. Renaming them would silently
+// reset every setting for anyone who had used the app before.
 const STATE_KEY = 'soundannoyer-state';
 
 function saveState() {
@@ -1498,7 +1507,7 @@ function installSteps() {
   }
   return [
     'Click the install icon in the address bar (⊕ / a small screen icon).',
-    'Or open the browser menu and choose "Install SoundAnnoyer".',
+    'Or open the browser menu and choose "Install poltergeist.exe".',
     'Confirm. It opens as its own app and runs offline.',
   ];
 }
@@ -1508,7 +1517,7 @@ function openInstallModal() {
     ? 'Heads up: Brave only makes a shortcut, so Android gives the app no battery '
       + 'settings of its own, so sounds are more likely to stop while the screen is off. '
       + 'Install from Chrome for the reliable version.'
-    : 'Install SoundAnnoyer as an app. Works fully offline, and locked-screen playback '
+    : 'Install poltergeist.exe as an app. Works fully offline, and locked-screen playback '
       + 'is more reliable once installed.';
   elInstallSteps.innerHTML = '';
   installSteps().forEach(step => {
@@ -1564,7 +1573,7 @@ elOpenChromeBtn.addEventListener('click', () => {
 //      that used to strand the app on an old build forever. We detect it and recover.
 //   3. Manual — the Update button / tappable version, below.
 
-const CACHE_PREFIX = 'sound-annoyer-';   // only ever touch OUR caches: caches.keys() is
+const CACHE_PREFIX = 'poltergeist-';     // only ever touch OUR caches: caches.keys() is
                                          // per-origin and this site hosts several apps.
 const AUDIO_CACHE = CACHE_PREFIX + 'sounds';   // must match sw.js — unversioned on purpose
 const DRIFT_KEY = 'soundannoyer-drift-recovered';

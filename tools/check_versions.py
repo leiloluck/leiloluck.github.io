@@ -36,7 +36,7 @@ import re
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-APPS = ["sound-annoyer", "meditation-timer"]
+APPS = ["poltergeist", "meditation-timer"]
 
 VERSION_RE = re.compile(r"^v(\d{2})\.(\d{2})\.(\d{2})([a-z]?)$")
 

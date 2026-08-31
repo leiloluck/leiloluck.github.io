@@ -49,8 +49,9 @@
 
   <!-- Tab switcher: Annoy (the whole app) | Settings (toggles + help/install/update) -->
   <nav class="tabs" role="tablist" aria-label="Sections">
-    <button class="tab" id="tab-annoy" type="button" role="tab" aria-selected="true" aria-controls="panel-annoy">Annoy</button>
+    <button class="tab" id="tab-annoy" type="button" role="tab" aria-selected="true" aria-controls="panel-annoy">🔊 Annoy</button>
     <button class="tab" id="tab-settings" type="button" role="tab" aria-selected="false" aria-controls="panel-settings">⚙ Settings</button>
+    <button class="tab tab-info" id="tab-info" type="button" role="tab" aria-selected="false" aria-controls="panel-info" aria-label="Info" title="Info">ⓘ</button>
   </nav>
 
   <!-- ── Tab 1: the entire app ── -->
@@ -58,15 +59,15 @@
 
     <!-- Status / hero -->
     <section class="hero">
-      <div class="hero-emoji" id="hero-emoji">😼</div>
-      <p class="hero-status" id="hero-status">idle - pick your weapons</p>
+      <div class="hero-emoji" id="hero-emoji">🔊</div>
+      <p class="hero-status" id="hero-status">active noise confuser</p>
       <p class="hero-sub" id="hero-sub" aria-live="polite"></p>
     </section>
 
     <!-- THE button (+ skip-ahead while running) -->
     <section class="launch-section">
       <button class="btn-launch" id="btn-launch">UNLEASH</button>
-      <button class="btn-skip hidden" id="btn-skip" type="button" aria-label="Play next sound now" title="Play next sound now">⏭</button>
+      <button class="btn-skip hidden" id="btn-skip" type="button" aria-label="Play a sound now" title="Play a sound now">Play a sound now</button>
     </section>
 
     <!-- Sound selection -->
@@ -86,6 +87,20 @@
       <div class="interval-grid" id="interval-group"></div>
     </section>
 
+  </section>
+
+  <!-- ── Tab 3: info ── -->
+  <section class="panel hidden" id="panel-info" role="tabpanel" aria-labelledby="tab-info">
+    <section class="section">
+      <p class="info-lead">This app is designed to confuse people with random sounds.
+         Activate it in obscure places using your phone or a speaker.</p>
+      <p class="section-label">How to use</p>
+      <ol class="info-steps">
+        <li>Select the sounds you want.</li>
+        <li>Select how often they should play.</li>
+        <li>Press Activate, then hide the phone or speaker.</li>
+      </ol>
+    </section>
   </section>
 
   <!-- ── Tab 2: settings ── -->
@@ -125,7 +140,7 @@
 
     <!-- Version + offline status (version is tappable: checks for an update) -->
     <section class="section settings-meta">
-      <button class="version" id="version" type="button" title="Check for updates">v26.08.31</button>
+      <button class="version" id="version" type="button" title="Check for updates">v26.08.31a</button>
       <span class="offline-badge" id="offline-badge">✓ works offline</span>
     </section>
 
@@ -186,8 +201,8 @@
     <div class="help-details hidden" id="help-details">
       <p>Sounds play at random intervals around the time you set. With chaos timing on, each gap is between 0.75x and 1.25x the base interval - irregular enough that nobody can predict when the next one hits.</p>
       <p>Everything is pre-scheduled on the audio clock, so sounds keep playing through a locked screen in almost all cases. No timers, no polling.</p>
-      <p><strong>For the most reliable results:</strong> install SoundAnnoyer from <strong>Chrome</strong> (Settings → Install to Home Screen) rather than running it in a browser tab, then check that Android isn't battery-restricting it — Settings → Apps → SoundAnnoyer → Battery → Unrestricted. Once installed from Chrome it appears there under its own name, separate from the browser.</p>
-      <p><strong>Brave:</strong> Brave can only add a shortcut, not a real installed app, so Android never gives SoundAnnoyer its own battery setting and background sounds are more likely to be cut off. The app still works — but install from Chrome if you want it to survive a pocketed phone.</p>
+      <p><strong>For the most reliable results:</strong> install SoundAnnoyer from <strong>Chrome</strong> (Settings → Install to Home Screen) rather than running it in a browser tab, then check that Android isn't battery-restricting it, Settings → Apps → SoundAnnoyer → Battery → Unrestricted. Once installed from Chrome it appears there under its own name, separate from the browser.</p>
+      <p><strong>Brave:</strong> Brave can only add a shortcut, not a real installed app, so Android never gives SoundAnnoyer its own battery setting and background sounds are more likely to be cut off. The app still works, but install from Chrome if you want it to survive a pocketed phone.</p>
       <p>Works over Bluetooth. Connect your speaker before hitting UNLEASH. A near-silent signal runs in the background to keep the speaker awake during long gaps.</p>
       <p>Use Test Mode to preview each sound before hiding the device. It exits the active session automatically.</p>
     </div>

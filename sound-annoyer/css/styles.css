@@ -212,10 +212,16 @@ button {
 
 .tab {
   position: relative;
-  flex: 0 0 auto;
+  /* Share the full width instead of hugging their labels: three tabs across the
+     window read as a tab strip, and each becomes a much larger touch target. */
+  flex: 1 1 0;
+  min-width: 0;
   min-height: 34px;
-  padding: 8px 16px;
+  padding: 8px 10px;
   font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   /* Unselected tabs sit BEHIND the page: darker, lower, and greyed. Bold text alone
      was not enough of a signal — the two tabs read as equally active. */
   background: #adadad;
@@ -225,6 +231,9 @@ button {
               inset -1px  0   var(--frame),
               inset -2px  0   var(--btn-shadow);
 }
+/* Info is a single glyph, so it does not need an equal share of the width. */
+.tab-info { flex: 0 0 auto; padding-left: 14px; padding-right: 14px; font-size: 15px; }
+
 .tab[aria-selected="true"] {
   /* The selected tab is the page: same silver, taller, bolder, and it physically
      erases the page's top border beneath it (::after) so the two become one surface.
@@ -233,7 +242,7 @@ button {
   color: var(--text);
   font-weight: bold;
   margin-top: 0;
-  padding: 10px 18px 14px;
+  padding: 10px 10px 14px;
   z-index: 3;
   box-shadow: inset  1px  1px var(--btn-hilite),
               inset  2px  0   var(--btn-face),
@@ -267,6 +276,39 @@ button {
 }
 
 .section { display: flex; flex-direction: column; gap: 7px; }
+
+/* ── Info tab ────────────────────────────────────────────────────────────── */
+
+.info-lead {
+  padding: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  background: var(--btn-hilite);
+  box-shadow: var(--field);
+}
+.info-steps {
+  margin: 0;
+  padding: 10px 10px 10px 8px;
+  list-style: none;
+  counter-reset: step;
+  background: var(--surface);
+  box-shadow: var(--field);
+}
+.info-steps li {
+  position: relative;
+  margin-bottom: 9px;
+  padding-left: 24px;
+  font-size: 13px;
+  line-height: 1.45;
+  counter-increment: step;
+}
+.info-steps li:last-child { margin-bottom: 0; }
+.info-steps li::before {
+  content: counter(step) ".";
+  position: absolute;
+  left: 4px;
+  font-weight: bold;
+}
 
 .section-label {
   font-size: 12px;

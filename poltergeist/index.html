@@ -64,10 +64,14 @@
       <p class="hero-sub" id="hero-sub" aria-live="polite"></p>
     </section>
 
-    <!-- THE button (+ skip-ahead while running) -->
+    <!-- THE button (+ skip-ahead while running).
+         Both sit in one flex row. While stopped the skip button is display:none, so
+         Activate is alone and fills the row on its own; while running they split it. -->
     <section class="launch-section">
-      <button class="btn-launch" id="btn-launch">UNLEASH</button>
-      <button class="btn-skip hidden" id="btn-skip" type="button" aria-label="Play a sound now" title="Play a sound now">Play a sound now</button>
+      <div class="launch-row">
+        <button class="btn-launch" id="btn-launch">UNLEASH</button>
+        <button class="btn-skip hidden" id="btn-skip" type="button" aria-label="Play a sound now" title="Play a sound now">Play a sound now</button>
+      </div>
 
       <!-- Relative audio: this is the app's OWN gain node, not the system volume, so
            the prank can sit quietly under music that is already playing. -->
@@ -150,7 +154,7 @@
 
     <!-- Version + offline status (version is tappable: checks for an update) -->
     <section class="section settings-meta">
-      <button class="version" id="version" type="button" title="Check for updates">v26.08.31e</button>
+      <button class="version" id="version" type="button" title="Check for updates">v26.08.31g</button>
       <span class="offline-badge" id="offline-badge">✓ works offline</span>
     </section>
 

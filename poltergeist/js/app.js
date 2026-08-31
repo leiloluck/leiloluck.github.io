@@ -34,7 +34,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.08.31b';
+const APP_VERSION = 'v26.08.31c';
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 // Drop real files into resources/ (see resources/README.md). Until a matching file
@@ -128,6 +128,7 @@ const armed       = new Set();   // ids of active sounds
 
 let audioCtx     = null;
 let masterGain   = null;
+let volumePct    = 80;      // app-only gain, 0-100. NOT the system volume.
 let primerGain   = null;
 let primerBuffer = null;
 let keepAliveSrc = null;
@@ -178,7 +179,7 @@ function ensureAudio() {
   };
 
   masterGain = audioCtx.createGain();
-  masterGain.gain.value = 1;
+  masterGain.gain.value = volumeGain();
   masterGain.connect(audioCtx.destination);
 
   primerGain = audioCtx.createGain();
@@ -316,6 +317,28 @@ function makeKeepAliveWavBlob(seconds = 10, sampleRate = 8000) {
     view.setInt16(44 + i * 2, Math.round(s * 32767), true);
   }
   return new Blob([view], { type: 'audio/wav' });
+}
+
+// ── Volume ───────────────────────────────────────────────────────────────────
+// This is the app's OWN gain node, entirely separate from the device volume, so the
+// prank can sit quietly underneath music that is already playing. Perceived loudness is
+// roughly the cube of the amplitude ratio, so a linear slider feels wrong at the quiet
+// end; squaring it gives a usable taper without needing a real dB curve.
+function volumeGain() {
+  const v = Math.min(100, Math.max(0, volumePct)) / 100;
+  return v * v;
+}
+
+function applyVolume(save) {
+  if (masterGain && audioCtx) {
+    // Ramp rather than jump: a step change on a live gain node clicks audibly.
+    try {
+      masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
+      masterGain.gain.setTargetAtTime(volumeGain(), audioCtx.currentTime, 0.02);
+    } catch { masterGain.gain.value = volumeGain(); }
+  }
+  if (elVolumeValue) elVolumeValue.textContent = volumePct + '%';
+  if (save) saveState();
 }
 
 // ── Scheduling ───────────────────────────────────────────────────────────────
@@ -522,14 +545,17 @@ function stopAnnoying() {
   clearScheduled();
   stopKeepAlive();
   stopHeartbeat();
-  if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'none';
+  // 'none' would dismiss the notification outright, taking Resume with it. 'paused'
+  // keeps the shade entry alive for as long as the platform chooses to hold it, so
+  // Resume stays reachable. setMediaSession() below rebinds the handlers.
   // An open output stream holds a partial wakelock (roughly 12 mW -> 70 mW on an idle
   // device). Nothing released it before, so STOP left the phone awake indefinitely.
   // ensureAudio() / resume() bring it straight back on the next UNLEASH.
   if (audioCtx && audioCtx.state === 'running') audioCtx.suspend().catch(() => {});
 
   setLaunchBtn();
-  elHeroStatus.textContent = 'stopped, silence restored';
+  setMediaSession();          // flip the shade to Resume
+  elHeroStatus.textContent = 'stopped, no sounds';
   elHeroSub.textContent = '';
   setHeroIdleArt();
 
@@ -676,21 +702,46 @@ function previewSound(sound, btn) {
 
 // ── Media Session ────────────────────────────────────────────────────────────
 
+// Lock-screen / notification-shade controls.
+//
+// The Media Session API has a fixed vocabulary of actions; there is no "close" action, so
+// the three the user wants map onto the three that exist:
+//   play  -> resume   (shown only while stopped)
+//   pause -> stop     (shown only while running)
+//   stop  -> close the app entirely (shutdownApp)
+// play and pause never appear together: the platform picks one based on playbackState,
+// which is exactly the alternation we want. Setting a handler to null REMOVES the button,
+// so the shade only ever offers the action that makes sense right now.
 function setMediaSession() {
   if (!('mediaSession' in navigator)) return;
-  navigator.mediaSession.metadata = new MediaMetadata({
-    title:  'poltergeist.exe',
-    artist: 'armed & dangerous',
-    album:  'chaos incoming',
-    artwork: [
-      { src: './icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-      { src: './icons/icon-512.png', sizes: '512x512', type: 'image/png' },
-    ],
-  });
-  navigator.mediaSession.playbackState = 'playing';
-  navigator.mediaSession.setActionHandler('play',  startAnnoying);
-  navigator.mediaSession.setActionHandler('pause', stopAnnoying);
-  navigator.mediaSession.setActionHandler('stop',  stopAnnoying);
+  try {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title:  'poltergeist.exe',
+      artist: running ? 'running, sounds incoming' : 'stopped, no sounds',
+      album:  'active noise confuser',
+      artwork: [
+        { src: './icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+        { src: './icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+      ],
+    });
+  } catch {}
+  updateMediaSessionState();
+}
+
+function updateMediaSessionState() {
+  if (!('mediaSession' in navigator)) return;
+  const set = (action, fn) => {
+    // An unsupported action throws rather than no-oping, and one throw would skip every
+    // handler after it, so each is guarded independently.
+    try { navigator.mediaSession.setActionHandler(action, fn); } catch {}
+  };
+  navigator.mediaSession.playbackState = running ? 'playing' : 'paused';
+  set('play',  running ? null : () => startAnnoying());
+  set('pause', running ? () => stopAnnoying() : null);
+  set('stop',  () => shutdownApp());
+  // Nothing here is seekable; leaving these bound would put dead scrub buttons in the
+  // shade and push the ones that matter off the compact view.
+  ['seekbackward', 'seekforward', 'seekto', 'previoustrack', 'nexttrack'].forEach(a => set(a, null));
 }
 
 // ── Synthesized stand-in sounds ──────────────────────────────────────────────
@@ -811,6 +862,8 @@ const elHeroStatus  = document.getElementById('hero-status');
 const elHeroSub     = document.getElementById('hero-sub');
 const elLaunch      = document.getElementById('btn-launch');
 const elSkip        = document.getElementById('btn-skip');
+const elVolume      = document.getElementById('volume');
+const elVolumeValue = document.getElementById('volume-value');
 const elSoundGroup  = document.getElementById('sound-group');
 const elSoundHint   = document.getElementById('sound-hint');
 const elSelectAllBtn = document.getElementById('select-all-btn');
@@ -916,11 +969,19 @@ function updateRunningStatus() {
     }
   });
 
-  const upcoming = scheduled
-    .map(e => e.when)
-    .filter(w => w > now)
-    .sort((a, b) => a - b)[0];
-  const text = upcoming ? `next in ${formatCountdown(upcoming - now)}` : 'scheduling…';
+  const next = scheduled
+    .filter(e => e.when > now)
+    .sort((a, b) => a.when - b.when)[0];
+  let text;
+  if (next) {
+    // Name what is coming, not what just played. The prankster wants to know what to
+    // expect; the victims are the ones who should be surprised.
+    const s = SOUNDS.find(x => x.id === next.soundId);
+    const label = s ? s.name.toLowerCase() : 'a sound';
+    text = `next sound: ${label} in ${formatCountdown(next.when - now)}`;
+  } else {
+    text = 'scheduling…';
+  }
   // Only touch the DOM when the displayed value actually changes: hero-sub is
   // aria-live="polite", and rewriting it four times a second made a screen reader read
   // the countdown continuously.
@@ -931,7 +992,9 @@ function updateRunningStatus() {
 }
 
 function onFiredVisible(sound) {
-  elHeroEmoji.textContent = sound.emoji;
+  // The hero used to swap in the fired sound's emoji, which destroyed the pixel art and
+  // told you what had ALREADY played. The upcoming sound is named in hero-sub instead;
+  // here we only pulse the artwork.
   document.body.classList.remove('fired');
   void document.body.offsetWidth; // restart the animation
   document.body.classList.add('fired');
@@ -1326,6 +1389,11 @@ function skipNow() {
 
 elSkip.addEventListener('click', skipNow);
 
+// Relative audio. 'input' fires continuously while dragging so the change is audible as
+// you move; the write to storage is deferred to 'change' so a drag is one save, not fifty.
+elVolume.addEventListener('input',  () => { volumePct = Number(elVolume.value); applyVolume(false); });
+elVolume.addEventListener('change', () => { volumePct = Number(elVolume.value); applyVolume(true);  });
+
 // ── Persistence ──────────────────────────────────────────────────────────────
 
 // Storage keys keep their pre-rename names on purpose. localStorage is scoped to the
@@ -1343,6 +1411,7 @@ function saveState() {
       randomize,
       testMode,
       startWithSound,
+      volumePct,
     }));
   } catch {}
 }
@@ -1360,6 +1429,8 @@ function loadState() {
     if (typeof s.randomize === 'boolean') randomize = s.randomize;
     if (typeof s.testMode === 'boolean') testMode = s.testMode;
     if (typeof s.startWithSound === 'boolean') startWithSound = s.startWithSound;
+    if (typeof s.volumePct === 'number' && isFinite(s.volumePct))
+      volumePct = Math.min(100, Math.max(0, Math.round(s.volumePct)));
 
     // Guarantee a button is always selected: if the saved interval is neither a
     // preset nor the saved custom value, fall back to the default.
@@ -1766,6 +1837,8 @@ refreshOfflineBadge();
 // ── Init ─────────────────────────────────────────────────────────────────────
 
 loadState();
+elVolume.value = String(volumePct);
+applyVolume(false);          // sync the readout before the graph exists; safe when null
 renderSounds();
 updateSelectAllBtn();
 renderIntervals();

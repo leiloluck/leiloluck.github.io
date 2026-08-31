@@ -13,6 +13,7 @@
 > **Dosing panel:** the unit is stated once above the tier row instead of being repeated inside all five tier buttons, which was overflowing them on GHB, GBL, benzodiazepines and heroin. Tier buttons now carry numbers only, and everything explanatory moved into the `note` below (§10.6).
 > **Risk profile:** an ℹ️ button at the top left of the chart opens a provenance panel that states plainly that the bars are an editorial judgement (§2.4). The long caption and the "How these ratings are decided" rubric moved inside it. The peer-reviewed MCDA score now sits **above** the chart so the sourced number leads. Bars snap to band midpoints so a 7 and an 8 draw identically. The **Dehydration** axis was renamed **Fluid & heat balance** because on MDMA the fluid failure that kills includes hyponatremia, from drinking *too much* water, and a tall bar labelled "Dehydration" pointed a tired reader at the wrong behaviour. Axis ticks say "Moderate", matching the tooltip and the rubric.
 > **Selection contrast:** a selected substance, route or dose tier is now filled solid with its accent colour, with black or white text chosen by luminance, a bright ring and a wide glow; unselected buttons recede to a dim outline. The previous states differed only by opacity and were hard to tell apart.
+> **Content corrections:** 16 of the 21 profiles were audited and every one had errors; the applied set is listed in §9.5. The three most serious: GBL carried a Nutt 2010 harm score for a substance that study never assessed (a fabricated citation, now `null`); poppers told a reader that fresh air reverses methaemoglobinaemia, which is the one thing it cannot do, since methaemoglobin cannot bind oxygen at all; and cocaine's chest-pain line, the only acutely lethal item in that profile, was the softest text on the page. Dosing tiers were corrected downward for amphetamine, cannabis and caffeine, all of which sat a level above the PsychonautWiki figures they cited. Nine `visualizer` values were recalibrated where the number contradicted the substance's own note or the axis definition. All 102 source URLs were bulk-checked and the three dead ones fixed.
 > **Chart sizing fix:** `switchTab` now calls `resize()` on both charts. They are built while their tab is `display:none`, so Chart.js measured a 0x0 container and wrote `width:0;height:0` onto the canvas.
 >
 > **Recent changes (2026-07-24, v26.07.24e):** Added four substances (now **21 total**): **Nitrous Oxide (N₂O)**, **Poppers (alkyl nitrites)**, **Benzodiazepines**, and **DMT**, each from a multi-agent, adversarially-verified research pass with local source mirrors under `resources/sources/`. Model choices: N₂O is dosed in balloons/chargers with no duration chart (B12/neuropathy + hypoxia as headline harms); poppers carry no numeric tiers, lead with the PDE5-inhibitor and never-swallow ⚠️, and, having no TripSit combo data, show a "see the Protocol tab" note instead of an empty Combinations panel; benzodiazepines are dosed in diazepam-equivalents (counterfeit/nitazene caveat) and carry a real Nutt-2010 MCDA score (15, rank 10/20); DMT is vaporized-mg with the oral/MAOI (ayahuasca) context noted. Combos: N₂O / benzos / DMT map to their own TripSit keys; benzos correctly flag alcohol / GHB / GBL / heroin as Dangerous.
@@ -531,6 +532,7 @@ Before publishing any content update:
 - [ ] Substance ordering reflects current European prevalence data.
 - [ ] The sober baseline is comprehensive and positioned first.
 - [ ] No em dash anywhere in the file (§9.4).
+- [ ] Every source URL returns 200 (bulk-checked; PubMed 203 and publisher 403 responses are bot-blocking, not dead).
 
 ### 9.4 House Style: No Em Dashes
 
@@ -546,7 +548,23 @@ The **en dash (–) stays, but only inside numeric ranges** (`4–8 g`, `20–40
 
 Check with `grep -c '—' <file>` across all six files. The expected count is zero. (This document is held to the same rule; the only two em dashes left in it are the two in this section, where the character itself is the subject.)
 
-### 9.5 Known Gap: Source Coverage Is Uneven
+### 9.5 Known Gap: Eight Profiles Have Never Been Independently Fact-Checked
+
+The v26.08.30a audit covered **16 of 21** profiles: sober, alcohol, nitrous, poppers, cannabis, DMT, ketamine, LSD, mushrooms, cocaine, amphetamine, MDMA and caffeine (nitrous, poppers and DMT each got two passes, one on dosing and one on harms).
+
+**Never audited: 2C-B, 4-MMC, CMC, GHB, GBL, benzodiazepines, heroin, methamphetamine.** The run hit an API session limit partway through. Three of those (CMC, benzodiazepines, and the GHB/GBL split) are recent additions carrying the same unverified status the audited new profiles turned out to have, and every one of them is a high-consequence substance. **Audit these eight next, before anything else on this list.**
+
+A second gap in the same run: the adversarial verification round never executed, so the corrections applied in v26.08.30a rest on a single research pass plus editorial review, not on the two-vote refutation the workflow was built to run. Re-running verification over the applied changes is the second priority.
+
+What the completed audit found, for calibration on how much to trust an un-audited profile: **every profile checked had errors.** The four "fully sourced" July additions held up best (poppers and nitrous had only minor precision issues), while the oldest profiles carried inverted pharmacology. Recurring failure modes worth grepping for elsewhere:
+
+1. **Dosing tiers drifting one level high**, always in the risky direction, while citing PsychonautWiki, which says otherwise. Found in amphetamine (both routes), cannabis (both routes) and caffeine.
+2. **SSRIs folded in with MAOIs** as if equally dangerous. The repo's own `tripsit-combo/combos.json` rates the SSRI pairings low risk. Found in MDMA and amphetamine.
+3. **Invented or reversed mechanisms** stated with confidence: ketamine described as suppressing the gag reflex (it is the anaesthetic that *preserves* airway reflexes) and as a muscle relaxant (it raises muscle tone); cannabis plus tobacco "amplifying respiratory depression" (THC does not depress breathing, which is why there is no fatal cannabis overdose); protein aiding tryptophan transport (it competes with it).
+4. **Overstating the cited source.** Rule 1.4 cuts both ways, and the audit found more overstatement than understatement.
+5. **The lethal risk written as the softest line on the page.** Cocaine chest pain had no ⚠️ while a slow adulterant risk did; alcohol's risks list led with dehydration and never named alcohol poisoning; the sober profile omitted heat illness entirely.
+
+### 9.6 Known Gap: Source Coverage Is Uneven
 
 §4.2 and the §9.3 checklist require every `detail` to carry at least one entry in `sources`. As of v26.08.30a, **142 of 259 protocol items (55%) meet that bar.** The split runs almost exactly along the age of the profile:
 

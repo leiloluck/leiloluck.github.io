@@ -1,4 +1,4 @@
-# Context — SoundAnnoyer
+# Context — poltergeist.exe
 
 > Subpage of **leiloluck.github.io**. Read this before touching any file in this
 > folder. It is the source of truth for what this app is and the constraints it
@@ -16,7 +16,7 @@ and pocketed**.
 The use case: hide a Bluetooth speaker somewhere in a room. Every once in a while,
 at an unpredictable interval, the app fires one of the selected sounds. People hear
 a meow, look for the cat, find nothing. Silence for a while. Then a knock. They look
-again. It is very funny. SoundAnnoyer is meant to be the **one and only tool**
+again. It is very funny. poltergeist.exe is meant to be the **one and only tool**
 needed to pull this off:
 
 1. Open the app.
@@ -188,9 +188,9 @@ This is the hard part and mirrors the proven approach in `../meditation-timer/`.
 
 Two caches, and the split matters:
 
-- `sound-annoyer-<VERSION>` — the shell. Version-keyed, replaced wholesale on every bump,
+- `poltergeist-<VERSION>` — the shell. Version-keyed, replaced wholesale on every bump,
   so index.html / app.js / styles.css are always from one deploy and can never skew.
-- `sound-annoyer-sounds` — the twelve mp3s. **Unversioned and never evicted.** They are
+- `poltergeist-sounds` — the twelve mp3s. **Unversioned and never evicted.** They are
   1.3 MB and change far less often than the code; keeping them in the versioned cache
   meant every bump silently re-downloaded all of them over mobile data.
 
@@ -209,10 +209,10 @@ skip the sounds cache.
   could bake *old* bytes into the *new* version's cache and, because cache-first never
   revalidates, pin the app to a stale build under a fresh version number **forever**.
   That was the real cause of "I open it and get the old version".
-- **Old-cache eviction is prefix-scoped** to `sound-annoyer-`. `caches.keys()` is
+- **Old-cache eviction is prefix-scoped** to `poltergeist-`. `caches.keys()` is
   per-origin, and this site hosts several apps: the old unscoped filter deleted the
   Meditation Timer's cache — including its 44 MB downloaded soundtrack — on every
-  SoundAnnoyer update, and vice versa.
+  poltergeist.exe update, and vice versa.
 - **`skipWaiting()` is NOT called on install.** The shell is cache-first, so a worker
   that activates mid-session serves the new JS/CSS to a page running the old code. The
   new worker waits; `js/app.js` sends it `SKIP_WAITING` the moment no session is
@@ -282,6 +282,48 @@ skip the sounds cache.
   conspicuously louder/quieter than the next. It is idempotent (skips files already
   on target) and must be re-run after adding new files. See `resources/README.md`.
 - Requires `ffmpeg` on PATH. This is a local authoring step, not part of the page.
+
+---
+
+## Name and location
+
+Renamed from **SoundAnnoyer** to **poltergeist.exe** on 2026-08-31, and the folder moved
+from `/sound-annoyer/` to `/poltergeist/`. The folder is `poltergeist`, not
+`poltergeist.exe`: a URL path ending in `.exe` looks like a malware download and invites
+trouble from scanners and cautious users. `.exe` lives in the display name only.
+
+The move is not free, and the cost was accepted deliberately:
+
+* The manifest `id` changed from `/sound-annoyer/` to `/poltergeist/`. Chrome identifies
+  an installed app by `id`, so **every pre-rename installation is orphaned** and has to be
+  installed again. There is no way to keep an installed app across an `id` change.
+* `/sound-annoyer/` therefore keeps two files as a migration shim, and they should NOT be
+  deleted while anyone might still have the old install or a bookmark:
+  * `index.html` redirects to `/poltergeist/`.
+  * `sw.js` is a retirement worker. A cache-first worker outlives its app: without this,
+    the old worker would keep serving the old cached shell forever and the redirect would
+    never be reached. It deletes only `sound-annoyer-*` caches (`caches.keys()` is per
+    ORIGIN, so a wider sweep would destroy `poltergeist-*` or the meditation timer's 44 MB
+    soundtrack), unregisters itself, then navigates any open window to the new URL.
+* **localStorage keys deliberately kept their old names** (`soundannoyer-state`,
+  `soundannoyer-installed`, `soundannoyer-drift-recovered`). Storage is scoped to the
+  ORIGIN, not the path, so reusing them carries every saved setting across the move.
+  Renaming them would have silently reset armed sounds, interval and toggles.
+
+## Icons and pixel art
+
+The ghost and speaker are hand-plotted 16-colour pixel grids, not emoji and not traced
+artwork. They appear inline in `index.html` as `<svg shape-rendering="crispEdges">` with
+`image-rendering: pixelated`, so the 1px grid stays hard at any size and there is nothing
+extra to precache for offline. The generator lives in the scratchpad, not the repo; the
+grids are small enough to edit by hand in the SVG if needed.
+
+The hero holds that art at rest but is ALSO the flash target when a sound fires, so
+`HERO_IDLE_ART` snapshots it at load and `setHeroIdleArt()` restores it. Without that the
+first fired sound destroys the artwork permanently.
+
+App icons put the same two sprites inside the Win98 window frame, nearest-neighbour
+scaled so the pixels stay square at 192/512/180 and the maskable 512.
 
 ---
 

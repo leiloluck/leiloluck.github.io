@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<!-- index.html — poltergeist.exe
+     Hide a Bluetooth speaker, pick prank sounds, and fire them at random
+     intervals while the phone is locked. Two tabs: Annoy (the whole app) and
+     Settings. PWA: installable, cache-first/offline-first (boots with zero network;
+     updates in the background when online). See context.md for the full brief. -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>poltergeist.exe</title>
+
+  <script>
+    // Catch the install prompt early before app.js loads
+    window.deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      window.deferredPrompt = e;
+    });
+  </script>
+
+  <!-- CSP — same-origin only; inline allowed only for the early install-prompt catcher above; blob: for the near-silent keep-alive clip -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'">
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#000080">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="poltergeist.exe">
+  <link rel="apple-touch-icon" href="icons/icon-180.png?v=26.08.31b">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>😈</text></svg>">
+
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<main class="app">
+
+  <!-- Header -->
+  <header class="header">
+    <h1 class="logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 16" shape-rendering="crispEdges" class="px px-ghost" aria-hidden="true"><rect x="4" y="0" width="6" height="1" fill="#000000"/><rect x="2" y="1" width="2" height="1" fill="#000000"/><rect x="4" y="1" width="6" height="1" fill="#ffffff"/><rect x="10" y="1" width="2" height="1" fill="#000000"/><rect x="1" y="2" width="1" height="1" fill="#000000"/><rect x="2" y="2" width="10" height="1" fill="#ffffff"/><rect x="12" y="2" width="1" height="1" fill="#000000"/><rect x="1" y="3" width="1" height="1" fill="#000000"/><rect x="2" y="3" width="10" height="1" fill="#ffffff"/><rect x="12" y="3" width="1" height="1" fill="#000000"/><rect x="0" y="4" width="1" height="1" fill="#000000"/><rect x="1" y="4" width="12" height="1" fill="#ffffff"/><rect x="13" y="4" width="1" height="1" fill="#000000"/><rect x="0" y="5" width="1" height="1" fill="#000000"/><rect x="1" y="5" width="2" height="1" fill="#ffffff"/><rect x="3" y="5" width="2" height="1" fill="#000000"/><rect x="5" y="5" width="4" height="1" fill="#ffffff"/><rect x="9" y="5" width="2" height="1" fill="#000000"/><rect x="11" y="5" width="2" height="1" fill="#ffffff"/><rect x="13" y="5" width="1" height="1" fill="#000000"/><rect x="0" y="6" width="1" height="1" fill="#000000"/><rect x="1" y="6" width="2" height="1" fill="#ffffff"/><rect x="3" y="6" width="2" height="1" fill="#000000"/><rect x="5" y="6" width="4" height="1" fill="#ffffff"/><rect x="9" y="6" width="2" height="1" fill="#000000"/><rect x="11" y="6" width="2" height="1" fill="#ffffff"/><rect x="13" y="6" width="1" height="1" fill="#000000"/><rect x="0" y="7" width="1" height="1" fill="#000000"/><rect x="1" y="7" width="12" height="1" fill="#ffffff"/><rect x="13" y="7" width="1" height="1" fill="#000000"/><rect x="0" y="8" width="1" height="1" fill="#000000"/><rect x="1" y="8" width="5" height="1" fill="#ffffff"/><rect x="6" y="8" width="2" height="1" fill="#000000"/><rect x="8" y="8" width="5" height="1" fill="#ffffff"/><rect x="13" y="8" width="1" height="1" fill="#000000"/><rect x="0" y="9" width="1" height="1" fill="#000000"/><rect x="1" y="9" width="12" height="1" fill="#ffffff"/><rect x="13" y="9" width="1" height="1" fill="#000000"/><rect x="0" y="10" width="1" height="1" fill="#000000"/><rect x="1" y="10" width="12" height="1" fill="#ffffff"/><rect x="13" y="10" width="1" height="1" fill="#000000"/><rect x="0" y="11" width="1" height="1" fill="#000000"/><rect x="1" y="11" width="12" height="1" fill="#ffffff"/><rect x="13" y="11" width="1" height="1" fill="#000000"/><rect x="0" y="12" width="1" height="1" fill="#000000"/><rect x="1" y="12" width="12" height="1" fill="#ffffff"/><rect x="13" y="12" width="1" height="1" fill="#000000"/><rect x="0" y="13" width="1" height="1" fill="#000000"/><rect x="1" y="13" width="12" height="1" fill="#ffffff"/><rect x="13" y="13" width="1" height="1" fill="#000000"/><rect x="0" y="14" width="1" height="1" fill="#000000"/><rect x="1" y="14" width="1" height="1" fill="#ffffff"/><rect x="2" y="14" width="2" height="1" fill="#000000"/><rect x="4" y="14" width="2" height="1" fill="#ffffff"/><rect x="6" y="14" width="2" height="1" fill="#000000"/><rect x="8" y="14" width="2" height="1" fill="#ffffff"/><rect x="10" y="14" width="2" height="1" fill="#000000"/><rect x="12" y="14" width="1" height="1" fill="#ffffff"/><rect x="13" y="14" width="1" height="1" fill="#000000"/><rect x="1" y="15" width="1" height="1" fill="#000000"/><rect x="4" y="15" width="2" height="1" fill="#000000"/><rect x="8" y="15" width="2" height="1" fill="#000000"/><rect x="12" y="15" width="1" height="1" fill="#000000"/></svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 14" shape-rendering="crispEdges" class="px px-speaker" aria-hidden="true"><rect x="6" y="0" width="2" height="1" fill="#000000"/><rect x="5" y="1" width="3" height="1" fill="#000000"/><rect x="10" y="1" width="1" height="1" fill="#000000"/><rect x="4" y="2" width="2" height="1" fill="#000000"/><rect x="6" y="2" width="1" height="1" fill="#808080"/><rect x="7" y="2" width="1" height="1" fill="#000000"/><rect x="10" y="2" width="1" height="1" fill="#000000"/><rect x="13" y="2" width="1" height="1" fill="#000000"/><rect x="3" y="3" width="2" height="1" fill="#000000"/><rect x="5" y="3" width="2" height="1" fill="#808080"/><rect x="7" y="3" width="1" height="1" fill="#000000"/><rect x="9" y="3" width="2" height="1" fill="#000000"/><rect x="13" y="3" width="1" height="1" fill="#000000"/><rect x="0" y="4" width="4" height="1" fill="#000000"/><rect x="4" y="4" width="3" height="1" fill="#808080"/><rect x="7" y="4" width="1" height="1" fill="#000000"/><rect x="9" y="4" width="1" height="1" fill="#000000"/><rect x="11" y="4" width="1" height="1" fill="#000000"/><rect x="13" y="4" width="1" height="1" fill="#000000"/><rect x="15" y="4" width="1" height="1" fill="#000000"/><rect x="0" y="5" width="1" height="1" fill="#000000"/><rect x="1" y="5" width="6" height="1" fill="#808080"/><rect x="7" y="5" width="1" height="1" fill="#000000"/><rect x="9" y="5" width="1" height="1" fill="#000000"/><rect x="11" y="5" width="1" height="1" fill="#000000"/><rect x="13" y="5" width="1" height="1" fill="#000000"/><rect x="15" y="5" width="1" height="1" fill="#000000"/><rect x="0" y="6" width="1" height="1" fill="#000000"/><rect x="1" y="6" width="6" height="1" fill="#808080"/><rect x="7" y="6" width="1" height="1" fill="#000000"/><rect x="9" y="6" width="1" height="1" fill="#000000"/><rect x="11" y="6" width="1" height="1" fill="#000000"/><rect x="13" y="6" width="1" height="1" fill="#000000"/><rect x="15" y="6" width="1" height="1" fill="#000000"/><rect x="0" y="7" width="1" height="1" fill="#000000"/><rect x="1" y="7" width="6" height="1" fill="#808080"/><rect x="7" y="7" width="1" height="1" fill="#000000"/><rect x="9" y="7" width="1" height="1" fill="#000000"/><rect x="11" y="7" width="1" height="1" fill="#000000"/><rect x="13" y="7" width="1" height="1" fill="#000000"/><rect x="15" y="7" width="1" height="1" fill="#000000"/><rect x="0" y="8" width="1" height="1" fill="#000000"/><rect x="1" y="8" width="6" height="1" fill="#808080"/><rect x="7" y="8" width="1" height="1" fill="#000000"/><rect x="9" y="8" width="1" height="1" fill="#000000"/><rect x="11" y="8" width="1" height="1" fill="#000000"/><rect x="13" y="8" width="1" height="1" fill="#000000"/><rect x="15" y="8" width="1" height="1" fill="#000000"/><rect x="0" y="9" width="4" height="1" fill="#000000"/><rect x="4" y="9" width="3" height="1" fill="#808080"/><rect x="7" y="9" width="1" height="1" fill="#000000"/><rect x="9" y="9" width="1" height="1" fill="#000000"/><rect x="11" y="9" width="1" height="1" fill="#000000"/><rect x="13" y="9" width="1" height="1" fill="#000000"/><rect x="15" y="9" width="1" height="1" fill="#000000"/><rect x="3" y="10" width="2" height="1" fill="#000000"/><rect x="5" y="10" width="2" height="1" fill="#808080"/><rect x="7" y="10" width="1" height="1" fill="#000000"/><rect x="9" y="10" width="2" height="1" fill="#000000"/><rect x="13" y="10" width="1" height="1" fill="#000000"/><rect x="4" y="11" width="2" height="1" fill="#000000"/><rect x="6" y="11" width="1" height="1" fill="#808080"/><rect x="7" y="11" width="1" height="1" fill="#000000"/><rect x="10" y="11" width="1" height="1" fill="#000000"/><rect x="13" y="11" width="1" height="1" fill="#000000"/><rect x="5" y="12" width="3" height="1" fill="#000000"/><rect x="10" y="12" width="1" height="1" fill="#000000"/><rect x="6" y="13" width="2" height="1" fill="#000000"/></svg><span class="logo-name">poltergeist.exe</span></h1>
+    <!-- Stops everything, hands back the audio device, then closes the window.
+         window.close() is only honoured for an installed app, so in a plain tab this
+         falls back to a message instead of looking broken. See shutdownApp(). -->
+    <button class="btn-close" id="close-btn" type="button" aria-label="Close app" title="Close app">&#215;</button>
+  </header>
+
+  <!-- Tab switcher: Annoy (the whole app) | Settings (toggles + help/install/update) -->
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button class="tab" id="tab-annoy" type="button" role="tab" aria-selected="true" aria-controls="panel-annoy">🔊 Annoy</button>
+    <button class="tab" id="tab-settings" type="button" role="tab" aria-selected="false" aria-controls="panel-settings">⚙ Settings</button>
+    <button class="tab tab-info" id="tab-info" type="button" role="tab" aria-selected="false" aria-controls="panel-info" aria-label="Info" title="Info">ⓘ</button>
+  </nav>
+
+  <!-- ── Tab 1: the entire app ── -->
+  <section class="panel" id="panel-annoy" role="tabpanel" aria-labelledby="tab-annoy">
+
+    <!-- Status / hero -->
+    <section class="hero">
+      <div class="hero-emoji" id="hero-emoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 16" shape-rendering="crispEdges" class="px px-hero" aria-hidden="true"><rect x="4" y="0" width="6" height="1" fill="#000000"/><rect x="2" y="1" width="2" height="1" fill="#000000"/><rect x="4" y="1" width="6" height="1" fill="#ffffff"/><rect x="10" y="1" width="2" height="1" fill="#000000"/><rect x="1" y="2" width="1" height="1" fill="#000000"/><rect x="2" y="2" width="10" height="1" fill="#ffffff"/><rect x="12" y="2" width="1" height="1" fill="#000000"/><rect x="1" y="3" width="1" height="1" fill="#000000"/><rect x="2" y="3" width="10" height="1" fill="#ffffff"/><rect x="12" y="3" width="1" height="1" fill="#000000"/><rect x="0" y="4" width="1" height="1" fill="#000000"/><rect x="1" y="4" width="12" height="1" fill="#ffffff"/><rect x="13" y="4" width="1" height="1" fill="#000000"/><rect x="0" y="5" width="1" height="1" fill="#000000"/><rect x="1" y="5" width="2" height="1" fill="#ffffff"/><rect x="3" y="5" width="2" height="1" fill="#000000"/><rect x="5" y="5" width="4" height="1" fill="#ffffff"/><rect x="9" y="5" width="2" height="1" fill="#000000"/><rect x="11" y="5" width="2" height="1" fill="#ffffff"/><rect x="13" y="5" width="1" height="1" fill="#000000"/><rect x="0" y="6" width="1" height="1" fill="#000000"/><rect x="1" y="6" width="2" height="1" fill="#ffffff"/><rect x="3" y="6" width="2" height="1" fill="#000000"/><rect x="5" y="6" width="4" height="1" fill="#ffffff"/><rect x="9" y="6" width="2" height="1" fill="#000000"/><rect x="11" y="6" width="2" height="1" fill="#ffffff"/><rect x="13" y="6" width="1" height="1" fill="#000000"/><rect x="0" y="7" width="1" height="1" fill="#000000"/><rect x="1" y="7" width="12" height="1" fill="#ffffff"/><rect x="13" y="7" width="1" height="1" fill="#000000"/><rect x="0" y="8" width="1" height="1" fill="#000000"/><rect x="1" y="8" width="5" height="1" fill="#ffffff"/><rect x="6" y="8" width="2" height="1" fill="#000000"/><rect x="8" y="8" width="5" height="1" fill="#ffffff"/><rect x="13" y="8" width="1" height="1" fill="#000000"/><rect x="0" y="9" width="1" height="1" fill="#000000"/><rect x="1" y="9" width="12" height="1" fill="#ffffff"/><rect x="13" y="9" width="1" height="1" fill="#000000"/><rect x="0" y="10" width="1" height="1" fill="#000000"/><rect x="1" y="10" width="12" height="1" fill="#ffffff"/><rect x="13" y="10" width="1" height="1" fill="#000000"/><rect x="0" y="11" width="1" height="1" fill="#000000"/><rect x="1" y="11" width="12" height="1" fill="#ffffff"/><rect x="13" y="11" width="1" height="1" fill="#000000"/><rect x="0" y="12" width="1" height="1" fill="#000000"/><rect x="1" y="12" width="12" height="1" fill="#ffffff"/><rect x="13" y="12" width="1" height="1" fill="#000000"/><rect x="0" y="13" width="1" height="1" fill="#000000"/><rect x="1" y="13" width="12" height="1" fill="#ffffff"/><rect x="13" y="13" width="1" height="1" fill="#000000"/><rect x="0" y="14" width="1" height="1" fill="#000000"/><rect x="1" y="14" width="1" height="1" fill="#ffffff"/><rect x="2" y="14" width="2" height="1" fill="#000000"/><rect x="4" y="14" width="2" height="1" fill="#ffffff"/><rect x="6" y="14" width="2" height="1" fill="#000000"/><rect x="8" y="14" width="2" height="1" fill="#ffffff"/><rect x="10" y="14" width="2" height="1" fill="#000000"/><rect x="12" y="14" width="1" height="1" fill="#ffffff"/><rect x="13" y="14" width="1" height="1" fill="#000000"/><rect x="1" y="15" width="1" height="1" fill="#000000"/><rect x="4" y="15" width="2" height="1" fill="#000000"/><rect x="8" y="15" width="2" height="1" fill="#000000"/><rect x="12" y="15" width="1" height="1" fill="#000000"/></svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 14" shape-rendering="crispEdges" class="px px-hero" aria-hidden="true"><rect x="6" y="0" width="2" height="1" fill="#000000"/><rect x="5" y="1" width="3" height="1" fill="#000000"/><rect x="10" y="1" width="1" height="1" fill="#000000"/><rect x="4" y="2" width="2" height="1" fill="#000000"/><rect x="6" y="2" width="1" height="1" fill="#808080"/><rect x="7" y="2" width="1" height="1" fill="#000000"/><rect x="10" y="2" width="1" height="1" fill="#000000"/><rect x="13" y="2" width="1" height="1" fill="#000000"/><rect x="3" y="3" width="2" height="1" fill="#000000"/><rect x="5" y="3" width="2" height="1" fill="#808080"/><rect x="7" y="3" width="1" height="1" fill="#000000"/><rect x="9" y="3" width="2" height="1" fill="#000000"/><rect x="13" y="3" width="1" height="1" fill="#000000"/><rect x="0" y="4" width="4" height="1" fill="#000000"/><rect x="4" y="4" width="3" height="1" fill="#808080"/><rect x="7" y="4" width="1" height="1" fill="#000000"/><rect x="9" y="4" width="1" height="1" fill="#000000"/><rect x="11" y="4" width="1" height="1" fill="#000000"/><rect x="13" y="4" width="1" height="1" fill="#000000"/><rect x="15" y="4" width="1" height="1" fill="#000000"/><rect x="0" y="5" width="1" height="1" fill="#000000"/><rect x="1" y="5" width="6" height="1" fill="#808080"/><rect x="7" y="5" width="1" height="1" fill="#000000"/><rect x="9" y="5" width="1" height="1" fill="#000000"/><rect x="11" y="5" width="1" height="1" fill="#000000"/><rect x="13" y="5" width="1" height="1" fill="#000000"/><rect x="15" y="5" width="1" height="1" fill="#000000"/><rect x="0" y="6" width="1" height="1" fill="#000000"/><rect x="1" y="6" width="6" height="1" fill="#808080"/><rect x="7" y="6" width="1" height="1" fill="#000000"/><rect x="9" y="6" width="1" height="1" fill="#000000"/><rect x="11" y="6" width="1" height="1" fill="#000000"/><rect x="13" y="6" width="1" height="1" fill="#000000"/><rect x="15" y="6" width="1" height="1" fill="#000000"/><rect x="0" y="7" width="1" height="1" fill="#000000"/><rect x="1" y="7" width="6" height="1" fill="#808080"/><rect x="7" y="7" width="1" height="1" fill="#000000"/><rect x="9" y="7" width="1" height="1" fill="#000000"/><rect x="11" y="7" width="1" height="1" fill="#000000"/><rect x="13" y="7" width="1" height="1" fill="#000000"/><rect x="15" y="7" width="1" height="1" fill="#000000"/><rect x="0" y="8" width="1" height="1" fill="#000000"/><rect x="1" y="8" width="6" height="1" fill="#808080"/><rect x="7" y="8" width="1" height="1" fill="#000000"/><rect x="9" y="8" width="1" height="1" fill="#000000"/><rect x="11" y="8" width="1" height="1" fill="#000000"/><rect x="13" y="8" width="1" height="1" fill="#000000"/><rect x="15" y="8" width="1" height="1" fill="#000000"/><rect x="0" y="9" width="4" height="1" fill="#000000"/><rect x="4" y="9" width="3" height="1" fill="#808080"/><rect x="7" y="9" width="1" height="1" fill="#000000"/><rect x="9" y="9" width="1" height="1" fill="#000000"/><rect x="11" y="9" width="1" height="1" fill="#000000"/><rect x="13" y="9" width="1" height="1" fill="#000000"/><rect x="15" y="9" width="1" height="1" fill="#000000"/><rect x="3" y="10" width="2" height="1" fill="#000000"/><rect x="5" y="10" width="2" height="1" fill="#808080"/><rect x="7" y="10" width="1" height="1" fill="#000000"/><rect x="9" y="10" width="2" height="1" fill="#000000"/><rect x="13" y="10" width="1" height="1" fill="#000000"/><rect x="4" y="11" width="2" height="1" fill="#000000"/><rect x="6" y="11" width="1" height="1" fill="#808080"/><rect x="7" y="11" width="1" height="1" fill="#000000"/><rect x="10" y="11" width="1" height="1" fill="#000000"/><rect x="13" y="11" width="1" height="1" fill="#000000"/><rect x="5" y="12" width="3" height="1" fill="#000000"/><rect x="10" y="12" width="1" height="1" fill="#000000"/><rect x="6" y="13" width="2" height="1" fill="#000000"/></svg></div>
+      <p class="hero-status" id="hero-status">active noise confuser</p>
+      <p class="hero-sub" id="hero-sub" aria-live="polite"></p>
+    </section>
+
+    <!-- THE button (+ skip-ahead while running) -->
+    <section class="launch-section">
+      <button class="btn-launch" id="btn-launch">UNLEASH</button>
+      <button class="btn-skip hidden" id="btn-skip" type="button" aria-label="Play a sound now" title="Play a sound now">Play a sound now</button>
+    </section>
+
+    <!-- Sound selection -->
+    <section class="section sounds-section">
+      <p class="section-label">Sounds
+        <span class="label-right">
+          <span class="section-hint" id="sound-hint">tap to arm</span>
+          <button class="btn-tiny" id="select-all-btn" type="button">Select all</button>
+        </span>
+      </p>
+      <div class="sound-grid" id="sound-group"></div>
+    </section>
+
+    <!-- Interval selection -->
+    <section class="section">
+      <p class="section-label">How often <span class="section-hint">randomized around this</span></p>
+      <div class="interval-grid" id="interval-group"></div>
+    </section>
+
+  </section>
+
+  <!-- ── Tab 3: info ── -->
+  <section class="panel hidden" id="panel-info" role="tabpanel" aria-labelledby="tab-info">
+    <section class="section">
+      <p class="info-lead">This app is designed to confuse people with random sounds.
+         Activate it in obscure places using your phone or a speaker.</p>
+      <p class="section-label">How to use</p>
+      <ol class="info-steps">
+        <li>Select the sounds you want.</li>
+        <li>Select how often they should play.</li>
+        <li>Press Activate, then hide the phone or speaker.</li>
+      </ol>
+    </section>
+  </section>
+
+  <!-- ── Tab 2: settings ── -->
+  <section class="panel hidden" id="panel-settings" role="tabpanel" aria-labelledby="tab-settings">
+
+    <!-- Toggles: chaos timing + test mode + start with a sound -->
+    <section class="section toggle-grid">
+      <button class="toggle" id="randomize-toggle" role="switch" aria-checked="true">
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        <span class="toggle-text">
+          <span class="toggle-title">Chaos timing</span>
+          <span class="toggle-sub" id="randomize-sub">gaps wobble 0.75x-1.25x</span>
+        </span>
+      </button>
+      <button class="toggle toggle-test" id="testmode-toggle" role="switch" aria-checked="false">
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        <span class="toggle-text">
+          <span class="toggle-title">Test mode</span>
+          <span class="toggle-sub" id="testmode-sub">preview each sound</span>
+        </span>
+      </button>
+      <button class="toggle toggle-start" id="startsound-toggle" role="switch" aria-checked="true">
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        <span class="toggle-text">
+          <span class="toggle-title">Start with a sound</span>
+          <span class="toggle-sub" id="startsound-sub">fires one instantly</span>
+        </span>
+      </button>
+    </section>
+
+    <!-- App actions: help / install / update -->
+    <section class="section settings-actions">
+      <button class="btn-small" id="help-btn">? How it works</button>
+      <button class="btn-small" id="install-btn">📲 Install to Home Screen</button>
+      <button class="btn-small" id="update-btn">Update</button>
+    </section>
+
+    <!-- Version + offline status (version is tappable: checks for an update) -->
+    <section class="section settings-meta">
+      <button class="version" id="version" type="button" title="Check for updates">v26.08.31b</button>
+      <span class="offline-badge" id="offline-badge">✓ works offline</span>
+    </section>
+
+  </section>
+
+</main>
+
+<!-- Custom interval modal -->
+<div class="modal-layer hidden" id="custom-modal-layer">
+  <button class="modal-backdrop" id="custom-modal-dismiss" aria-label="Close custom interval dialog"></button>
+
+  <section class="custom-modal" id="custom-modal" role="dialog" aria-modal="true" aria-labelledby="custom-modal-title" tabindex="-1">
+    <p class="custom-modal-kicker">Custom interval</p>
+    <h2 id="custom-modal-title">Set the base gap</h2>
+    <p class="custom-modal-copy">Time between sounds. Chaos timing still wobbles around it.</p>
+
+    <form class="custom-modal-form" id="custom-form" novalidate>
+      <p class="custom-modal-label">Duration</p>
+
+      <div class="custom-input-wrap custom-display" id="custom-display" aria-live="polite" aria-atomic="true">
+        <span class="custom-input" id="custom-value">5</span>
+        <button type="button" class="custom-unit-btn" id="custom-unit-btn">MIN</button>
+      </div>
+
+      <div class="custom-keypad" aria-label="Custom interval number pad">
+        <button type="button" class="custom-keypad-btn" data-key="1">1</button>
+        <button type="button" class="custom-keypad-btn" data-key="2">2</button>
+        <button type="button" class="custom-keypad-btn" data-key="3">3</button>
+        <button type="button" class="custom-keypad-btn" data-key="4">4</button>
+        <button type="button" class="custom-keypad-btn" data-key="5">5</button>
+        <button type="button" class="custom-keypad-btn" data-key="6">6</button>
+        <button type="button" class="custom-keypad-btn" data-key="7">7</button>
+        <button type="button" class="custom-keypad-btn" data-key="8">8</button>
+        <button type="button" class="custom-keypad-btn" data-key="9">9</button>
+        <button type="button" class="custom-keypad-btn custom-keypad-btn-muted" data-action="clear">Clear</button>
+        <button type="button" class="custom-keypad-btn" data-key="0">0</button>
+        <button type="button" class="custom-keypad-btn custom-keypad-btn-muted" data-action="backspace">Del</button>
+      </div>
+
+      <p class="custom-modal-error" id="custom-error"></p>
+
+      <div class="custom-modal-actions">
+        <button type="button" class="btn-cancel custom-modal-btn" id="custom-cancel">Cancel</button>
+        <button type="submit" class="btn-save custom-modal-btn">Save</button>
+      </div>
+    </form>
+  </section>
+</div>
+
+<!-- Help modal -->
+<div class="modal-layer hidden" id="help-modal-layer">
+  <button class="modal-backdrop" id="help-modal-dismiss" aria-label="Close help dialog"></button>
+  <section class="help-modal" id="help-modal" role="dialog" aria-modal="true" aria-labelledby="help-modal-title" tabindex="-1">
+    <p class="help-modal-kicker">How it works</p>
+    <h2 id="help-modal-title">poltergeist.exe</h2>
+    <p class="help-summary">Pick some sounds. Set how often they fire. Hit UNLEASH and lock your phone. Walk away.</p>
+    <button class="help-details-btn" id="help-details-btn">+ more details</button>
+    <div class="help-details hidden" id="help-details">
+      <p>Sounds play at random intervals around the time you set. With chaos timing on, each gap is between 0.75x and 1.25x the base interval - irregular enough that nobody can predict when the next one hits.</p>
+      <p>Everything is pre-scheduled on the audio clock, so sounds keep playing through a locked screen in almost all cases. No timers, no polling.</p>
+      <p><strong>For the most reliable results:</strong> install poltergeist.exe from <strong>Chrome</strong> (Settings → Install to Home Screen) rather than running it in a browser tab, then check that Android isn't battery-restricting it, Settings → Apps → poltergeist.exe → Battery → Unrestricted. Once installed from Chrome it appears there under its own name, separate from the browser.</p>
+      <p><strong>Brave:</strong> Brave can only add a shortcut, not a real installed app, so Android never gives poltergeist.exe its own battery setting and background sounds are more likely to be cut off. The app still works, but install from Chrome if you want it to survive a pocketed phone.</p>
+      <p>Works over Bluetooth. Connect your speaker before hitting UNLEASH. A near-silent signal runs in the background to keep the speaker awake during long gaps.</p>
+      <p>Use Test Mode to preview each sound before hiding the device. It exits the active session automatically.</p>
+    </div>
+    <button class="help-close-btn" id="help-close-btn">Close</button>
+  </section>
+</div>
+
+<!-- Install instructions modal (shown when the OS can't fire a native install prompt,
+     e.g. iPhone Safari). The steps are filled in per-platform by app.js. -->
+<div class="modal-layer hidden" id="install-modal-layer">
+  <button class="modal-backdrop" id="install-modal-dismiss" aria-label="Close install dialog"></button>
+  <section class="help-modal" id="install-modal" role="dialog" aria-modal="true" aria-labelledby="install-modal-title" tabindex="-1">
+    <p class="help-modal-kicker">Install</p>
+    <h2 id="install-modal-title">Add to your home screen</h2>
+    <p class="help-summary" id="install-modal-summary">Install poltergeist.exe as an app. Works fully offline, and locked-screen playback is more reliable once installed.</p>
+    <ol class="install-steps" id="install-steps"></ol>
+    <!-- Only shown when the browser actually has a native prompt to give us. On Brave
+         that prompt exists but only produces a shortcut, so the steps above recommend
+         Chrome first and this stays as the deliberate second choice. -->
+    <!-- Android + Brave only: reopens this page in Chrome via an intent: URL, because
+         Chrome is what mints a real WebAPK (an actual installed app). Hidden elsewhere. -->
+    <button class="help-close-btn hidden" id="open-chrome-btn">Open in Chrome</button>
+    <button class="help-close-btn hidden" id="install-proceed-btn">Install here anyway</button>
+    <button class="help-close-btn" id="install-close-btn">Got it</button>
+  </section>
+</div>
+
+<script src="js/app.js"></script>
+
+</body>
+</html>

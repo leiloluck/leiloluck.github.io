@@ -153,11 +153,22 @@ button {
   align-items: center;
   gap: 3px;
 }
-.logo-annoy { color: #fff; }
-.logo-imp {
-  font-size: 13px;
-  animation: imp-wiggle 3.6s ease-in-out infinite;
-  transform-origin: 50% 70%;
+.logo-name { color: #fff; }
+
+/* Pixel art. image-rendering: pixelated keeps the 1px grid hard at any scale, which is
+   the whole point: a smoothed pixel icon reads as a mistake, not a style. The SVGs are
+   inline in the HTML rather than separate files so there is nothing extra to precache
+   for offline and no second request on first paint. */
+.px { display: block; image-rendering: pixelated; shape-rendering: crispEdges; }
+.px-ghost   { height: 15px; width: auto; }
+.px-speaker { height: 13px; width: auto; }
+.logo .px   { flex: 0 0 auto; }
+
+/* The ghost drifts, because a poltergeist should not sit still. */
+.px-ghost { animation: ghost-drift 4.2s ease-in-out infinite; }
+@keyframes ghost-drift {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-1.5px); }
 }
 @keyframes imp-wiggle {
   0%, 88%, 100% { transform: rotate(0deg); }
@@ -354,7 +365,17 @@ button {
   background: var(--btn-hilite);
   box-shadow: var(--field);
 }
-.hero-emoji  { font-size: 42px; line-height: 1; }
+.hero-emoji {
+  font-size: 42px;              /* still used when a firing sound flashes its emoji */
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 52px;
+}
+.px-hero { height: 50px; width: auto; }
+.px-hero:last-child { height: 42px; }
 .hero-status { font-size: 13px; font-weight: bold; }
 .hero-sub    { font-size: 11px; color: var(--muted); min-height: 14px; }
 

@@ -384,16 +384,29 @@ button {
 .px-hero { height: 50px; width: auto; }
 .px-hero-speaker { height: 42px; }
 
-/* The speaker is silent unless the app is actually making noise. Hiding the waves is
-   the single clearest signal of state anywhere in the UI. */
+/* Waves are off by default. The HERO speaker earns them only while sound is actually
+   being made, which is the single clearest state signal anywhere in the UI. */
 .wave { opacity: 0; }
-body.running .wave-1 { opacity: 1; }
-/* Two frames, nothing in between: steps(1) holds each state rather than fading, which
-   is what a 1998 animation would have done. */
-body.running .wave-2 { animation: wave-a 900ms steps(1, end) infinite; }
-body.running .wave-3 { animation: wave-b 900ms steps(1, end) infinite; }
-@keyframes wave-a { 0%, 49% { opacity: 0 } 50%, 100% { opacity: 1 } }
-@keyframes wave-b { 0%, 49% { opacity: 0 } 50%, 100% { opacity: 1 } }
+
+/* Decorative speakers, in the title bar and beside the volume slider, are labels rather
+   than status: they always show the full three bars. */
+.logo .px-speaker .wave,
+.px-vol .wave { opacity: 1; }
+
+/* Three frames, cycling 1 -> 2 -> 3 bars and back. Every stop is a hard cut with no
+   interpolated tween, so it reads as a sprite flipbook rather than a CSS fade, which is
+   what a 1998 animation actually looked like. */
+body.running .px-hero-speaker .wave-1 { opacity: 1; }
+body.running .px-hero-speaker .wave-2 { animation: wave-2 750ms linear infinite; }
+body.running .px-hero-speaker .wave-3 { animation: wave-3 750ms linear infinite; }
+@keyframes wave-2 {
+  0%,      33.32% { opacity: 0; }
+  33.33%, 100%    { opacity: 1; }
+}
+@keyframes wave-3 {
+  0%,      66.65% { opacity: 0; }
+  66.66%, 100%    { opacity: 1; }
+}
 
 /* ── Relative audio ─────────────────────────────────────────────────────── */
 
@@ -406,8 +419,6 @@ body.running .wave-3 { animation: wave-b 900ms steps(1, end) infinite; }
   box-shadow: var(--field);
 }
 .px-vol { height: 15px; width: auto; flex: 0 0 auto; }
-.px-vol .wave-1 { opacity: 1; }      /* the label's own icon always shows sound */
-.px-vol .wave-2 { opacity: 1; }
 .volume-label { font-size: 12px; flex: 0 0 auto; }
 .volume-value { font-size: 11px; min-width: 34px; text-align: right; flex: 0 0 auto; }
 
@@ -841,4 +852,9 @@ button:focus-visible { outline: 1px dotted var(--text); outline-offset: -4px; }
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
+  /* The blanket rule above collapses the wave cycle to a single 0.001ms pass, and with
+     no fill-mode the bars snap back to their base opacity: 0. That silently removed the
+     running-state signal for anyone with Reduce Motion on. Show all three statically
+     instead, so the meaning survives without any movement. */
+  body.running .px-hero-speaker .wave { opacity: 1 !important; }
 }

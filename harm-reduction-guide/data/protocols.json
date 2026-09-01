@@ -49,21 +49,21 @@
         "essential": [
           {
             "short": "Hydration: Drink to thirst, with electrolytes. Do not force extra water down.",
-            "detail": "You can lose roughly 500 to 1500 mg of sodium an hour in sweat, more if you sweat heavily. The dangerous failure here is the opposite of dehydration: drinking more fluid than you sweat out dilutes your blood sodium and causes exertional hyponatremia, which can be fatal and starts with headache, confusion and seizures. Sports drinks do not prevent it, because they are also dilute. Drinking to thirst does. Electrolytes still help with cramping and general recovery.",
+            "detail": "You can lose roughly 500 to 1500 mg of sodium an hour in sweat, more if you sweat heavily. The dangerous failure here is the opposite of dehydration: drinking more fluid than you sweat out dilutes your blood sodium and causes exertional hyponatremia, which can be fatal. The early signs are vague: nausea, vomiting, dizziness, headache and puffiness from held fluid. Confusion, seizures and coma come later and mean call an ambulance now. Sports drinks do not prevent it, because they are also dilute. Drinking to thirst does. Electrolytes still help with cramping and general recovery.",
             "sources": [
               {
-                "label": "3rd International Exercise-Associated Hyponatremia Consensus (Hew-Butler et al. 2015)",
-                "url": "https://pubmed.ncbi.nlm.nih.gov/25623389/"
+                "label": "Hew-Butler et al. 2015: 3rd International Exercise-Associated Hyponatremia Consensus",
+                "url": "https://pubmed.ncbi.nlm.nih.gov/26102445/"
               },
               {
-                "label": "Baker et al. 2019: normative sweat sodium loss data",
-                "url": "https://pubmed.ncbi.nlm.nih.gov/30758029/"
+                "label": "Baker et al. 2019: normative sweating rate and sweat sodium loss in athletes",
+                "url": "https://pubmed.ncbi.nlm.nih.gov/31230518/"
               }
             ]
           },
           {
             "short": "Heat: Take cool breaks and step out of the crowd before you feel unwell.",
-            "detail": "Hours of dancing in a hot, dense crowd loads your body faster than it can shed heat. Warning signs are cramping, nausea, a pounding headache and stopping sweating. Confusion or a stumbling walk in a hot person is heat stroke, which is a medical emergency: cool them fast and call for help.",
+            "detail": "Hours of dancing in a hot, dense crowd loads your body faster than it can shed heat. Warning signs are cramping, nausea, dizziness and a pounding headache. Do not wait for sweating to stop: in exertional heat stroke people are usually still sweating heavily. Confusion or a stumbling walk in a hot person is heat stroke, which is a medical emergency: cool them fast and call for help.",
             "sources": [
               {
                 "label": "StatPearls: Exertional heat stroke",
@@ -96,8 +96,8 @@
             "detail": "20 to 40 g of slow protein such as casein before sleep gives a steady supply of amino acids for overnight muscle repair. Carbohydrate is what helps tryptophan reach the brain, where it becomes serotonin and then melatonin; protein works against that step, so expect the sleep benefit to be small.",
             "sources": [
               {
-                "label": "Fernstrom & Wurtman: brain serotonin and diet composition",
-                "url": "https://pubmed.ncbi.nlm.nih.gov/5539836/"
+                "label": "Fernstrom & Wurtman 1971: brain serotonin content after a carbohydrate diet",
+                "url": "https://pubmed.ncbi.nlm.nih.gov/5120086/"
               }
             ]
           },
@@ -106,8 +106,8 @@
             "detail": "Magnesium relaxes muscle by acting as a calcium antagonist at the neuromuscular junction. In the brain it blocks the NMDA receptor and mildly boosts GABA, which calms nerve activity. Sleep trials are small and low quality, so expect a modest effect at best.",
             "sources": [
               {
-                "label": "Mah & Pitre: magnesium for insomnia, systematic review",
-                "url": "https://pubmed.ncbi.nlm.nih.gov/34719398/"
+                "label": "Mah & Pitre 2021: oral magnesium for insomnia, systematic review",
+                "url": "https://pubmed.ncbi.nlm.nih.gov/33865376/"
               }
             ]
           }
@@ -117,11 +117,15 @@
         "essential": [
           {
             "short": "Wake up: Expose eyes to natural sunlight promptly.",
-            "detail": "Morning light is what re-anchors your body clock. Grogginess comes mostly from being woken out of deep sleep, which is more likely after a short night. If you do sleep in, get daylight on your eyes as soon as you are up.",
+            "detail": "Morning light is what re-anchors your body clock, because light reaching the eye is the main signal that sets it. Grogginess comes mostly from being woken out of deep sleep, which is more likely after a short night. If you do sleep in, get daylight on your eyes as soon as you are up.",
             "sources": [
               {
                 "label": "StatPearls: Physiology, Sleep Stages",
                 "url": "https://www.ncbi.nlm.nih.gov/books/NBK526132/"
+              },
+              {
+                "label": "StatPearls: Physiology, Circadian Rhythm",
+                "url": "https://www.ncbi.nlm.nih.gov/books/NBK519507/"
               }
             ]
           }
@@ -172,7 +176,7 @@
           "max": 40
         },
         "heavy": 40,
-        "note": "One standard drink is about 10 g of ethanol: a 0.3 L beer, a 0.1 L glass of wine or a 0.02 L shot of spirits. This is the EU and WHO convention. A US standard drink is about 14 g.",
+        "note": "One standard drink is about 10 g of ethanol: a 0.25 L beer at 5 percent, a 0.1 L glass of wine at 12 percent or a 0.03 L shot of 40 percent spirits. This is the EU and WHO convention. A US standard drink is about 14 g.",
         "source": "https://psychonautwiki.org/wiki/Alcohol"
       }
     },
@@ -241,7 +245,7 @@
         "bonus": [
           {
             "short": "Hydration: Pre-hydrate to offset diuretic effects.",
-            "detail": "Alcohol inhibits ADH (antidiuretic hormone), causing continuous water loss through the kidneys. Starting well-hydrated provides a buffer against the inevitable fluid loss."
+            "detail": "Alcohol inhibits ADH (antidiuretic hormone), causing extra water loss through the kidneys while your blood alcohol is rising. Starting well-hydrated provides a buffer against that fluid loss."
           }
         ]
       },
@@ -250,7 +254,7 @@
         "essential": [
           {
             "short": "Hydration: Alternating each alcoholic drink with water or an electrolyte drink helps offset dehydration.",
-            "detail": "Alcohol suppresses ADH secretion, causing the kidneys to flush water continuously. Combined with sweating, this creates rapid two-front fluid loss. Roughly one water per drink is an easy way to limit it.",
+            "detail": "Alcohol suppresses ADH secretion, causing the kidneys to pass more water while your blood alcohol is rising. Combined with sweating, this creates rapid two-front fluid loss. Roughly one water per drink is an easy way to limit it.",
             "sources": [
               {
                 "label": "PsychonautWiki: Alcohol",
@@ -280,19 +284,23 @@
         "bonus": [
           {
             "short": "Note: Alcohol suppresses ADH, causing significant fluid loss.",
-            "detail": "With less ADH the kidneys hold back less water, mainly while your blood alcohol is rising, so the effect is short-lived rather than continuous. Beer roughly breaks even on fluid; spirits do not, so keep water in the mix."
+            "detail": "With less ADH the kidneys hold back less water, mainly while your blood alcohol is rising, so the effect is short-lived rather than continuous. One small trial in resting men found beer close to fluid-neutral and spirits mildly diuretic, but that is weak evidence and it does not carry over to a hot dance floor where sweat dominates. Do not count beer as hydration, and keep water in the mix."
           }
         ]
       },
       "after": {
         "essential": [
           {
-            "short": "Hydration: 500 ml water + electrolytes before bed.",
-            "detail": "Fluids before bed ease next-day thirst, dry mouth and dizziness. They do not prevent the hangover itself: hangover severity does not track electrolyte levels or how much water someone drank.",
+            "short": "Hydration: A glass or two of water before bed.",
+            "detail": "Fluids before bed ease next-day thirst, dry mouth and dizziness. They do not prevent the hangover itself: hangover severity does not track electrolyte levels, and drinking water does not prevent or relieve it.",
             "sources": [
               {
-                "label": "Penning et al. 2010: hangover severity and biochemical markers",
-                "url": "https://pubmed.ncbi.nlm.nih.gov/19943391/"
+                "label": "Penning et al. 2010: The pathology of alcohol hangover",
+                "url": "https://pubmed.ncbi.nlm.nih.gov/20712596/"
+              },
+              {
+                "label": "Mackus et al. 2024: alcohol hangover versus dehydration revisited",
+                "url": "https://pubmed.ncbi.nlm.nih.gov/39069212/"
               }
             ]
           },
@@ -321,12 +329,20 @@
       "next_morning": {
         "essential": [
           {
-            "short": "Recovery: Electrolytes and B-vitamins.",
+            "short": "Recovery: Eat and drink normally. Skip the vitamin and electrolyte cures.",
             "detail": "Thiamine (B1) loss comes from long-term heavy drinking, not from one night out. A hangover is driven mainly by acetaldehyde and inflammation, so vitamins do not undo it. Reviews of hangover cures found no reliable evidence for B vitamins. Eat and drink normally instead.",
             "sources": [
               {
-                "label": "Systematic review of clinical interventions for alcohol hangover",
-                "url": "https://pubmed.ncbi.nlm.nih.gov/32245988/"
+                "label": "Roberts et al. 2022: interventions for alcohol hangover, systematic review (Addiction)",
+                "url": "https://pubmed.ncbi.nlm.nih.gov/34972259/"
+              },
+              {
+                "label": "DanceSafe: Alcohol",
+                "url": "https://dancesafe.org/alcohol/"
+              },
+              {
+                "label": "PsychonautWiki: Alcohol",
+                "url": "https://psychonautwiki.org/wiki/Alcohol"
               }
             ]
           },
@@ -408,7 +424,7 @@
         "essential": [
           {
             "short": "Setting: Sit down before you inhale.",
-            "detail": "Nitrous causes an abrupt loss of balance and can make you faint. Sitting down, ideally on the floor and away from roads, water, edges and hard corners, means that if you pass out you slump rather than fall. Falls are the most common acute nitrous injury.",
+            "detail": "Nitrous causes an abrupt loss of balance and can make you faint. Sitting down, ideally on the floor and away from roads, water, edges and hard corners, means that if you pass out you slump rather than fall. Falls are a real risk, which is why harm reduction services tell you to sit down first.",
             "sources": [
               {
                 "label": "Crew: Nitrous oxide",
@@ -438,7 +454,7 @@
         "bonus": [
           {
             "short": "Equipment: Use a balloon and a proper cracker or dispenser. Never inhale straight from a charger or tank.",
-            "detail": "Gas leaving a charger or tank is under high pressure and extremely cold, and leaves the container at around -40 to -55 C, so it can cold-burn the nose, lips, mouth, throat and lungs. The swelling that follows can block the airway, which is life-threatening. Releasing it into a balloon first lets it warm and drop in pressure to something safe to breathe. Cheap plastic dispensers have also burst under pressure.",
+            "detail": "Gas leaving a charger or tank is under high pressure and extremely cold, and leaves the container at around -40 C, so it can cold-burn the nose, lips, mouth, throat and lungs. In rare case reports the swelling that followed blocked the airway and needed emergency hospital treatment. Releasing it into a balloon first lets it warm and drop in pressure to something safe to breathe. Cheap plastic dispensers have also burst under pressure.",
             "sources": [
               {
                 "label": "Crew: Nitrous oxide",
@@ -631,7 +647,7 @@
       }
     },
     "risks": [
-      "Vitamin B12 inactivation leading to nerve damage (tingling, numbness, weakness, unsteady walking) and, when severe, lasting spinal-cord degeneration. This is the main danger of heavy or regular use",
+      "Vitamin B12 inactivation leading to nerve damage (tingling, numbness, weakness, unsteady walking) and, when severe, spinal-cord degeneration that can be lasting. This is the main danger of heavy or regular use",
       "Fainting and suffocation from lack of oxygen, especially with a mask or bag, in a car or enclosed space, or straight from a large tank",
       "Falls and injury from sudden loss of balance while standing",
       "Frostbite / cold burns to lips, mouth and airway from gas taken straight off a charger or tank",
@@ -639,7 +655,7 @@
       "Blood-clot risk (DVT / pulmonary embolism) via raised homocysteine in heavy users"
     ],
     "mcda": null,
-    "visualizer_note": "The real danger is cumulative and preventable. Short, moreish hits drive compulsive redosing, and heavy or regular use inactivates vitamin B12 and can cause lasting nerve and spinal-cord damage. There is also a real risk of fainting or suffocation whenever oxygen is cut off, by a mask, a bag, an enclosed space, or a large tank."
+    "visualizer_note": "The real danger is cumulative and preventable. Short, moreish hits drive compulsive redosing, and heavy or regular use inactivates vitamin B12 and can cause lasting nerve and spinal-cord damage. There is also a real risk of fainting or suffocation whenever oxygen is cut off, by a mask, a bag, an enclosed space, or breathing straight from a large tank."
   },
   "poppers": {
     "id": "poppers",
@@ -813,8 +829,8 @@
             ]
           },
           {
-            "short": "Blue lips or breathlessness: stop and get emergency help. Fresh air alone will not fix it.",
-            "detail": "Blue-grey lips or fingertips plus shortness of breath signal methaemoglobinaemia, meaning too much nitrite has entered the blood and it can no longer carry oxygen. It builds up with heavy or non-stop use. Fresh air does not fix it, because the blood cannot take up oxygen at all, and severe cases are treated in hospital with an antidote. Stop, and if lips stay blue or breathing is hard, get emergency care.",
+            "short": "Blue lips or breathlessness: stop, get away from the fumes, and get emergency help if it does not clear quickly.",
+            "detail": "Blue-grey lips or fingertips plus shortness of breath signal methaemoglobinaemia, meaning part of your haemoglobin has been changed into a form that cannot carry oxygen. It builds up with heavy or non-stop use. Stop and get away from the fumes, because mild cases usually settle once the exposure ends. Fresh air does not reverse the change in the blood, so if lips stay blue or breathing is hard, get emergency care. Severe cases are treated in hospital with an antidote.",
             "sources": [
               {
                 "label": "Release: Alkyl Nitrites harm reduction",
@@ -876,7 +892,7 @@
         "essential": [
           {
             "short": "Vision: if colours look off, or you notice a central blur or a blind spot, stop using, because poppers can damage the retina.",
-            "detail": "'Poppers maculopathy' is retinal photoreceptor damage linked especially to isopropyl nitrite (more common since the 2007 formula change). It often improves after stopping but can be lasting, so treat any vision change as a signal to stop.",
+            "detail": "'Poppers maculopathy' is retinal photoreceptor damage linked especially to isopropyl nitrite (more common since isopropyl nitrite replaced isobutyl nitrite in Europe, after the 2006 EU reclassification). It often improves after stopping but can be lasting, so treat any vision change as a signal to stop.",
             "sources": [
               {
                 "label": "PsychonautWiki: Poppers",
@@ -950,7 +966,7 @@
       "Risky with heart or blood-pressure conditions, anaemia, glaucoma, and in pregnancy"
     ],
     "mcda": null,
-    "visualizer_note": "Inhaled poppers rarely kill on their own. The real dangers are combining them with erection drugs or blood-pressure medication, which can crash your blood pressure fatally, swallowing them, which causes fatal methaemoglobinaemia, fainting from the sudden pressure drop, and, with isopropyl nitrite, lasting damage to the retina."
+    "visualizer_note": "Inhaled poppers rarely kill on their own. The real dangers are combining them with erection drugs or blood-pressure medication, which can crash your blood pressure fatally, swallowing them, which can cause fatal methaemoglobinaemia, fainting from the sudden pressure drop, and, with isopropyl nitrite, lasting damage to the retina."
   },
   "cannabis": {
     "id": "cannabis",
@@ -1091,6 +1107,20 @@
             ]
           },
           {
+            "short": "Edibles: Wait at least two hours before taking any more.",
+            "detail": "An edible can take 30 to 90 minutes to come on, and sometimes longer on a full stomach. Most bad edible experiences come from taking a second dose before the first one arrives, then getting both at once. Start with one low dose and wait it out.",
+            "sources": [
+              {
+                "label": "PsychonautWiki: Cannabis",
+                "url": "https://psychonautwiki.org/wiki/Cannabis"
+              },
+              {
+                "label": "DanceSafe: Cannabis",
+                "url": "https://dancesafe.org/cannabis/"
+              }
+            ]
+          },
+          {
             "short": "Environment: Choose a comfortable, familiar setting.",
             "detail": "Cannabis amplifies environmental stimuli. A safe, familiar setting with trusted people significantly reduces the probability of anxiety or paranoia episodes."
           }
@@ -1115,15 +1145,19 @@
           },
           {
             "short": "Caution: Avoid mixing with tobacco or alcohol.",
-            "detail": "Cannabis does not depress breathing, so tobacco mainly adds dependence, tar and carbon monoxide, plus nausea and dizziness. Alcohol is the riskier mix: it raises blood THC and adds its own vessel widening, so vertigo and vomiting are common.",
+            "detail": "THC itself does not depress breathing at recreational doses, which is why there is no fatal overdose from plain cannabis. Sprayed synthetic cannabinoids are a different matter and have caused acute breathing problems. With plain cannabis, tobacco mainly adds dependence, tar and carbon monoxide, plus nausea and dizziness. Alcohol is the riskier mix: drinking before cannabis raises peak blood THC, and alcohol widens blood vessels too, so nausea, dizziness and vomiting are common.",
             "sources": [
+              {
+                "label": "PsychonautWiki: Cannabis",
+                "url": "https://psychonautwiki.org/wiki/Cannabis"
+              },
+              {
+                "label": "TripSit: Drug Combinations",
+                "url": "https://combo.tripsit.me"
+              },
               {
                 "label": "SaferParty: Cannabis",
                 "url": "https://www.saferparty.ch/substanzen/cannabis"
-              },
-              {
-                "label": "TripSit: Cannabis",
-                "url": "https://drugs.tripsit.me/cannabis"
               }
             ]
           }
@@ -1138,7 +1172,7 @@
       "after": {
         "essential": [
           {
-            "short": "Appetite stimulation: Avoid overeating processed food before bed.",
+            "short": "Appetite stimulation: Keep any late-night snack small.",
             "detail": "Cannabis stimulates hypothalamic appetite pathways. However, a very large late meal is linked to more night waking and a slower drop into sleep, so keep the snack modest."
           }
         ],
@@ -1179,7 +1213,7 @@
       "rank": 8,
       "of": 20
     },
-    "visualizer_note": "Low physiological harm with no fatal overdose from THC; main issues are faintness, anxiety and synthetic-cannabinoid adulteration."
+    "visualizer_note": "Low physiological harm with no fatal overdose from THC; main issues are a sharp rise in heart rate with a drop in blood pressure, faintness, anxiety and synthetic-cannabinoid adulteration."
   },
   "dmt": {
     "id": "dmt",
@@ -1300,7 +1334,7 @@
           },
           {
             "short": "⚠️ Lithium and tramadol: Do not combine, because both sharply raise seizure risk.",
-            "detail": "In 62 online reports of a classic psychedelic taken with lithium, 47% involved seizures and 39% needed medical care. TripSit rates this pairing Dangerous. Tramadol independently lowers the seizure threshold (TripSit: Unsafe). Combining either with DMT risks a seizure.",
+            "detail": "In 62 online reports of a classic psychedelic taken with lithium, 47% involved seizures and 39% involved medical attention. TripSit rates this pairing Dangerous. Tramadol independently lowers the seizure threshold (TripSit: Unsafe). Combining either with DMT risks a seizure.",
             "sources": [
               {
                 "label": "Nayak et al. 2021: Psychedelics + Lithium and Seizures",
@@ -1605,7 +1639,7 @@
         "essential": [
           {
             "short": "Stomach: Best to avoid eating in the ~90 minutes before, since ketamine can cause nausea and vomiting.",
-            "detail": "Ketamine frequently causes nausea and vomiting. At dissociative doses you cannot move, sit up or clear your own airway, so vomit can block it. Being on your side is what protects you.",
+            "detail": "Ketamine frequently causes nausea and vomiting. At dissociative doses you cannot move, sit up or clear your own airway, so vomit can block it, and inhaled vomit can kill. Being on your side is what protects you, so do not take a heavy dose alone: have a sober person there who can turn you.",
             "sources": [
               {
                 "label": "PsychonautWiki: Ketamine",
@@ -1619,7 +1653,7 @@
           },
           {
             "short": "Safety: Test your substance.",
-            "detail": "Powder sold as ketamine is often a close analogue such as 2-FDCK or DCK. Standard reagents cannot tell these apart from ketamine, so use a Morris reagent kit or a lab drug-checking service."
+            "detail": "Samples sold as ketamine are usually ketamine, but close analogues such as 2-FDCK or DCK do turn up, and they last longer and are active at different doses. Standard reagents cannot tell these apart from ketamine, so use a Morris reagent kit or a lab drug-checking service."
           }
         ],
         "bonus": [
@@ -1692,7 +1726,7 @@
     "risks": [
       "Bladder damage (ketamine cystitis)",
       "Aspiration from vomiting while dissociated",
-      "Deep sedation, vomiting and choking if mixed with alcohol, GHB/GBL, benzos or opioids",
+      "Slowed or stopped breathing, deep sedation and choking on vomit if mixed with alcohol, GHB/GBL, benzos or opioids",
       "Physical injury due to anaesthesia",
       "Loss of motor control"
     ],
@@ -1779,7 +1813,7 @@
         "essential": [
           {
             "short": "Test: Ehrlich reagent kit (rule out NBOMe). Additionally, DOx compounds (effects lasting up to 48 hours) are also substituted as LSD.",
-            "detail": "The illicit market sometimes substitutes LSD with 25I-NBOMe or DOx compounds, which can cause fatal heart events, seizures and severe narrowing of blood vessels at doses under a milligram. An Ehrlich reagent test turns purple for LSD. The Loop found 25x-NBOMe sold as LSD at Boomtown 2018 with no LSD in it. NBOMe and DOx are the main blotter adulterants, and DOx effects can last 48 hours.",
+            "detail": "The illicit market sometimes substitutes LSD with 25I-NBOMe or DOx compounds, which can cause fatal heart events, seizures and severe narrowing of blood vessels at doses under a milligram. An Ehrlich reagent test turns purple for indoles, the family LSD belongs to. NBOMe and DOx are not indoles and give no colour change, so no reaction is a sure sign it is not LSD. A purple result rules those substitutes out but does not confirm the dose. The Loop found 25x-NBOMe sold as LSD at Boomtown 2018 with no LSD in it. NBOMe and DOx are the main blotter adulterants, and DOx effects can last 48 hours.",
             "sources": [
               {
                 "label": "DanceSafe: Always check your LSD",
@@ -1803,7 +1837,7 @@
         "bonus": [
           {
             "short": "Nutrition: Eat a light, healthy meal beforehand.",
-            "detail": "LSD suppresses hunger signals for the entire duration. Eating a balanced meal before ensures the body has adequate fuel for 12+ hours of wakefulness."
+            "detail": "LSD can blunt appetite, though less strongly than stimulants do, for the whole trip. Eating a balanced meal before ensures the body has adequate fuel for 12+ hours of wakefulness."
           }
         ]
       },
@@ -1834,7 +1868,7 @@
           },
           {
             "short": "Food: Protein + carbohydrates to restore caloric deficit.",
-            "detail": "After 12+ hours of suppressed appetite, the body is in significant caloric deficit. A protein and carbohydrate meal provides essential amino acids for recovery."
+            "detail": "After a long stretch of eating little, a meal with protein and carbohydrates helps you feel steady again. A protein and carbohydrate meal provides essential amino acids for recovery."
           }
         ],
         "bonus": [
@@ -1854,7 +1888,7 @@
         "bonus": [
           {
             "short": "Afterglow: Expect residual visual effects and altered cognition for up to 24 hours.",
-            "detail": "Mild residual visuals, tiredness and mood swings are common the next day. Lasting HPPD is a separate and rare condition, not the same thing."
+            "detail": "Mild residual visuals, tiredness and mood swings are common the next day. Lasting HPPD is a different condition, where perceptual changes carry on into daily life. Estimates of how common it is vary widely."
           }
         ]
       }
@@ -1897,7 +1931,7 @@
         },
         "heavy": 5,
         "source": "https://psychonautwiki.org/wiki/Psilocybin_mushrooms",
-        "note": "Values are for dried Psilocybe cubensis. Other species vary a lot in strength, so never carry a dose across from one species to another."
+        "note": "Values are for dried Psilocybe cubensis. Other species vary a lot in strength, so a dose that suits one species can be far too much of another. Work out a fresh starting dose for anything new."
       }
     },
     "routes": [
@@ -1909,17 +1943,17 @@
         "phases": {
           "onset": {
             "min": 0.33,
-            "max": 1,
+            "max": 0.75,
             "label": "Onset"
           },
           "come_up": {
-            "min": 0.25,
-            "max": 0.5,
+            "min": 1,
+            "max": 1.5,
             "label": "Come-up"
           },
           "peak": {
-            "min": 1,
-            "max": 2,
+            "min": 2,
+            "max": 2.5,
             "label": "Peak"
           },
           "come_down": {
@@ -1952,14 +1986,14 @@
             "detail": "Psilocybin amplifies emotions and environmental stimuli. Ensure a positive mindset and a safe, comfortable environment. Have a trusted trip-sitter present if possible. Best avoided if you or a close relative has had psychosis or bipolar disorder."
           },
           {
-            "short": "Dose: Start low (1–2 g dried) to gauge potency.",
+            "short": "Dose: Start low (0.5–1 g dried) to gauge potency.",
             "detail": "Potency varies significantly between species and batches. A standard dose is 1.5–2.5 g. Doses above 5 g strongly increase the risk of a psychological crisis and are best avoided in a recreational setting."
           }
         ],
         "bonus": [
           {
             "short": "Stomach: Light meal or fasting to reduce nausea.",
-            "detail": "Nausea on the come-up comes partly from psilocin acting on serotonin receptors in the gut and partly from the tough fungal fibre. An empty or light stomach reduces the volume that can come back up. Ginger is a well-established anti-nausea remedy, and a tea or lemon-tek is often gentler than eating whole mushrooms.",
+            "detail": "Nausea on the come-up is thought to come mainly from psilocin acting on serotonin receptors in the gut, with the tough fungal fibre a possible second factor. An empty or light stomach reduces the volume that can come back up. Ginger is a well-established anti-nausea remedy, and a tea or lemon-tek is often gentler than eating whole mushrooms.",
             "sources": [
               {
                 "label": "PsychonautWiki: Psilocybin",
@@ -2012,7 +2046,7 @@
         "bonus": [
           {
             "short": "Rest: Allow for a relaxed schedule.",
-            "detail": "A mild headache is common as the effects fade and can last into the next day. The mind may be tired, but there is no physical hangover of the alcohol kind."
+            "detail": "A headache is common in the hours after the effects fade. Trials rate it mild to moderate, more often moderate after a larger dose, and it clears within about a day. The mind may be tired, but there is no physical hangover of the alcohol kind."
           }
         ]
       }
@@ -2106,7 +2140,7 @@
         "essential": [
           {
             "short": "Test: Use a reagent kit; fentanyl strips are a sensible extra precaution.",
-            "detail": "In Europe, fentanyl contamination of cocaine is uncommon, unlike parts of North America, but it has caused deaths, so fentanyl test strips are a cheap precaution rather than a guarantee. A reagent kit (Morris, plus Marquis and Liebermann) only tells you whether it is cocaine. It cannot measure purity and will not reliably catch cuts such as levamisole or lidocaine, so use a lab drug-checking service for that.",
+            "detail": "In Europe, fentanyl contamination of cocaine is uncommon, unlike parts of North America, but it has caused deaths, so fentanyl test strips are a cheap precaution rather than a guarantee. A reagent kit (Morris, then Marquis, then Liebermann) can flag that something is wrong, but it cannot confirm the powder is cocaine, cannot measure purity, and will not reliably catch cuts such as levamisole or lidocaine. For that you need a lab drug-checking service.",
             "sources": [
               {
                 "label": "DanceSafe: How to use reagent kits",
@@ -2115,12 +2149,16 @@
               {
                 "label": "Drugchecking Berlin: Kokain",
                 "url": "https://drugchecking.berlin/substanzen/kokain-crack"
+              },
+              {
+                "label": "PsychonautWiki: Cocaine",
+                "url": "https://psychonautwiki.org/wiki/Cocaine"
               }
             ]
           },
           {
-            "short": "⚠️ Levamisole: The most common dangerous cocaine adulterant.",
-            "detail": "Some street cocaine is cut with levamisole, a veterinary deworming agent. European drug checking finds it in only a few percent of samples, while US rates are much higher. It can suppress white blood cells (agranulocytosis) and cause painful skin lesions, and the effect builds up with repeated use.",
+            "short": "⚠️ Levamisole: The most dangerous of the common cocaine cuts.",
+            "detail": "Some street cocaine is cut with levamisole, a veterinary deworming agent. European drug checking finds it in roughly 3 to 8 percent of samples, far below US rates, but a single exposure can still do real damage. It can wipe out white blood cells (agranulocytosis) and cause skin necrosis and vasculitis. See a doctor about unexplained sores, mouth ulcers, fever or repeated infections after using.",
             "sources": [
               {
                 "label": "PsychonautWiki: Cocaine",
@@ -2153,7 +2191,7 @@
         "essential": [
           {
             "short": "⚠️ Alcohol danger: Cocaethylene formation is lethal.",
-            "detail": "Combining cocaine + alcohol forms cocaethylene in the liver. This metabolite is significantly more cardiotoxic than cocaine alone, raising the risk of sudden cardiac death roughly 18 to 25 fold.",
+            "detail": "Combining cocaine + alcohol forms cocaethylene in the liver. This metabolite is significantly more cardiotoxic than cocaine alone, and post-mortem and emergency-department data link its presence to a much higher chance of sudden death.",
             "sources": [
               {
                 "label": "PsychonautWiki: Cocaine",
@@ -2209,17 +2247,17 @@
         "essential": [
           {
             "short": "Recovery: Rest and hydration.",
-            "detail": "Dopamine is temporarily depleted after a heavy session. Expect low mood and irritability. Sleep and time are the primary recovery mechanisms."
+            "detail": "The crash is a rebound in the brain's reward system, and the exact mechanism is still debated. Expect low mood and irritability. Sleep and time are the primary recovery mechanisms."
           }
         ],
         "bonus": [
           {
             "short": "Nasal check: Inspect for bleeding or scabs.",
-            "detail": "Use a water-based saline gel rather than an oil. Oils repeatedly inhaled into the nose can settle in the lungs and cause lipoid pneumonia.",
+            "detail": "Use a water-based saline gel rather than an oil. Oils repeatedly inhaled into the nose can settle in the lungs and cause lipoid pneumonia. Bleeding or crusting that keeps coming back needs a doctor.",
             "sources": [
               {
-                "label": "StatPearls: Lipoid pneumonia",
-                "url": "https://www.ncbi.nlm.nih.gov/books/NBK556154/"
+                "label": "StatPearls: Lipoid Pneumonia",
+                "url": "https://pubmed.ncbi.nlm.nih.gov/32119464/"
               }
             ]
           }
@@ -2249,7 +2287,7 @@
     "dosing": {
       "Oral": {
         "unit": "mg",
-        "threshold": 5,
+        "threshold": 2.5,
         "light": {
           "min": 5,
           "max": 10
@@ -2408,8 +2446,8 @@
             ]
           },
           {
-            "short": "⚠️ Never combine with MAOIs. Other antidepressants: ask a doctor first.",
-            "detail": "Amphetamine with an MAOI, including moclobemide or the herb Syrian rue, can cause a dangerous blood-pressure surge, which can be fatal. Do not use amphetamine at all with an MAOI. SSRIs and SNRIs are a much smaller concern: TripSit rates that pairing low risk and doctors often prescribe the two together, so ask your doctor rather than assume it is unsafe.",
+            "short": "⚠️ Never combine with MAOIs or tricyclic antidepressants. Other antidepressants: ask a doctor first.",
+            "detail": "Amphetamine with an MAOI, including moclobemide or the herb Syrian rue, can cause a dangerous blood-pressure surge, which can be fatal. Drugchecking Berlin puts tricyclic antidepressants in the same life-threatening group. Do not use amphetamine at all with either. SSRIs and SNRIs are a much smaller concern: TripSit's combination chart rates that pairing low risk, and doctors often prescribe the two together, so ask your doctor rather than assume it is unsafe.",
             "sources": [
               {
                 "label": "Drugchecking Berlin: Amphetamine/Speed",
@@ -2677,8 +2715,8 @@
         "focus": "Regulating core temperature and water intake.",
         "essential": [
           {
-            "short": "Hydration: 300 to 500 ml an hour, at the higher end if dancing. Not too much, not too little.",
-            "detail": "MDMA raises antidiuretic hormone (ADH), so the kidneys hold on to water and urinating becomes difficult. Drinking past that point dilutes your blood sodium and causes hyponatremia, which has killed people at events. Electrolyte drinks or salty snacks are better than plain water alone, but the amount matters more than what is in it.",
+            "short": "Hydration: 300 to 500 ml an hour, at the higher end if dancing. Make it an electrolyte drink or eat something salty, not plain water alone.",
+            "detail": "MDMA raises antidiuretic hormone (ADH), so the kidneys hold on to water and urinating becomes difficult. Drinking past that point dilutes your blood sodium and causes hyponatremia, which has killed people at events. Most reported cases, and the reported deaths, have been in women, so the limit matters even more for them. Electrolyte drinks or salty snacks are better than plain water alone, but the amount matters more than what is in it.",
             "sources": [
               {
                 "label": "TripSit: MDMA",
@@ -2731,7 +2769,7 @@
       "after": {
         "essential": [
           {
-            "short": "⚠️ Danger: Do NOT take 5-HTP within 24 hours of MDMA.",
+            "short": "Do not take 5-HTP within 24 hours of MDMA.",
             "detail": "Taking 5-HTP while MDMA is still active can push serotonin too high and bring on mild to moderate serotonin syndrome. DanceSafe advises waiting at least 8 hours; we advise 24 hours to be safe. The brain needs up to 4 weeks to rebuild normal serotonin levels.",
             "sources": [
               {
@@ -2748,7 +2786,7 @@
         "bonus": [
           {
             "short": "Supplements (optional): magnesium to ease jaw tension.",
-            "detail": "A final dose of high-absorption magnesium (glycinate) facilitates muscle relaxation to assist with sleep onset."
+            "detail": "Some people take magnesium at the end of the night for jaw and muscle tension. This has not been tested in people for MDMA, so treat it as optional."
           }
         ]
       },
@@ -2775,7 +2813,7 @@
             "detail": "The idea is that EGCG slows the breakdown of 5-HTP in the gut so more of it reaches the brain. This is untested in people, and at best it eases the low mood rather than speeding recovery. Wait a full 24 hours after your last dose either way."
           },
           {
-            "short": "Nutrition: High-tryptophan foods.",
+            "short": "Nutrition: Eat regular meals, even if your appetite is low.",
             "detail": "Regular meals help you recover, but food alone does not raise brain serotonin much: the tryptophan in a high-protein meal competes with the other amino acids in it for the same route into the brain."
           }
         ]
@@ -2784,7 +2822,7 @@
     "risks": [
       "Hyponatremia (water intoxication from ADH release)",
       "Hyperthermia (overheating)",
-      "Serotonin syndrome with MAOIs (SSRIs mostly just blunt the effect)",
+      "Serotonin syndrome with MAOIs (SSRIs mostly blunt the effect, but redosing to push through that blunting is where it gets dangerous)",
       "Severe serotonin depletion (neurochemical crash)"
     ],
     "mcda": {
@@ -2818,7 +2856,7 @@
           "max": 500
         },
         "heavy": 500,
-        "note": "One cup of coffee is roughly 90 to 200 mg. EFSA: no safety concern up to 200 mg in one dose, or 400 mg across a day.",
+        "note": "One cup of coffee is roughly 90 to 200 mg. EFSA: for healthy adults, no safety concern up to 200 mg in one dose, or 400 mg across a day. In pregnancy the figure is 200 mg a day.",
         "source": "https://psychonautwiki.org/wiki/Caffeine"
       }
     },
@@ -2876,7 +2914,7 @@
         ],
         "bonus": [
           {
-            "short": "Hydration: Offset the diuretic effect.",
+            "short": "Hydration: Drink water in the heat.",
             "detail": "Drinking water alongside caffeine is still wise in the heat, though caffeine itself does not worsen the fluid loss from exercise."
           }
         ]
@@ -2886,7 +2924,7 @@
         "essential": [
           {
             "short": "Limit: 200 mg at once, up to 400 mg across the day.",
-            "detail": "EFSA sees no safety concern up to 200 mg in a single dose, or 400 mg spread across a day, and the US FDA uses the same 400 mg daily figure. Above that, anxiety, tremor and stomach upset get more likely. Tolerance varies a lot between people.",
+            "detail": "For healthy adults, EFSA sees no safety concern up to 200 mg in a single dose, or 400 mg spread across a day, and the US FDA cites the same 400 mg daily figure. EFSA sets 200 mg a day in pregnancy. Above that, anxiety, tremor and stomach upset get more likely. Tolerance varies a lot between people.",
             "sources": [
               {
                 "label": "EFSA: Caffeine safety (2015)",
@@ -2934,7 +2972,7 @@
         "bonus": [
           {
             "short": "Supplements: L-Theanine can smooth out jitters.",
-            "detail": "L-Theanine promotes alpha brain wave activity and has a synergistic calming effect when combined with caffeine, reducing anxiety without blocking alertness."
+            "detail": "L-Theanine raises alpha brain wave activity, and some people take it with caffeine to take the edge off. The evidence is mixed, so treat it as optional rather than established."
           }
         ]
       },
@@ -2956,7 +2994,7 @@
     "risks": [
       "Insomnia from delayed clearance",
       "Anxiety and jitters",
-      "Dehydration (diuretic effect)"
+      "Frequent urination (mild diuretic effect)"
     ],
     "mcda": null,
     "visualizer_note": "Low overall harm; mainly disrupts sleep with mild cardiac strain. Fatal overdose needs extreme doses (grams)."
@@ -2993,17 +3031,17 @@
         "threshold": 1,
         "light": {
           "min": 2,
-          "max": 5
+          "max": 8
         },
         "common": {
-          "min": 5,
-          "max": 10
+          "min": 8,
+          "max": 12
         },
         "strong": {
-          "min": 10,
-          "max": 15
+          "min": 12,
+          "max": 23
         },
-        "heavy": 15,
+        "heavy": 23,
         "note": "Extremely painful to insufflate. Not recommended.",
         "source": "https://psychonautwiki.org/wiki/2C-B"
       }
@@ -3089,7 +3127,7 @@
         "essential": [
           {
             "short": "Dose: Use a milligram scale. A 2 mg difference is significant.",
-            "detail": "2C-B has an exceptionally steep dose-response curve. Around 5–15 mg it is largely entactogenic; above about 15 mg the psychedelic effects come forward, and by about 20 mg they can be overwhelming. A difference of 2–3 mg can turn a manageable state into a crisis. Never estimate by sight. The most accurate method is volumetric dosing, where you dissolve a precisely weighed amount in a known volume of liquid.",
+            "detail": "2C-B has an exceptionally steep dose-response curve. Around 5–15 mg it is largely entactogenic; above about 15 mg the psychedelic effects come forward, and above about 25 mg they can be overwhelming. A difference of 2–3 mg can turn a manageable state into a crisis. Never estimate by sight. The most accurate method is volumetric dosing, where you dissolve a precisely weighed amount in a known volume of liquid.",
             "sources": [
               {
                 "label": "PsychonautWiki: 2C-B",
@@ -3103,7 +3141,7 @@
           },
           {
             "short": "⚠️ Test it: \"pink cocaine\" / Tusi is usually NOT 2C-B.",
-            "detail": "Powders and pills sold as 2C-B are often something else. 'Tusi', 'tuci' or 'pink cocaine' in particular rarely contains 2C-B and is typically a ketamine and MDMA mixture, sometimes with caffeine. Drug-checking services have also found 2C-B tablets cut with the precursor 2C-H. Use a reagent test or a drug-checking service before dosing.",
+            "detail": "Powders and pills sold as 2C-B are often something else. 'Tusi', 'tuci' or 'pink cocaine' in particular rarely contains 2C-B and is typically a ketamine and MDMA mixture, sometimes with caffeine. Drug-checking has repeatedly found 2C-B tablets contaminated with 2C-H, a leftover precursor that can block MAO-B and make a dose hit harder and less predictably. Use a reagent test or a drug-checking service before dosing.",
             "sources": [
               {
                 "label": "DanceSafe: 2C-B",
@@ -3123,7 +3161,7 @@
         "bonus": [
           {
             "short": "Supplements (optional): ginger (250–500 mg) can help with nausea.",
-            "detail": "Ginger taken 30 minutes beforehand markedly reduces nausea by acting on serotonin receptors in the gut, the same mechanism that anti-nausea medicines target."
+            "detail": "Ginger 30 minutes beforehand may ease nausea. Lab work suggests it blocks the same gut serotonin receptor that anti-sickness drugs target, but that has not been confirmed in people."
           }
         ]
       },
@@ -3177,9 +3215,9 @@
     },
     "risks": [
       "Nausea and vomiting during onset",
-      "Dosing errors (steep dose-response curve)",
+      "Dosing errors: a steep dose curve, and redosing before the first dose arrives",
       "Frequently mis-sold ('pink cocaine' is rarely 2C-B)",
-      "Intense visual overwhelm at higher doses"
+      "Agitation, confusion, panic and a fast pulse at higher doses"
     ],
     "mcda": null,
     "visualizer_note": "Generally low harm at correct doses, but a steep dose-response and frequent mis-selling ('pink cocaine') drive the risk."
@@ -3213,7 +3251,7 @@
       },
       "Oral": {
         "unit": "mg",
-        "threshold": 50,
+        "threshold": 15,
         "light": {
           "min": 50,
           "max": 100
@@ -3238,13 +3276,13 @@
         "isDefault": true,
         "phases": {
           "onset": {
-            "min": 0.02,
-            "max": 0.08,
+            "min": 0.25,
+            "max": 0.75,
             "label": "Onset"
           },
           "come_up": {
-            "min": 0.08,
-            "max": 0.25,
+            "min": 0.25,
+            "max": 0.5,
             "label": "Come-up"
           },
           "peak": {
@@ -3337,7 +3375,7 @@
         "bonus": [
           {
             "short": "Supplements (optional): some people pre-load antioxidants (ALA, vitamin C); neuroprotection is unproven in humans.",
-            "detail": "4-MMC generates massive oxidative stress through its action on monoamine transporters. Pre-loading antioxidants provides some neuroprotective buffer against free radical damage."
+            "detail": "Cathinones can generate oxidative stress, so a buffer is plausible, but animal results conflict and there is no human data. Pre-loading antioxidants provides some neuroprotective buffer against free radical damage."
           }
         ]
       },
@@ -3349,7 +3387,7 @@
             "detail": "4-MMC triggers extreme hyperthermia and tachycardia simultaneously. Core body temperature is worth watching. Taking breaks in ventilated areas helps keep it down."
           },
           {
-            "short": "Heart: Vasoconstriction is severe. Watch extremities.",
+            "short": "⚠️ Heart: stop and get help for chest pain or a pounding, irregular heartbeat. Cold blue fingers are an earlier sign.",
             "detail": "4-MMC strongly narrows blood vessels in the fingers, toes and other extremities. Cold, blue or numb extremities are warning signs of dangerous strain on your circulation."
           },
           {
@@ -3382,7 +3420,7 @@
         "bonus": [
           {
             "short": "Supplements (optional): antioxidants and magnesium.",
-            "detail": "High doses of Vitamin C and Alpha-Lipoic Acid help clear the massive free radical accumulation. Magnesium counteracts severe vascular constriction and neuromuscular tension."
+            "detail": "There is no human evidence that vitamin C or ALA repair stimulant damage. Magnesium may ease jaw and muscle tension, but it does not act on narrowed blood vessels."
           }
         ]
       },
@@ -3396,7 +3434,7 @@
         "bonus": [
           {
             "short": "Recovery (optional): balanced meals; some people take 5-HTP (only 24+ hours later) and L-Tyrosine.",
-            "detail": "5-HTP provides serotonin precursors, L-Tyrosine provides dopamine precursors. Combined with tryptophan-rich proteins and complex carbohydrates, this supports the slow regeneration of both depleted neurotransmitter systems."
+            "detail": "5-HTP is a serotonin precursor and L-tyrosine a dopamine precursor, but neither has been shown in people to speed recovery. Food helps generally rather than specifically: carbohydrate is what helps tryptophan reach the brain, while protein competes with it."
           }
         ]
       }
@@ -3404,8 +3442,10 @@
     "risks": [
       "Compulsive redosing (extremely addictive pattern)",
       "Severe peripheral vasoconstriction",
-      "Dangerous cardiac stress",
-      "Neurotoxicity (worsened by alcohol in animal studies)"
+      "Dangerous cardiac stress (fast or irregular heartbeat, chest pain)",
+      "Overheating, worse when dancing in a hot room",
+      "Neurotoxicity (worsened by alcohol in animal studies)",
+      "Serotonin syndrome if mixed with MAOIs, or with MDMA and other serotonergic drugs"
     ],
     "mcda": {
       "score": 13,
@@ -3438,7 +3478,7 @@
           "max": 120
         },
         "heavy": 130,
-        "note": "3-CMC figures. The tiers are user-reported, not clinical. A batch may be 4-CMC or a mix, which is less studied and probably more serotonergic, so treat anything sold as 'CMC, 3-MMC or mephedrone' as a low test dose.",
+        "note": "3-CMC figures. The tiers are user-reported, not clinical, and PsychonautWiki advises against snorting. A batch may be 4-CMC or a mix, which is less studied and probably more serotonergic, so treat anything sold as 'CMC, 3-MMC or mephedrone' as a low test dose.",
         "source": "https://psychonautwiki.org/wiki/3-CMC"
       },
       "Oral": {
@@ -3542,7 +3582,7 @@
         "essential": [
           {
             "short": "⚠️ Identity: powder sold as 3-MMC, mephedrone, MDMA, speed or ketamine is often 3-CMC or 4-CMC, so get it checked if you can.",
-            "detail": "Drug-checking services keep finding CMC where another drug was expected (Vienna, Feb 2025: all three \"3-MMC\" samples were pure 3-CMC; Berlin, 2026: a \"3-MMC\" that was 90.6% 4-CMC). Look and smell tell you nothing about which cathinone it is or how strong it is.",
+            "detail": "Drug-checking services keep finding CMC where another drug was expected (Vienna, Feb 2025: all three \"3-MMC\" samples were pure 3-CMC; Berlin, 2026: a \"3-MMC\" that was 88.9% 4-CMC). Look and smell tell you nothing about which cathinone it is or how strong it is.",
             "sources": [
               {
                 "label": "Drugchecking Berlin: Warnungen",
@@ -3550,7 +3590,7 @@
               },
               {
                 "label": "checkit! Wien: Ergebnisse",
-                "url": "https://checkit.wien/en/drug-checking-ergebnisse/"
+                "url": "https://checkit.wien/en/aktuelle-warnungen-kw-8-2025-2/"
               }
             ]
           },
@@ -3619,7 +3659,7 @@
           },
           {
             "short": "⚠️ Depressants: be very careful stacking CMC on GHB/GBL, ketamine, benzodiazepines or opioids, because the stimulation hides how sedated you are.",
-            "detail": "When the stimulant fades first, the depressant can surface as sudden over-sedation or slowed breathing. This is a leading cause of harm in chemsex settings.",
+            "detail": "When the stimulant fades first, the depressant can surface as sudden over-sedation or slowed breathing. Most confirmed 3-CMC deaths also involved alcohol, opioids or benzodiazepines.",
             "sources": [
               {
                 "label": "SaferParty: Clophedron",
@@ -3635,6 +3675,10 @@
             "short": "⚠️ Serotonergic drugs: avoid stacking MDMA or meth, and don't combine with SSRIs or MAOIs.",
             "detail": "CMC releases serotonin, 4-CMC especially, so adding other serotonergic drugs risks serotonin syndrome, and an MAOI can turn a normal dose dangerous.",
             "sources": [
+              {
+                "label": "SaferParty: Clophedron",
+                "url": "https://en.saferparty.ch/substanzen/clophedron"
+              },
               {
                 "label": "checkit! / triptalks: 3-CMC / 4-CMC",
                 "url": "https://triptalks.at/substanzen/substanzen-a-z/3-cmc-clophedron-/-4-cmc-clephedron/"
@@ -3673,7 +3717,7 @@
           },
           {
             "short": "Comedown: expect a flat, anxious, sometimes paranoid mood. It passes.",
-            "detail": "Dopamine and serotonin depletion produce low mood, anxiety and confusion, occasionally brief paranoia; a calm, safe space with trusted people helps most.",
+            "detail": "Low mood, anxiety, listlessness and sometimes confusion are common as it wears off, though the cause is not established, occasionally brief paranoia; a calm, safe space with trusted people helps most.",
             "sources": [
               {
                 "label": "3-CMC clinical case series (PMC)",
@@ -3693,7 +3737,7 @@
         "essential": [
           {
             "short": "Mood: a low, anxious mood for a day or two is the neurotransmitter rebound, not your baseline.",
-            "detail": "Monoamine stores replenish with food, hydration and sleep; if low mood drags on, a longer break and some support are worth considering.",
+            "detail": "Mood usually lifts over a day or two with food, fluids and sleep; if low mood drags on, a longer break and some support are worth considering.",
             "sources": [
               {
                 "label": "PsychonautWiki: 3-CMC",
@@ -3719,10 +3763,11 @@
       "Strong compulsive redosing (a short peak drives a hard urge to repeat)",
       "Cardiac strain: tachycardia, arrhythmias, chest pain, severe vasoconstriction",
       "Suspected high neurotoxicity (animal and structural evidence; unconfirmed in humans)",
-      "Harsh anxious/paranoid comedown; transient psychosis reported"
+      "Agitation, confusion, psychosis and seizures during use; harsh anxious or paranoid comedown after",
+      "Life-threatening serotonin syndrome if mixed with MDMA, meth, SSRIs, MAOIs or 5-HTP"
     ],
     "mcda": null,
-    "visualizer_note": "A barely researched mephedrone stand-in that is frequently not what the label says. The real dangers are a strong pull to keep redosing, suspected nerve damage and strain on the heart, plus a harsh, anxious comedown. Deaths have occurred, mostly alongside other drugs."
+    "visualizer_note": "A barely researched mephedrone stand-in that is frequently not what the label says. The real dangers are a strong pull to keep redosing, suspected nerve damage and strain on the heart, plus a harsh, anxious comedown. Deaths have occurred, sometimes alongside other drugs and sometimes from 3-CMC itself."
   },
   "ghb": {
     "id": "ghb",
@@ -3748,7 +3793,7 @@
           "max": 3
         },
         "heavy": 3,
-        "note": "⚠️ These volumes assume a GHB solution. Street solutions vary a lot in strength (roughly 200 to 600 mg/mL), so a volume alone is never a reliable dose. Always start with a small test dose from a new batch or source. GBL is a different substance with much smaller doses; it has its own profile.",
+        "note": "⚠️ These volumes assume a GHB solution. Street solutions vary a lot in strength (anywhere from about 200 to 1000 mg/mL), so a volume alone is never a reliable dose. Always start with a small test dose from a new batch or source. GBL is a different substance with much smaller doses; it has its own profile.",
         "source": "https://www.jellinek.nl/en/alcohol-drugs-behavior/ghb/"
       }
     },
@@ -3780,8 +3825,8 @@
             "label": "Come-down"
           },
           "after_effects": {
-            "min": 3,
-            "max": 8,
+            "min": 2,
+            "max": 4,
             "label": "After-effects"
           }
         }
@@ -3795,13 +3840,13 @@
       "impulsivity": 6,
       "lethality": 8
     },
-    "sleep_strategy": "Sudden, involuntary sleep onset. Prevent aspiration by using recovery position with sober companion.",
+    "sleep_strategy": "Sleep arrives suddenly, so have a sober companion and lie on your side. If a person cannot be woken, that is overdose, not sleep: call an ambulance and keep them on their side while you wait.",
     "phases": {
       "before": {
         "essential": [
           {
             "short": "⚠️ CRITICAL DANGER: GHB/GBL has an EXTREMELY NARROW therapeutic window. The difference between a recreational dose and a fatal overdose is often a single milliliter or less.",
-            "detail": "GHB/GBL is a CNS depressant with a margin measured in drops. Loss of consciousness occurs from ~3 grams, but purity varies so dramatically (ranging from 200–600 mg/mL) that visual estimation is effectively impossible. A dose that feels like 1 mL might actually contain 200 mg or 600 mg. This is not a substance to experiment with.",
+            "detail": "GHB/GBL is a CNS depressant with a margin measured in drops. Loss of consciousness occurs from ~3 grams, but purity varies so dramatically (roughly 200 to 1000 mg/mL) that visual estimation is effectively impossible. A dose that feels like 1 mL might actually contain 200 mg or 600 mg. This is not a substance to experiment with.",
             "sources": [
               {
                 "label": "Jellinek: GHB",
@@ -3814,8 +3859,8 @@
             ]
           },
           {
-            "short": "⚠️ Never use with alcohol or any other depressants (benzodiazepines, opioids, CBD, pregabalin, etc.).",
-            "detail": "GHB combined with other CNS depressants causes catastrophic respiratory depression. Even small GHB doses + alcohol → unconsciousness. If vomiting occurs while unconscious, aspiration (choking) is likely fatal. This combination is the leading cause of GHB-related deaths.",
+            "short": "⚠️ Never use with alcohol or any other depressants (benzodiazepines, opioids, pregabalin, ketamine, etc.).",
+            "detail": "GHB combined with other CNS depressants causes catastrophic respiratory depression. Even small GHB doses + alcohol → unconsciousness. If vomiting occurs while unconscious, aspiration (choking) is likely fatal. Alcohol makes this far more likely, but GHB alone still causes the largest single share of deaths.",
             "sources": [
               {
                 "label": "Jellinek: GHB",
@@ -3869,7 +3914,7 @@
           },
           {
             "short": "⚠️ NO REDOSING if subjective effects fade. Effects wear off while GHB is still in the bloodstream.",
-            "detail": "GHB subjective effects dissipate within 2–3 hours, but the drug remains active in the blood much longer. Redosing at the same dose increases total blood concentration exponentially → overdose. This is the pattern leading to most GHB hospitalizations.",
+            "detail": "GHB subjective effects dissipate within 2–3 hours, but the drug remains active in the blood much longer. GHB clearance saturates at higher doses, so a second dose can push blood levels far above the first → overdose. This is the pattern leading to most GHB hospitalizations.",
             "sources": [
               {
                 "label": "Jellinek: GHB",
@@ -3885,14 +3930,14 @@
         "bonus": [
           {
             "short": "Hydration: Non-alcoholic beverages only. Max 0.5L/hour.",
-            "detail": "GHB itself causes some fluid retention. Over-hydration + GHB + dancing can increase hyponatremia risk. Keep hydration moderate."
+            "detail": "Drinking fast while dancing can dilute blood sodium (hyponatremia), so keep hydration moderate. checkit! advises no more than half a litre of non-alcoholic drink per hour."
           }
         ]
       },
       "after": {
         "essential": [
           {
-            "short": "⚠️ Expect involuntary sleep. Use recovery position (on your side).",
+            "short": "⚠️ Sleep can hit suddenly, so lie on your side before it does. If someone cannot be woken, that is overdose, not sleep: call an ambulance.",
             "detail": "Sleep on GHB often arrives suddenly and involuntarily, so people pass out despite meaning to stay awake. Make sure you are in the recovery position, on your left side, so that if you vomit, gravity keeps it out of your lungs.",
             "sources": [
               {
@@ -4015,7 +4060,7 @@
       "impulsivity": 6,
       "lethality": 8
     },
-    "sleep_strategy": "Sleep arrives suddenly and involuntarily, even faster than with GHB. Never use near sleep without a sober companion, and use the recovery position.",
+    "sleep_strategy": "Sleep arrives suddenly and involuntarily, even faster than with GHB. Never use GBL without a sober companion, and use the recovery position.",
     "phases": {
       "before": {
         "essential": [
@@ -4048,7 +4093,7 @@
             ]
           },
           {
-            "short": "⚠️ Never use with alcohol or any other depressant (benzodiazepines, opioids, pregabalin).",
+            "short": "⚠️ Never use with alcohol, ketamine, or any depressant (benzodiazepines, opioids, pregabalin).",
             "detail": "GBL (as GHB) combined with other CNS depressants causes catastrophic respiratory depression. Even small amounts with alcohol can cause unconsciousness; vomiting while unconscious leads to fatal aspiration. This combination is the leading cause of GHB/GBL deaths.",
             "sources": [
               {
@@ -4062,7 +4107,7 @@
             ]
           },
           {
-            "short": "Dilute it: mix a measured dose into a soft drink. Never swallow GBL neat.",
+            "short": "Dilute it: mix a measured dose into a soft drink and drink it straight away. Never swallow GBL neat.",
             "detail": "Undiluted GBL is caustic and can burn the mouth, throat and stomach. Always dilute a measured dose in a non-alcoholic soft drink, measure with a 0.1 mL syringe, keep a written note of what you took and when, and start low with any new batch.",
             "sources": [
               {
@@ -4089,7 +4134,7 @@
           },
           {
             "short": "⚠️ NO REDOSING when effects fade. GBL is still in your blood.",
-            "detail": "Subjective effects fade within 1–2 hours, but the drug is still active. Taking another dose stacks on top of the first and pushes total blood levels toward overdose. Waiting out the urge is essential; most GBL/GHB hospitalisations follow redosing too soon.",
+            "detail": "Subjective effects fade within 1–2 hours, but the drug is still active. Taking another dose stacks on top of the first and pushes total blood levels toward overdose. Waiting out the urge is essential; many GBL/GHB hospitalisations follow redosing too soon.",
             "sources": [
               {
                 "label": "Jellinek: GHB",
@@ -4154,7 +4199,7 @@
       "Respiratory arrest and death (especially with alcohol or depressants)",
       "Choking/aspiration during sudden unconsciousness",
       "Caustic if taken undiluted (burns mouth/throat)",
-      "Rapid dependence and severe withdrawal (medical supervision required)"
+      "Redosing too soon, sometimes with no memory of the first dose, stacking toward overdose"
     ],
     "mcda": null,
     "visualizer_note": "The same lethal profile as GHB but harder to dose, being stronger by volume and faster in onset. The narrow dose window and overdose risk are the headline. GHB's expert harm score does not transfer to GBL, which that study never assessed."
@@ -4183,7 +4228,7 @@
           "max": 30
         },
         "heavy": 30,
-        "note": "⚠️ These numbers are diazepam equivalents, from PsychonautWiki's diazepam guide. Benzos differ hugely in strength: about 0.5 mg of alprazolam (Xanax) or 0.5 mg of clonazepam equals about 10 mg of diazepam, roughly 20 times stronger by weight, and about 1 mg of lorazepam or etizolam equals about 10 mg of diazepam. Convert your own drug before dosing, for example with the Ashton table at benzo.org.uk, though designer benzos like etizolam are not listed there, so use PsychonautWiki or TripSit for those. Counterfeit pressed pills sold as 'Xanax' or 'Valium' routinely contain unknown, variable or far stronger designer benzos such as bromazolam, or even nitazene opioids, so the dose is a guess. Get them drug-checked and start with a fraction, such as half, then wait at least an hour.",
+        "note": "⚠️ These numbers are diazepam equivalents, and the timeline shown is diazepam's too, both from PsychonautWiki's diazepam guide. Other benzos run far shorter or far longer, so a designer benzo can leave you impaired well past the window shown. Benzos differ hugely in strength: about 0.5 mg of alprazolam (Xanax) or 0.5 mg of clonazepam equals about 10 mg of diazepam, roughly 20 times stronger by weight, and about 1 mg of lorazepam or etizolam equals about 10 mg of diazepam. Convert your own drug before dosing, for example with the Ashton table at benzo.org.uk, though designer benzos like etizolam are not listed there, so use PsychonautWiki or TripSit for those. Counterfeit pressed pills sold as 'Xanax' or 'Valium' routinely contain unknown, variable or far stronger designer benzos such as bromazolam, or even nitazene opioids, so the dose is a guess. Get them drug-checked and start with a fraction, such as half, then wait at least an hour.",
         "source": "https://psychonautwiki.org/wiki/Diazepam"
       }
     },
@@ -4210,8 +4255,8 @@
             "label": "Peak"
           },
           "come_down": {
-            "min": 1.5,
-            "max": 6,
+            "min": 2,
+            "max": 4.5,
             "label": "Come-down"
           },
           "after_effects": {
@@ -4271,7 +4316,7 @@
             ]
           },
           {
-            "short": "Dose in diazepam-equivalents and start low: potency varies up to ~20× between benzos.",
+            "short": "Dose in diazepam-equivalents and start low: potency varies 20x between common benzos, and far more for designer ones.",
             "detail": "Roughly 0.5 mg alprazolam or clonazepam, or 1 mg lorazepam or etizolam, is equivalent to 10 mg diazepam. Confusing milligrams between benzos is a common way to massively overshoot. Convert your specific drug to diazepam-equivalents first, and remember these are estimates that vary between individuals and reference tables.",
             "sources": [
               {
@@ -4285,7 +4330,7 @@
             ]
           },
           {
-            "short": "Go slow: take a fraction, then wait at least an hour before considering more.",
+            "short": "Go slow and not alone: take a fraction with someone sober nearby, then wait at least an hour before considering more.",
             "detail": "Oral onset is around 20–40 minutes. The classic trap is redosing during that delay, and then the amnesia sets in and further pills get taken without any memory of them, stacking into a blackout or overdose. One dose, then wait.",
             "sources": [
               {
@@ -4302,7 +4347,7 @@
         "bonus": [
           {
             "short": "Not a routine comedown crutch: tolerance builds within days and dependence forms quickly with regular use.",
-            "detail": "Using benzos to blunt a stimulant comedown or to sleep after events, if repeated, builds tolerance and physical dependence quickly. Keeping benzo use occasional and spaced out is the main way to avoid a dependence that is difficult and dangerous to reverse.",
+            "detail": "Using benzos to blunt a stimulant comedown or to sleep after events, if repeated, builds tolerance and physical dependence quickly. The stimulant also hides how sedated you are, so when it fades first the full benzo effect lands at once. Keeping benzo use occasional and spaced out is the main way to avoid a dependence that is difficult and dangerous to reverse.",
             "sources": [
               {
                 "label": "PsychonautWiki: Benzodiazepines (tolerance & addiction)",
@@ -4335,7 +4380,7 @@
         "essential": [
           {
             "short": "⚠️ Overdose signs: heavy sedation, slow or shallow breathing, unresponsiveness, blue lips. Put them in the recovery position and call 112.",
-            "detail": "Benzodiazepines alone rarely stop breathing, but combined with other depressants, or when a pill secretly contains a nitazene opioid, they cause life-threatening slowing of the breath. If someone cannot be roused, is breathing slowly or shallowly, or has blue lips or fingertips, put them on their side in the recovery position and call emergency services. If an opioid may be involved, give naloxone if you have it. Naloxone does not reverse the benzo itself, but it reverses the opioid that may be the real danger.",
+            "detail": "Benzodiazepines alone rarely stop breathing, but combined with other depressants, or when a pill secretly contains a nitazene opioid, they cause life-threatening slowing of the breath. If someone cannot be roused, is breathing slowly or shallowly, or has blue lips or fingertips, put them on their side in the recovery position and call emergency services. If an opioid may be involved, give naloxone if you have it. Naloxone does not reverse the benzo itself, but it reverses the opioid that may be the real danger. One dose may not be enough: a nitazene can outlast it, so stay with them, give another if their breathing slows again, and call 112 either way.",
             "sources": [
               {
                 "label": "PsychonautWiki: Benzodiazepines (overdose)",
@@ -4494,11 +4539,13 @@
       "Fatal respiratory depression when combined with opioids, alcohol, GHB/GBL or other depressants (a leading overdose driver)",
       "Counterfeit pills (fake Xanax or Valium) may contain stronger designer benzos such as bromazolam, or nitazene opioids, so the dose is a guess",
       "Rapid dependence; abrupt withdrawal can cause life-threatening seizures and delirium (taper, never stop suddenly)",
+      "Choking on vomit while unconscious, because sedation blocks the gag reflex",
       "Blackouts and anterograde amnesia",
       "Disinhibition and risky behaviour",
       "Redosing into a blackout (delayed onset plus amnesia)",
       "Tolerance develops within days",
-      "Severe impairment of coordination and reaction time, so do not drive"
+      "Severe impairment of coordination and reaction time, so do not drive",
+      "Stimulants hide how sedated you are, so an overdose can land when they wear off first"
     ],
     "mcda": {
       "score": 15,
@@ -4531,8 +4578,8 @@
           "max": 30
         },
         "heavy": 30,
-        "note": "⚠️ These tiers are street weight, not pure diamorphine. Street purity is usually 15 to 45 percent and swings between batches, so the same weight can be a very different dose. Always start with a tiny test dose from a new bag. For reference, a lethal dose of pure diamorphine in someone without tolerance is only about 30 mg injected or about 60 mg by other routes.",
-        "source": "https://wiki.tripsit.me/wiki/Heroin"
+        "note": "⚠️ These numbers are deliberately conservative, not a measurement of what is in your bag. Street purity runs from about 10 to over 70 percent and swings between batches, so the same weight can be a very different dose. Always start with a tiny test dose from a new bag. For reference, in someone with no tolerance about 30 mg of pure diamorphine injected can be lethal, and about 60 mg of pure heroin is the commonly cited lethal dose.",
+        "source": "https://drugchecking.berlin/substanzen/diamorphin-heroin"
       },
       "Insufflated": {
         "unit": "mg",
@@ -4550,7 +4597,7 @@
           "max": 30
         },
         "heavy": 30,
-        "note": "⚠️ These tiers are street weight, not pure diamorphine, and purity swings between batches. Always start with a tiny test dose from a new bag. Snorted doses are usually a little higher than smoked. Snorting damages the nasal lining and septum, so use your own rounded-tip tube and rinse your nose after use.",
+        "note": "⚠️ These numbers are deliberately conservative, not a measurement of what is in your bag, and purity swings between batches. Always start with a tiny test dose from a new bag. Snorting damages the nasal lining and septum, so use your own rounded-tip tube and rinse your nose after use.",
         "source": "https://www.saferparty.ch/substanzen/heroin"
       }
     },
@@ -4635,7 +4682,7 @@
         "essential": [
           {
             "short": "⚠️ LETHAL OVERDOSE RISK: Street purity varies 10–72%. Any new batch, source, or period of abstinence (even 2 days) dramatically changes overdose threshold.",
-            "detail": "Heroin purity is wildly inconsistent. Average German street purity was about 18.7% in 2021 data and ranges from 10 to 72%, and supply disruption since 2023 has made it even less predictable. Pharmaceutical diamorphine is near-pure and several times stronger by weight than typical street heroin. After even a brief break of 2–5 days, opioid tolerance falls sharply, and going back to a previous dose after a break is the single most common cause of fatal heroin overdose.",
+            "detail": "Heroin purity is wildly inconsistent. German street samples averaged about 18.7% in 2021 and ranged from 10 to 72%, and the mix changes from batch to batch. Pharmaceutical diamorphine is near-pure and several times stronger by weight than typical street heroin. After even a brief break of 2–5 days, opioid tolerance falls sharply, and going back to a previous dose after a break is one of the most common causes of fatal heroin overdose. The sharpest windows are the first weeks after prison, hospital, detox or stopping substitution treatment. Coming out of any of those, dose far lower than before and carry naloxone.",
             "sources": [
               {
                 "label": "Drugchecking Berlin: Heroin",
@@ -4644,30 +4691,42 @@
               {
                 "label": "SaferParty: Heroin",
                 "url": "https://www.saferparty.ch/substanzen/heroin"
+              },
+              {
+                "label": "WHO: Opioid overdose",
+                "url": "https://www.who.int/news-room/fact-sheets/detail/opioid-overdose"
               }
             ]
           },
           {
             "short": "⚠️ Contamination: Street heroin may contain fentanyl or nitazenes. Test it; carry extra naloxone.",
-            "detail": "Synthetic opioids, fentanyl and especially nitazenes, increasingly turn up in the European heroin supply and are far stronger than heroin itself. They are a leading driver of recent overdose deaths across several EU countries. Fentanyl test strips detect fentanyl but not all nitazenes, so a negative test is not a guarantee. Because these opioids are potent and can outlast a single naloxone dose, carry several doses and be ready to give another.",
+            "detail": "Synthetic opioids, fentanyl and especially nitazenes, increasingly turn up in the European heroin supply and are far stronger than heroin itself. They are a leading driver of recent overdose deaths across several EU countries. Fentanyl strips do not detect nitazenes at all, and they miss some fentanyl analogues too, so a clean strip does not mean the bag is safe. Nitazene strips are sold separately but are hard to get in most places. Because these opioids are potent and can outlast a single naloxone dose, carry several doses and be ready to give another.",
             "sources": [
               {
-                "label": "EUDA: Overdose deaths, nitazenes (2025)",
-                "url": "https://www.euda.europa.eu/"
+                "label": "EUDA: Heroin and other opioids (2025)",
+                "url": "https://www.euda.europa.eu/publications/european-drug-report/2025/heroin-and-other-opioids_en"
               },
               {
-                "label": "The Loop: Drug Alerts",
-                "url": "https://wearetheloop.org/drug-alerts"
+                "label": "Nitazene epidemic in Estonia (2025)",
+                "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12707477/"
+              },
+              {
+                "label": "Fentanyl test strips vs 251 synthetic opioids (2023)",
+                "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10702106/"
               }
             ]
           },
           {
             "short": "⚠️ Never use alone. Have naloxone (Narcan) available and ensure companions know how to use it.",
-            "detail": "Naloxone is an opioid antagonist that reverses respiratory depression within seconds. It is available as a nasal spray (prescription required in some countries). Every person present should know the signs of overdose (blue lips, slow/stopped breathing, unresponsiveness) and how to administer naloxone. Supervised consumption facilities offer the safest environment where available.",
+            "detail": "Naloxone blocks opioids and brings breathing back. The nasal spray takes about 2 to 3 minutes, not seconds. If nothing changes after 2 to 3 minutes, give a second device in the other nostril. It does almost nothing to someone who has not taken opioids, so if you are unsure what they took, give it anyway. To give it: lay them on their back, tilt the head back, put the nozzle in one nostril and press the plunger hard. Do not test-spray it first, each device holds a single dose. Everyone present should know the signs of overdose (blue lips, slow or stopped breathing, unresponsiveness). Supervised consumption rooms are the safest place where they exist. If you will be alone anyway: take less than usual, leave the door unlocked, tell someone to call you at a set time, and use an overdose prevention phone line if one covers your country.",
             "sources": [
               {
-                "label": "Drugchecking Berlin: Heroin",
-                "url": "https://drugchecking.berlin/substanzen/diamorphin-heroin"
+                "label": "NARCAN nasal spray label (DailyMed)",
+                "url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=724df050-5332-4d0a-9a5f-17bf08a547e1"
+              },
+              {
+                "label": "WHO: Opioid overdose",
+                "url": "https://www.who.int/news-room/fact-sheets/detail/opioid-overdose"
               },
               {
                 "label": "TripSit: Heroin",
@@ -4676,8 +4735,8 @@
             ]
           },
           {
-            "short": "⚠️ Never combine with alcohol, benzodiazepines, GHB/GBL, ketamine, or other depressants.",
-            "detail": "Combining opioids with any other CNS depressant causes synergistic respiratory depression that rapidly leads to unconsciousness, aspiration, and death. This is the leading cause of opioid-related fatalities worldwide. Even small amounts of alcohol with heroin can be fatal.",
+            "short": "⚠️ Never combine with alcohol, benzodiazepines, pregabalin or gabapentin, GHB/GBL, ketamine, or other depressants.",
+            "detail": "Combining opioids with any other CNS depressant causes synergistic respiratory depression that rapidly leads to unconsciousness, aspiration, and death. Mixing depressants is one of the most common ways opioid users die. Pregabalin and gabapentin count here too, and are easy to miss because they are prescribed for nerve pain and anxiety. Even small amounts of alcohol with heroin can be fatal.",
             "sources": [
               {
                 "label": "TripSit: Drug Combinations",
@@ -4695,7 +4754,7 @@
           },
           {
             "short": "Test dose: Always start with a tiny amount from any new batch.",
-            "detail": "Use drug-checking services where available. With any new source or batch, start with a fraction of what you would normally use. Purity swings mean a dose that was safe last week may be lethal today. Do not rely on dosing advice from regular users, because their tolerance makes their doses lethal for anyone without it.",
+            "detail": "Use drug-checking services where available. With any new source or batch, start with a fraction of what you would normally use, then wait for the full effect before taking more. Smoked and snorted heroin peaks 30 to 90 minutes in, so topping up before that stacks two doses into one. Purity swings mean a dose that was safe last week may be lethal today. Do not rely on dosing advice from regular users, because their tolerance makes their doses lethal for anyone without it.",
             "sources": [
               {
                 "label": "SaferParty: Heroin",
@@ -4711,7 +4770,7 @@
         "bonus": [
           {
             "short": "Route: Smoking (foil) is significantly safer than injection.",
-            "detail": "Smoking produces a slower onset and lower peak blood concentration than injection, substantially reducing overdose risk. Injection carries additional risks: vein collapse, abscesses, endocarditis, and blood-borne infections (HIV, Hepatitis C). If injecting, use sterile equipment exclusively and never share needles, water, or filters.",
+            "detail": "Smoking produces a slower onset and lower peak blood concentration than injection, substantially reducing overdose risk. Injection carries additional risks: vein collapse, abscesses, endocarditis, and blood-borne infections (HIV, Hepatitis C). If injecting, the dose is far lower than smoked or snorted: with no tolerance about 5 to 10 mg of pure heroin. Never carry the numbers from the tiers above over to a needle. Use sterile equipment only and never share needles, water, or filters.",
             "sources": [
               {
                 "label": "Drugchecking Berlin: Heroin",
@@ -4735,12 +4794,20 @@
         "focus": "Preventing respiratory arrest and aspiration.",
         "essential": [
           {
-            "short": "⚠️ OVERDOSE: Blue lips/fingertips, slow or stopped breathing, unresponsiveness → CALL 112 IMMEDIATELY. Administer naloxone if available.",
-            "detail": "An opioid overdose causes life-threatening slowing of the breath. Breathing drops to 2–4 breaths per minute or stops entirely. Blue-tinted cold skin, collapsing blood pressure, pinpoint pupils and unresponsiveness are emergency signs. Put the person in the recovery position, call emergency services, and give naloxone nasal spray if you have it. Naloxone wears off faster than heroin, so the person may fall back into overdose and need repeated doses.",
+            "short": "⚠️ OVERDOSE: Blue lips/fingertips, slow or stopped breathing, unresponsiveness → CALL 112 IMMEDIATELY. Give naloxone if you have it, and breathe for them if their breathing is slow or stopped.",
+            "detail": "An opioid overdose kills by stopping the breathing, long before the heart stops. Breathing goes slow and shallow first: count for 15 seconds, and fewer than 3 breaths in that time (under 12 a minute) is already an emergency. It can fall to 2–4 a minute or stop. Blue-tinted cold skin, collapsing blood pressure, pinpoint pupils and unresponsiveness are emergency signs. Call emergency services first. Call even if you are scared of the police: on the phone you only have to describe the symptoms, you do not have to say drugs were involved. Then breathing comes first: tilt the head back, clear the mouth, and give naloxone nasal spray if you have it. If they breathe less than once every 5 seconds, give one rescue breath every 5 seconds. If they are not breathing at all, start CPR, 30 chest compressions to 2 breaths. Only once they breathe normally on their own, put them on their side. Naloxone lasts 30 to 90 minutes, less than heroin, so breathing can fail again and more doses may be needed. It also throws a dependent person straight into withdrawal: they may wake up sick and want to use again at once, which is how people go over a second time. Stay with them and keep watching the breathing until help arrives.",
             "sources": [
               {
-                "label": "Drugchecking Berlin: Heroin",
-                "url": "https://drugchecking.berlin/substanzen/diamorphin-heroin"
+                "label": "WHO: Opioid overdose",
+                "url": "https://www.who.int/news-room/fact-sheets/detail/opioid-overdose"
+              },
+              {
+                "label": "AHA 2025 Guidelines: Adult Basic Life Support",
+                "url": "https://www.ahajournals.org/doi/10.1161/CIR.0000000000001369"
+              },
+              {
+                "label": "Drugchecking Berlin: First aid",
+                "url": "https://drugchecking.berlin/substanzen/erste-hilfe"
               },
               {
                 "label": "checkit! Wien: Heroin",
@@ -4763,8 +4830,18 @@
             ]
           },
           {
-            "short": "Nausea: Vomiting is common. Stay upright or in recovery position.",
-            "detail": "Heroin commonly causes nausea and vomiting, especially at higher doses or in opioid-naive users. If someone is sedated and vomiting, the suppressed gag reflex means aspiration (inhaling vomit) is a severe risk. Always ensure they are on their side in the recovery position."
+            "short": "⚠️ Nausea: Vomiting is common. Anyone drowsy or nodding must lie on their side, never sit upright.",
+            "detail": "Heroin commonly causes nausea and vomiting, especially at higher doses or in opioid-naive users. If someone is sedated and vomiting, the suppressed gag reflex means aspiration (inhaling vomit) is a severe risk. Always ensure they are on their side in the recovery position.",
+            "sources": [
+              {
+                "label": "Drugchecking Berlin: First aid",
+                "url": "https://drugchecking.berlin/substanzen/erste-hilfe"
+              },
+              {
+                "label": "SaferParty: Heroin",
+                "url": "https://www.saferparty.ch/substanzen/heroin"
+              }
+            ]
           }
         ],
         "bonus": [
@@ -4778,7 +4855,7 @@
         "essential": [
           {
             "short": "⚠️ Recovery position: If sedated, place on their side. Monitor breathing continuously.",
-            "detail": "Opioid-induced sedation combined with nausea creates a high aspiration risk. The person must be placed on their side (recovery position) and breathing must be monitored continuously. Never leave someone nodding off alone.",
+            "detail": "Opioid-induced sedation combined with nausea creates a high aspiration risk. The person must be placed on their side (recovery position) and breathing must be monitored continuously. Check them properly every few minutes: say their name loudly, shake the shoulders, then rub your knuckles hard on the breastbone. Deep snoring or gurgling is not sleep, it is a partly blocked airway and a classic overdose sign. If they do not react, treat it as an overdose. Never leave someone nodding off alone.",
             "sources": [
               {
                 "label": "Drugchecking Berlin: Heroin",
@@ -4812,11 +4889,15 @@
         "essential": [
           {
             "short": "Do not redose to avoid withdrawal. Maintain consumption breaks of multiple days.",
-            "detail": "The wish to avoid withdrawal drives compulsive use. Each extra use deepens physical dependence. Keeping breaks of several days between uses noticeably reduces that risk, though this is only harm reduction: no pattern of heroin use is safe.",
+            "detail": "The wish to avoid withdrawal drives compulsive use. Each extra use deepens physical dependence. Keeping breaks of several days between uses lowers that risk, but only if you cut the dose when you come back. Tolerance drops off within 2 to 5 days, so after any break treat it like a first time and start at a small fraction of your old dose. This is only harm reduction: no pattern of heroin use is safe.",
             "sources": [
               {
                 "label": "SaferParty: Heroin",
                 "url": "https://www.saferparty.ch/substanzen/heroin"
+              },
+              {
+                "label": "Drugchecking Berlin: Heroin",
+                "url": "https://drugchecking.berlin/substanzen/diamorphin-heroin"
               }
             ]
           }
@@ -4830,7 +4911,7 @@
       }
     },
     "risks": [
-      "Fatal respiratory depression (especially with other depressants)",
+      "Fatal respiratory depression (worse with other depressants; cocaine and other stimulants mask it, then it hits when they wear off)",
       "Aspiration (choking on vomit while unconscious)",
       "Extreme overdose risk after tolerance break (even 2 days)",
       "Wildly variable street purity (10–72%)",
@@ -5098,7 +5179,7 @@
           },
           {
             "short": "Hydration: Drink non-alcoholic fluids with electrolytes. Max 0.5L/hour.",
-            "detail": "Methamphetamine causes dehydration through elevated body temperature, vasoconstriction, and suppressed thirst. Drink steadily but avoid over-hydration. Electrolyte drinks replace sodium lost through sweating.",
+            "detail": "Methamphetamine causes fluid loss through raised temperature, sweating and hours of activity, while blunting thirst. Drink steadily but avoid over-hydration. Electrolyte drinks replace sodium lost through sweating.",
             "sources": [
               {
                 "label": "checkit! Wien: Methamphetamine",
@@ -5108,7 +5189,7 @@
           },
           {
             "short": "⚠️ Never combine with alcohol, because it masks overdose symptoms and causes severe strain on your organs.",
-            "detail": "Alcohol masks the stimulant effects, which encourages higher doses of both. The combination causes extreme strain on the heart, liver toxicity, and a much higher risk of aggressive or violent behaviour. When the stimulant wears off, the full sedative load of the alcohol hits, risking slowed breathing and choking on vomit.",
+            "detail": "Methamphetamine masks how drunk you feel, so people drink far past their usual limit. The combination causes extreme strain on the heart, liver toxicity, and a much higher risk of aggressive or violent behaviour. When the stimulant wears off, the full sedative load of the alcohol hits, risking slowed breathing and choking on vomit.",
             "sources": [
               {
                 "label": "SaferParty: Methamphetamine",
@@ -5127,8 +5208,8 @@
             "detail": "Methamphetamine elevates core body temperature and suppresses appetite. Active cooling (moving to ventilated areas, cold water on wrists) and forcing light meals maintain blood sugar and prevent dangerous hyperthermia."
           },
           {
-            "short": "⚠️ Drug interaction: SSRIs/SNRIs (fluoxetine, sertraline, paroxetine, duloxetine, bupropion) dangerously potentiate methamphetamine.",
-            "detail": "These medications inhibit the CYP2D6 liver enzyme responsible for metabolising methamphetamine, causing dangerously elevated and prolonged blood concentrations. If you are taking any psychiatric medication, consult a doctor before use.",
+            "short": "⚠️ Never mix with MAOI antidepressants (tranylcypromine, moclobemide, selegiline). Blood pressure can spike to stroke level. Bupropion and some SSRIs are a smaller concern but make effects stronger and longer.",
+            "detail": "MAOIs block the breakdown of the noradrenaline methamphetamine releases, so blood pressure can climb to stroke level. This is the one combination every source ranks as life-threatening. Bupropion and some SSRIs such as fluoxetine and paroxetine block CYP2D6, one of the routes that clears methamphetamine, which makes effects stronger and longer rather than deadly. If you take any antidepressant, get medical advice first.",
             "sources": [
               {
                 "label": "Drugchecking Berlin: Crystal",
@@ -5181,7 +5262,7 @@
         ],
         "bonus": [
           {
-            "short": "Mental health: If anxiety, paranoia, or suicidal thoughts persist beyond 72 hours, seek professional help.",
+            "short": "Mental health: Get help straight away for suicidal thoughts. Seek help if paranoia or anxiety last more than a few days.",
             "detail": "Methamphetamine use can trigger substance-induced psychosis including paranoia, delusions, and hallucinations. If psychiatric symptoms persist beyond the expected comedown window (2–4 days), this may indicate a more serious reaction requiring medical attention.",
             "sources": [
               {
@@ -5211,6 +5292,6 @@
       "rank": 4,
       "of": 20
     },
-    "visualizer_note": "Extreme across the board: high nerve damage, strain on the heart, addiction and overdose (stroke, cardiac arrest, overheating)."
+    "visualizer_note": "Very high nerve damage, heart strain, sleep loss and addiction. Overdose risk is high, through stroke, cardiac arrest and overheating."
   }
 }

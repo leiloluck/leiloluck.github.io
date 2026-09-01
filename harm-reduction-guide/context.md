@@ -1,8 +1,8 @@
 # Harm Reduction Protocols: Subpage Design Document
 
 > **Status:** Active Development  
-> **Version:** v26.08.30a  
-> **Last Updated:** 2026-08-30  
+> **Version:** v26.08.31b  
+> **Last Updated:** 2026-08-31  
 > **Author Role:** Scientific harm reduction design lead  
 
 ---
@@ -13,7 +13,7 @@
 > **Dosing panel:** the unit is stated once above the tier row instead of being repeated inside all five tier buttons, which was overflowing them on GHB, GBL, benzodiazepines and heroin. Tier buttons now carry numbers only, and everything explanatory moved into the `note` below (§10.6).
 > **Risk profile:** an ℹ️ button at the top left of the chart opens a provenance panel that states plainly that the bars are an editorial judgement (§2.4). The long caption and the "How these ratings are decided" rubric moved inside it. The peer-reviewed MCDA score now sits **above** the chart so the sourced number leads. Bars snap to band midpoints so a 7 and an 8 draw identically. The **Dehydration** axis was renamed **Fluid & heat balance** because on MDMA the fluid failure that kills includes hyponatremia, from drinking *too much* water, and a tall bar labelled "Dehydration" pointed a tired reader at the wrong behaviour. Axis ticks say "Moderate", matching the tooltip and the rubric.
 > **Selection contrast:** a selected substance, route or dose tier is now filled solid with its accent colour, with black or white text chosen by luminance, a bright ring and a wide glow; unselected buttons recede to a dim outline. The previous states differed only by opacity and were hard to tell apart.
-> **Content corrections:** 16 of the 21 profiles were audited and every one had errors; the applied set is listed in §9.5. The three most serious: GBL carried a Nutt 2010 harm score for a substance that study never assessed (a fabricated citation, now `null`); poppers told a reader that fresh air reverses methaemoglobinaemia, which is the one thing it cannot do, since methaemoglobin cannot bind oxygen at all; and cocaine's chest-pain line, the only acutely lethal item in that profile, was the softest text on the page. Dosing tiers were corrected downward for amphetamine, cannabis and caffeine, all of which sat a level above the PsychonautWiki figures they cited. Nine `visualizer` values were recalibrated where the number contradicted the substance's own note or the axis definition. All 102 source URLs were bulk-checked and the three dead ones fixed.
+> **Content corrections:** All 21 profiles have been audited and every one had errors; the applied set is listed in §9.5. The three most serious: GBL carried a Nutt 2010 harm score for a substance that study never assessed (a fabricated citation, now `null`); poppers told a reader that fresh air reverses methaemoglobinaemia, which is the one thing it cannot do, since methaemoglobin cannot bind oxygen at all; and cocaine's chest-pain line, the only acutely lethal item in that profile, was the softest text on the page. Dosing tiers were corrected downward for amphetamine, cannabis and caffeine, all of which sat a level above the PsychonautWiki figures they cited. Nine `visualizer` values were recalibrated where the number contradicted the substance's own note or the axis definition. All 102 source URLs were bulk-checked and the three dead ones fixed.
 > **Chart sizing fix:** `switchTab` now calls `resize()` on both charts. They are built while their tab is `display:none`, so Chart.js measured a 0x0 container and wrote `width:0;height:0` onto the canvas.
 >
 > **Recent changes (2026-07-24, v26.07.24e):** Added four substances (now **21 total**): **Nitrous Oxide (N₂O)**, **Poppers (alkyl nitrites)**, **Benzodiazepines**, and **DMT**, each from a multi-agent, adversarially-verified research pass with local source mirrors under `resources/sources/`. Model choices: N₂O is dosed in balloons/chargers with no duration chart (B12/neuropathy + hypoxia as headline harms); poppers carry no numeric tiers, lead with the PDE5-inhibitor and never-swallow ⚠️, and, having no TripSit combo data, show a "see the Protocol tab" note instead of an empty Combinations panel; benzodiazepines are dosed in diazepam-equivalents (counterfeit/nitazene caveat) and carry a real Nutt-2010 MCDA score (15, rank 10/20); DMT is vaporized-mg with the oral/MAOI (ayahuasca) context noted. Combos: N₂O / benzos / DMT map to their own TripSit keys; benzos correctly flag alcohol / GHB / GBL / heroin as Dangerous.
@@ -532,6 +532,8 @@ Before publishing any content update:
 - [ ] Substance ordering reflects current European prevalence data.
 - [ ] The sober baseline is comprehensive and positioned first.
 - [ ] No em dash anywhere in the file (§9.4).
+- [ ] Every PubMed / NCBI Bookshelf citation resolved through the NCBI API and its real title checked against the label (see §9.5; seven fabricated citations were caught this way).
+- [ ] Every source URL opened, not just resolved: does that page actually carry the claim it is attached to? A bare organisation homepage is never a citation (see §9.5 failure pattern 6).
 - [ ] Every source URL returns 200 (bulk-checked; PubMed 203 and publisher 403 responses are bot-blocking, not dead).
 
 ### 9.4 House Style: No Em Dashes
@@ -548,13 +550,47 @@ The **en dash (–) stays, but only inside numeric ranges** (`4–8 g`, `20–40
 
 Check with `grep -c '—' <file>` across all six files. The expected count is zero. (This document is held to the same rule; the only two em dashes left in it are the two in this section, where the character itself is the subject.)
 
-### 9.5 Known Gap: Eight Profiles Have Never Been Independently Fact-Checked
+### 9.5 Audit Status (v26.08.31b): All 21 Profiles Checked
+
+Every profile on the site has now been independently fact-checked, and the corrections applied in the first round have been adversarially re-verified.
+
+**Round 2 audits** covered GHB, GBL, benzodiazepines, methamphetamine, CMC, 4-MMC and 2C-B (CMC and benzodiazepines got two lenses each). 74 candidate corrections were raised; **18 were refuted** by the adversarial pass and discarded, 56 were confirmed and applied. Ten were critical, including: GHB claiming the alcohol combination was "the leading cause of GHB-related deaths" when the fatality literature puts GHB alone as the largest single category (Corkery 2015: 37% alone vs 14% alcohol); GHB and GBL framing unresponsiveness as sleep to be managed at home, with no instruction to call an ambulance; methamphetamine missing MAOIs, its one lethal interaction, from the entire profile; and 4-MMC's cardiac warning being the softest line on its page.
+
+**Round 3 audited heroin**, the last profile and the highest-lethality substance here, across three lenses (dosing, harms, and a what-is-missing lens) with two independent refuters per finding plus a completeness critic. 30 candidates were raised: 18 confirmed by both refuters, 5 split, 2 refuted, and 5 more from the critic. 22 edits were applied. What it found:
+
+- **The emergency instruction was wrong in the one way that kills.** The item described breathing that had "stopped entirely" and then told the bystander to use the recovery position, which is for someone who is unconscious *but breathing*. Neither rescue breathing nor CPR appeared anywhere in the profile. AHA 2025 Part 7 is Class 1 (LOE B-NR) that a lay rescuer facing a suspected opioid overdose who is unresponsive and not breathing normally should give **CPR with breaths**, explicitly against the compression-only default, because opioid arrest is hypoxic rather than cardiac.
+- **The only breathing number on the page was useless for recognition.** "2 to 4 breaths per minute" is near death. A friend counting 8 a minute would read that and conclude it had not got to overdose yet.
+- **Naloxone "reverses respiratory depression within seconds"** was copied from Drugchecking Berlin's first-aid page and is contradicted by the manufacturer labelling: NARCAN's FDA label says re-dose "every 2 to 3 minutes" if there is no response. A bystander expecting seconds concludes the naloxone failed and stops. The profile also never said how to physically use the spray, never said naloxone is harmless if it turns out not to be opioids, and never mentioned precipitated withdrawal or the re-dose trap that follows it.
+- **Two dosing claims were attributed to a page that does not carry them.** TripSit was cited for the lethal-dose figure (it has none) and for the tiers being "street weight" (it never says so). The 30 mg figure is Drugchecking Berlin's and is IV-specific; the 60 mg is SaferParty's and carries no route, so "about 60 mg by other routes" was an in-house extrapolation. SaferParty was also cited for the entire insufflated tier table and publishes no route-specific figures at all.
+- **Both citations on the contamination item failed.** The EUDA link was a bare agency homepage; The Loop's drug-alerts archive is UK festival pill alerts and does not mention heroin. Replaced with the EUDA 2025 heroin chapter and the Estonia nitazene paper (PMID 40988497, resolved through the NCBI API).
+- **Fentanyl strips detect no nitazenes at all**, not "not all nitazenes". *Harm Reduction Journal* 2023 tested two brands against 251 synthetic opioids: "Neither brand detected any of the 31 non-fentanyl synthetic opioids."
+- **Pregabalin and gabapentin were missing** from heroin's depressant list although the guide's own GHB and GBL lists name them and the repo's TripSit matrix rates opioids plus pregabalin Dangerous. A reader will not classify a nerve-pain prescription as a depressant.
+- Two competing untraceable superlatives ("the leading cause of opioid-related fatalities worldwide" and "the single most common cause of fatal heroin overdose") both softened; the stimulant combination added to `risks[]`; an injection dose anchor added, because the profile coached the highest-risk route while its only numbers were two to four times an injected dose and its "heavy" tier equalled the stated lethal dose.
+
+**The refuters earned their keep on this run.** One proposed correction cited Sordo 2017 for "overdose deaths run more than twice the later rate" after leaving methadone treatment. Both refuters opened the paper: 32.1 versus 13.5 per 1000 person-years is **all-cause** mortality; the overdose-specific figures are 4.2 and 3.4, a ratio of about 1.2. The qualitative point was real and WHO supports it, so the risk windows went in, citing WHO alone, with the fabricated ratio dropped. Two further proposals were refuted for softening a lethal-dose figure with an upward hedge, and two more for relabelling the dose tiers as pure diamorphine, which would have handed the reader a 1/purity multiplier on the most lethal substance here. The tiers now claim to be neither street weight nor pure: they are described as deliberately conservative, which is the only defensible thing to say about them.
+
+A renderer bug surfaced alongside: the dosing panel hardcoded its citation as "Source: PsychonautWiki" regardless of where the link pointed, so 6 of 29 dose links (both heroin routes, both methamphetamine routes, MDMA insufflated, GHB oral) displayed a false attribution. `DOSE_SOURCE_NAMES` in `app.js` now derives the name from the URL.
+
+**Round 2 re-verification** read every one of the ~600 before/after pairs from both passes and found **66 regressions**, four of them critical. The lesson is recorded here because the failure pattern is predictable:
+
+1. **Fabricated citations. Seven of them.** The correction pass wrote PubMed IDs from memory rather than looking them up. Six of seven PMIDs pointed at unrelated papers: a forestry study, a cancer-biology paper, a childhood-trauma study. One overwrote two working sources to install itself, leaving a clinical claim with no valid source at all. **Never write a PMID or an NCBI Bookshelf ID from memory.** Resolve every one through `eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&id=<id>` and check the returned title against the label before committing it.
+2. **Overshooting a correction into a new error.** Fixing "fresh air reverses methaemoglobinaemia" produced "the blood cannot take up oxygen at all", which is also wrong: only the converted fraction is affected, and mild cases do settle once exposure stops.
+3. **Dropping the action step while fixing the fact.** Correcting the levamisole prevalence figure deleted the sentence telling readers to see a doctor about unexplained sores and fever, which was the item's only emergency instruction.
+4. **Flattening a hedge.** The house-style rewrite repeatedly turned "can be lasting" into "is lasting", "mainly X with Y a possible factor" into "partly X and partly Y", and a parenthetical into a causal claim.
+5. **Half-applied corrections.** Fixing a mechanism in the detail while leaving the always-visible `short` recommending what the detail now debunks, or fixing one item while two sibling items still assert the old version.
+
+6. **A citation attached to a page that does not carry the claim.** Distinct from a fabricated ID: the URL resolves, the organisation is reputable, and the page simply does not say it. Found four times on heroin alone (two on TripSit, one bare EUDA homepage, one Loop archive page). Opening the page is the only check that catches this.
+7. **A fabricated statistic inside a *correction*.** The heroin round proposed a real paper with a real finding, attached to the wrong number from it. Corrections need the same citation discipline as original text, which is why the refuters are told to open cited sources themselves.
+
+All 66 were fixed. All source URLs resolve (EUDA, AHA and ScienceDirect return 403 to automated fetches; those were confirmed present by site-restricted search, not assumed). All PubMed citations were re-checked title-against-label through the NCBI API.
+
+### 9.6 Audit History (superseded by 9.5)
 
 The v26.08.30a audit covered **16 of 21** profiles: sober, alcohol, nitrous, poppers, cannabis, DMT, ketamine, LSD, mushrooms, cocaine, amphetamine, MDMA and caffeine (nitrous, poppers and DMT each got two passes, one on dosing and one on harms).
 
-**Never audited: 2C-B, 4-MMC, CMC, GHB, GBL, benzodiazepines, heroin, methamphetamine.** The run hit an API session limit partway through. Three of those (CMC, benzodiazepines, and the GHB/GBL split) are recent additions carrying the same unverified status the audited new profiles turned out to have, and every one of them is a high-consequence substance. **Audit these eight next, before anything else on this list.**
+That run hit an API session limit partway through, leaving 2C-B, 4-MMC, CMC, GHB, GBL, benzodiazepines, heroin and methamphetamine unchecked. Round 2 covered seven of those and round 3 covered heroin, so this gap is now closed. It is kept here as the record of how the audit was staged.
 
-A second gap in the same run: the adversarial verification round never executed, so the corrections applied in v26.08.30a rest on a single research pass plus editorial review, not on the two-vote refutation the workflow was built to run. Re-running verification over the applied changes is the second priority.
+A second gap in the same run: the adversarial verification round never executed, so the corrections applied in v26.08.30a rested on a single research pass plus editorial review rather than the two-vote refutation the workflow was built to run. Round 2 re-ran that verification over every applied change.
 
 What the completed audit found, for calibration on how much to trust an un-audited profile: **every profile checked had errors.** The four "fully sourced" July additions held up best (poppers and nitrous had only minor precision issues), while the oldest profiles carried inverted pharmacology. Recurring failure modes worth grepping for elsewhere:
 
@@ -564,13 +600,13 @@ What the completed audit found, for calibration on how much to trust an un-audit
 4. **Overstating the cited source.** Rule 1.4 cuts both ways, and the audit found more overstatement than understatement.
 5. **The lethal risk written as the softest line on the page.** Cocaine chest pain had no ⚠️ while a slow adulterant risk did; alcohol's risks list led with dehydration and never named alcohol poisoning; the sober profile omitted heat illness entirely.
 
-### 9.6 Known Gap: Source Coverage Is Uneven
+### 9.7 Known Gap: Source Coverage Is Uneven
 
-§4.2 and the §9.3 checklist require every `detail` to carry at least one entry in `sources`. As of v26.08.30a, **142 of 259 protocol items (55%) meet that bar.** The split runs almost exactly along the age of the profile:
+§4.2 and the §9.3 checklist require every `detail` to carry at least one entry in `sources`. As of v26.08.31b, **153 of 261 protocol items (58%) meet that bar.** The split runs almost exactly along the age of the profile:
 
 | Fully sourced (100%) | Partly sourced | Barely sourced |
 |---|---|---|
-| nitrous, poppers, DMT, benzodiazepines | heroin 75%, GHB 73%, GBL 73%, CMC 73%, methamphetamine 69%, MDMA 64% | LSD 9%, mushrooms 10%, ketamine 18%, 2C-B 18%, caffeine 22%, cocaine 27%, 4-MMC 27%, cannabis 30%, alcohol 36%, amphetamine 36%, **sober 0%** |
+| nitrous, poppers, DMT, benzodiazepines | heroin 81%, GHB 73%, GBL 73%, CMC 73%, methamphetamine 69%, MDMA 64% | LSD 9%, mushrooms 10%, ketamine 18%, 2C-B 18%, caffeine 22%, cocaine 27%, 4-MMC 27%, cannabis 30%, alcohol 36%, amphetamine 36%, **sober 0%** |
 
 The four profiles added on 2026-07-24 were built to the standard. The original set predates it. This is the largest single gap between this document and the live page, and closing it means researching and citing roughly 117 items, mostly on the substances a reader is most likely to open.
 

@@ -24,7 +24,11 @@ External references cited by URL but **not** mirrored locally are marked *(exter
 ### Heroin
 - **EUDA — European Drug Report / overdose deaths & nitazenes (2025)** *(external)* — https://www.euda.europa.eu/
   Supports: fentanyl/nitazene contamination of the European opioid supply; naloxone may need repeat dosing.
+  **Superseded 2026-08-31** — this was a bare agency homepage that did not carry the claim. See the Heroin
+  audit block below.
 - (local) `theloop/drug-alerts.md` — nitazenes flagged as the most acute current danger.
+  **Superseded 2026-08-31** — the live `wearetheloop.org/drug-alerts` archive is UK festival/pill alerts and
+  does not mention heroin; its one nitazene item is about pills, not the heroin supply.
 
 ### Cocaine
 - **PsychonautWiki — Cocaine** (local), **checkit! — Cocaine** (local), **Drugchecking Berlin — Cocaine/Crack** (local: `drugchecking-berlin/cocaine.md`)
@@ -114,3 +118,61 @@ Each was researched across several harm-reduction sources and adversarially fact
 > Note: external references above are cited by URL, not yet mirrored into
 > `resources/`. If full local copies are wanted (for offline/archival per the
 > project convention), they can be fetched into a `resources/sources/` folder.
+
+## Heroin audit — 2026-08-31 (v26.08.31b)
+
+Heroin was the one profile the earlier audit rounds never reached (its agent died mid-run), and it is the
+highest-lethality substance on the site. Audited across three lenses with two independent refuters per
+finding, plus a completeness critic. Full mirror with quotes: `resources/sources/heroin.md`.
+
+Citations **removed** because the page did not carry the claim (see the strikethroughs under "### Heroin"
+above): the bare EUDA homepage, and The Loop's drug-alerts archive.
+
+- **TripSit — Heroin** *(external)* — https://wiki.tripsit.me/wiki/Heroin
+  Carries: smoked common 10–20 mg / strong 20–30 mg (the tiers this profile uses); IV 5–15 mg no tolerance.
+  Does **not** carry: any lethal-dose figure, any insufflated table, or any statement that its tiers are
+  street weight. Two claims had been attributed to it that are not on the page.
+- **SaferParty — Heroin** *(external)* — https://www.saferparty.ch/substanzen/heroin
+  Supports: "Die tödliche Dosis liegt bei Personen ohne Toleranz bei ca. 60 mg reinem Heroin" (one figure,
+  pure heroin, **no route split**); pharmaceutical diacetylmorphine dosed ~5× street heroin; the >2-day
+  tolerance-break threshold. Publishes **no** route-specific mg tiers, so it cannot source a dose table.
+- **Drugchecking Berlin — Diamorphin/Heroin** *(external)* — https://drugchecking.berlin/substanzen/diamorphin-heroin
+  Supports: lethal IV dose ≈30 mg diamorphine hydrochloride in a non-tolerant adult; German street purity
+  18.7% (2021) with a 10–72% range; opioid tolerance nearly gone after 5 days abstinence. Now the cited
+  source for `dosing.Smoked` in place of TripSit, which carries no lethal-dose figure.
+- **Drugchecking Berlin — First aid / Erste Hilfe** (local: `drugchecking-berlin/erste-hilfe.md`)
+  Supports: the split between recovery position (unconscious, **breathing**) and CPR 30:2 (respiratory or
+  cardiac arrest). Note: this page's "naloxone works within seconds" line is contradicted by the
+  manufacturer labelling below and was the origin of that error on the guide.
+- **NARCAN (naloxone HCl) nasal spray — FDA label via DailyMed** *(external)* — https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=724df050-5332-4d0a-9a5f-17bf08a547e1
+  Supports: re-dose "every 2 to 3 minutes" if no response (so the expected effect time is minutes, not
+  seconds); opioids outlast naloxone and depression can return; precipitated withdrawal and its symptom
+  list; "no effect in people who are not taking opioid medicines" (the basis for "give it if unsure").
+- **WHO — Opioid overdose fact sheet** *(external)* — https://www.who.int/news-room/fact-sheets/detail/opioid-overdose
+  Supports: resumption after abstinence (detox, release from incarceration, cessation of treatment) as a
+  risk factor; very high overdose rates in the first four weeks after prison release; naloxone has
+  "virtually no effect in people who have not taken opioids"; airway management and assisted ventilation
+  alongside naloxone.
+- **AHA 2025 Guidelines, Part 7: Adult Basic Life Support** *(external)* — https://www.ahajournals.org/doi/10.1161/CIR.0000000000001369
+  Supports: for a lay rescuer facing a suspected opioid overdose who is unresponsive and not breathing
+  normally, **CPR with breaths** (Class 1, LOE B-NR), explicitly against the compression-only default,
+  because opioid arrest is hypoxic. *(403 to automated fetches; obtained via site-restricted search.)*
+- **Assessment of two brands of fentanyl test strips with 251 synthetic opioids** *(external)* — https://pmc.ncbi.nlm.nih.gov/articles/PMC10702106/
+  *Harm Reduction Journal* 2023. Supports: "Neither brand detected any of the 31 non-fentanyl synthetic
+  opioids" (nitazenes among them), and one third of fentanyl analogues are detectable by one brand but not
+  the other. Corrects "detect fentanyl but not all nitazenes", which implied partial cover where there is
+  none.
+- **The nitazene epidemic in Estonia: a first report** *(external)* — https://pmc.ncbi.nlm.nih.gov/articles/PMC12707477/
+  *Eur J Public Health* 2025, PMID 40988497, PMC12707477, doi 10.1093/eurpub/ckaf160 (all three resolved
+  through the NCBI API). Supports: nitazenes in the illicit opioid supply and driving overdose deaths.
+- **EUDA — Heroin and other opioids, European Drug Report 2025** *(external)* — https://www.euda.europa.eu/publications/european-drug-report/2025/heroin-and-other-opioids_en
+  Replaces the bare homepage link. Supports: nitazenes mis-sold as heroin in France and Ireland; clusters of
+  deaths across several EU countries; probable under-detection in post-mortem toxicology.
+  *(403 to automated fetches; existence and content confirmed via site-restricted search.)*
+- **BKA data via REITOX / DHS Workbook "Drogenmärkte und Kriminalität" 2024** *(external)* — https://www.dhs.de/fileadmin/user_upload/REITOX_BERICHT_2024_WB_08_Drogenmaerkte_Kriminalitaet.pdf
+  Context for the purity figures: German street-level heroin purity 25.8% (2019), 24.6% (2020), 20.3%
+  (2022), 13.5% (2023, lowest since 2014). No 2021 street-level figure is given in this table, which is why
+  the guide's 18.7% is cited to Drugchecking Berlin instead. Also: no fentanyl or other synthetic opioids
+  found in 1,595 German heroin samples in 2023.
+- **Nutt, King & Phillips 2010** *(external)* — https://pubmed.ncbi.nlm.nih.gov/21036393/
+  Checked, no change needed: heroin MCDA overall harm 55, rank 2 of 20.

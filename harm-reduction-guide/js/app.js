@@ -340,6 +340,18 @@ function loadProtocol(id) {
 }
 
 // --- Dosing Panel ---
+// Not every dose table comes from PsychonautWiki: six of them cite SaferParty,
+// Jellinek or TripSit, so the link has to name whatever it actually points at.
+const DOSE_SOURCE_NAMES = {
+    'psychonautwiki.org': 'PsychonautWiki',
+    'www.saferparty.ch': 'SaferParty',
+    'en.saferparty.ch': 'SaferParty',
+    'www.jellinek.nl': 'Jellinek',
+    'wiki.tripsit.me': 'TripSit',
+    'drugchecking.berlin': 'Drugchecking Berlin',
+    'checkit.wien': 'checkit! Wien'
+};
+
 function renderDosingPanel(data) {
     if (!data.dosing || data.id === 'sober') {
         dosingPanel.classList.add('hidden');
@@ -486,8 +498,10 @@ function updateDosingDisplay(data) {
 
     // Source link
     if (dose.source) {
+        const host = new URL(dose.source).hostname;
+        const sourceName = DOSE_SOURCE_NAMES[host] || host.replace(/^www\./, '');
         doseSourceLink.href = dose.source;
-        doseSourceLink.textContent = `Source: PsychonautWiki, ${data.name} dosing`;
+        doseSourceLink.textContent = `Source: ${sourceName}, ${data.name} dosing`;
         doseSourceLink.parentElement.classList.remove('hidden');
     }
 

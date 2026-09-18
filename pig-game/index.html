@@ -22,6 +22,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Pig Game">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
   <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon-180.png">
   <link rel="manifest" href="./manifest.webmanifest">
   <script src="version.js"></script>
@@ -782,7 +783,11 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .install { position: relative; flex: 0 0 auto; }
+    /* static, so the status bubble below anchors to the sticky <header> (the nearest
+       positioned ancestor) and drops below the WHOLE header, install hint included.
+       Anchored to the button it covered "Open this page in Chrome", the one line a
+       wrong-browser visitor needs to read. */
+    .install { position: static; flex: 0 0 auto; }
     .install .btn#btn-install {
       min-height: 40px;
       padding: 4px 9px;
@@ -801,7 +806,7 @@
     .install .status {
       position: absolute;
       top: calc(100% + 4px);
-      right: 0;
+      right: max(12px, env(safe-area-inset-right, 0px));
       white-space: nowrap;
       font-size: 11px;
       padding: 3px 8px;
@@ -1814,15 +1819,20 @@
     });
 
     function installSteps() {
+      // Since iOS 16.4 Chrome, Edge and Firefox can Add to Home Screen too, so "open
+      // Safari" / "open Chrome" is only a step where installHint() says this browser
+      // cannot install (in-app browsers, older iOS, non-Chrome Android).
+      const wrong = !!installHint();
       if (isIOS) {
         return [
-          'Open this page in Safari (not another browser).',
+          ...(wrong ? ['Open this page in Safari first.'] : []),
           'Tap the Share button — the square with an arrow pointing up.',
           'Choose "Add to Home Screen", then tap "Add".'
         ];
       }
       if (isAndroid) {
         return [
+          ...(wrong ? ['This browser only adds a shortcut. Open this page in Chrome first.'] : []),
           'Open the browser menu (⋮, top-right).',
           'Tap "Install app" — or "Add to Home screen" if that is what it says.',
           'Confirm. It then opens on its own, without a browser bar.'

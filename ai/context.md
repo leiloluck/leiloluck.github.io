@@ -16,6 +16,7 @@ Plain HTML/CSS/JS, no build step unless a subpage says otherwise.
 |---|---|---|
 | `harm-reduction-guide/` | Evidence-based harm-reduction protocols for festival/nightlife settings. 21 substances, sourced dosing, a regrounded risk chart, drug-combination data. | `harm-reduction-guide/context.md` |
 | `your-final-words/` | Minimalist reflective writing-exercise web app. | `your-final-words/context.md` |
+| `pig-game/` | Pig Game Track App: party soundboard PWA, moved from marcelpadilla.com on 2026-09-18. | `pig-game/context.md` |
 | `sound-annoyer/`, `meditation-timer/` | Installable PWA utilities (date-based `vYY.MM.DD` versioning). | their `context.md` |
 
 (Subpages are added over time — confirm the current set by listing the repo root.)

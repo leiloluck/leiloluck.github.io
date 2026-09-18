@@ -1,0 +1,375 @@
+{
+  "categories": [
+    {
+      "id": "start game",
+      "title": "Start Game",
+      "type": "music",
+      "files": [
+        {
+          "filename": "Happy Music.mp3",
+          "path": "audio/start game/Happy Music.mp3",
+          "displayName": "Happy Music",
+          "icon": "😊",
+          "color": "#f04f3d",
+          "bytes": 2565505
+        },
+        {
+          "filename": "Jeopardy.mp3",
+          "path": "audio/start game/Jeopardy.mp3",
+          "displayName": "Jeopardy",
+          "icon": "🧠",
+          "color": "#e26600",
+          "bytes": 43715953
+        },
+        {
+          "filename": "Rich.mp3",
+          "path": "audio/start game/Rich.mp3",
+          "displayName": "Rich",
+          "icon": "💰",
+          "color": "#be8400",
+          "bytes": 5248262
+        },
+        {
+          "filename": "Root Beer Rag.mp3",
+          "path": "audio/start game/Root Beer Rag.mp3",
+          "displayName": "Root Beer Rag",
+          "icon": "🍺",
+          "color": "#819e00",
+          "bytes": 7646468
+        },
+        {
+          "filename": "Spanish Flea.mp3",
+          "path": "audio/start game/Spanish Flea.mp3",
+          "displayName": "Spanish Flea",
+          "icon": "🎺",
+          "color": "#00ae44",
+          "bytes": 51298434
+        },
+        {
+          "filename": "Spinning Monkeys.mp3",
+          "path": "audio/start game/Spinning Monkeys.mp3",
+          "displayName": "Spinning Monkeys",
+          "icon": "🐒",
+          "color": "#00b393",
+          "bytes": 5081283
+        },
+        {
+          "filename": "elevator.mp3",
+          "path": "audio/start game/elevator.mp3",
+          "displayName": "elevator",
+          "icon": "⏹",
+          "color": "#00abd1",
+          "bytes": 43459173
+        },
+        {
+          "filename": "funny.mp3",
+          "path": "audio/start game/funny.mp3",
+          "displayName": "funny",
+          "icon": "😂",
+          "color": "#0098fa",
+          "bytes": 1216704
+        },
+        {
+          "filename": "game_show.mp3",
+          "path": "audio/start game/game_show.mp3",
+          "displayName": "game show",
+          "icon": "🎤",
+          "color": "#6181ff",
+          "bytes": 44800374
+        },
+        {
+          "filename": "kahoot.mp3",
+          "path": "audio/start game/kahoot.mp3",
+          "displayName": "kahoot",
+          "icon": "🎓",
+          "color": "#a36af4",
+          "bytes": 48412467
+        }
+      ]
+    },
+    {
+      "id": "mid game",
+      "title": "Mid Game",
+      "type": "music",
+      "files": [
+        {
+          "filename": "Millionaire 1.mp3",
+          "path": "audio/mid game/Millionaire 1.mp3",
+          "displayName": "Millionaire 1",
+          "icon": "💰",
+          "color": "#f04f3d",
+          "bytes": 44071245
+        },
+        {
+          "filename": "baba box.mp3",
+          "path": "audio/mid game/baba box.mp3",
+          "displayName": "baba box",
+          "icon": "📦",
+          "color": "#da6f00",
+          "bytes": 42042281
+        },
+        {
+          "filename": "baba wall.mp3",
+          "path": "audio/mid game/baba wall.mp3",
+          "displayName": "baba wall",
+          "icon": "🎵",
+          "color": "#9f9300",
+          "bytes": 28780560
+        },
+        {
+          "filename": "casino.mp3",
+          "path": "audio/mid game/casino.mp3",
+          "displayName": "casino",
+          "icon": "🎰",
+          "color": "#00ac35",
+          "bytes": 48004147
+        },
+        {
+          "filename": "dark_night.mp3",
+          "path": "audio/mid game/dark_night.mp3",
+          "displayName": "dark night",
+          "icon": "🌙",
+          "color": "#00b29d",
+          "bytes": 48596483
+        },
+        {
+          "filename": "epic.mp3",
+          "path": "audio/mid game/epic.mp3",
+          "displayName": "epic",
+          "icon": "🎶",
+          "color": "#00a4e6",
+          "bytes": 90937094
+        },
+        {
+          "filename": "jazz.mp3",
+          "path": "audio/mid game/jazz.mp3",
+          "displayName": "jazz",
+          "icon": "🎷",
+          "color": "#4388ff",
+          "bytes": 89468594
+        },
+        {
+          "filename": "medival.mp3",
+          "path": "audio/mid game/medival.mp3",
+          "displayName": "medival",
+          "icon": "⚔️",
+          "color": "#a36af4",
+          "bytes": 45482485
+        }
+      ]
+    },
+    {
+      "id": "end game",
+      "title": "End Game",
+      "type": "music",
+      "files": [
+        {
+          "filename": "Millionaire 2.mp3",
+          "path": "audio/end game/Millionaire 2.mp3",
+          "displayName": "Millionaire 2",
+          "icon": "💰",
+          "color": "#f04f3d",
+          "bytes": 44139213
+        },
+        {
+          "filename": "Millionaire 3.mp3",
+          "path": "audio/end game/Millionaire 3.mp3",
+          "displayName": "Millionaire 3",
+          "icon": "💰",
+          "color": "#b18b00",
+          "bytes": 46067373
+        },
+        {
+          "filename": "O Fortuna 2.mp3",
+          "path": "audio/end game/O Fortuna 2.mp3",
+          "displayName": "O Fortuna 2",
+          "icon": "🎵",
+          "color": "#00b26f",
+          "bytes": 6117322
+        },
+        {
+          "filename": "O Fortuna.mp3",
+          "path": "audio/end game/O Fortuna.mp3",
+          "displayName": "O Fortuna",
+          "icon": "🎵",
+          "color": "#009ef2",
+          "bytes": 1871328
+        },
+        {
+          "filename": "violin.mp3",
+          "path": "audio/end game/violin.mp3",
+          "displayName": "violin",
+          "icon": "🎻",
+          "color": "#a36af4",
+          "bytes": 4560814
+        }
+      ]
+    },
+    {
+      "id": "victory",
+      "title": "Victory",
+      "type": "music",
+      "files": [
+        {
+          "filename": "Family_Feud.mp3",
+          "path": "audio/victory/Family_Feud.mp3",
+          "displayName": "Family Feud",
+          "icon": "👪",
+          "color": "#f04f3d",
+          "bytes": 44410285
+        },
+        {
+          "filename": "Millionaire Win.mp3",
+          "path": "audio/victory/Millionaire Win.mp3",
+          "displayName": "Millionaire Win",
+          "icon": "💰",
+          "color": "#b18b00",
+          "bytes": 509517
+        },
+        {
+          "filename": "Price is right.mp3",
+          "path": "audio/victory/Price is right.mp3",
+          "displayName": "Price is right",
+          "icon": "🎉",
+          "color": "#00b26f",
+          "bytes": 54809643
+        },
+        {
+          "filename": "credits.mp3",
+          "path": "audio/victory/credits.mp3",
+          "displayName": "credits",
+          "icon": "🎓",
+          "color": "#009ef2",
+          "bytes": 1151186
+        },
+        {
+          "filename": "winning.mp3",
+          "path": "audio/victory/winning.mp3",
+          "displayName": "winning",
+          "icon": "🏆",
+          "color": "#a36af4",
+          "bytes": 43572429
+        }
+      ]
+    },
+    {
+      "id": "sounds",
+      "title": "Sound Effects",
+      "type": "sound",
+      "files": [
+        {
+          "filename": "Air horn.mp3",
+          "path": "audio/sounds/Air horn.mp3",
+          "displayName": "Air horn",
+          "icon": "📢",
+          "color": "#f04f3d",
+          "bytes": 28276
+        },
+        {
+          "filename": "Applause.mp3",
+          "path": "audio/sounds/Applause.mp3",
+          "displayName": "Applause",
+          "icon": "👏",
+          "color": "#e85e00",
+          "bytes": 370605
+        },
+        {
+          "filename": "Bruh.mp3",
+          "path": "audio/sounds/Bruh.mp3",
+          "displayName": "Bruh",
+          "icon": "😐",
+          "color": "#d77200",
+          "bytes": 41325
+        },
+        {
+          "filename": "Golf clap.mp3",
+          "path": "audio/sounds/Golf clap.mp3",
+          "displayName": "Golf clap",
+          "icon": "👍",
+          "color": "#ba8600",
+          "bytes": 175725
+        },
+        {
+          "filename": "boom.mp3",
+          "path": "audio/sounds/boom.mp3",
+          "displayName": "boom",
+          "icon": "🔊",
+          "color": "#929800",
+          "bytes": 33696
+        },
+        {
+          "filename": "e-damage.mp3",
+          "path": "audio/sounds/e-damage.mp3",
+          "displayName": "e-damage",
+          "icon": "💥",
+          "color": "#56a700",
+          "bytes": 46999
+        },
+        {
+          "filename": "failure.mp3",
+          "path": "audio/sounds/failure.mp3",
+          "displayName": "failure",
+          "icon": "❌",
+          "color": "#00b052",
+          "bytes": 117072
+        },
+        {
+          "filename": "fortnite.mp3",
+          "path": "audio/sounds/fortnite.mp3",
+          "displayName": "fortnite",
+          "icon": "🕹️",
+          "color": "#00b389",
+          "bytes": 302019
+        },
+        {
+          "filename": "game_over.mp3",
+          "path": "audio/sounds/game_over.mp3",
+          "displayName": "game over",
+          "icon": "💀",
+          "color": "#00b0b6",
+          "bytes": 135880
+        },
+        {
+          "filename": "pipes.mp3",
+          "path": "audio/sounds/pipes.mp3",
+          "displayName": "pipes",
+          "icon": "🚰",
+          "color": "#00a7dd",
+          "bytes": 58091
+        },
+        {
+          "filename": "rizz.mp3",
+          "path": "audio/sounds/rizz.mp3",
+          "displayName": "rizz",
+          "icon": "😏",
+          "color": "#009af8",
+          "bytes": 25215
+        },
+        {
+          "filename": "spongebob.mp3",
+          "path": "audio/sounds/spongebob.mp3",
+          "displayName": "spongebob",
+          "icon": "🍍",
+          "color": "#368aff",
+          "bytes": 139245
+        },
+        {
+          "filename": "woooow.mp3",
+          "path": "audio/sounds/woooow.mp3",
+          "displayName": "woooow",
+          "icon": "🎵",
+          "color": "#7979ff",
+          "bytes": 116205
+        },
+        {
+          "filename": "wow.mp3",
+          "path": "audio/sounds/wow.mp3",
+          "displayName": "wow",
+          "icon": "😲",
+          "color": "#a36af4",
+          "bytes": 35570
+        }
+      ]
+    }
+  ]
+}

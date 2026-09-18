@@ -1,0 +1,2373 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+    <!-- Google Tag Manager -->
+    <script>(function (w, d, s, l, i) {
+            w[l] = w[l] || []; w[l].push({
+                'gtm.start':
+                    new Date().getTime(), event: 'gtm.js'
+            }); var f = d.getElementsByTagName(s)[0],
+                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+        })(window, document, 'script', 'dataLayer', 'GTM-PHNM37S');</script>
+    <!-- End Google Tag Manager -->
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Pig Game Track App</title>
+  <meta name="theme-color" content="#f8b4c0">
+  <meta name="mobile-web-app-capable" content="yes">
+  <!-- Apple PWA meta tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Pig Game">
+  <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon-180.png">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <script src="version.js"></script>
+  <script>
+    // Must run before anything else: beforeinstallprompt can fire during parse and is
+    // not replayed. The install button below picks the stashed event up.
+    window.__deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', function (e) {
+      e.preventDefault();
+      window.__deferredPrompt = e;
+    });
+  </script>
+  <style>
+    :root {
+      /* Core palette */
+      --accent: #6366f1;
+      --accent-pink: #ec4899;
+      --accent-magenta: #a21caf;
+      --accent-rose: #c0265c;
+      --rose-dark: rgba(136, 19, 55, 0.7);
+      --blue: #3b82f6;
+
+      /* Semantic colors */
+      --success: #10b981;
+      --warning: #fbbf24;
+      --error: #ef4444;
+
+      /* Surfaces */
+      --surface: #1e2636;
+      --surface-dark: #111827;
+      --surface-overlay: rgba(2, 6, 23, 0.6);
+      --surface-bar: rgba(17, 24, 39, 0.95);
+      --surface-bar-solid: rgba(17, 24, 39, 0.98);
+      --surface-glass: rgba(255, 255, 255, 0.05);
+
+      /* Text */
+      --text: #e5e7eb;
+      --text-bright: #f1f5f9;
+      --subtext: #cbd5e1;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+
+      /* Buttons */
+      --btn-orange: #fb923c;
+      --btn-blue: #60a5fa;
+      --btn-gray: #4b5563;
+      --btn-indigo: var(--accent);
+
+      /* Borders & Shadows */
+      --border-subtle: rgba(148, 163, 184, 0.15);
+      --border-subtle-2: rgba(148, 163, 184, 0.2);
+      --shadow-accent: rgba(99, 102, 241, 0.18);
+      --shadow-dark: rgba(0, 0, 0, 0.3);
+
+      /* Dimensions */
+      --radius: 18px;
+      --radius-card: 18px;
+      --max-width: 920px;
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    html {
+      /* No pull-to-refresh: a downward flick at the top of a soundboard should never
+         reload the app mid-game. Keeps the rubber-band glow. */
+      overscroll-behavior-y: contain;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    /* Every tappable surface: no double-tap zoom (and so no tap delay), no text
+       selection on a long press, and a real pressed state to replace the tap flash. */
+    button,
+    .tab-item,
+    [role="button"] {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* Sliders are drag surfaces, not taps. `manipulation` still lets the browser steal a
+       slightly-diagonal drag for page scrolling, so the thumb slips away mid-drag. */
+    input[type="range"] {
+      touch-action: none;
+      -webkit-tap-highlight-color: transparent;
+      /* WCAG 2.5.8 floor is 24px; the bare track was 8-10px and near-impossible to grab. */
+      min-height: 32px;
+      padding: 11px 0;
+      background: transparent;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: radial-gradient(80rem 60rem at 20% -10%, var(--accent-rose) 0%, var(--rose-dark) 60%), var(--accent-magenta);
+      color: var(--text);
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      /* Above the buttons: they are position:relative (for the offline marker), and a
+         positioned element later in the page otherwise paints over a sticky header. */
+      z-index: 100;
+      /* viewport-fit=cover + black-translucent draw the page under the status bar and
+         the notch. Without this the app bar sits underneath the clock. */
+      padding-top: env(safe-area-inset-top, 0px);
+      backdrop-filter: saturate(120%) blur(6px);
+      background: var(--surface-overlay);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .appbar {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 12px 16px;
+      padding-left: max(16px, env(safe-area-inset-left, 0px));
+      padding-right: max(16px, env(safe-area-inset-right, 0px));
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px
+    }
+
+    .appbar h1 {
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: .3px
+    }
+
+    .install {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .install .btn {
+      width: auto;
+      min-height: 44px;          /* the touch-target floor the rest of the app uses */
+      white-space: nowrap;
+      padding: 10px 12px;
+      border: none;
+      border-radius: var(--radius);
+      background: var(--btn-gray);
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .install .status {
+      font-size: 12px;
+      color: var(--subtext)
+    }
+
+    .install .btn.btn-update {
+      background: var(--btn-blue);
+      color: #0b1220;
+    }
+
+    main {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 16px;
+      /* Landscape on a notched phone puts the first column under the cutout. */
+      padding-left: max(16px, env(safe-area-inset-left, 0px));
+      padding-right: max(16px, env(safe-area-inset-right, 0px));
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-card);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-height: 200px
+    }
+
+    .section-title {
+      font-size: 22px;
+      font-weight: 700;
+      text-align: center;
+      color: var(--subtext)
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px
+    }
+
+    .row>.flex-1 {
+      flex: 1 1 180px;
+      min-width: 0;
+    }
+
+    .btn {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 16px;
+      border: none;
+      color: white;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: transform .06s ease, filter .06s ease;
+      font-weight: 700;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, .25);
+      outline: 2px solid rgba(0, 0, 0, 0.35);
+      text-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.8),
+        0 0 6px rgba(0, 0, 0, 0.4);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .btn:hover {
+        transform: translateY(-1px);
+        filter: brightness(1.03)
+      }
+    }
+
+    .btn:active {
+      transform: translateY(0) scale(.985);
+      filter: brightness(.92)
+    }
+
+    .btn .icon {
+      font-size: 28px;
+      line-height: 1
+    }
+
+    .btn.orange {
+      background: var(--btn-orange)
+    }
+
+    .btn.blue {
+      background: var(--btn-blue)
+    }
+
+    .btn.gray {
+      background: var(--btn-gray)
+    }
+
+    .btn.indigo {
+      background: var(--btn-indigo)
+    }
+
+    .divider {
+      height: 2px;
+      background: linear-gradient(90deg, rgba(99, 102, 241, .0), rgba(99, 102, 241, .5), rgba(99, 102, 241, .0));
+      margin: 24px 0
+    }
+
+    @media (max-width:720px) {
+      .row {
+        flex-wrap: wrap;
+        flex-direction: row;
+        gap: 10px;
+      }
+
+      .row>.flex-1 {
+        flex: 0 0 48%;
+        max-width: 48%;
+        min-width: 140px;
+        margin-bottom: 10px;
+      }
+
+      .btn {
+        padding: 12px;
+        font-size: 15px;
+        gap: 4px;
+      }
+
+    }
+
+    /* Colorful music progress bar */
+    #music-seek {
+      margin: 0 16px;
+      flex: 1;
+      height: 10px;
+      border-radius: 6px;
+      background: linear-gradient(90deg, var(--error) 0%, var(--warning) 20%, var(--success) 40%, var(--blue) 60%, var(--accent) 80%, var(--accent-magenta) 100%);
+      box-shadow: 0 1px 6px var(--shadow-accent);
+      outline: none;
+      accent-color: var(--warning);
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    #music-seek::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      background: #fff;
+      border: 2px solid var(--accent);
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      box-shadow: 0 2px 8px var(--shadow-accent);
+      cursor: pointer;
+    }
+
+    #music-seek::-moz-range-thumb {
+      background: #fff;
+      border: 2px solid var(--accent);
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      box-shadow: 0 2px 8px var(--shadow-accent);
+      cursor: pointer;
+    }
+
+    #music-seek::-ms-thumb {
+      background: #fff;
+      border: 2px solid var(--accent);
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      box-shadow: 0 2px 8px var(--shadow-accent);
+      cursor: pointer;
+    }
+
+    #music-seek:focus {
+      outline: 2px solid var(--accent);
+    }
+
+    /* Music / SFX balance. The bar is drawn on the TRACK pseudo-element, not on the
+       input: the generic input[type="range"] rule above (element + attribute) outranks
+       this class and sets background: transparent, which is how the bar disappeared. */
+    .volume-balance-sync {
+      width: 100%;
+      margin: 0;
+      outline: none;
+      background: transparent;
+      -webkit-appearance: none;
+      appearance: none;
+      cursor: pointer;
+    }
+
+    .volume-balance-sync::-webkit-slider-runnable-track {
+      height: 12px;
+      border-radius: 999px;
+      background:
+        linear-gradient(90deg, transparent calc(50% - 1px), rgba(255, 255, 255, .85) calc(50% - 1px), rgba(255, 255, 255, .85) calc(50% + 1px), transparent calc(50% + 1px)),
+        linear-gradient(90deg, var(--accent) 0%, var(--accent-pink) 50%, var(--accent-magenta) 100%);
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, .45), 0 0 0 1px rgba(255, 255, 255, .12);
+    }
+
+    .volume-balance-sync::-moz-range-track {
+      height: 12px;
+      border-radius: 999px;
+      background:
+        linear-gradient(90deg, transparent calc(50% - 1px), rgba(255, 255, 255, .85) calc(50% - 1px), rgba(255, 255, 255, .85) calc(50% + 1px), transparent calc(50% + 1px)),
+        linear-gradient(90deg, var(--accent) 0%, var(--accent-pink) 50%, var(--accent-magenta) 100%);
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, .45), 0 0 0 1px rgba(255, 255, 255, .12);
+    }
+
+    .volume-balance-sync::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 26px;
+      height: 26px;
+      margin-top: -7px;            /* (12px track - 26px thumb) / 2 */
+      border-radius: 50%;
+      background: #fff;
+      border: 3px solid var(--accent-pink);
+      box-shadow: 0 2px 8px var(--shadow-dark);
+    }
+
+    .volume-balance-sync::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      border: 3px solid var(--accent-pink);
+      box-shadow: 0 2px 8px var(--shadow-dark);
+    }
+
+    .slider-ends {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--subtext);
+      margin-top: -4px;
+    }
+
+    .footer {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center
+    }
+
+    /* Bottom Tab Bar */
+    .tab-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: linear-gradient(180deg, var(--surface-bar) 0%, var(--surface-bar-solid) 100%);
+      border-top: 1px solid var(--border-subtle-2);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 999;
+      box-shadow: 0 -4px 16px var(--shadow-dark);
+      /* The safe-area longhands MUST come after the shorthand — a `padding:` further down
+         silently resets them, which is how the bottom inset got thrown away and the bar
+         ended up drawing inside the gesture-nav / home-indicator strip. */
+      padding: 8px 0 0 0;
+      padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+      padding-left: env(safe-area-inset-left, 0px);
+      padding-right: env(safe-area-inset-right, 0px);
+    }
+
+    /* Music Player Bar */
+    .music-player {
+      position: fixed;
+      /* Sits directly on top of the tab bar. Measured from the bar itself rather than
+         a hardcoded 70px, so larger system font sizes can't make the two overlap. */
+      bottom: var(--tab-bar-h, 70px);
+      left: 0;
+      width: 100%;
+      border-top: 1px solid var(--accent-magenta);
+      padding: 10px 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.12);
+      background: linear-gradient(180deg, var(--surface-bar-solid) 0%, var(--surface-dark) 100%);
+    }
+
+    .player-label {
+      width: 90px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .player-label-text {
+      font-weight: bold;
+      color: var(--text-bright);
+      font-size: 16px;
+      text-shadow: 0 1px 4px #000;
+      text-align: center;
+    }
+
+    .btn-playpause {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+    }
+
+    .player-end-spacer {
+      width: 60px;
+    }
+
+    .tab-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: var(--text-muted);
+      text-decoration: none;
+      border-radius: 8px;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .tab-item:hover {
+        background: rgba(99, 102, 241, 0.1);
+      }
+    }
+
+    .tab-item:active {
+      background: rgba(99, 102, 241, 0.18);
+    }
+
+    .tab-item.active {
+      color: var(--accent);
+    }
+
+    .tab-icon {
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .tab-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+
+    .content-section {
+      display: none;
+    }
+
+    .content-section.active {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    @media (max-width:720px) {
+      .tab-icon {
+        font-size: 20px;
+      }
+
+      .tab-label {
+        font-size: 10px;
+      }
+    }
+
+    /* Play/Pause Button - Custom Style */
+    .play-pause-button {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      box-shadow: none;
+    }
+
+    /* ---------- Utility & Component Classes ---------- */
+
+    .version-badge {
+      font-size: 10px;
+      color: var(--text-dim);
+      margin-right: 8px;
+    }
+
+    .loading-msg {
+      text-align: center;
+      padding: 40px;
+      color: var(--subtext);
+    }
+
+    .error-msg {
+      text-align: center;
+      padding: 40px;
+      color: var(--error);
+    }
+
+    /* Clears both fixed bars plus the gesture-nav inset, so the last row of buttons is
+       always reachable. Kept in sync with the real bar height by JS on load/resize. */
+    .bottom-spacer {
+      height: calc(var(--tab-bar-h, 70px) + var(--player-h, 64px) + 16px);
+    }
+
+    /* Download Section */
+    .download-section {
+      display: none;
+      margin-top: 16px;
+    }
+
+    .download-center {
+      text-align: center;
+    }
+
+    .download-icon {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .download-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .download-warning {
+      font-size: 13px;
+      color: var(--warning);
+      margin-bottom: 16px;
+    }
+
+    .download-progress {
+      display: none;
+      margin-bottom: 16px;
+    }
+
+    .progress-track {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      height: 20px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    .progress-fill {
+      background: linear-gradient(90deg, var(--success), var(--accent));
+      height: 100%;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .progress-success {
+      background: var(--success);
+    }
+
+    .download-status-text {
+      font-size: 14px;
+      color: var(--subtext);
+    }
+
+    .btn-download {
+      max-width: 280px;
+      margin: 0 auto;
+    }
+
+    .btn-update {
+      background: var(--accent);
+    }
+
+    .btn-success {
+      background: var(--success);
+    }
+
+    /* Dynamic UI Classes */
+    .empty-tab-msg {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--subtext);
+    }
+
+    .empty-tab-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .section-title--music {
+      font-size: 20px;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .section-title--sound {
+      font-size: 18px;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .row--wrap {
+      flex-wrap: wrap;
+    }
+
+    .row > .flex-1--sound {
+      flex: 0 0 calc((100% - 6 * 12px) / 7);
+      min-width: 0;
+    }
+
+    @media (max-width:720px) {
+      .row > .flex-1--sound {
+        flex: 0 0 calc(33.33% - 8px);
+      }
+    }
+
+    .slider-section {
+      padding: 20px 0 10px;
+    }
+
+    .slider-container {
+      background: var(--surface-glass);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .slider-icon {
+      font-size: 20px;
+    }
+
+    .slider-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .slider-label {
+      font-size: 12px;
+      color: var(--subtext);
+      font-weight: 600;
+    }
+
+    /* Install instructions sheet */
+    .sheet-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .sheet-layer[hidden] { display: none; }
+
+    /* The UA's `[hidden] { display: none }` loses to any rule that sets display — and
+       `.btn` sets `display: flex`. Without this the install sheet's conditional button
+       was permanently visible. */
+    [hidden] { display: none !important; }
+
+    .sheet-backdrop {
+      position: absolute;
+      inset: 0;
+      border: none;
+      padding: 0;
+      background: rgba(2, 6, 23, .72);
+    }
+
+    .sheet {
+      position: relative;
+      width: min(520px, 100%);
+      max-height: 80svh;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      background: var(--surface);
+      border: 1px solid var(--border-subtle-2);
+      border-radius: var(--radius) var(--radius) 0 0;
+      padding: 20px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .sheet h2 { margin: 0; font-size: 18px; color: var(--text-bright); }
+    .sheet ol { margin: 0; padding-left: 20px; display: grid; gap: 8px; color: var(--subtext); font-size: 14px; }
+    .sheet-note { margin: 0; font-size: 12px; color: var(--text-muted); }
+
+    /* ---------- Header: one row on every phone ----------
+       Title (shrinks, never wraps) | compact Install button with the version as tiny
+       print inside it | red X. The status line floats under the button when it has text,
+       so it no longer takes a slot in the row. */
+    .appbar { flex-wrap: nowrap; gap: 6px; padding-top: 8px; padding-bottom: 8px; }
+    @media (max-width: 480px) {
+      .appbar { padding-left: max(12px, env(safe-area-inset-left, 0px)); padding-right: max(12px, env(safe-area-inset-right, 0px)); }
+    }
+    .appbar h1 {
+      flex: 1 1 auto;
+      min-width: 0;
+      font-size: clamp(12px, 3.7vw, 20px);
+      letter-spacing: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .install { position: relative; flex: 0 0 auto; }
+    .install .btn#btn-install {
+      min-height: 40px;
+      padding: 4px 9px;
+      font-size: 11px;
+      gap: 1px;
+      line-height: 1.15;
+    }
+    .install .btn#btn-install .version-badge {
+      margin: 0;
+      font-size: 9px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.7);
+      text-shadow: none;
+    }
+    .install .status:empty { display: none; }
+    .install .status {
+      position: absolute;
+      top: calc(100% + 4px);
+      right: 0;
+      white-space: nowrap;
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 8px;
+      background: rgba(2, 6, 23, 0.9);
+      color: var(--text-bright);
+    }
+
+    /* Which browser can install this properly (see installHint()). Only shown when the
+       current one cannot. */
+    .install-hint {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 6px 16px 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--warning);
+      text-align: center;
+    }
+
+    /* ---------- Close (X) ---------- */
+    .btn-close {
+      flex: 0 0 auto;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.85);
+      background: #dc2626;
+      color: #fff;
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-close:active { background: #b91c1c; transform: scale(0.95); }
+    @media (hover: hover) and (pointer: fine) {
+      .btn-close:hover { background: #ef4444; }
+    }
+
+    .closed-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 3000;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: radial-gradient(80rem 60rem at 20% -10%, var(--accent-rose) 0%, var(--rose-dark) 60%), var(--accent-magenta);
+      text-align: center;
+    }
+    .closed-layer[hidden] { display: none; }
+    .closed-panel { max-width: 340px; display: grid; gap: 12px; justify-items: center; }
+    .closed-panel .closed-icon { font-size: 56px; line-height: 1; }
+    .closed-panel h2 { margin: 0; font-size: 24px; color: var(--text-bright); }
+    .closed-panel p { margin: 0; color: var(--text); font-size: 15px; line-height: 1.45; }
+    .closed-panel .btn { width: auto; padding: 12px 22px; }
+
+    /* ---------- Offline availability ---------- */
+    /* A track not yet saved for offline gets a small cloud marker. Offline, it is also
+       dimmed: tapping it cannot work, and the old build simply played nothing. */
+    .btn { position: relative; }
+    .btn.not-offline::after {
+      content: '☁';
+      position: absolute;
+      top: 5px;
+      right: 8px;
+      font-size: 12px;
+      opacity: 0.8;
+    }
+    body.is-offline .btn.not-offline { opacity: 0.4; filter: grayscale(0.6); }
+
+    .offline-summary {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-bright);
+      margin-bottom: 4px;
+    }
+    .offline-storage {
+      font-size: 12px;
+      color: var(--subtext);
+      margin-bottom: 14px;
+    }
+    .offline-storage.warn { color: var(--warning); }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(var(--tab-bar-h, 70px) + var(--player-h, 64px) + 16px);
+      transform: translateX(-50%);
+      z-index: 1500;
+      max-width: min(92vw, 420px);
+      padding: 10px 16px;
+      border-radius: 12px;
+      background: rgba(2, 6, 23, 0.92);
+      color: var(--text-bright);
+      font-size: 14px;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+    .toast[hidden] { display: none; }
+
+    .failed-files-list {
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--error);
+      text-align: left;
+      max-height: 100px;
+      overflow-y: auto;
+      padding: 8px;
+      background: rgba(239, 68, 68, 0.1);
+      border-radius: 8px;
+    }
+  </style>
+</head>
+
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PHNM37S" height="0" width="0"
+            style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+
+  <header>
+    <div class="appbar">
+      <h1>Pig Game Track App 🐖🐖</h1>
+      <div class="install">
+        <button class="btn" id="btn-install"><span id="btn-install-label">📲 Install App</span><span id="version-badge" class="version-badge"></span></button>
+        <span class="status" id="install-status"></span>
+      </div>
+      <!-- Stops all audio, cancels any download, releases the media elements and the
+           lock-screen controls, then closes the window. window.close() is honoured for
+           an installed app; in a plain tab a "Closed" screen explains why it stays. -->
+      <button class="btn-close" id="btn-close" type="button" aria-label="Close app" title="Close app">&#215;</button>
+    </div>
+    <div class="install-hint" id="install-hint" hidden></div>
+  </header>
+
+  <main>
+
+    <section class="card" id="audio-content">
+      <!-- Content will be dynamically loaded from audio-files.json -->
+      <div class="loading-msg">
+        Loading audio files...
+      </div>
+    </section>
+
+    <!-- Download All Section -->
+    <section class="card download-section" id="download-section">
+      <div class="download-center">
+        <div class="download-icon">📥</div>
+        <div class="download-title">Offline library</div>
+        <div class="offline-summary" id="offline-summary">Checking what is saved…</div>
+        <div class="offline-storage" id="offline-storage"></div>
+        <div class="download-warning">⚠️ Large download: use Wi-Fi and keep the app open. It resumes where it stopped.</div>
+        <div id="download-progress-container" class="download-progress">
+          <div class="progress-track">
+            <div id="download-progress-bar" class="progress-fill"></div>
+          </div>
+          <div id="download-status" class="download-status-text">0 / 0 files</div>
+        </div>
+        <button id="btn-download-all" class="btn indigo btn-download">
+          <span class="icon">⬇️</span>
+          <span>Download for offline</span>
+        </button>
+      </div>
+    </section>
+
+    <div class="bottom-spacer"></div>
+
+  </main>
+
+  <!-- Bottom Tab Bar -->
+  <nav class="tab-bar">
+    <div class="tab-item active" data-tab="all">
+      <div class="tab-icon">📱</div>
+      <div class="tab-label">All</div>
+    </div>
+    <div class="tab-item" data-tab="start">
+      <div class="tab-icon">🎬</div>
+      <div class="tab-label">Start</div>
+    </div>
+    <div class="tab-item" data-tab="mid">
+      <div class="tab-icon">🎮</div>
+      <div class="tab-label">Mid</div>
+    </div>
+    <div class="tab-item" data-tab="end">
+      <div class="tab-icon">🏁</div>
+      <div class="tab-label">End</div>
+    </div>
+    <div class="tab-item" data-tab="victory">
+      <div class="tab-icon">🏆</div>
+      <div class="tab-label">Victory</div>
+    </div>
+    <div class="tab-item" data-tab="sounds">
+      <div class="tab-icon">🔊</div>
+      <div class="tab-label">Sounds</div>
+    </div>
+  </nav>
+
+  <!-- Install instructions, shown when the browser gives us no native prompt -->
+  <div class="sheet-layer" id="install-sheet" hidden>
+    <button class="sheet-backdrop" id="install-sheet-dismiss" aria-label="Close"></button>
+    <section class="sheet" role="dialog" aria-modal="true" aria-labelledby="install-sheet-title">
+      <h2 id="install-sheet-title">Add to your home screen</h2>
+      <ol id="install-steps"></ol>
+      <p class="sheet-note" id="install-note"></p>
+      <button class="btn" id="install-sheet-proceed" hidden>Install here anyway</button>
+      <button class="btn indigo" id="install-sheet-close">Got it</button>
+    </section>
+  </div>
+
+  <!-- Shown after the X when the window survives (a plain browser tab). -->
+  <div class="closed-layer" id="closed-layer" role="dialog" aria-modal="true" aria-labelledby="closed-title" hidden>
+    <div class="closed-panel">
+      <div class="closed-icon">🐖💤</div>
+      <h2 id="closed-title">Closed</h2>
+      <p>All audio stopped and released.</p>
+      <p id="closed-sub"></p>
+      <button class="btn indigo" id="btn-reopen" type="button">Open again</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <!-- Persistent Music Player -->
+  <div id="music-player" class="music-player">
+    <div class="player-label">
+      <div class="player-label-text">Media<br>Control</div>
+    </div>
+    <button id="btn-playpause" class="play-pause-button btn-playpause">
+      <span id="icon-playpause">▶️</span>
+    </button>
+    <input type="range" id="music-seek" min="0" value="0" step="0.01">
+    <div class="player-end-spacer"></div>
+  </div>
+
+  <script>
+    // ---------- HTML5 Audio Music Player (Stream-only, mobile-safe) ----------
+    // Music: single HTML5 <audio> element (streaming, ~0 MB RAM)
+    // SFX: short Audio elements with concurrency cap
+
+    // version.js defines APP_VERSION as a plain global. If that request fails (offline
+    // on a first visit, blocked, 404 after a bad deploy) referencing it throws on the
+    // first line and takes the whole app script down — install button, service worker
+    // registration and all. Degrade instead.
+    const APP_VER = (typeof APP_VERSION === 'string') ? APP_VERSION : 'unknown';
+    document.getElementById('version-badge').textContent = 'v' + APP_VER;
+
+    let musicAudio = null;     // Single persistent <audio> element for music
+    let activeMusicUrl = null; // Currently loaded music URL
+    let musicVolume = 1.0;     // Music volume (0-1)
+    let isSwitchingTrack = false; // Suppress pause-icon flicker during track switch
+    let userPaused = false;       // true only when the USER paused — see the pause listener
+
+    let sfxVolume = 1.0;     // SFX volume (0-1)
+    const MAX_SFX = 4;       // B2: Max concurrent SFX elements (iOS limit ~4-6)
+    const activeSfx = new Set();
+
+    // Media Session (hardware media keys) — playlist state
+    let musicPlaylist = [];     // All music tracks [{path, displayName, icon}]
+    let currentTrackIndex = -1;
+
+    const urlFor = (file) => encodeURI(file);
+    // The exact key the audio cache stores a file under (what the SW and the download use).
+    const absUrl = (file) => new URL(encodeURI('./' + file), location.href).href;
+
+    let libraryFiles = [];        // [{path, name, bytes, url}] — every track, from audio-files.json
+    let closing = false;          // set by the X; gates updates, downloads and playback
+
+    function toast(msg, ms = 3200) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.hidden = false;
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => { t.hidden = true; }, ms);
+    }
+
+    // Offline, a track that was never downloaded cannot play. The old build tried anyway
+    // and produced silence with no explanation.
+    function unavailableOffline(file) {
+      if (navigator.onLine !== false) return false;
+      const btn = document.querySelector(`.btn[data-url="${CSS.escape(absUrl(file))}"]`);
+      if (!btn || !btn.classList.contains('not-offline')) return false;
+      toast('Not downloaded yet. Connect once and tap "Download for offline".');
+      return true;
+    }
+
+    function playBackground(file) {
+      if (closing || unavailableOffline(file)) return;
+      const url = urlFor(file);
+      console.log(`Playing music: ${file}`);
+
+      userPaused = false;
+
+      // Update playlist index for Media Session prev/next
+      const trackIdx = musicPlaylist.findIndex(t => t.path === file);
+      if (trackIdx !== -1) currentTrackIndex = trackIdx;
+      const trackInfo = trackIdx !== -1 ? musicPlaylist[trackIdx] : null;
+
+      // Create persistent audio element on first use
+      if (!musicAudio) {
+        musicAudio = new Audio();
+        musicAudio.loop = true;
+
+        // iOS/Android interruption recovery. An OS-initiated pause — a notification, an
+        // incoming call, another app taking audio focus — used to stop the soundtrack for
+        // good; this listener only repainted the icon. Take playback back, unless the user
+        // paused deliberately or we are switching tracks.
+        musicAudio.addEventListener('pause', () => {
+          if (!isSwitchingTrack) updatePlayerIcon();
+          if (isSwitchingTrack || userPaused || musicAudio.ended) return;
+          setTimeout(() => {
+            if (!userPaused && !isSwitchingTrack && musicAudio && musicAudio.paused) {
+              musicAudio.play().catch(() => {});
+            }
+          }, 400);
+        });
+        musicAudio.addEventListener('play', () => {
+          updatePlayerIcon();
+          if (window.startSeekUpdates) window.startSeekUpdates();
+        });
+        musicAudio.addEventListener('error', (e) => {
+          console.warn('Music playback error:', e);
+          if (!closing && activeMusicUrl) toast(navigator.onLine === false
+            ? 'This track is not saved for offline.'
+            : 'Could not play this track.');
+          updatePlayerIcon();
+        });
+      }
+
+      // Switch source and play
+      isSwitchingTrack = true;
+      musicAudio.pause();
+      musicAudio.src = url;
+      musicAudio.volume = musicVolume;
+      activeMusicUrl = url;
+
+      musicAudio.play().then(() => {
+        isSwitchingTrack = false;
+        updatePlayerIcon();
+        if (window.startSeekUpdates) window.startSeekUpdates();
+        updateMediaSessionMetadata(trackInfo ? trackInfo.displayName : file, trackInfo ? trackInfo.icon : '🎵');
+        updateMediaSessionState();
+      }).catch(err => {
+        isSwitchingTrack = false;
+        console.warn('Autoplay blocked:', err);
+        updatePlayerIcon();
+      });
+    }
+
+    function stopCurrentTrack() {
+      if (musicAudio) {
+        musicAudio.pause();
+        musicAudio.src = '';
+      }
+      activeMusicUrl = null;
+      if (window.stopSeekUpdates) window.stopSeekUpdates();
+      updatePlayerIcon();
+    }
+
+    function pauseBackground() {
+      userPaused = true;            // deliberate: the interruption-recovery must not undo it
+      if (musicAudio && !musicAudio.paused) {
+        musicAudio.pause();
+      }
+      if (window.stopSeekUpdates) window.stopSeekUpdates();
+      updatePlayerIcon();
+      updateMediaSessionState();
+    }
+
+    function resumeBackground() {
+      if (closing) return;
+      userPaused = false;
+      if (musicAudio && activeMusicUrl) {
+        musicAudio.play().then(() => {
+          updatePlayerIcon();
+          if (window.startSeekUpdates) window.startSeekUpdates();
+          updateMediaSessionState();
+        }).catch(err => {
+          console.warn('Resume failed:', err);
+        });
+      }
+    }
+
+    function playSfx(file) {
+      if (closing || unavailableOffline(file)) return;
+      // B2: Cap concurrency — evict oldest when at limit
+      if (activeSfx.size >= MAX_SFX) {
+        const oldest = activeSfx.values().next().value;
+        oldest.pause();
+        // NOT src = '': an empty string resolves against the document URL, so the browser
+        // fetches index.html and tries to decode HTML as audio. removeAttribute + load()
+        // is the supported way to detach a media element.
+        oldest.removeAttribute('src');
+        oldest.load();
+        activeSfx.delete(oldest);
+      }
+
+      const a = new Audio(urlFor(file));
+      a.volume = sfxVolume;
+
+      const cleanup = () => {
+        activeSfx.delete(a);
+        a.removeEventListener('ended', cleanup);
+        a.removeEventListener('error', cleanup);
+      };
+      a.addEventListener('ended', cleanup);
+      a.addEventListener('error', cleanup);
+
+      activeSfx.add(a);
+      a.play().catch(e => {
+        console.warn('SFX fail', e);
+        cleanup();
+      });
+    }
+
+    // ---------- UI State Helpers ----------
+    function isPlaying() {
+      return !!(musicAudio && !musicAudio.paused && activeMusicUrl);
+    }
+
+    // ---------- Media Session API (hardware media keys: Win/Mac/mobile) ----------
+    function setupMediaSession() {
+      if (!('mediaSession' in navigator)) return;
+      const ms = navigator.mediaSession;
+      ms.setActionHandler('play', () => resumeBackground());
+      ms.setActionHandler('pause', () => pauseBackground());
+      ms.setActionHandler('previoustrack', () => playPreviousTrack());
+      ms.setActionHandler('nexttrack', () => playNextTrack());
+      ms.setActionHandler('seekto', (d) => {
+        if (musicAudio && isFinite(musicAudio.duration)) musicAudio.currentTime = d.seekTime;
+        updateMediaSessionState();
+      });
+      ms.setActionHandler('seekbackward', (d) => {
+        if (musicAudio) musicAudio.currentTime = Math.max(0, musicAudio.currentTime - (d.seekOffset || 10));
+        updateMediaSessionState();
+      });
+      ms.setActionHandler('seekforward', (d) => {
+        if (musicAudio) {
+          const dur = musicAudio.duration || Infinity;
+          musicAudio.currentTime = Math.min(dur, musicAudio.currentTime + (d.seekOffset || 10));
+        }
+        updateMediaSessionState();
+      });
+    }
+
+    function updateMediaSessionMetadata(trackName, trackIcon) {
+      if (!('mediaSession' in navigator)) return;
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: trackName || 'Unknown Track',
+        artist: 'Pig Game',
+        album: 'Pig Game Tracks',
+        artwork: [
+          { src: './icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: './icon-512.png', sizes: '512x512', type: 'image/png' }
+        ]
+      });
+    }
+
+    function updateMediaSessionState() {
+      if (!('mediaSession' in navigator)) return;
+      navigator.mediaSession.playbackState = isPlaying() ? 'playing' : 'paused';
+      if (musicAudio && isFinite(musicAudio.duration) && musicAudio.duration > 0) {
+        try {
+          navigator.mediaSession.setPositionState({
+            duration: musicAudio.duration,
+            playbackRate: musicAudio.playbackRate || 1,
+            position: Math.min(musicAudio.currentTime, musicAudio.duration)
+          });
+        } catch (e) { /* ignore */ }
+      }
+    }
+
+    function playNextTrack() {
+      if (musicPlaylist.length === 0) return;
+      currentTrackIndex = (currentTrackIndex + 1) % musicPlaylist.length;
+      playBackground(musicPlaylist[currentTrackIndex].path);
+    }
+
+    function playPreviousTrack() {
+      if (musicPlaylist.length === 0) return;
+      // If >3s into song, restart it; otherwise go to previous
+      if (musicAudio && musicAudio.currentTime > 3) {
+        musicAudio.currentTime = 0;
+        updateMediaSessionState();
+        return;
+      }
+      currentTrackIndex = (currentTrackIndex - 1 + musicPlaylist.length) % musicPlaylist.length;
+      playBackground(musicPlaylist[currentTrackIndex].path);
+    }
+
+    // ---------- Dynamic UI Generation ----------
+
+    async function loadAudioFiles() {
+      try {
+        // Add version parameter to prevent caching of JSON file
+        const response = await fetch(`./audio-files.json?v=${APP_VER}`);
+        const data = await response.json();
+
+        // Build music playlist for Media Session prev/next navigation
+        musicPlaylist = [];
+        data.categories.forEach(cat => {
+          if (cat.type === 'music') {
+            cat.files.forEach(f => musicPlaylist.push({
+              path: f.path, displayName: f.displayName, icon: f.icon
+            }));
+          }
+        });
+
+        libraryFiles = [];
+        data.categories.forEach(cat => cat.files.forEach(f => libraryFiles.push({
+          path: f.path, name: f.displayName, bytes: f.bytes || 0, url: absUrl(f.path)
+        })));
+
+        renderAudioUI(data);
+        refreshOfflineState();
+        initializeTabLogic(); // Initialize tabs AFTER sections are created
+        initializeVolumeSlider(); // Initialize slider after UI is rendered
+        initializeMusicSeek(); // Initialize seek bar
+        setupMediaSession(); // Enable hardware media key support
+      } catch (error) {
+        console.error('Error loading audio files:', error);
+        document.getElementById('audio-content').innerHTML =
+          '<div class="error-msg">Error loading audio files. Please refresh.</div>';
+      }
+    }
+
+    function renderAudioUI(data) {
+      const container = document.getElementById('audio-content');
+      if (!container) {
+        console.error('renderAudioUI: Container not found');
+        return;
+      }
+      container.innerHTML = '';
+
+      // Group files by category type
+      const categoriesByTab = {
+        'all': [],
+        'start': [],
+        'mid': [],
+        'end': [],
+        'victory': [],
+        'sounds': []
+      };
+
+      // Map categories to tabs based on their type and title
+      data.categories.forEach(category => {
+        // All categories go to 'all' tab
+        categoriesByTab.all.push(category);
+
+        if (category.type === 'sound') {
+          categoriesByTab.sounds.push(category);
+        } else if (category.type === 'music') {
+          const titleLower = category.title.toLowerCase();
+          if (titleLower.includes('start')) {
+            categoriesByTab.start.push(category);
+          } else if (titleLower.includes('mid')) {
+            categoriesByTab.mid.push(category);
+          } else if (titleLower.includes('end')) {
+            categoriesByTab.end.push(category);
+          } else if (titleLower.includes('victory')) {
+            categoriesByTab.victory.push(category);
+          }
+        }
+      });
+
+      // Create sections for each tab using DocumentFragment for performance
+      const fragment = document.createDocumentFragment();
+
+      Object.keys(categoriesByTab).forEach(tabName => {
+        const section = document.createElement('div');
+        section.className = 'content-section';
+        section.dataset.tab = tabName;
+        if (tabName === 'all') section.classList.add('active'); // All tab active by default
+
+        const categories = categoriesByTab[tabName];
+
+        if (categories.length === 0) {
+          const emptyMsg = document.createElement('div');
+          emptyMsg.className = 'empty-tab-msg';
+          emptyMsg.innerHTML = `<div class="empty-tab-icon">🎵</div><div>No ${tabName} tracks available</div>`;
+          section.appendChild(emptyMsg);
+        } else {
+          categories.forEach((category, catIndex) => {
+            // Add category title
+            const title = document.createElement('div');
+            title.className = 'section-title ' + (category.type === 'music' ? 'section-title--music' : 'section-title--sound');
+            title.textContent = category.title;
+            section.appendChild(title);
+
+            // Create button row
+            const row = document.createElement('div');
+            row.className = 'row';
+            if (category.type === 'sound') {
+              row.classList.add('row--wrap');
+            }
+
+            category.files.forEach(file => {
+              const wrapper = document.createElement('div');
+              wrapper.className = 'flex-1';
+              if (category.type === 'sound') {
+                wrapper.classList.add('flex-1--sound');
+              }
+
+              const button = document.createElement('button');
+              button.className = 'btn';
+              button.style.background = file.color;
+              button.dataset.url = absUrl(file.path);
+
+              const icon = document.createElement('div');
+              icon.className = 'icon';
+              icon.textContent = file.icon;
+
+              const label = document.createElement('div');
+              label.textContent = file.displayName;
+
+              button.appendChild(icon);
+              button.appendChild(label);
+
+              // Add click handler
+              if (category.type === 'music') {
+                button.addEventListener('click', () => playBackground(file.path));
+              } else {
+                button.addEventListener('click', () => playSfx(file.path));
+              }
+
+              wrapper.appendChild(button);
+              row.appendChild(wrapper);
+            });
+
+            section.appendChild(row);
+
+            // Add divider between categories within the same tab
+            if (catIndex < categories.length - 1) {
+              const divider = document.createElement('div');
+              divider.className = 'divider';
+              section.appendChild(divider);
+            }
+          });
+        }
+
+        // Add relative volume slider to sounds tab and all tab
+        if (tabName === 'sounds' || tabName === 'all') {
+          const volumeSliderSection = document.createElement('div');
+          volumeSliderSection.className = 'slider-section';
+
+          const sliderDividerBefore = document.createElement('div');
+          sliderDividerBefore.className = 'divider';
+          volumeSliderSection.appendChild(sliderDividerBefore);
+
+          const sliderContainer = document.createElement('div');
+          sliderContainer.className = 'slider-container';
+
+          const volumeIcon = document.createElement('div');
+          volumeIcon.className = 'slider-icon';
+          volumeIcon.textContent = '🔊';
+
+          const sliderWrapper = document.createElement('div');
+          sliderWrapper.className = 'slider-wrapper';
+
+          const sliderLabel = document.createElement('div');
+          sliderLabel.className = 'slider-label';
+          sliderLabel.textContent = 'Music / SFX Balance';
+
+          const rangeInput = document.createElement('input');
+          rangeInput.type = 'range';
+          rangeInput.min = '0';
+          rangeInput.max = '1';
+          rangeInput.step = '0.05';
+          rangeInput.value = '0.5'; // Center = both equally loud
+          rangeInput.className = 'volume-balance-sync';
+
+          const ends = document.createElement('div');
+          ends.className = 'slider-ends';
+          ends.innerHTML = '<span>🎵 Music louder</span><span>SFX louder 🔊</span>';
+
+          sliderWrapper.appendChild(sliderLabel);
+          sliderWrapper.appendChild(rangeInput);
+          sliderWrapper.appendChild(ends);
+          sliderContainer.appendChild(volumeIcon);
+          sliderContainer.appendChild(sliderWrapper);
+          volumeSliderSection.appendChild(sliderContainer);
+
+          section.appendChild(volumeSliderSection);
+        }
+
+        // Append the section to the fragment (not container yet)
+        fragment.appendChild(section);
+      });
+
+      // Single DOM insertion for all sections (minimizes reflows)
+      container.appendChild(fragment);
+    }
+
+    // ---------- Tab Logic ----------
+    function initializeTabLogic() {
+      const tabItems = document.querySelectorAll('.tab-item');
+      const contentSections = document.querySelectorAll('.content-section');
+
+      tabItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+          // Remove active class from all tabs
+          tabItems.forEach(tab => tab.classList.remove('active'));
+          // Add active class to clicked tab
+          item.classList.add('active');
+
+          const tabName = item.getAttribute('data-tab');
+
+          // Hide all sections, show target section
+          contentSections.forEach(section => {
+            section.classList.remove('active');
+            if (section.dataset.tab === tabName) {
+              section.classList.add('active');
+            }
+          });
+
+          // Each tab is a different length. Without this, switching from a long tab
+          // scrolled to the bottom lands you below the end of a short one.
+          window.scrollTo({ top: 0, behavior: 'auto' });
+        });
+      });
+    }
+
+    // ---------- Global Player Controls ----------
+    function updatePlayerIcon() {
+      const icon = document.getElementById('icon-playpause');
+      const playing = isPlaying();
+      icon.textContent = playing ? '⏸️' : '▶️';
+    }
+
+    document.getElementById('btn-playpause').addEventListener('click', () => {
+      if (isPlaying()) {
+        pauseBackground();
+      } else {
+        resumeBackground();
+      }
+    });
+
+    // Seek-bar repaint timer (only while playing)
+    let seekAnimationId = null;
+    const SEEK_UPDATE_INTERVAL = 200; // ms between updates
+
+    function initializeMusicSeek() {
+      const seek = document.getElementById('music-seek');
+
+      // `:active` is not reliably set on a range input during a TOUCH drag, so the
+      // periodic update overwrote seek.value mid-drag and the thumb snapped back — the
+      // slider was effectively unusable on a phone. Track the drag explicitly instead.
+      let dragging = false;
+      const startDrag = () => { dragging = true; };
+      const endDrag = () => { dragging = false; };
+      seek.addEventListener('pointerdown', startDrag);
+      seek.addEventListener('pointerup', endDrag);
+      seek.addEventListener('pointercancel', endDrag);
+      seek.addEventListener('touchstart', startDrag, { passive: true });
+      seek.addEventListener('touchend', endDrag);
+      seek.addEventListener('touchcancel', endDrag);
+
+      function paintSeek() {
+        let currentTime = 0;
+        let duration = 100;
+        if (musicAudio && !musicAudio.paused) {
+          duration = musicAudio.duration || 100;
+          currentTime = musicAudio.currentTime || 0;
+        }
+        if (duration > 0 && !dragging && !seek.matches(':active')) {
+          seek.value = (currentTime / duration) * 100;
+        }
+        updateMediaSessionState();
+      }
+
+      // Was a 60 Hz requestAnimationFrame loop running for the entire length of every
+      // track just to do a 5 Hz repaint. setInterval does the same job with 1/12th of the
+      // wake-ups, and the browser throttles it while the page is hidden.
+      window.startSeekUpdates = function () {
+        if (seekAnimationId) return;
+        seekAnimationId = setInterval(() => {
+          if (!isPlaying()) { window.stopSeekUpdates(); return; }
+          paintSeek();
+        }, SEEK_UPDATE_INTERVAL);
+      };
+      window.stopSeekUpdates = function () {
+        if (seekAnimationId) {
+          clearInterval(seekAnimationId);
+          seekAnimationId = null;
+        }
+      };
+
+      seek.addEventListener('change', (e) => {
+        const percent = e.target.value / 100;
+        if (musicAudio && musicAudio.duration && isFinite(musicAudio.duration)) {
+          musicAudio.currentTime = musicAudio.duration * percent;
+        }
+      });
+    }
+
+    // Music/SFX Balance Slider - left = music louder, center = equal, right = SFX louder
+    function initializeVolumeSlider() {
+      // Use event delegation since sliders are created dynamically per tab
+      document.addEventListener('input', (e) => {
+        if (e.target.classList.contains('volume-balance-sync')) {
+          const balance = parseFloat(e.target.value);
+
+          // Calculate volumes based on balance
+          // At 0.5 (center): both at full volume (1.0)
+          // At 0 (left): music full, SFX reduced
+          // At 1 (right): SFX full, music reduced
+          let musicVol, sfxVol;
+
+          if (balance <= 0.5) {
+            // Left side: music stays at 1.0, SFX scales down
+            musicVol = 1.0;
+            sfxVol = balance * 2; // 0 -> 0, 0.5 -> 1.0
+          } else {
+            // Right side: SFX stays at 1.0, music scales down
+            musicVol = (1 - balance) * 2; // 0.5 -> 1.0, 1.0 -> 0
+            sfxVol = 1.0;
+          }
+
+          // Apply music volume via HTML5 Audio element
+          musicVolume = musicVol;
+          if (musicAudio) {
+            musicAudio.volume = musicVol;
+          }
+
+          // Apply SFX volume
+          sfxVolume = sfxVol;
+
+          // Update volume of currently playing SFX
+          activeSfx.forEach(audio => {
+            audio.volume = sfxVolume;
+          });
+
+          // Sync all other balance sliders
+          document.querySelectorAll('.volume-balance-sync').forEach(s => {
+            if (s !== e.target) s.value = e.target.value;
+          });
+        }
+      });
+    }
+
+
+    // ---------- Fixed-bar metrics ----------
+    // Both bottom bars are position:fixed, so nothing in the document flow knows they
+    // are there. Their heights depend on system font scaling and the gesture-nav inset,
+    // so measure them instead of hardcoding: the old build assumed 70px + a 120px
+    // spacer, which was too little and clipped the last row of buttons.
+    function syncBarMetrics() {
+      const tabBar = document.querySelector('.tab-bar');
+      const player = document.getElementById('music-player');
+      const root = document.documentElement;
+      if (tabBar) root.style.setProperty('--tab-bar-h', tabBar.offsetHeight + 'px');
+      if (player) root.style.setProperty('--player-h', player.offsetHeight + 'px');
+    }
+    syncBarMetrics();
+    window.addEventListener('resize', syncBarMetrics);
+    window.addEventListener('orientationchange', syncBarMetrics);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(syncBarMetrics).catch(() => {});
+
+    // ---------- Service Worker Registration ----------
+    if ('serviceWorker' in navigator) {
+      // Ask the browser not to evict our storage under pressure — the audio
+      // library is hundreds of MB and must survive for offline play.
+      if (navigator.storage && navigator.storage.persist) {
+        navigator.storage.persist().then(granted =>
+          console.log('Persistent storage:', granted ? 'granted' : 'not granted'));
+      }
+      let swReloading = false;
+      const hadController = !!navigator.serviceWorker.controller;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!hadController || swReloading || closing) return;
+        swReloading = true;
+        window.location.reload();
+      });
+
+      navigator.serviceWorker.register('./service-worker.js', { updateViaCache: 'none' }).then((reg) => {
+        console.log('Service Worker registered:', reg);
+
+        const offerUpdate = () => {
+          if (closing) return;
+          const status = document.getElementById('install-status');
+          status.textContent = 'New version — tap to update';
+          status.style.cursor = 'pointer';
+          status.onclick = () => {
+            if (reg.waiting) reg.waiting.postMessage('SKIP_WAITING');
+            else window.location.reload();
+          };
+        };
+
+        if (reg.waiting && navigator.serviceWorker.controller) offerUpdate();
+
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          if (!newWorker) return;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) offerUpdate();
+          });
+        });
+
+        // Re-check on foreground and when the network returns, throttled — each check
+        // is a real network round trip.
+        let lastCheck = 0;
+        const check = () => {
+          if (Date.now() - lastCheck < 60000) return;
+          lastCheck = Date.now();
+          reg.update().catch(() => {});
+        };
+        check();
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') check();
+        });
+        window.addEventListener('online', check);
+      }).catch((error) => {
+        console.error('Service Worker registration failed:', error);
+      });
+
+      // Listen for cache updates
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        console.log("Msg from SW:", event.data);
+        if (event.data === 'CACHE_COMPLETE' || event.data === 'CACHE_UPDATED') {
+          const status = document.getElementById('install-status');
+          // Deliberately NOT "Offline Ready": all that is cached at this point is the
+          // seven-file shell. The audio library is hundreds of MB and is only cached by
+          // "Download All" (or by playing a track on a non-iOS browser), so promising
+          // offline readiness here was simply untrue.
+          status.textContent = "App cached ✓";
+          setTimeout(() => { status.textContent = ''; }, 5000);
+        }
+      });
+    }
+
+    // ---------- Install PWA Logic ----------
+    // The install button is ALWAYS visible (unless we are already running standalone).
+    // The old build only revealed it when `beforeinstallprompt` fired — and that event
+    // is unreliable by design: it never fires on iOS, it is skipped once Chrome's
+    // engagement heuristic isn't met, and it doesn't fire at all in a Custom Tab. The
+    // result was an "install feature" that was simply invisible most of the time.
+    let deferredPrompt = window.__deferredPrompt || null;
+    const btnInstall = document.getElementById('btn-install');
+    const statusSpan = document.getElementById('install-status');
+    const installSheet = document.getElementById('install-sheet');
+    const installStepsEl = document.getElementById('install-steps');
+    const installNoteEl = document.getElementById('install-note');
+
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isAndroid = /android/i.test(navigator.userAgent || '');
+    // Brave exposes navigator.brave.isBrave(); it is a promise, so resolve it lazily.
+    // Brave only matters on ANDROID: there it cannot mint a WebAPK and produces a plain
+    // home-screen shortcut, so we explain that before installing. Desktop Brave installs
+    // a normal desktop PWA and must not be diverted. isBrave() is a promise, so resolve it
+    // once and await it at tap time rather than reading a flag that may still be false.
+    const bravePromise = (navigator.brave && navigator.brave.isBrave)
+      ? navigator.brave.isBrave().then(v => !!v).catch(() => false)
+      : Promise.resolve(false);
+    let isBrave = false;
+    bravePromise.then(v => { isBrave = v; renderInstallHint(); });
+
+    async function isBraveAndroid() {
+      return isAndroid && await bravePromise;
+    }
+
+    function isStandalone() {
+      return window.matchMedia('(display-mode: standalone)').matches ||
+        window.navigator.standalone === true;
+    }
+
+    // Which browser can install this as a real, offline app on this phone? Returns the
+    // note to show, or '' when the current browser is already the right one.
+    //  * Android: only Chrome (and Samsung Internet on Samsung phones) mint a WebAPK, a
+    //    real installed app. Brave, Firefox, Edge, Opera and in-app browsers only add a
+    //    shortcut that opens the site in that browser.
+    //  * iPhone: since iOS 16.4 Safari, Chrome, Edge and Firefox can all Add to Home
+    //    Screen, so only in-app browsers (Instagram, WhatsApp, ...) and older iOS need
+    //    sending to Safari.
+    function installHint() {
+      if (isStandalone()) return '';
+      const ua = navigator.userAgent || '';
+      const inApp = /FBAN|FBAV|Instagram|Line\/|Snapchat|TikTok|musical_ly|WhatsApp|GSA\/|; wv\)/i.test(ua);
+      if (isAndroid) {
+        const samsung = /SamsungBrowser/i.test(ua);
+        const chrome = /Chrome\/\d/.test(ua) && !inApp && !isBrave &&
+          !/EdgA|OPR\/|Opera|Firefox|YaBrowser|Vivaldi|DuckDuckGo|UCBrowser|MiuiBrowser|HuaweiBrowser|SamsungBrowser/i.test(ua);
+        return (chrome || samsung) ? '' : '📲 Open this page in Chrome to install it for offline use.';
+      }
+      if (isIOS) {
+        const m = ua.match(/OS (\d+)_(\d+)/);
+        const ver = m ? parseInt(m[1], 10) + parseInt(m[2], 10) / 100 : 99;   // iPadOS reports as Mac
+        const safari = !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua) && !inApp;
+        if (inApp || (!safari && ver < 16.04)) return '📲 Open this page in Safari to install it for offline use.';
+      }
+      return '';
+    }
+
+    function renderInstallHint() {
+      const el = document.getElementById('install-hint');
+      const text = installHint();
+      el.textContent = text;
+      el.hidden = !text;
+      if (window.syncBarMetrics) window.syncBarMetrics();
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      window.__deferredPrompt = e;
+    });
+
+    function installSteps() {
+      if (isIOS) {
+        return [
+          'Open this page in Safari (not another browser).',
+          'Tap the Share button — the square with an arrow pointing up.',
+          'Choose "Add to Home Screen", then tap "Add".'
+        ];
+      }
+      if (isAndroid) {
+        return [
+          'Open the browser menu (⋮, top-right).',
+          'Tap "Install app" — or "Add to Home screen" if that is what it says.',
+          'Confirm. It then opens on its own, without a browser bar.'
+        ];
+      }
+      return [
+        'Click the install icon in the address bar (⊕ or a small screen icon).',
+        'Or open the browser menu and choose "Install Pig Game Track App".',
+        'Confirm — it opens as its own window.'
+      ];
+    }
+
+    function installNote() {
+      if (isBrave && isAndroid) {
+        return 'Note: Brave adds this as a home-screen shortcut rather than a real installed app. '
+             + 'For a proper app entry (and offline audio that survives), install from Chrome instead.';
+      }
+      if (isIOS) return 'Offline audio works once installed, but iOS may drop cached audio if storage runs low.';
+      return '';
+    }
+
+    let sheetScrollY = 0;
+
+    function lockPageScroll(lock) {
+      if (lock) {
+        sheetScrollY = window.scrollY;
+        document.body.style.position = 'fixed';
+        document.body.style.top = `-${sheetScrollY}px`;
+        document.body.style.width = '100%';
+      } else {
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        window.scrollTo(0, sheetScrollY);
+      }
+    }
+
+    function openInstallSheet() {
+      // Offer the native dialog as the explicit second choice when one is available.
+      document.getElementById('install-sheet-proceed').hidden = !deferredPrompt;
+      installStepsEl.innerHTML = '';
+      installSteps().forEach(step => {
+        const li = document.createElement('li');
+        li.textContent = step;
+        installStepsEl.appendChild(li);
+      });
+      installNoteEl.textContent = installNote();
+      installSheet.hidden = false;
+      // position:fixed on <body>, not overflow:hidden — the latter does not hold on iOS
+      // Safari, so dragging the dimmed backdrop scrolled the 42-button list behind it.
+      lockPageScroll(true);
+    }
+
+    function closeInstallSheet() {
+      if (installSheet.hidden) return;
+      installSheet.hidden = true;
+      lockPageScroll(false);
+    }
+
+    document.getElementById('install-sheet-dismiss').addEventListener('click', closeInstallSheet);
+    document.getElementById('install-sheet-close').addEventListener('click', closeInstallSheet);
+    document.getElementById('install-sheet-proceed').addEventListener('click', async () => {
+      closeInstallSheet();
+      await firePrompt();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !installSheet.hidden) closeInstallSheet();
+    });
+
+    const INSTALLED_KEY = 'piggame-installed';
+
+    // ---------- Update (for the installed app) ----------
+    function setInstallLabel(text) {
+      document.getElementById('btn-install-label').textContent = text;
+    }
+
+    function showUpdateButton() {
+      setInstallLabel('🔄 Update App');
+      btnInstall.classList.add('btn-update');
+      btnInstall.style.display = '';
+      statusSpan.textContent = '';
+    }
+
+    function showInstallButton() {
+      setInstallLabel('📲 Install App');
+      btnInstall.classList.remove('btn-update');
+      btnInstall.style.display = '';
+    }
+
+    function refreshInstallUI() {
+      renderInstallHint();
+      if (isStandalone()) { showUpdateButton(); return; }
+      showInstallButton();
+      // An installed user opening the site in a normal tab used to be told to install
+      // again. Relabel — but never disable: a remembered flag can outlive the install.
+      let installed = false;
+      try { installed = localStorage.getItem(INSTALLED_KEY) === '1'; } catch {}
+      if (installed) setInstallLabel('✓ Installed');
+    }
+    refreshInstallUI();
+    window.matchMedia('(display-mode: standalone)').addEventListener?.('change', refreshInstallUI);
+
+    window.addEventListener('appinstalled', () => {
+      deferredPrompt = null;
+      window.__deferredPrompt = null;
+      try { localStorage.setItem(INSTALLED_KEY, '1'); } catch {}
+      closeInstallSheet();
+      // NOT showUpdateButton(): this is still the ordinary browser tab, and turning its
+      // button into "Update App" — which unregisters the service worker — is both
+      // meaningless here and destructive. Only the installed app shows Update.
+      refreshInstallUI();
+    });
+
+    window.addEventListener('beforeinstallprompt', () => {
+      // Chrome does not fire this while the app IS installed, so receiving it proves it
+      // is not — which is how the remembered flag recovers after an uninstall.
+      try { localStorage.removeItem(INSTALLED_KEY); } catch {}
+      refreshInstallUI();
+    });
+
+    // navigator.onLine only says a network interface exists. Probe a real byte before
+    // doing anything destructive, or an "update" performed on a dead connection wipes
+    // the shell cache with no way to refill it.
+    async function isReallyOnline() {
+      if (navigator.onLine === false) return false;
+      try {
+        const r = await fetch('./manifest.webmanifest?probe=' + Date.now(), { cache: 'no-store' });
+        return r.ok;
+      } catch { return false; }
+    }
+
+    const CACHE_PREFIX = 'pig-game-';           // must match service-worker.js
+    const AUDIO_CACHE_NAME = CACHE_PREFIX + 'audio';
+
+    async function runUpdate() {
+      if (!await isReallyOnline()) {
+        statusSpan.textContent = 'Offline — running from cache';
+        setTimeout(() => { statusSpan.textContent = ''; }, 3000);
+        return;
+      }
+
+      statusSpan.textContent = 'Checking…';
+      btnInstall.disabled = true;
+      btnInstall.style.opacity = '0.6';
+
+      const restore = (msg) => {
+        statusSpan.textContent = msg;
+        btnInstall.disabled = false;
+        btnInstall.style.opacity = '1';
+        setTimeout(() => { statusSpan.textContent = ''; }, 3000);
+      };
+
+      try {
+        const reg = await navigator.serviceWorker.getRegistration();
+
+        // Safe route first: re-check service-worker.js. If a newer build is deployed the
+        // worker installs and waits; handing it SKIP_WAITING swaps it in and
+        // controllerchange reloads us. Nothing is deleted, so a connection that drops
+        // mid-check leaves the installed app completely intact.
+        if (reg) {
+          if (reg.waiting) {
+            statusSpan.textContent = 'Updating…';
+            reg.waiting.postMessage('SKIP_WAITING');
+            return;
+          }
+          await reg.update();
+          if (reg.waiting) {
+            statusSpan.textContent = 'Updating…';
+            reg.waiting.postMessage('SKIP_WAITING');
+            return;
+          }
+          if (reg.installing) { statusSpan.textContent = 'Downloading…'; return; }
+        }
+
+        // Nothing newer. Only now consider the destructive repair, and only if the
+        // deployed version actually differs from the one this page is running.
+        const live = await deployedVersion();
+        if (live && live !== APP_VER) {
+          statusSpan.textContent = 'Repairing…';
+          // Shell caches only — never the audio cache, which holds the downloaded library.
+          const keys = await caches.keys();
+          await Promise.all(
+            keys.filter(k => k.startsWith(CACHE_PREFIX) && k !== AUDIO_CACHE_NAME)
+                .map(k => caches.delete(k))
+          );
+          if (reg) await reg.unregister();
+          window.location.reload();
+          return;
+        }
+
+        restore('Up to date ✓');
+      } catch (err) {
+        console.error('Update failed:', err);
+        restore('Update failed — try again');
+      }
+    }
+
+    // What version is actually deployed right now? Read it straight off the network,
+    // trusting neither the cache nor the running page.
+    async function deployedVersion() {
+      try {
+        const r = await fetch('./version.js?probe=' + Date.now(), { cache: 'no-store' });
+        if (!r.ok) return null;
+        const m = (await r.text()).match(/APP_VERSION\s*=\s*'([^']+)'/);
+        return m ? m[1] : null;
+      } catch { return null; }
+    }
+
+    // prompt() is one-shot per event instance and needs transient user activation, so it
+    // must run inside a click handler.
+    async function firePrompt() {
+      const e = deferredPrompt;
+      if (!e) return false;
+      deferredPrompt = null;
+      window.__deferredPrompt = null;
+      try { e.prompt(); await e.userChoice; }
+      catch { /* stale event — the steps sheet is the fallback next tap */ }
+      refreshInstallUI();
+      return true;
+    }
+
+    btnInstall.addEventListener('click', async () => {
+      if (btnInstall.classList.contains('btn-update')) { runUpdate(); return; }
+      // Brave on Android DOES fire beforeinstallprompt (it is Chromium) but only ever
+      // produces a home-screen shortcut, so going straight to the native dialog would
+      // hand the user the worse outcome with no explanation. Show the sheet there.
+      if (deferredPrompt && !await isBraveAndroid()) { firePrompt(); return; }
+      openInstallSheet();                 // iOS, Brave on Android, or no live prompt
+    });
+
+    // ---------- Offline library ----------
+    //
+    // The library is ~940 MB, so this has to survive a phone going to sleep, a dropped
+    // connection and a full disk. What changed from the old "Download All", and why:
+    //
+    //  * RESUMES. Files already in the audio cache (at their full size) are skipped. The
+    //    old loop re-fetched every file with cache:'reload' on every retry, so one dropped
+    //    connection anywhere in 940 MB meant starting again from zero.
+    //  * ONE FILE AT A TIME, STREAMED. The body is piped straight into cache.put() through
+    //    a byte counter. The old code ran three 40-90 MB files in parallel, and the service
+    //    worker ALSO cached each one from a tee of the same stream, so the slower copy
+    //    buffered in RAM until the page was killed. Downloads now send X-Pig-Download and
+    //    the worker passes them through untouched.
+    //  * CHECKS SPACE FIRST with navigator.storage.estimate(), and asks for persistent
+    //    storage, so a full phone says so instead of failing silently half way.
+    //  * HOLDS A SCREEN WAKE LOCK while downloading: a sleeping phone freezes the page and
+    //    stalls the transfer.
+    //  * VERIFIES each entry against the size in audio-files.json, so a truncated copy is
+    //    re-downloaded rather than trusted forever.
+    const downloadSection = document.getElementById('download-section');
+    const btnDownloadAll = document.getElementById('btn-download-all');
+    const downloadProgressContainer = document.getElementById('download-progress-container');
+    const downloadProgressBar = document.getElementById('download-progress-bar');
+    const downloadStatus = document.getElementById('download-status');
+    const offlineSummary = document.getElementById('offline-summary');
+    const offlineStorage = document.getElementById('offline-storage');
+
+    let downloadAbort = null;     // AbortController of the running download, if any
+    let wakeLock = null;
+
+    const mb = (b) => b >= 1e9 ? (b / 1e9).toFixed(b >= 1e11 ? 0 : 1) + ' GB'
+      : (b / 1e6 >= 100 ? Math.round(b / 1e6) : (b / 1e6).toFixed(1)) + ' MB';
+
+    // Is this file completely in the audio cache? Size is checked when the index knows it.
+    async function isCached(cache, f) {
+      const hit = await cache.match(f.url, { ignoreSearch: true, ignoreVary: true });
+      if (!hit) return false;
+      if (!f.bytes) return true;
+      const len = parseInt(hit.headers.get('content-length') || '0', 10);
+      if (len) return len === f.bytes;
+      try { return (await hit.blob()).size === f.bytes; } catch { return false; }
+    }
+
+    async function refreshOfflineState() {
+      document.body.classList.toggle('is-offline', navigator.onLine === false);
+      if (!('caches' in window) || !libraryFiles.length) return;
+      let cache;
+      try { cache = await caches.open(AUDIO_CACHE_NAME); } catch { return; }
+      let have = 0, haveBytes = 0;
+      const total = libraryFiles.length;
+      const totalBytes = libraryFiles.reduce((a, f) => a + f.bytes, 0);
+      const cachedUrls = new Set();
+      for (const f of libraryFiles) {
+        if (await isCached(cache, f)) { have++; haveBytes += f.bytes; cachedUrls.add(f.url); }
+      }
+      document.querySelectorAll('.btn[data-url]').forEach(b => {
+        b.classList.toggle('not-offline', !cachedUrls.has(b.dataset.url));
+      });
+
+      if (have === total) {
+        offlineSummary.textContent = `✅ All ${total} tracks work offline (${mb(totalBytes)})`;
+      } else {
+        offlineSummary.textContent = `${have} of ${total} tracks saved for offline · ${mb(totalBytes - haveBytes)} left`;
+      }
+      if (!downloadAbort) setDownloadButton(have === total ? 'done' : (have ? 'resume' : 'start'));
+
+      if (navigator.storage && navigator.storage.estimate) {
+        try {
+          const { usage = 0, quota = 0 } = await navigator.storage.estimate();
+          const free = quota - usage;
+          const need = totalBytes - haveBytes;
+          offlineStorage.textContent = quota
+            ? `Storage available to this app: ${mb(free)}` + (need > 0 && free < need * 1.05 ? ' · not enough for the rest' : '')
+            : '';
+          offlineStorage.classList.toggle('warn', need > 0 && free < need * 1.05);
+        } catch { /* estimate unsupported: say nothing rather than guess */ }
+      }
+    }
+
+    function setDownloadButton(mode) {
+      btnDownloadAll.classList.toggle('btn-success', mode === 'done');
+      btnDownloadAll.disabled = mode === 'done';
+      const label = {
+        start:  ['⬇️', 'Download for offline'],
+        resume: ['⬇️', 'Download the rest'],
+        stop:   ['⏹️', 'Stop download'],
+        done:   ['✅', 'Everything is offline'],
+      }[mode];
+      btnDownloadAll.innerHTML = `<span class="icon">${label[0]}</span><span>${label[1]}</span>`;
+    }
+
+    async function holdWakeLock(on) {
+      try {
+        if (on && 'wakeLock' in navigator && !wakeLock) {
+          wakeLock = await navigator.wakeLock.request('screen');
+          wakeLock.addEventListener('release', () => { wakeLock = null; });
+        } else if (!on && wakeLock) {
+          await wakeLock.release();
+          wakeLock = null;
+        }
+      } catch { /* not granted (battery saver, iOS < 16.4): download still runs */ }
+    }
+    // A wake lock is dropped whenever the page is hidden; take it back on return.
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && downloadAbort) holdWakeLock(true);
+    });
+
+    // Stream one file into the cache, reporting bytes as they arrive.
+    async function downloadOne(cache, f, signal, onBytes) {
+      const res = await fetch(f.url, { cache: 'no-store', signal, headers: { 'X-Pig-Download': '1' } });
+      if (!res.ok || !res.body) throw new Error(`HTTP ${res.status}`);
+      let received = 0;
+      const counter = new TransformStream({
+        transform(chunk, ctl) { received += chunk.byteLength; onBytes(chunk.byteLength); ctl.enqueue(chunk); }
+      });
+      const headers = new Headers(res.headers);
+      headers.delete('content-encoding');          // the body we store is already decoded
+      headers.set('Content-Length', String(f.bytes || ''));
+      if (!f.bytes) headers.delete('Content-Length');
+      await cache.put(f.url, new Response(res.body.pipeThrough(counter), {
+        status: 200, statusText: 'OK', headers
+      }));
+      // A connection that closes early can end the stream WITHOUT an error. Count what
+      // actually arrived; never keep a short copy that would then be trusted forever.
+      if (f.bytes && received !== f.bytes) {
+        await cache.delete(f.url);
+        throw new Error(`incomplete: ${received} of ${f.bytes} bytes`);
+      }
+    }
+
+    async function downloadLibrary() {
+      const oldFailList = document.getElementById('failed-files-list');
+      if (oldFailList) oldFailList.remove();
+
+      if (navigator.onLine === false) { toast('You are offline. Connect to download.'); return; }
+      if (navigator.storage && navigator.storage.persist) {
+        try { await navigator.storage.persist(); } catch {}
+      }
+
+      const cache = await caches.open(AUDIO_CACHE_NAME);
+      const todo = [];
+      for (const f of libraryFiles) if (!await isCached(cache, f)) todo.push(f);
+      if (!todo.length) { refreshOfflineState(); return; }
+
+      // Smallest first: the sound effects and short tunes become usable within seconds.
+      todo.sort((a, b) => a.bytes - b.bytes);
+      const totalBytes = todo.reduce((a, f) => a + f.bytes, 0);
+
+      if (navigator.storage && navigator.storage.estimate) {
+        try {
+          const { usage = 0, quota = 0 } = await navigator.storage.estimate();
+          if (quota && quota - usage < totalBytes) {
+            toast(`Not enough storage: needs ${mb(totalBytes)}, ${mb(quota - usage)} available. Downloading what fits.`, 6000);
+          }
+        } catch {}
+      }
+
+      downloadAbort = new AbortController();
+      const { signal } = downloadAbort;
+      setDownloadButton('stop');
+      downloadProgressContainer.style.display = 'block';
+      downloadProgressBar.classList.remove('progress-success');
+      holdWakeLock(true);
+
+      let doneBytes = 0, doneFiles = 0;
+      const failed = [];
+      const paint = (extra = 0, current = '') => {
+        const pct = totalBytes ? ((doneBytes + extra) / totalBytes) * 100 : 100;
+        downloadProgressBar.style.width = `${pct.toFixed(1)}%`;
+        downloadStatus.textContent = `${mb(doneBytes + extra)} of ${mb(totalBytes)} · ${doneFiles} / ${todo.length} files`
+          + (current ? ` · ${current}` : '');
+      };
+      paint();
+
+      for (const f of todo) {
+        if (signal.aborted) break;
+        let got = 0;
+        let lastPaint = 0;
+        try {
+          await downloadOne(cache, f, signal, (n) => {
+            got += n;
+            const now = performance.now();
+            if (now - lastPaint > 250) { lastPaint = now; paint(got, f.name); }
+          });
+          doneBytes += f.bytes;
+          doneFiles++;
+          const btn = document.querySelector(`.btn[data-url="${CSS.escape(f.url)}"]`);
+          if (btn) btn.classList.remove('not-offline');
+        } catch (err) {
+          if (signal.aborted) break;
+          console.warn('Download failed:', f.path, err);
+          failed.push(f);
+          if (err && err.name === 'QuotaExceededError') {
+            toast('Storage is full. Free some space, then tap "Download the rest".', 6000);
+            break;
+          }
+        }
+        paint();
+      }
+
+      const stopped = signal.aborted;
+      downloadAbort = null;
+      holdWakeLock(false);
+
+      if (closing) return;
+      if (stopped) {
+        downloadStatus.textContent = `Stopped. ${mb(doneBytes)} saved; tap to continue where it left off.`;
+      } else if (failed.length) {
+        downloadStatus.textContent = `⚠️ ${doneFiles} saved, ${failed.length} failed. Tap to retry just those.`;
+        const failList = document.createElement('div');
+        failList.id = 'failed-files-list';
+        failList.className = 'failed-files-list';
+        failList.innerHTML = '<strong>Not downloaded:</strong><br>' +
+          failed.map(f => `• ${f.name}`).join('<br>');
+        downloadSection.querySelector('div').appendChild(failList);
+      } else {
+        downloadProgressBar.classList.add('progress-success');
+        downloadStatus.textContent = `✅ Done: ${mb(totalBytes)} saved.`;
+      }
+      refreshOfflineState();
+    }
+
+    btnDownloadAll.addEventListener('click', () => {
+      if (downloadAbort) { downloadAbort.abort(); return; }   // the button is "Stop" while running
+      downloadLibrary().catch(err => {
+        console.error('Download failed:', err);
+        downloadAbort = null;
+        holdWakeLock(false);
+        downloadStatus.textContent = '❌ Download failed. Check the connection and tap again.';
+        refreshOfflineState();
+      });
+    });
+
+    // The section only makes sense with a service worker to serve the cache back.
+    function checkAndShowDownloadSection() {
+      if ('serviceWorker' in navigator && 'caches' in window) downloadSection.style.display = 'block';
+    }
+    checkAndShowDownloadSection();
+
+    window.addEventListener('online', refreshOfflineState);
+    window.addEventListener('offline', refreshOfflineState);
+    // The worker precaches the sound effects on install; repaint once it has.
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', (e) => {
+        if (e.data === 'CACHE_COMPLETE' || e.data === 'CACHE_UPDATED') setTimeout(refreshOfflineState, 1500);
+      });
+      navigator.serviceWorker.ready.then(() => setTimeout(refreshOfflineState, 3000)).catch(() => {});
+    }
+
+    // ---------- Close (X) ----------
+    //
+    // Same contract as the other installable apps on these sites (poltergeist.exe, the
+    // meditation timer). A web page cannot end its own OS process; what it can do is stop
+    // holding anything: the music element and its buffered media, every sound effect, the
+    // seek timer, the lock-screen media controls, a running download, the wake lock. Then
+    // window.close(), which closes an INSTALLED app window and is ignored in a plain tab,
+    // where the "Closed" screen says so instead of leaving a dead button.
+    const releaseEl = (el) => {
+      if (!el) return;
+      try { el.pause(); el.removeAttribute('src'); el.load(); } catch {}
+    };
+
+    function shutdownApp() {
+      closing = true;
+      userPaused = true;                          // the pause listener must not restart it
+      if (downloadAbort) downloadAbort.abort();
+      holdWakeLock(false);
+      if (window.stopSeekUpdates) window.stopSeekUpdates();
+
+      releaseEl(musicAudio);
+      musicAudio = null;
+      activeMusicUrl = null;
+      activeSfx.forEach(releaseEl);
+      activeSfx.clear();
+
+      if ('mediaSession' in navigator) {
+        try {
+          ['play', 'pause', 'previoustrack', 'nexttrack', 'seekto', 'seekbackward', 'seekforward']
+            .forEach(a => navigator.mediaSession.setActionHandler(a, null));
+          navigator.mediaSession.metadata = null;
+          navigator.mediaSession.playbackState = 'none';
+        } catch {}
+      }
+      closeInstallSheet();
+      updatePlayerIcon();
+
+      try { window.close(); } catch {}
+
+      // Still here a moment later? close() was refused: a browser tab. Explain.
+      setTimeout(() => {
+        if (!closing) return;
+        document.getElementById('closed-sub').textContent = isStandalone()
+          ? 'Swipe the app away to finish.'
+          : 'A browser tab cannot close itself, so close this tab. In the installed app, the X closes it.';
+        document.getElementById('closed-layer').hidden = false;
+        lockPageScroll(true);
+        document.getElementById('btn-reopen').focus();
+      }, 250);
+    }
+
+    function reopenApp() {
+      closing = false;
+      userPaused = false;
+      document.getElementById('closed-layer').hidden = true;
+      lockPageScroll(false);
+      setupMediaSession();
+      refreshOfflineState();
+    }
+
+    document.getElementById('btn-close').addEventListener('click', shutdownApp);
+    document.getElementById('btn-reopen').addEventListener('click', reopenApp);
+
+    // Start App
+    loadAudioFiles();
+  </script>
+</body>
+
+</html>

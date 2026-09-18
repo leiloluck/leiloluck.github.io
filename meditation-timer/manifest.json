@@ -13,8 +13,8 @@
   "orientation": "portrait",
   "lang": "en",
   "dir": "ltr",
-  "background_color": "#120e0a",
-  "theme_color": "#c9934a",
+  "background_color": "#151310",
+  "theme_color": "#151310",
   "icons": [
     {
       "src": "icons/icon-192.png",

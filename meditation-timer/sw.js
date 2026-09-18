@@ -34,7 +34,7 @@
 
 'use strict';
 
-const VERSION      = 'v26.08.30';
+const VERSION      = 'v26.09.18a';
 const CACHE_PREFIX = 'meditation-timer-';        // never touch caches outside this prefix
 const CACHE        = CACHE_PREFIX + VERSION;
 const AUDIO_CACHE  = CACHE_PREFIX + 'audio';     // unversioned on purpose — see header
@@ -50,6 +50,9 @@ const PRECACHE = [
   './icons/icon-512.png',
   './icons/icon-180.png',
   './icons/icon-maskable-512.png',
+  './fonts/shippori-mincho-700.woff2',
+  './fonts/zen-maru-gothic-500.woff2',
+  './fonts/zen-maru-gothic-700.woff2',
 ];
 
 // Not part of the atomic shell: added best-effort into the persistent audio cache.

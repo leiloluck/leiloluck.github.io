@@ -2,7 +2,7 @@
 
 A minimalist meditation timer PWA. The user selects a sound and a duration; audio fades in at the start and fades out at the end. Installable on Android + iPhone, offline-first.
 
-**Version:** v26.06.19 (format `vYY.MM.DD` — year.month.day; bump on every change, in
+**Version:** v26.09.18 (format `vYY.MM.DD` — year.month.day; bump on every change, in
 lockstep across `index.html`, `sw.js` `VERSION`, and `js/app.js` `APP_VERSION`).
 
 ---
@@ -12,11 +12,12 @@ lockstep across `index.html`, `sw.js` `VERSION`, and `js/app.js` `APP_VERSION`).
 | File | Role |
 |---|---|
 | `index.html` | App shell, all markup, PWA meta tags |
-| `css/styles.css` | Warm dark palette, diagonal gradient, responsive layout |
+| `css/styles.css` | Zen skin (sumi / kinari / gold / shu), ensō hero, breathing animation, responsive layout |
 | `js/app.js` | Everything: audio engine, timer, beat scheduler, UI, PWA logic |
 | `sw.js` | Service worker: cache-first shell, streaming audio |
 | `manifest.json` | PWA manifest (standalone, amber theme) |
-| `icons/` | PNG icons (192, 512, 180) + SVG |
+| `icons/` | Ensō icon: PNG (192, 512, 180, maskable 512) + SVG |
+| `fonts/` | Self-hosted Latin subsets: Shippori Mincho 700, Zen Maru Gothic 500/700 + their OFL licences |
 | `resources/` | Audio files |
 
 ---
@@ -269,16 +270,77 @@ The `serveAudio` function strips the `Range` header from the cache key so the st
 
 ## Design
 
-Diagonal dark-gold-to-black gradient background. Single-column layout, max-width 420px, centred. No scroll (`overflow: hidden`, `height: 100dvh`).
+Zen / wabi-sabi, researched against Japanese design principles: *kanso* (simplicity,
+remove the non-essential), *ma* (active negative space) and the *ensō*, the Zen circle
+drawn in one brushstroke, left open for impermanence. The palette comes from the
+traditional Japanese colours, lightened where needed for contrast on a phone screen.
 
-| Token | Value |
-|---|---|
+| Token | Value | Source colour |
+|---|---|---|
+| `--bg` | `#151310` | sumi (ink), warm black |
+| `--text` | `#efe6d2` | kinari (unbleached silk) |
+| `--accent` | `#d9ae68` | kincha / gold leaf |
+| `--muted` | `#a79d89` | rikyū-nezumi, lifted (~6.8:1 on bg) |
+| `--border` | `#3b352c` | |
+| `--shu` | `#d0553a` | shu (vermilion): only the close control and the icon seal |
+
+Background: a radial "lamp over paper" glow high on the page, falling off to ink.
+
+**Type:** *Shippori Mincho* 700 (title, countdown, Begin, bell hint) gives a brush-serif
+voice; *Zen Maru Gothic* 500/700 (all controls and small text) is rounded and legible at
+12 px. Both are SIL OFL and self-hosted as Latin subsets (~52 KB total), precached by the
+worker, so they work offline and need no third-party request. Mincho digits are
+proportional, so `renderClock()` puts each character in a fixed-width cell (`.d` / `.c`).
+Otherwise the clock would shift sideways every second.
+
+**Layout:** a full-height column (`100svh`). The ensō section is the only flexible child,
+so on tall phones the spare height goes to the hero and the controls sit at the bottom,
+in thumb reach. Durations are a 3-column grid (two rows). Screens under 680 px tall shrink
+the ensō and drop the bell hint.
+
+**Ensō hero / progress:** the brushstroke path (generated, identical to the icon) is inline
+in `index.html` and drawn twice: a faint ghost, and the gold ink masked by `#enso-arc`.
+`setEnsoProgress()` sets the mask's `stroke-dashoffset` once a second (with a 1 s linear
+CSS transition), so the ink fades along the stroke as time passes and the dry-brush tail
+goes last. Starting a session changes nothing on screen, and stop/end sweeps the circle
+back in over 1.4 s.
+
+**Running animation:** `setPlayBtn()` also sets `body.running` / `body.paused`. While running,
+the ensō and a soft glow behind it *breathe* (10 s cycle, about six breaths a minute).
+It animates transform/opacity only (compositor, zero cost when hidden). Paused holds and
+dims it. `prefers-reduced-motion` disables the breathing and the ring transition.
+
+**Icon:** the same ensō in gold leaf on sumi with a small vermilion seal (hanko) at lower
+right, like a signed brush painting. The maskable variant keeps everything inside the 40 %
+safe circle; the iOS 180 px icon is full-bleed and opaque.
+
+---|---|
 | Background | `linear-gradient(to bottom right, #3d2900, #000000)` |
 | Surface | `#1e1710` |
 | Border | `#3a2e22` |
 | Accent | `#c9934a` |
 | Text | `#f0e2cc` |
 | Muted | `#8a7060` |
+
+---
+
+## Close button (X, top right)
+
+`shutdownApp()`, the same contract as poltergeist.exe's X. A web page cannot terminate
+its own OS process, so the X releases everything the app holds: rAF loop and timers,
+every scheduled bell, both keep-alives, the Media Session handlers and metadata, the
+soundtrack and keep-alive `<audio>` elements (paused **and** `src` removed, so their media
+buffers go), the keep-alive `blob:` URL, every audio node, the decoded `bellBuffer`, and
+finally `audioCtx.close()` (not `suspend()`: close is what hands the device back and drops
+the partial wakelock). `navigator.audioSession.type` goes back to `'auto'`. Then
+`window.close()`, which works for an installed app window and is ignored in a plain tab.
+In that case a "Closed" screen explains it and offers **Open again** (`reopenApp()`), which
+rebuilds the graph through `ensureAudio()`.
+
+`closing` gates `applyUpdateIfSafe()` (a queued update must not reload a closed app) and
+`loadBell()`: a bell load captures the context it started on and stops, retries included,
+once that is no longer `audioCtx`. Otherwise a load still in flight would decode into a
+dead context and refill the memory the X just released.
 
 ---
 

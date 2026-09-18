@@ -11,7 +11,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.08.30';   // format vYY.MM.DD — keep in lockstep with sw.js + index.html
+const APP_VERSION = 'v26.09.18a';   // format vYY.MM.DD — keep in lockstep with sw.js + index.html
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 //
@@ -149,10 +149,16 @@ function ensureAudio() {
 // transient failure used to leave bellBuffer null forever, so every later session ended
 // in silence with no indication why.
 function loadBell(attempt) {
+  // A load belongs to the context that started it. After the close button tears the graph
+  // down (audioCtx -> null), a load still in flight must neither decode into a dead context
+  // nor keep retrying and re-fill the memory that was just released.
+  const ctx = audioCtx;
+  const stale = () => closing || ctx !== audioCtx;
   fetch('./resources/Single bowl sound.mp3', attempt ? { cache: 'reload' } : undefined)
     .then(r => { if (!r.ok) throw new Error('bell ' + r.status); return r.arrayBuffer(); })
-    .then(buf => audioCtx.decodeAudioData(buf))
+    .then(buf => stale() ? null : ctx.decodeAudioData(buf))
     .then(decoded => {
+      if (!decoded || stale()) return;
       bellBuffer = decoded;
       bellFailed = false;
       if ((state === 'playing' || state === 'finishing') && audioCtx && startTimestamp !== null) {
@@ -175,9 +181,10 @@ function loadBell(attempt) {
       }
     })
     .catch(() => {
+      if (stale()) return;
       bellFailed = true;
       if (attempt < 4) {
-        setTimeout(() => loadBell(attempt + 1), 1000 * Math.pow(2, attempt));  // 1s,2s,4s,8s
+        setTimeout(() => { if (!stale()) loadBell(attempt + 1); }, 1000 * Math.pow(2, attempt));  // 1s,2s,4s,8s
         return;
       }
       if (state === 'idle') setStatus('bell unavailable — reconnect once to save it offline');
@@ -667,6 +674,109 @@ function onSessionEnd() {
   endHoldTimeout = setTimeout(releaseAudioHold, endBellTail() * 1000);
 }
 
+// ── Close ────────────────────────────────────────────────────────────────────
+//
+// Same contract as poltergeist.exe's X. A web page cannot terminate its own OS process;
+// no browser exposes that, and on Android the system alone decides when to reclaim one.
+// What it CAN do is stop holding things, which is what actually matters:
+//
+//   * no scheduled bells, no keep-alive tone, no silent <audio> loop, no timers
+//   * no lock-screen media controls (the notification would otherwise outlive the app)
+//   * no open audio output stream: audioCtx.close(), not suspend(), is what hands the
+//     device back and drops the partial wakelock
+//   * no decoded audio: closing a context does NOT free an AudioBuffer (it lives as long
+//     as something references it), so the bell's decoded PCM, the soundtrack element's
+//     media buffer and the keep-alive blob are all released explicitly
+//
+// Then window.close(). Per spec a script may only close a window it opened, but an
+// INSTALLED app window qualifies, so this really closes the app there; in a plain tab it
+// silently does nothing, so a "closed" screen explains that instead of a dead button.
+let closing = false;
+
+function shutdownApp() {
+  closing = true;
+  audioReleased = true;           // first: stops the pause-guards restarting playback
+
+  cancelAnimationFrame(rafId);
+  clearTimeout(bgFadeTimeout);
+  clearTimeout(endHoldTimeout);
+  clearScheduledSources();
+  stopKeepAlive();
+
+  if ('mediaSession' in navigator) {
+    try {
+      ['play', 'pause', 'stop'].forEach(a => navigator.mediaSession.setActionHandler(a, null));
+      navigator.mediaSession.metadata = null;
+      navigator.mediaSession.playbackState = 'none';
+    } catch {}
+  }
+
+  // Media elements: pause AND detach the source, or the browser keeps the stream (and for
+  // the soundtrack, its buffered media) alive.
+  const releaseEl = el => {
+    if (!el) return;
+    try { el.pause(); el.removeAttribute('src'); el.load(); } catch {}
+  };
+  releaseEl(silentEl);
+  silentEl = null;
+  if (silentUrl) { try { URL.revokeObjectURL(silentUrl); } catch {} silentUrl = null; }
+  releaseEl(audioEl);
+  audioEl = null;
+
+  try { if (mediaSource) mediaSource.disconnect(); } catch {}
+  try { if (gainNode) gainNode.disconnect(); } catch {}
+  try { if (bellOut) bellOut.disconnect(); } catch {}
+  mediaSource = null;
+  gainNode = null;
+  bellOut = null;
+  bellBuffer = null;
+
+  // close(), not suspend(). Null it too: ensureAudio() rebuilds everything from scratch if
+  // the window survives and the app is opened again.
+  if (audioCtx) {
+    const ctx = audioCtx;
+    audioCtx = null;
+    try { ctx.onstatechange = null; ctx.close(); } catch {}
+  }
+
+  // iOS: give the 'playback' audio-session category back.
+  try { if (navigator.audioSession) navigator.audioSession.type = 'auto'; } catch {}
+
+  state = 'idle';
+  elapsedMs = 0;
+  startTimestamp = null;
+  document.body.classList.remove('session-complete');
+  setStatus('');
+  closeCustomTimeModal();
+  closeInstallModal();
+
+  try { window.close(); } catch {}
+
+  // Still here a moment later? Then close() was refused (a browser tab). Say so.
+  setTimeout(() => {
+    if (!closing) return;
+    elClosedSub.textContent = isStandalone()
+      ? 'Swipe the app away to finish.'
+      : 'A browser tab cannot close itself, so close this tab. Installed, this button closes the app.';
+    elClosedLayer.classList.remove('hidden');
+    document.body.classList.add('modal-open');
+    elReopenBtn.focus();
+  }, 250);
+}
+
+// The window survived and the user wants it back: rebuild the audio graph, reload the bell.
+function reopenApp() {
+  closing = false;
+  elClosedLayer.classList.add('hidden');
+  document.body.classList.remove('modal-open');
+  bellFailed = false;
+  resetUI();
+  setStatus('');
+  ensureAudio();
+  applyUpdateIfSafe();
+  showTab('meditate');   // land back on the practice screen, not wherever Settings was left
+}
+
 // ── Gain helpers ─────────────────────────────────────────────────────────────
 
 function scaledFades(durationMs) {
@@ -750,6 +860,11 @@ function setSelectedDuration(min) {
 // ── UI helpers ───────────────────────────────────────────────────────────────
 
 const elCountdown     = document.getElementById('countdown');
+const elEnsoArc       = document.getElementById('enso-arc');
+const elCloseBtn      = document.getElementById('close-btn');
+const elClosedLayer   = document.getElementById('closed-layer');
+const elClosedSub     = document.getElementById('closed-sub');
+const elReopenBtn     = document.getElementById('reopen-btn');
 const elDurationLabel = document.getElementById('duration-label');
 const elStatus        = document.getElementById('status');
 const elPlayBtn       = document.getElementById('btn-play');
@@ -757,6 +872,12 @@ const elResetBtn      = document.getElementById('btn-reset');
 const elSoundGroup    = document.getElementById('sound-group');
 const elDurationGroup = document.getElementById('duration-group');
 const elInstallBtn    = document.getElementById('install-btn');
+const elInstallBanner = document.getElementById('install-banner');
+const elInstallNote   = document.getElementById('install-note');
+const elTabMeditate   = document.getElementById('tab-meditate');
+const elTabSettings   = document.getElementById('tab-settings');
+const elPanelMeditate = document.getElementById('panel-meditate');
+const elPanelSettings = document.getElementById('panel-settings');
 const elUpdateBtn     = document.getElementById('update-btn');
 const elOfflineBtn    = document.getElementById('offline-btn');
 const elVersion       = document.getElementById('version');
@@ -787,21 +908,56 @@ function updateCountdown(ms) {
   // rAF runs at 60 Hz; the text changes once a second. Skip the other 59 DOM writes.
   if (text === lastCountdownText) return;
   lastCountdownText = text;
-  elCountdown.textContent = text;
+  renderClock(text);
+  // The ring advances on the same once-a-second beat; its CSS transition is exactly one
+  // second long, so the steps join up into one continuous stroke.
+  if (sessionDurationMs > 0) setEnsoProgress(1 - ms / sessionDurationMs);
+}
+
+// Each character in its own fixed-width cell. The Mincho face has proportional digits,
+// so plain text made the whole clock shuffle sideways every second.
+function renderClock(text) {
+  const frag = document.createDocumentFragment();
+  for (const ch of text) {
+    const span = document.createElement('span');
+    span.className = ch === ':' ? 'c' : 'd';
+    span.textContent = ch;
+    frag.appendChild(span);
+  }
+  elCountdown.replaceChildren(frag);
+}
+
+// The ensō shows the time that remains. The mask circle starts just behind the brush's
+// first touch, and as the session elapses the ink fades from that end, following the
+// stroke, so the dry-brush tail is the last of it to go. The stroke only spans ~94 of the
+// mask's 100 units (the rest is the open gap), hence the scale. Starting a session
+// therefore changes nothing on screen; the circle simply begins to go. null = whole.
+function setEnsoProgress(fraction) {
+  if (!elEnsoArc) return;
+  const f = fraction === null ? 0 : Math.min(1, Math.max(0, fraction));
+  elEnsoArc.style.strokeDashoffset = (-94 * f).toFixed(2);
 }
 
 function showIdleCountdown() {
   const m = String(Math.floor(selectedMinutes)).padStart(2, '0');
   lastCountdownText = `${m}:00`;
-  elCountdown.textContent = lastCountdownText;
+  renderClock(lastCountdownText);
   elDurationLabel.textContent = `${selectedMinutes} min`;
+  setEnsoProgress(null);
 }
 
 function setStatus(msg) {
   elStatus.textContent = msg;
 }
 
+// The body carries the run state for CSS: .running breathes the ensō, .paused holds it.
+function setRunClass(mode) {
+  document.body.classList.toggle('running', mode === 'pause' || mode === 'disabled');
+  document.body.classList.toggle('paused',  mode === 'resume');
+}
+
 function setPlayBtn(mode) {
+  setRunClass(mode);
   if (mode === 'play') {
     elPlayBtn.disabled = false;
     elPlayBtn.textContent = 'Begin';
@@ -1028,6 +1184,7 @@ elCustomDurationCancel.addEventListener('click', closeCustomTimeModal);
 elCustomModalDismiss.addEventListener('click', closeCustomTimeModal);
 
 document.addEventListener('keydown', event => {
+  if (closing) return;
   if (!elInstallModalLayer.classList.contains('hidden')) {
     if (event.key === 'Escape') closeInstallModal();
     return;
@@ -1065,6 +1222,28 @@ document.addEventListener('keydown', event => {
   }
 });
 
+// ── Tabs ─────────────────────────────────────────────────────────────────────
+// Meditate (the whole practice screen) and Settings (install / update / offline). A
+// session already running keeps running while Settings is open — nothing here touches
+// state — so checking on an update mid-session is harmless.
+
+const TABS = [
+  { name: 'meditate', tab: () => elTabMeditate, panel: () => elPanelMeditate },
+  { name: 'settings', tab: () => elTabSettings, panel: () => elPanelSettings },
+];
+
+function showTab(name) {
+  const target = TABS.some(t => t.name === name) ? name : 'meditate';
+  TABS.forEach(t => {
+    const on = t.name === target;
+    t.panel().classList.toggle('hidden', !on);
+    t.tab().setAttribute('aria-selected', on ? 'true' : 'false');
+  });
+  window.scrollTo(0, 0);
+}
+
+TABS.forEach(t => t.tab().addEventListener('click', () => showTab(t.name)));
+
 // ── Play button handler ──────────────────────────────────────────────────────
 
 elPlayBtn.addEventListener('click', () => {
@@ -1076,6 +1255,9 @@ elPlayBtn.addEventListener('click', () => {
 elResetBtn.addEventListener('click', () => {
   stopSession();
 });
+
+elCloseBtn.addEventListener('click', shutdownApp);
+elReopenBtn.addEventListener('click', reopenApp);
 
 // ── PWA: install ─────────────────────────────────────────────────────────────
 // Android / desktop fire `beforeinstallprompt` → we trigger the native prompt.
@@ -1106,7 +1288,52 @@ function isIOS() {
 // locked screen.
 let isBrave = false;
 if (navigator.brave && navigator.brave.isBrave) {
-  navigator.brave.isBrave().then(v => { isBrave = !!v; }).catch(() => {});
+  navigator.brave.isBrave().then(v => { isBrave = !!v; renderInstallAdvice(); }).catch(() => {});
+}
+
+// ── Which browser can install this properly? ─────────────────────────────────
+//
+// Shared by poltergeist.exe, the meditation timer and the Pig Game (same rules, own copy
+// in each app so each stays self-contained and offline):
+//  * Android: only Chrome (with Google services) and Samsung Internet (on Samsung phones)
+//    mint a WebAPK, a real installed app with offline storage of its own. Brave, Firefox,
+//    Edge, Opera and in-app browsers only add a shortcut that opens the site in them.
+//  * iPhone: since iOS 16.4 Safari, Chrome, Edge and Firefox can all Add to Home Screen,
+//    so only in-app browsers (Instagram, WhatsApp, ...) and older iOS need Safari.
+// Returns { text, wrong }: `wrong` = this browser cannot install it, say so up front.
+function installAdvice() {
+  if (isStandalone()) return { text: '', wrong: false };
+  const ua = navigator.userAgent || '';
+  const inApp = /FBAN|FBAV|Instagram|Line\/|Snapchat|TikTok|musical_ly|WhatsApp|GSA\/|; wv\)/i.test(ua);
+  if (/android/i.test(ua)) {
+    if (/SamsungBrowser/i.test(ua) && !inApp) {
+      return { text: '✓ Samsung Internet can install this. Tap Install for offline use.', wrong: false };
+    }
+    const chrome = /Chrome\/\d/.test(ua) && !inApp && !isBrave &&
+      !/EdgA|OPR\/|Opera|Firefox|YaBrowser|Vivaldi|DuckDuckGo|UCBrowser|MiuiBrowser|HuaweiBrowser/i.test(ua);
+    return chrome
+      ? { text: '✓ You are in Chrome. Tap Install for offline use.', wrong: false }
+      : { text: '📲 Open this page in Chrome to install it for offline use.', wrong: true };
+  }
+  if (isIOS()) {
+    const m = ua.match(/OS (\d+)_(\d+)/);
+    const ver = m ? parseInt(m[1], 10) + parseInt(m[2], 10) / 100 : 99;   // iPadOS reports as Mac
+    const safari = !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua) && !inApp;
+    if (inApp || (!safari && ver < 16.04)) {
+      return { text: '📲 Open this page in Safari to install it for offline use.', wrong: true };
+    }
+    return { text: 'For offline use: tap Share, then Add to Home Screen.', wrong: false };
+  }
+  return { text: '', wrong: false };   // desktop: the Install button covers it
+}
+
+// The Meditate tab shows the advice only when this browser cannot install the app at
+// all — that is the one case worth interrupting a session-in-progress screen for.
+// Settings always shows it, wrong browser or right, since that is where install lives.
+function renderInstallAdvice() {
+  const { text, wrong } = installAdvice();
+  if (elInstallNote)   { elInstallNote.textContent = text; elInstallNote.hidden = !text; }
+  if (elInstallBanner) { elInstallBanner.textContent = wrong ? text : ''; elInstallBanner.hidden = !wrong; }
 }
 
 const INSTALLED_KEY = 'meditation-installed';
@@ -1116,6 +1343,7 @@ function wasInstalled() {
 }
 
 function refreshInstallUI() {
+  renderInstallAdvice();
   if (isStandalone()) {
     // Definitive: we ARE the installed app.
     elInstallBtn.textContent = '✓ Installed';
@@ -1538,6 +1766,7 @@ let waitingReg = null;
 let pendingReload = false;   // another window switched workers while we were running
 
 function applyUpdateIfSafe(delayMs = 0) {
+  if (closing) return;   // shutting down: a reload would resurrect the closed app
   if (pendingReload && state === 'idle') {
     pendingReload = false;
     setTimeout(() => {

@@ -1,5 +1,33 @@
 /* styles.css — Meditation Timer
-   Warm dark palette, single screen layout (100svh), no scroll. */
+   Zen / wabi-sabi skin: sumi-ink ground, kinari (unbleached silk) text, gold-leaf accent,
+   one vermilion (shu) note for the close control. Mincho serif for the voice, rounded
+   gothic for the controls. The brushed ensō is the hero and the progress ring.
+   Full-height column (100svh): header, tabs, then the active panel (Meditate: ensō takes
+   the spare height, then controls; Settings: install/update/offline, version).
+   Palette and type choices are documented in context.md ("Design"). */
+
+/* ── Fonts: self-hosted Latin subsets, SIL OFL 1.1 (licences in ../fonts/) ── */
+@font-face {
+  font-family: 'Shippori Mincho';
+  src: url('../fonts/shippori-mincho-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Zen Maru Gothic';
+  src: url('../fonts/zen-maru-gothic-500.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Zen Maru Gothic';
+  src: url('../fonts/zen-maru-gothic-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -8,34 +36,34 @@
 }
 
 :root {
-  --bg:        #120e0a;
-  --surface:   #1e1710;
-  --border:    #3a2e22;
-  --accent:    #c9934a;
-  --accent-dim:#7a5a30;
-  --accent-bg: rgba(201, 147, 74, 0.15);
-  --text:      #f0e2cc;
-  --muted:     #8a7060;
-  --fade:      180ms ease;
-  --page-pad-x: clamp(14px, 4vw, 20px);
-  --header-gap: clamp(2px, 0.5svh, 4px);
-  --section-gap: clamp(8px, 1.4svh, 14px);
-  --control-gap: clamp(6px, 1svh, 8px);
-  --play-pad-y: clamp(11px, 1.6svh, 14px);
-  --play-pad-x: clamp(16px, 3vw, 20px);
-  --button-pad-y: clamp(8px, 1.2svh, 9px);
-  --button-pad-x: clamp(9px, 2.5vw, 10px);
-  --footer-pad-top: clamp(2px, 0.5svh, 4px);
+  /* Traditional Japanese colours, lifted for legibility on a dark screen. */
+  --bg:         #151310;   /* sumi — ink black, warm */
+  --bg-deep:    #0d0c0a;
+  --surface:    #1f1c17;
+  --border:     #3b352c;   /* rikyū-nezumi, darkened */
+  --border-hi:  #5a5144;
+  --accent:     #d9ae68;   /* kincha / gold leaf */
+  --accent-dim: #8f7243;
+  --accent-bg:  rgba(217, 174, 104, 0.12);
+  --shu:        #d0553a;   /* vermilion, used once: the close control */
+  --text:       #efe6d2;   /* kinari — unbleached silk */
+  --muted:      #a79d89;   /* ~6.8:1 on --bg, still readable at 12px */
+  --faint:      #6f675a;
+  --fade:       200ms ease;
+
+  --serif: 'Shippori Mincho', 'Hiragino Mincho ProN', 'Yu Mincho', Georgia, serif;
+  --sans:  'Zen Maru Gothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  --radius:    14px;
+  --page-pad-x: clamp(16px, 5vw, 24px);
+  --control-gap: clamp(8px, 1.2svh, 10px);
 }
 
 
 /* ── Touch: every tappable surface ───────────────────────────────────────────
-   touch-action:manipulation removes double-tap-to-zoom (and with it the tap delay) —
-   it was previously set on only about half the controls, so repeated taps on the
-   keypad or the skip button could zoom the page. user-select:none stops a slightly
-   long press popping the text-selection toolbar over the controls. The tap highlight
-   is suppressed because every control below defines its own :active state; without
-   one, removing the highlight would make buttons feel dead. */
+   touch-action:manipulation removes double-tap-to-zoom (and with it the tap delay).
+   user-select:none stops a slightly long press popping the text-selection toolbar.
+   The tap highlight is suppressed because every control defines its own :active. */
 button,
 .modal-backdrop {
   touch-action: manipulation;
@@ -44,13 +72,10 @@ button,
   -webkit-user-select: none;
 }
 
-/* Touch feedback. The tap highlight is suppressed above, so without this every button
-   would feel dead on a phone — pressing one would produce no acknowledgement at all
-   until whatever it does happens. Applies to every control that has not defined its own
-   :active; the more specific rules further down override it. */
+/* Touch feedback: the tap highlight is gone, so a press must still acknowledge itself. */
 button:active:not(:disabled),
 .modal-backdrop:active {
-  filter: brightness(1.25);
+  filter: brightness(1.2);
   transform: scale(0.985);
 }
 
@@ -58,33 +83,38 @@ button {
   transition: filter 90ms ease, transform 90ms ease;
 }
 
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   button { transition: none; }
   button:active:not(:disabled) { transform: none; }
 }
 
-/* ── Touch: hover is sticky, :active is not ──────────────────────────────────
-   On a touchscreen :hover latches when you tap and only clears when you tap
-   something else, so a button you pressed keeps looking pressed. Every :hover rule
-   in this file is therefore gated behind a real pointer; the pressed feedback that
-   touch actually gets is :active, defined alongside each control. */
+/* On a touchscreen :hover latches on tap, so every :hover rule below is gated behind a
+   real pointer; touch gets :active instead. */
 html {
   min-height: 100%;
   /* No pull-to-refresh: a flick at the top must never reload mid-meditation. */
   overscroll-behavior-y: contain;
   -webkit-text-size-adjust: 100%;
+  background: var(--bg-deep);
 }
 
 body {
-  background: linear-gradient(to bottom right, #3d2900 0%, #000000 100%);
+  /* A lamp over paper: warm light high on the page, falling off into ink. */
+  background:
+    radial-gradient(ellipse 120% 70% at 50% 28%, #2a241b 0%, var(--bg) 55%, var(--bg-deep) 100%)
+    fixed;
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--sans);
+  font-weight: 500;
   font-size: 15px;
-  line-height: 1.4;
-  /* Fill exactly the visible screen */
+  line-height: 1.45;
   min-height: 100vh;  /* fallback for engines without the newer units */
-  min-height: 100svh; /* small viewport: fits with the URL bar shown, so the layout
-                         does not reflow every time Chrome's address bar slides */
+  min-height: 100svh; /* small viewport: no reflow when Chrome's URL bar slides */
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
@@ -93,104 +123,296 @@ body {
   overscroll-behavior-y: contain;
 }
 
-/* ── App shell: one full-height column ── */
-
+/* ── App shell: one full-height column ──
+   Header, tabs, then the active panel — the panel is the only flexible child (see
+   `.panel` below), so on a tall phone the spare height goes to the hero and the controls
+   settle at the bottom, within thumb reach. */
 .app {
   width: 100%;
-  max-width: 420px;
+  max-width: 440px;
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
   gap: clamp(6px, 1svh, 10px);
-  /* Respect notch / home indicator */
-  padding-top: max(env(safe-area-inset-top, 0px), 12px);
-  /* safe-area-max-inset-* is the constant maximum; the plain inset is dynamic and
-     shrinks as Chrome's bottom chin retracts, which reflows the page mid-scroll and
-     briefly drops the last control row into the gesture-nav strip. */
+  padding-top: max(env(safe-area-inset-top, 0px), 10px);
+  /* safe-area-max-inset-* is the constant maximum; the plain inset shrinks as Chrome's
+     bottom chin retracts, which reflows the page mid-scroll. */
   padding-bottom: max(env(safe-area-max-inset-bottom, env(safe-area-inset-bottom, 0px)), 10px);
   padding-left: max(var(--page-pad-x), env(safe-area-inset-left, 0px));
   padding-right: max(var(--page-pad-x), env(safe-area-inset-right, 0px));
   min-height: 100vh;
   min-height: 100svh;
-  overflow: visible;
 }
 
 /* ── Header ── */
 
 .header {
-  text-align: center;
-  padding-bottom: 0;
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
   flex-shrink: 0;
 }
 
 .header h1 {
-  font-size: 16px;
-  font-weight: 400;
-  letter-spacing: 0.08em;
+  grid-column: 2;
+  text-align: center;
+  font-family: var(--serif);
+  font-size: clamp(18px, 2.6svh, 21px);
+  font-weight: 700;
+  letter-spacing: 0.06em;
   color: var(--text);
 }
 
-.header p {
-  font-size: 10px;
+.btn-close {
+  grid-column: 3;
+  justify-self: end;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: transparent;
   color: var(--muted);
-  letter-spacing: 0.18em;
-  margin-top: 1px;
+  font-family: var(--sans);
+  font-size: 22px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: color var(--fade), border-color var(--fade), filter 90ms ease, transform 90ms ease;
 }
 
-/* ── Countdown (middle, flexible height) ── */
+.btn-close:active:not(:disabled) {
+  color: var(--shu);
+  border-color: var(--shu);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn-close:hover { color: var(--shu); border-color: var(--shu); }
+}
+
+/* ── Tabs ── */
+
+.tabs {
+  flex-shrink: 0;
+  display: flex;
+  gap: 6px;
+}
+
+.tab {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 38px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: border-color var(--fade), color var(--fade), background var(--fade);
+}
+
+.tab[aria-selected="true"] {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tab:hover:not([aria-selected="true"]) { border-color: var(--accent-dim); color: var(--text); }
+}
+
+/* ── Panel: the one flexible child of .app ──
+   Holds either the practice screen or Settings. Its own gap carries the spacing that
+   used to sit directly on .app, so the hero-to-controls rhythm is unchanged. */
+.panel {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 1.8svh, 18px);
+}
+
+/* Install advice, shared look with the note in Settings below. A quiet, paper-coloured
+   strip rather than a loud warning — it is guidance, not an error. */
+.install-banner,
+.install-note {
+  margin: 0;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.install-banner { flex-shrink: 0; }
+
+/* ── Hero: ensō + countdown (the flexible part of the column) ── */
 
 .countdown-section {
-  flex: 0 1 auto;
+  flex: 1 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: clamp(3px, 0.7svh, 5px);
-  min-height: clamp(118px, 20svh, 180px);
-  padding: clamp(2px, 0.6svh, 6px) 0;
+  gap: clamp(4px, 1svh, 10px);
+  min-height: 0;
+}
+
+.enso-wrap {
+  position: relative;
+  width: min(80vw, 38svh, 340px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+}
+
+.enso {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* The whole circle, faint: what the session will draw. */
+.enso-ghost {
+  fill: var(--text);
+  opacity: 0.07;
+}
+
+.enso-ink {
+  transition: opacity 600ms ease;
+}
+
+/* The remaining portion. app.js sets stroke-dashoffset once a second; the transition
+   turns those steps into one continuous fade along the stroke. */
+#enso-arc {
+  transition: stroke-dashoffset 1s linear;
+}
+
+/* Returning to the full circle (stop, end, sound/duration change) is a gesture, not a tick. */
+body:not(.running):not(.paused) #enso-arc {
+  transition: stroke-dashoffset 1.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Soft lamp-light behind the stroke. Opacity + transform only, so the breathing animation
+   runs on the compositor and costs nothing when the page is hidden. */
+.enso-glow {
+  position: absolute;
+  inset: 12%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(217, 174, 104, 0.20) 0%, rgba(217, 174, 104, 0.06) 45%, transparent 70%);
+  opacity: 0.35;
+  transform: scale(0.9);
+  transition: opacity 1.2s ease;
+  pointer-events: none;
+}
+
+.enso-center {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  /* Nudged a touch above centre: the brush's heavy start sits lower left, so the optical
+     centre of the ring is slightly high. */
+  transform: translateY(-2%);
 }
 
 .countdown {
-  font-size: clamp(48px, min(14vw, 10svh), 132px);
-  font-weight: 200;
-  letter-spacing: 0.04em;
-  color: var(--text);
-  font-variant-numeric: tabular-nums;
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: clamp(44px, min(15vw, 8.4svh), 76px);
   line-height: 1;
+  color: var(--text);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+/* Fixed cells so the proportional Mincho digits do not shuffle the clock every second. */
+.countdown .d {
+  display: inline-block;
+  width: 0.6em;
+  text-align: center;
+}
+.countdown .c {
+  display: inline-block;
+  width: 0.32em;
+  text-align: center;
+  transform: translateY(-0.06em);
+  color: var(--accent);
 }
 
 .duration-label {
-  font-size: 10px;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--muted);
-  letter-spacing: 0.08em;
-  min-height: 14px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  min-height: 18px;
   text-align: center;
-  opacity: 0.5;
 }
 
 .status {
-  font-size: 10px;
-  color: var(--muted);
-  letter-spacing: 0.1em;
-  min-height: 14px;
+  font-size: 13px;
+  color: var(--accent);
+  letter-spacing: 0.06em;
+  min-height: 19px;
   text-align: center;
 }
 
 .bell-hint {
-  font-size: 10px;
-  color: var(--muted);
-  opacity: 0.35;
-  letter-spacing: 0.06em;
+  font-family: var(--serif);
+  font-size: 13px;
+  color: var(--faint);
+  letter-spacing: 0.08em;
   text-align: center;
-  min-height: 13px;
+}
+
+/* ── States driven by body classes (set in app.js setPlayBtn) ── */
+
+/* Running: the ensō breathes. ~10 s per breath, about six breaths a minute, the pace
+   most slow-breathing practice settles on. The motion is small on purpose. */
+body.running .enso-glow {
+  opacity: 1;
+  animation: breathe-glow 10s ease-in-out infinite;
+}
+body.running .enso {
+  animation: breathe 10s ease-in-out infinite;
+}
+
+/* Paused: the breath holds where it is; the ink dims. */
+body.paused .enso-glow { opacity: 0.5; }
+body.paused .enso-ink  { opacity: 0.55; }
+body.paused .countdown { color: var(--muted); }
+
+@keyframes breathe {
+  0%, 100% { transform: scale(0.975); }
+  50%      { transform: scale(1.015); }
+}
+@keyframes breathe-glow {
+  0%, 100% { transform: scale(0.86); opacity: 0.55; }
+  50%      { transform: scale(1.04); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.running .enso,
+  body.running .enso-glow { animation: none; }
+  #enso-arc { transition: none; }
 }
 
 /* ── Play button ── */
 
 .play-section {
   flex-shrink: 0;
-  padding-bottom: clamp(4px, 0.8svh, 10px);
 }
 
 .play-controls {
@@ -200,139 +422,129 @@ body {
 
 .btn-play {
   flex: 1;
-  padding: var(--play-pad-y) var(--play-pad-x);
-  font-size: clamp(14px, 1.9svh, 15px);
-  letter-spacing: 0.1em;
+  min-height: 54px;
+  padding: 12px 20px;
+  border-radius: 999px;
+  font-family: var(--serif);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   border: 1px solid var(--accent);
   color: var(--accent);
-  background: transparent;
+  background: rgba(217, 174, 104, 0.05);
   cursor: pointer;
-  font-family: inherit;
-  transition: background var(--fade), color var(--fade);
+  transition: background var(--fade), color var(--fade), border-color var(--fade), filter 90ms ease, transform 90ms ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .btn-play:hover:not(:disabled) {
-    background: var(--accent-bg);
-  }
+  .btn-play:hover:not(:disabled) { background: var(--accent-bg); }
 }
 
 .btn-play:disabled {
   border-color: var(--border);
   color: var(--muted);
+  background: transparent;
   cursor: default;
 }
 
 .btn-reset {
-  padding: var(--play-pad-y) var(--play-pad-x);
-  font-size: clamp(14px, 1.9svh, 15px);
-  letter-spacing: 0.1em;
-  border: 1px solid var(--border);
-  color: var(--muted);
+  min-height: 54px;
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  border: 1px solid var(--border-hi);
+  color: var(--text);
   background: transparent;
   cursor: pointer;
-  font-family: inherit;
-  transition: border-color var(--fade), color var(--fade);
+  transition: border-color var(--fade), color var(--fade), filter 90ms ease, transform 90ms ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .btn-reset:hover {
-    border-color: var(--accent-dim);
-    color: var(--text);
-  }
+  .btn-reset:hover { border-color: var(--accent-dim); }
 }
 
 /* ── Section ── */
 
 .section {
   flex-shrink: 0;
-  margin-bottom: clamp(4px, 0.8svh, 8px);
 }
 
 .section-label {
-  font-size: 10px;
-  letter-spacing: 0.16em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--muted);
-  margin-bottom: clamp(3px, 0.5svh, 5px);
+  margin-bottom: 8px;
 }
 
-/* ── Button group ── */
+/* A thin brush-rule after the label: structure without a box. */
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, var(--border), transparent);
+}
+
+/* ── Button groups ── */
 
 .btn-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--control-gap);
-}
-
-#sound-group,
-#duration-group {
   display: grid;
+  gap: var(--control-gap);
   width: 100%;
 }
 
-#sound-group {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
+#sound-group    { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+/* Three across: 5 / 10 / 15, then 20, [saved custom], Custom. Two rows instead of three. */
+#duration-group { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 
-#duration-group {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-#duration-group .btn {
+.btn {
   min-width: 0;
-  white-space: normal;
+  min-height: 48px;
+  padding: 9px 8px;
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 500;
   line-height: 1.2;
-}
-
-#sound-group .btn {
-  min-width: 0;
+  cursor: pointer;
+  text-align: center;
   white-space: normal;
-  line-height: 1.2;
+  transition: border-color var(--fade), color var(--fade), background var(--fade), filter 90ms ease, transform 90ms ease;
 }
 
 .btn-detail {
   display: block;
-  margin-top: 2px;
-  font-size: 10px;
-  opacity: 0.55;
-  font-weight: 400;
-}
-
-.btn {
-  flex: 1 1 auto;
-  min-width: 60px;
-  padding: clamp(7px, 1svh, 8px) clamp(8px, 2vw, 9px);
-  background: transparent;
-  border: 1px solid var(--border);
+  margin-top: 3px;
+  font-size: 12px;
+  font-weight: 500;
   color: var(--muted);
-  font-size: clamp(11px, 1.55svh, 12px);
-  font-family: inherit;
-  cursor: pointer;
-  transition: border-color var(--fade), color var(--fade), background var(--fade);
-  text-align: center;
-  white-space: nowrap;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .btn:hover:not(:disabled) {
-    border-color: var(--accent-dim);
-    color: var(--text);
-  }
+  .btn:hover:not(:disabled) { border-color: var(--accent-dim); }
 }
 
-/* Selected: solid amber background for clear visibility */
 .btn.selected {
   border-color: var(--accent);
   background: var(--accent-bg);
   color: var(--accent);
-  font-weight: 500;
+  font-weight: 700;
 }
 
+.btn.selected .btn-detail { color: rgba(217, 174, 104, 0.75); }
+
 @media (hover: hover) and (pointer: fine) {
-  .btn.selected:hover:not(:disabled) {
-    background: rgba(201, 147, 74, 0.25);
-  }
+  .btn.selected:hover:not(:disabled) { background: rgba(217, 174, 104, 0.18); }
 }
 
 .btn:disabled {
@@ -340,49 +552,49 @@ body {
   cursor: default;
 }
 
-/* ── Footer ── */
+/* ── Settings tab ──
+   Install / update / offline buttons up top, the install-note (which browser installs
+   this) below them, and the version pinned near the bottom via margin-top: auto — the
+   panel is already flex:1, so this settles low without needing its own scroll math. */
 
-.footer {
+.settings-actions {
   flex-shrink: 0;
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
-  /* Stay pinned to the bottom of the viewport so Install / Update / version is
-     always reachable, even if the content is taller than the screen. */
-  position: sticky;
-  bottom: 0;
-  z-index: 5;
-  padding-top: 8px;
-  padding-bottom: max(env(safe-area-max-inset-bottom, env(safe-area-inset-bottom, 0px)), 4px);
-  background: linear-gradient(to top, var(--bg) 60%, rgba(18, 14, 10, 0));
+}
+
+.settings-meta {
+  flex-shrink: 0;
+  margin-top: auto;
+  display: flex;
+  justify-content: center;
 }
 
 .btn-small {
   background: transparent;
   border: 1px solid var(--border);
+  border-radius: 999px;
   color: var(--muted);
-  font-size: 11px;
-  font-family: inherit;
-  /* WCAG 2.2 AA (2.5.8) puts the minimum tap target at 24x24 CSS px; at 4px padding and
-     10px text these footer buttons came out around 23px. */
-  padding: 7px 10px;
-  min-height: 32px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--sans);
+  /* WCAG 2.2 AA (2.5.8): at least 24x24 CSS px; these sit at 34. */
+  padding: 7px 13px;
+  min-height: 34px;
   cursor: pointer;
   letter-spacing: 0.04em;
-  transition: border-color var(--fade), color var(--fade);
+  transition: border-color var(--fade), color var(--fade), filter 90ms ease, transform 90ms ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .btn-small:hover:not(:disabled) {
-    border-color: var(--muted);
-    color: var(--text);
-  }
+  .btn-small:hover:not(:disabled) { border-color: var(--muted); color: var(--text); }
 }
 
 .btn-small:disabled {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: default;
 }
 
@@ -392,20 +604,61 @@ body {
 
 /* Tappable version → checks for an update (see app.js). */
 .version {
-  min-height: 32px;
+  min-height: 34px;
   appearance: none;
   background: transparent;
   border: 1px solid transparent;
-  font-family: inherit;
-  font-size: 10px;
-  color: var(--muted);
-  opacity: 0.45;
+  border-radius: 999px;
+  font-family: var(--sans);
+  font-size: 11px;
+  color: var(--faint);
   letter-spacing: 0.04em;
   cursor: pointer;
   padding: 4px 8px;
-  transition: color var(--fade), border-color var(--fade), opacity var(--fade);
+  transition: color var(--fade), border-color var(--fade);
 }
-@media (hover: hover) and (pointer: fine) { .version:hover { color: var(--text); opacity: 1; border-color: var(--border); } }
+@media (hover: hover) and (pointer: fine) { .version:hover { color: var(--text); border-color: var(--border); } }
+
+/* ── Closed screen (after the close button, when the window survives) ── */
+
+.closed-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: radial-gradient(ellipse 120% 70% at 50% 35%, #211d17 0%, var(--bg-deep) 70%);
+  animation: fade-in 500ms ease both;
+}
+
+.closed-panel {
+  max-width: 320px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.closed-enso {
+  width: 84px;
+  height: 84px;
+  fill: var(--accent-dim);
+  margin-bottom: 6px;
+}
+
+.closed-panel h2 {
+  font-family: var(--serif);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.closed-copy { color: var(--text); font-size: 15px; }
+.closed-sub  { color: var(--muted); font-size: 13px; line-height: 1.5; margin-bottom: 8px; }
+
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 
 /* ── Install instructions ── */
 .install-steps {
@@ -420,7 +673,7 @@ body {
   position: relative;
   padding-left: 34px;
   color: var(--text);
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.5;
   display: flex;
   align-items: center;
@@ -437,6 +690,7 @@ body {
   display: grid;
   place-items: center;
   font-size: 12px;
+  font-weight: 700;
   color: var(--bg);
   background: var(--accent);
   border-radius: 50%;
@@ -450,11 +704,9 @@ body.modal-open {
   position: fixed;
   inset: 0;
   z-index: 20;
-  /* Flex + `margin: auto` on the panel, NOT `place-items: center`. A centred grid item
-     that is taller than the container overflows off BOTH edges and neither is reachable,
-     so a modal taller than the screen (the custom-interval keypad on a 360x640 phone, or
-     anything at all in landscape) simply loses its Save and Cancel buttons. This scrolls
-     instead, and still centres whenever it fits. */
+  /* Flex + `margin: auto` on the panel, NOT `place-items: center`: a centred grid item
+     taller than the container overflows off BOTH edges and neither is reachable. This
+     scrolls instead, and still centres whenever it fits. */
   display: flex;
   justify-content: center;
   overflow-y: auto;
@@ -468,43 +720,44 @@ body.modal-open {
   position: fixed;
   inset: 0;
   border: 0;
-  background: rgba(0, 0, 0, 0.72);
+  background: rgba(8, 7, 6, 0.78);
   backdrop-filter: blur(10px);
   cursor: pointer;
 }
 
 .custom-modal {
   position: relative;
-  /* margin:auto centres the panel inside the scrollable layer when it fits, and keeps
-     both overflow edges reachable when it doesn't. */
   margin: auto;
   width: min(100%, 360px);
-  border: 1px solid rgba(201, 147, 74, 0.32);
+  border: 1px solid var(--border-hi);
+  border-radius: 20px;
   background:
-    radial-gradient(circle at top, rgba(201, 147, 74, 0.18), transparent 52%),
-    linear-gradient(180deg, rgba(30, 23, 16, 0.98), rgba(12, 9, 6, 0.98));
-  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.45);
-  padding: 20px;
+    radial-gradient(circle at top, rgba(217, 174, 104, 0.12), transparent 55%),
+    linear-gradient(180deg, #1f1c17, #14120f);
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.5);
+  padding: 22px;
 }
 
 .custom-modal-kicker {
-  font-size: 10px;
-  letter-spacing: 0.18em;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--accent);
   margin-bottom: 8px;
 }
 
 .custom-modal h2 {
+  font-family: var(--serif);
   font-size: 24px;
-  font-weight: 400;
-  line-height: 1.1;
+  font-weight: 700;
+  line-height: 1.15;
   margin-bottom: 10px;
 }
 
 .custom-modal-copy {
   color: var(--muted);
-  font-size: 13px;
+  font-size: 14px;
   margin-bottom: 16px;
 }
 
@@ -515,8 +768,9 @@ body.modal-open {
 }
 
 .custom-modal-label {
-  font-size: 10px;
-  letter-spacing: 0.16em;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--muted);
 }
@@ -525,9 +779,10 @@ body.modal-open {
   display: flex;
   align-items: center;
   gap: 10px;
-  border: 1px solid rgba(201, 147, 74, 0.3);
+  border: 1px solid rgba(217, 174, 104, 0.3);
+  border-radius: var(--radius);
   background: rgba(255, 255, 255, 0.03);
-  padding: 12px 14px;
+  padding: 12px 16px;
 }
 
 .custom-display {
@@ -537,19 +792,17 @@ body.modal-open {
 
 .custom-input {
   width: 100%;
-  border: 0;
-  outline: none;
-  background: transparent;
   color: var(--text);
-  font: inherit;
-  font-size: 28px;
-  font-variant-numeric: tabular-nums;
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 30px;
 }
 
 .custom-input-unit {
   color: var(--accent);
-  font-size: 12px;
-  letter-spacing: 0.12em;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
@@ -561,20 +814,19 @@ body.modal-open {
 
 .custom-keypad-btn {
   min-height: 54px;
-  border: 1px solid rgba(201, 147, 74, 0.2);
-  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.025);
   color: var(--text);
-  font: inherit;
-  font-size: 18px;
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 20px;
   cursor: pointer;
-  transition: background var(--fade), border-color var(--fade), color var(--fade);
+  transition: background var(--fade), border-color var(--fade), color var(--fade), filter 90ms ease, transform 90ms ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .custom-keypad-btn:hover {
-    border-color: var(--accent-dim);
-    background: rgba(201, 147, 74, 0.08);
-  }
+  .custom-keypad-btn:hover { border-color: var(--accent-dim); background: rgba(217, 174, 104, 0.08); }
 }
 
 .custom-keypad-btn-muted {
@@ -586,8 +838,8 @@ body.modal-open {
 
 .custom-modal-error {
   min-height: 18px;
-  color: #e2ad78;
-  font-size: 12px;
+  color: #e8a07e;
+  font-size: 13px;
 }
 
 .custom-modal-actions {
@@ -600,118 +852,52 @@ body.modal-open {
   width: 100%;
 }
 
-/* ── Session complete reward ── */
+/* ── Session complete: the lamp brightens over the page for a moment ── */
 
 body::before {
   content: '';
   position: fixed;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(
-    135deg,
-    #3d2900 0%,
-    #7a4a10 25%,
-    #3d2900 50%,
-    #1a1000 75%,
-    #000000 100%
-  );
-  background-size: 300% 300%;
+  background: radial-gradient(ellipse 90% 60% at 50% 32%, rgba(217, 174, 104, 0.28) 0%, rgba(217, 174, 104, 0.06) 45%, transparent 75%);
   opacity: 0;
-  transition: opacity 1.2s ease;
+  transition: opacity 1.4s ease;
   pointer-events: none;
 }
 
 body.session-complete::before {
   opacity: 1;
-  animation: rewardGradient 4s ease-in-out infinite;
+  animation: complete-glow 3.5s ease-in-out infinite;
 }
 
-@keyframes rewardGradient {
-  0%, 100% { background-position: 0% 50%; }
-  50%      { background-position: 100% 50%; }
+body.session-complete .enso-glow { opacity: 1; transform: scale(1.05); }
+
+@keyframes complete-glow {
+  0%, 100% { opacity: 0.7; }
+  50%      { opacity: 1; }
 }
 
-/* ── Very small screens ── */
-
-@media (max-height: 600px) {
-  .app {
-    padding-top: max(env(safe-area-inset-top, 0px), 10px);
-    padding-bottom: max(env(safe-area-max-inset-bottom, env(safe-area-inset-bottom, 0px)), 8px);
-  }
-
-  .countdown-section {
-    min-height: clamp(120px, 22svh, 180px);
-  }
-
-  .countdown { font-size: clamp(42px, min(12vw, 8svh), 64px); }
-  .bell-hint,
-  .duration-label,
-  .status,
-  .version,
-  .btn-small,
-  .section-label {
-    font-size: 10px;
-  }
+@media (prefers-reduced-motion: reduce) {
+  body.session-complete::before { animation: none; }
 }
 
-@media (max-width: 420px) {
-  .app {
-    padding-left: 10px;
-    padding-right: 10px;
-  }
+/* ── Short screens (small phones, landscape): the ensō gives up height first ── */
 
-  #duration-group .btn,
-  #sound-group .btn {
-    min-width: 0;
-  }
-
-  .countdown-section {
-    min-height: clamp(96px, 16svh, 132px);
-    justify-content: flex-start;
-  }
-
-  .countdown {
-    font-size: clamp(40px, min(11vw, 7svh), 56px);
-  }
-
-  /* Was 9px. That is below the legible floor for muted text on a dark background, and
-     this query catches essentially every phone. 11px keeps the layout compact and can
-     actually be read. */
-  .duration-label,
-  .status,
-  .bell-hint,
-  .btn-detail,
-  .section-label,
-  .version,
-  .btn-small {
-    font-size: 11px;
-  }
-
-  .play-section {
-    padding-bottom: 2px;
-  }
-
-  .custom-modal {
-    padding: 18px;
-  }
-
-  .custom-modal h2 {
-    font-size: 21px;
-  }
+@media (max-height: 680px) {
+  .app { gap: 8px; }
+  .enso-wrap { width: min(70vw, 34svh, 280px); }
+  .countdown { font-size: clamp(36px, min(12vw, 7.4svh), 60px); }
+  .bell-hint { display: none; }
+  .btn, .btn-play, .btn-reset { min-height: 44px; }
+  .btn-play { font-size: 17px; }
+  .section-label { margin-bottom: 5px; }
 }
 
-@media (min-height: 900px) {
-  .app {
-    max-width: 460px;
-  }
+@media (max-width: 360px) {
+  .btn { font-size: 14px; padding: 8px 4px; }
+  .btn-detail { font-size: 11px; }
+}
 
-  .countdown-section {
-    padding: clamp(12px, 2svh, 20px) 0;
-  }
-
-  .btn,
-  .btn-play,
-  .btn-reset {
-    min-height: 48px;
-  }
+@media (min-width: 700px) and (min-height: 820px) {
+  .app { max-width: 460px; }
 }

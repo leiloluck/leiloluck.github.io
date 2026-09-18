@@ -553,24 +553,80 @@ body.paused .countdown { color: var(--muted); }
 }
 
 /* ── Settings tab ──
-   Install / update / offline buttons up top, the install-note (which browser installs
-   this) below them, and the version pinned near the bottom via margin-top: auto — the
-   panel is already flex:1, so this settles low without needing its own scroll math. */
+   Same vocabulary as the Meditate tab: a section label with its brush rule, then a line
+   of status copy and one full-width button per job, then "How it works" and the version.
+   space-between shares a tall phone's spare height evenly between the sections instead
+   of leaving one empty block. */
 
-.settings-actions {
-  flex-shrink: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
+.panel-settings {
+  gap: clamp(16px, 3svh, 28px);
+  justify-content: space-between;
+  padding-top: clamp(4px, 1svh, 12px);
 }
 
-.settings-meta {
-  flex-shrink: 0;
-  margin-top: auto;
+.settings-status {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+.panel-settings .install-note {
+  text-align: left;
+  margin-bottom: 10px;
+}
+
+.btn-action {
+  width: 100%;
+  min-height: 46px;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+}
+
+/* The one thing Settings wants you to do, while it is still undone. */
+#install-btn:not(:disabled) {
+  border-color: var(--accent-dim);
+  color: var(--accent);
+}
+
+.btn-action:disabled {
+  opacity: 1;
+  color: var(--accent);
+  border-color: var(--border);
+  background: transparent;
+}
+
+.settings-list {
+  list-style: none;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  gap: 6px;
+  font-family: var(--serif);
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.settings-list li {
+  position: relative;
+  padding-left: 16px;
+}
+
+/* A small gold dot in place of a bullet. */
+.settings-list li::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 0.65em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent-dim);
+}
+
+.settings-about .version {
+  display: block;
+  margin: 12px auto 0;
 }
 
 .btn-small {

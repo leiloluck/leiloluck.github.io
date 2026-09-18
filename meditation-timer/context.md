@@ -2,7 +2,7 @@
 
 A minimalist meditation timer PWA. The user selects a sound and a duration; audio fades in at the start and fades out at the end. Installable on Android + iPhone, offline-first.
 
-**Version:** v26.09.18 (format `vYY.MM.DD` — year.month.day; bump on every change, in
+**Version:** v26.09.18b (format `vYY.MM.DD` — year.month.day; bump on every change, in
 lockstep across `index.html`, `sw.js` `VERSION`, and `js/app.js` `APP_VERSION`).
 
 ---
@@ -297,6 +297,16 @@ Otherwise the clock would shift sideways every second.
 so on tall phones the spare height goes to the hero and the controls sit at the bottom,
 in thumb reach. Durations are a 3-column grid (two rows). Screens under 680 px tall shrink
 the ensō and drop the bell hint.
+
+**Tabs:** header, then two tabs (`TABS` + `showTab()` in app.js, same pattern as
+poltergeist): **Meditate** (the practice screen above) and **Settings**. A running session
+keeps running while Settings is open; `reopenApp()` always returns to Meditate. Settings
+has one labelled section per job, each a status line (`#install-status`,
+`#offline-status`, filled by `refreshInstallUI()` / `markAudioReady()`) plus a full-width
+button: Install (with the `installAdvice()` note), Offline (soundtrack download), Updates.
+"How it works" and the tappable version come last; `justify-content: space-between` spreads a tall phone's spare height evenly between the sections. Its copy
+states the fade lengths (`FADE_IN` / `FADE_OUT`): update it if those change. The Meditate
+tab only shows the install advice as a banner when this browser cannot install at all.
 
 **Ensō hero / progress:** the brushstroke path (generated, identical to the icon) is inline
 in `index.html` and drawn twice: a faint ghost, and the gold ink masked by `#enso-arc`.

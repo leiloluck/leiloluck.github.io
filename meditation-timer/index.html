@@ -30,8 +30,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Meditate">
   <!-- PNG required for iOS home screen icon (SVG not supported) -->
-  <link rel="apple-touch-icon" href="icons/icon-180.png?v=26.09.18a">
-  <link rel="icon" href="icons/icon.svg?v=26.09.18a" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-180.png?v=26.09.18b">
+  <link rel="icon" href="icons/icon.svg?v=26.09.18b" type="image/svg+xml">
 
   <!-- Self-hosted, Latin-subset fonts (SIL OFL, see fonts/). Preloaded so the countdown
        does not flash in a fallback face on first paint. -->
@@ -118,19 +118,38 @@
 
   </section>
 
-  <!-- Settings: install / update / offline download, which browser can install, version. -->
-  <section class="panel hidden" id="panel-settings" role="tabpanel" aria-labelledby="tab-settings">
-    <section class="section settings-actions">
-      <button class="btn-small" id="install-btn">Install app</button>
-      <button class="btn-small" id="update-btn">Update</button>
-      <button class="btn-small hidden" id="offline-btn">Download for offline</button>
+  <!-- Settings: one labelled section per job (install, offline, updates), each with a
+       one-line status and a full-width button, then a short "how it works" and the
+       version. Status lines are filled by app.js (refreshInstallUI, initOfflineBtn). -->
+  <section class="panel panel-settings hidden" id="panel-settings" role="tabpanel" aria-labelledby="tab-settings">
+    <section class="section">
+      <p class="section-label">Install</p>
+      <p class="settings-status" id="install-status">Running in the browser.</p>
+      <!-- Which browser installs this properly on this phone (installAdvice() in app.js). -->
+      <p class="install-note" id="install-note" hidden></p>
+      <button class="btn btn-action" id="install-btn" type="button">Install app</button>
     </section>
 
-    <!-- Which browser installs this properly on this phone (installAdvice() in app.js). -->
-    <p class="install-note" id="install-note" hidden></p>
+    <section class="section">
+      <p class="section-label">Offline</p>
+      <p class="settings-status" id="offline-status">The app and the interval bell are saved on this device. The soundtrack (44 MB) is downloaded on request.</p>
+      <button class="btn btn-action hidden" id="offline-btn" type="button">Download soundtrack · 44 MB</button>
+    </section>
 
-    <section class="section settings-meta">
-      <button class="version" id="version" type="button" title="Check for updates">v26.09.18a</button>
+    <section class="section">
+      <p class="section-label">Updates</p>
+      <p class="settings-status">Updates install on their own between sessions, never during one.</p>
+      <button class="btn btn-action" id="update-btn" type="button">Check for updates</button>
+    </section>
+
+    <section class="section settings-about">
+      <p class="section-label">How it works</p>
+      <ul class="settings-list">
+        <li>The sound fades in over 8 seconds and out over the last 10.</li>
+        <li>Three bells close the session. They are scheduled ahead, so they ring with the screen locked too.</li>
+        <li>Pause and play from the lock screen. The × stops everything and frees the audio.</li>
+      </ul>
+      <button class="version" id="version" type="button" title="Check for updates">v26.09.18b</button>
     </section>
   </section>
 

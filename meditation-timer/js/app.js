@@ -11,7 +11,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.09.18a';   // format vYY.MM.DD — keep in lockstep with sw.js + index.html
+const APP_VERSION = 'v26.09.18b';   // format vYY.MM.DD — keep in lockstep with sw.js + index.html
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 //
@@ -874,6 +874,8 @@ const elDurationGroup = document.getElementById('duration-group');
 const elInstallBtn    = document.getElementById('install-btn');
 const elInstallBanner = document.getElementById('install-banner');
 const elInstallNote   = document.getElementById('install-note');
+const elInstallStatus = document.getElementById('install-status');
+const elOfflineStatus = document.getElementById('offline-status');
 const elTabMeditate   = document.getElementById('tab-meditate');
 const elTabSettings   = document.getElementById('tab-settings');
 const elPanelMeditate = document.getElementById('panel-meditate');
@@ -1348,6 +1350,7 @@ function refreshInstallUI() {
     // Definitive: we ARE the installed app.
     elInstallBtn.textContent = '✓ Installed';
     elInstallBtn.disabled = true;
+    elInstallStatus.textContent = 'You are in the installed app.';
     return;
   }
   // isStandalone() is only true inside the installed app, so the ordinary tab the user
@@ -1358,6 +1361,9 @@ function refreshInstallUI() {
   // doesn't work" symptom this pass exists to remove.
   elInstallBtn.textContent = wasInstalled() ? '✓ Installed — install again?' : 'Install app';
   elInstallBtn.disabled = false;
+  elInstallStatus.textContent = wasInstalled()
+    ? 'Installed on this device. This is the browser copy.'
+    : 'Running in the browser. Install it to open it like an app, offline.';
 }
 
 window.addEventListener('beforeinstallprompt', e => {
@@ -1413,9 +1419,12 @@ elInstallBtn.addEventListener('click', async () => {
 });
 
 function installSteps() {
+  // Since iOS 16.4 Chrome, Edge and Firefox can Add to Home Screen too, so "open Safari"
+  // is only a step where installAdvice() says this browser cannot (in-app, older iOS).
+  const wrong = installAdvice().wrong;
   if (isIOS()) {
     return [
-      'Open this page in Safari (not another browser).',
+      ...(wrong ? ['Open this page in Safari first.'] : []),
       'Tap the Share button — the square with an upward arrow.',
       'Choose "Add to Home Screen", then tap "Add".',
     ];
@@ -1429,6 +1438,7 @@ function installSteps() {
       ];
     }
     return [
+      ...(wrong ? ['This browser only adds a shortcut. Open this page in Chrome first.'] : []),
       'Open the browser menu (⋮, top-right).',
       'Tap "Install app" or "Add to Home screen".',
       'Confirm — it installs and opens on its own.',
@@ -1488,7 +1498,7 @@ function flashUpdateMsg(msg) {
   elUpdateBtn.textContent = msg;
   clearTimeout(updateMsgTimer);
   updateMsgTimer = setTimeout(() => {
-    elUpdateBtn.textContent = 'Update';
+    elUpdateBtn.textContent = 'Check for updates';
     elUpdateBtn.disabled = false;
   }, 2600);
 }
@@ -1681,8 +1691,9 @@ async function initOfflineBtn() {
 }
 
 function markAudioReady() {
-  elOfflineBtn.textContent = 'Audio offline ✓';
+  elOfflineBtn.textContent = 'Soundtrack saved ✓';
   elOfflineBtn.disabled = true;
+  elOfflineStatus.textContent = 'Everything is saved on this device. Both sounds work without a connection.';
   elOfflineBtn.classList.remove('hidden');
   try { localStorage.setItem(AUDIO_CACHED_KEY, '1'); } catch {}
 }

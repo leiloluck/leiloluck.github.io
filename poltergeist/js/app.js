@@ -34,7 +34,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.09.18a';
+const APP_VERSION = 'v26.09.18b';
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 // Drop real files into resources/ (see resources/README.md). Until a matching file
@@ -1664,9 +1664,12 @@ elInstallBtn.addEventListener('click', async () => {
 
 // Install instructions modal (platform-specific steps).
 function installSteps() {
+  // Since iOS 16.4 Chrome, Edge and Firefox can Add to Home Screen too, so "open Safari"
+  // is only a step where installAdvice() says this browser cannot (in-app, older iOS).
+  const wrong = installAdvice().wrong;
   if (isIOS()) {
     return [
-      'Open this page in Safari (not another browser).',
+      ...(wrong ? ['Open this page in Safari first.'] : []),
       'Tap the Share button, the square with an upward arrow.',
       'Choose "Add to Home Screen", then tap "Add".',
     ];
@@ -1680,6 +1683,7 @@ function installSteps() {
       ];
     }
     return [
+      ...(wrong ? ['This browser only adds a shortcut. Open this page in Chrome first.'] : []),
       'Open the browser menu (⋮, top-right).',
       'Tap "Install app" or "Add to Home screen".',
       'Confirm. It installs and runs offline.',

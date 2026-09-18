@@ -695,6 +695,22 @@ body.test-mode .sound-btn  { background-color: #d8d4bf; }
   cursor: default;
 }
 
+/* Install advice. Win98's own "infotip" colours (COLOR_INFOBK #ffffe1 on COLOR_INFOTEXT
+   black, 1px black frame) so the note reads as a system hint, not as page content. */
+.install-banner,
+.install-note {
+  margin: 0;
+  padding: 6px 8px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #000;
+  background: #ffffe1;
+  border: 1px solid #000;
+}
+.install-banner[hidden],
+.install-note[hidden] { display: none; }
+.install-banner { font-weight: bold; margin-bottom: 6px; }
+
 /* ── Status bar ──────────────────────────────────────────────────────────── */
 
 .settings-meta {

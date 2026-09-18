@@ -34,7 +34,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.08.31g';
+const APP_VERSION = 'v26.09.18a';
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 // Drop real files into resources/ (see resources/README.md). Until a matching file
@@ -219,10 +219,17 @@ function prepareSounds() {
 
 function loadFirstAvailable(sound, i) {
   if (i >= sound.files.length) return; // none found → keep the synth stand-in
+  // Loads belong to the context that started them. After the close button nulls (or a
+  // later rebuild replaces) audioCtx, a load still in flight must stop here: it used to
+  // throw on the null context, fall into .catch, and go on fetching every fallback file,
+  // re-filling the buffers shutdownApp() had just released.
+  const ctx = audioCtx;
+  const stale = () => ctx !== audioCtx;
   fetch(`./resources/${sound.files[i]}`)
     .then(r => { if (!r.ok) throw new Error('missing'); return r.arrayBuffer(); })
-    .then(buf => audioCtx.decodeAudioData(buf))
+    .then(buf => stale() ? null : ctx.decodeAudioData(buf))
     .then(decoded => {
+      if (!decoded || stale()) return;
       sound.buffer = decoded;
       sound.isDemo = false;
       sound.loadedFile = sound.files[i];
@@ -232,7 +239,7 @@ function loadFirstAvailable(sound, i) {
       // between its removal and its replacement went nowhere.
       refreshSoundBtn(sound);
     })
-    .catch(() => loadFirstAvailable(sound, i + 1));
+    .catch(() => { if (!stale()) loadFirstAvailable(sound, i + 1); });
 }
 
 // ── Keep-alive ───────────────────────────────────────────────────────────────
@@ -584,6 +591,7 @@ function shutdownApp() {
   stopAnnoying();          // no-op when idle; stops the queue and suspends when running
   stopHeartbeat();
   stopKeepAlive();
+  clearTimeout(previewStopTimer);
 
   // Drop the lock-screen controls, or the media notification outlives the app.
   if ('mediaSession' in navigator) {
@@ -603,6 +611,7 @@ function shutdownApp() {
     try { URL.revokeObjectURL(keepAliveUrl); } catch {}
     keepAliveUrl = null;
   }
+  keepAliveEl = null;
 
   // close(), not suspend(): this is what hands the audio device back to the OS. Null the
   // reference too — ensureAudio() early-returns on a truthy audioCtx, so leaving a closed
@@ -612,6 +621,21 @@ function shutdownApp() {
     audioCtx = null;
     try { ctx.close(); } catch {}
   }
+
+  // Closing the context does NOT free the decoded audio: an AudioBuffer belongs to
+  // whoever still references it, not to its context. Every sound's decoded PCM (plus the
+  // primer) is the bulk of this app's memory, and it used to stay allocated after the X
+  // for as long as the window lived. Drop it all so it can be collected. If the window
+  // survives, the next UNLEASH or preview runs ensureAudio(), which rebuilds every buffer
+  // (prepareSounds) and both gain nodes from scratch.
+  SOUNDS.forEach(s => { s.buffer = null; });
+  primerBuffer = null;
+  masterGain = null;
+  primerGain = null;
+
+  // iOS: hand the 'playback' audio session category back, so the OS stops treating this
+  // page as a media player.
+  try { if (navigator.audioSession) navigator.audioSession.type = 'auto'; } catch {}
 
   try { window.close(); } catch {}
 
@@ -1514,7 +1538,53 @@ function isIOS() {
 // toggle to set to Unrestricted. Locked-screen playback is measurably less reliable there.
 let isBrave = false;
 if (navigator.brave && navigator.brave.isBrave) {
-  navigator.brave.isBrave().then(v => { isBrave = !!v; }).catch(() => {});
+  navigator.brave.isBrave().then(v => { isBrave = !!v; renderInstallAdvice(); }).catch(() => {});
+}
+
+// ── Which browser can install this properly? ─────────────────────────────────
+//
+// Shared by poltergeist.exe, the meditation timer and the Pig Game (same rules, own copy
+// in each app so each stays self-contained and offline):
+//  * Android: only Chrome (with Google services) and Samsung Internet (on Samsung phones)
+//    mint a WebAPK, a real installed app with offline storage of its own. Brave, Firefox,
+//    Edge, Opera and in-app browsers only add a shortcut that opens the site in them.
+//  * iPhone: since iOS 16.4 Safari, Chrome, Edge and Firefox can all Add to Home Screen,
+//    so only in-app browsers (Instagram, WhatsApp, ...) and older iOS need Safari.
+// Returns { text, wrong }: `wrong` = this browser cannot install it, say so up front.
+function installAdvice() {
+  if (isStandalone()) return { text: '', wrong: false };
+  const ua = navigator.userAgent || '';
+  const inApp = /FBAN|FBAV|Instagram|Line\/|Snapchat|TikTok|musical_ly|WhatsApp|GSA\/|; wv\)/i.test(ua);
+  if (/android/i.test(ua)) {
+    if (/SamsungBrowser/i.test(ua) && !inApp) {
+      return { text: '✓ Samsung Internet can install this. Tap Install for offline use.', wrong: false };
+    }
+    const chrome = /Chrome\/\d/.test(ua) && !inApp && !isBrave &&
+      !/EdgA|OPR\/|Opera|Firefox|YaBrowser|Vivaldi|DuckDuckGo|UCBrowser|MiuiBrowser|HuaweiBrowser/i.test(ua);
+    return chrome
+      ? { text: '✓ You are in Chrome. Tap Install for offline use.', wrong: false }
+      : { text: '📲 Open this page in Chrome to install it for offline use.', wrong: true };
+  }
+  if (isIOS()) {
+    const m = ua.match(/OS (\d+)_(\d+)/);
+    const ver = m ? parseInt(m[1], 10) + parseInt(m[2], 10) / 100 : 99;   // iPadOS reports as Mac
+    const safari = !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua) && !inApp;
+    if (inApp || (!safari && ver < 16.04)) {
+      return { text: '📲 Open this page in Safari to install it for offline use.', wrong: true };
+    }
+    return { text: 'For offline use: tap Share, then Add to Home Screen.', wrong: false };
+  }
+  return { text: '', wrong: false };   // desktop: the Install button covers it
+}
+
+// Settings always shows the advice on a phone; the Annoy tab shows it only when this
+// browser cannot install the app, because that is the one case worth interrupting for.
+function renderInstallAdvice() {
+  const { text, wrong } = installAdvice();
+  const note = document.getElementById('install-note');
+  const banner = document.getElementById('install-banner');
+  if (note)   { note.textContent = text; note.hidden = !text; }
+  if (banner) { banner.textContent = wrong ? text : ''; banner.hidden = !wrong; }
 }
 
 const INSTALLED_KEY = 'soundannoyer-installed';
@@ -1524,6 +1594,7 @@ function wasInstalled() {
 }
 
 function refreshInstallUI() {
+  renderInstallAdvice();
   if (isStandalone()) {
     // Definitive: we ARE the installed app. Nothing to do here.
     elInstallBtn.textContent = '✓ Installed';

@@ -73,6 +73,14 @@ These are the explicit asks. Treat them as a checklist.
       detects and explains rather than looking broken. `audioCtx` is nulled so
       `ensureAudio()` rebuilds if the window survives, and `closing` gates
       `applyUpdateIfSafe()` so a queued update cannot resurrect a closed app.
+      **Memory (v26.09.18):** closing a context does *not* free decoded audio, since an
+      `AudioBuffer` lives as long as something references it. The X now also drops every
+      `sound.buffer`, the primer buffer and both gain nodes, resets
+      `navigator.audioSession.type` to `'auto'` (iOS), and clears the preview timer.
+      `loadFirstAvailable()` captures the context it started on and stops when that is no
+      longer `audioCtx`. Before this, a load still in flight at close threw on the null
+      context and walked on through every fallback filename, re-filling the memory the X
+      had just released.
 
 - [x] **Changes apply immediately** — arming or disarming a sound, changing the interval
       or toggling chaos timing while running calls `rescheduleFromNow()`, which drops
@@ -102,6 +110,16 @@ These are the explicit asks. Treat them as a checklist.
       instead**, so Android never gives the app its own entry under Settings → Apps and
       there is no per-app battery toggle to set to Unrestricted. Brave is detected and
       the install sheet says so.
+
+      **Which browser can install at all (v26.09.18):** `installAdvice()` in `js/app.js`
+      checks the current browser against the ones that can actually produce a real
+      install — Chrome or Samsung Internet on Android, Safari/Chrome/Edge/Firefox on
+      iOS 16.4+ (not an in-app browser). When the browser is one of the wrong ones (an
+      Android browser that only makes a shortcut, an iOS in-app browser, or iOS <
+      16.4 outside Safari) a banner appears above the Annoy tab: "Open this page in
+      Chrome/Safari to install it for offline use." On a browser that IS right, the same
+      logic instead confirms it in the Settings tab, quietly, next to Install. Same
+      function (independently copied) in the meditation timer and the Pig Game.
 - [ ] **Version number tied to the current date** — format `vYY.MM.DD`
       (e.g. `v26.06.18`, year.month.day). Bump it on every change.
 - [ ] **Owner supplies the sound files** as `.mp3`s dropped into `resources/`. The

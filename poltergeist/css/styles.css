@@ -328,6 +328,16 @@ button {
   font-weight: bold;
 }
 
+/* Aside under the steps: same sunken field as .info-lead, but quieter, so it reads as
+   a footnote to the list rather than a fourth instruction. */
+.info-note {
+  padding: 9px 10px;
+  font-size: 12px;
+  line-height: 1.45;
+  background: var(--btn-hilite);
+  box-shadow: var(--field);
+}
+
 .section-label {
   font-size: 12px;
   font-weight: bold;

@@ -77,7 +77,8 @@
       </div>
 
       <!-- Relative audio: this is the app's OWN gain node, not the system volume, so
-           the prank can sit quietly under music that is already playing. -->
+           the prank can sit quietly under music that is already playing. Pair it with
+           Settings → Share the speaker, which is what stops the OS pausing that music. -->
       <div class="volume-row">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 14" shape-rendering="crispEdges" class="px px-vol" aria-hidden="true"><rect x="6" y="0" width="2" height="1" fill="#000000"/><rect x="5" y="1" width="3" height="1" fill="#000000"/><rect x="4" y="2" width="2" height="1" fill="#000000"/><rect x="6" y="2" width="1" height="1" fill="#808080"/><rect x="7" y="2" width="1" height="1" fill="#000000"/><rect x="3" y="3" width="2" height="1" fill="#000000"/><rect x="5" y="3" width="2" height="1" fill="#808080"/><rect x="7" y="3" width="1" height="1" fill="#000000"/><rect x="0" y="4" width="4" height="1" fill="#000000"/><rect x="4" y="4" width="3" height="1" fill="#808080"/><rect x="7" y="4" width="1" height="1" fill="#000000"/><rect x="0" y="5" width="1" height="1" fill="#000000"/><rect x="1" y="5" width="6" height="1" fill="#808080"/><rect x="7" y="5" width="1" height="1" fill="#000000"/><rect x="0" y="6" width="1" height="1" fill="#000000"/><rect x="1" y="6" width="6" height="1" fill="#808080"/><rect x="7" y="6" width="1" height="1" fill="#000000"/><rect x="0" y="7" width="1" height="1" fill="#000000"/><rect x="1" y="7" width="6" height="1" fill="#808080"/><rect x="7" y="7" width="1" height="1" fill="#000000"/><rect x="0" y="8" width="1" height="1" fill="#000000"/><rect x="1" y="8" width="6" height="1" fill="#808080"/><rect x="7" y="8" width="1" height="1" fill="#000000"/><rect x="0" y="9" width="4" height="1" fill="#000000"/><rect x="4" y="9" width="3" height="1" fill="#808080"/><rect x="7" y="9" width="1" height="1" fill="#000000"/><rect x="3" y="10" width="2" height="1" fill="#000000"/><rect x="5" y="10" width="2" height="1" fill="#808080"/><rect x="7" y="10" width="1" height="1" fill="#000000"/><rect x="4" y="11" width="2" height="1" fill="#000000"/><rect x="6" y="11" width="1" height="1" fill="#808080"/><rect x="7" y="11" width="1" height="1" fill="#000000"/><rect x="5" y="12" width="3" height="1" fill="#000000"/><rect x="6" y="13" width="2" height="1" fill="#000000"/><g class="wave wave-1"><rect x="9" y="5" width="1" height="1" fill="#000000"/><rect x="9" y="6" width="1" height="1" fill="#000000"/><rect x="9" y="7" width="1" height="1" fill="#000000"/><rect x="9" y="8" width="1" height="1" fill="#000000"/></g><g class="wave wave-2"><rect x="11" y="3" width="1" height="1" fill="#000000"/><rect x="11" y="4" width="1" height="1" fill="#000000"/><rect x="11" y="5" width="1" height="1" fill="#000000"/><rect x="11" y="6" width="1" height="1" fill="#000000"/><rect x="11" y="7" width="1" height="1" fill="#000000"/><rect x="11" y="8" width="1" height="1" fill="#000000"/><rect x="11" y="9" width="1" height="1" fill="#000000"/><rect x="11" y="10" width="1" height="1" fill="#000000"/></g><g class="wave wave-3"><rect x="13" y="1" width="1" height="1" fill="#000000"/><rect x="13" y="2" width="1" height="1" fill="#000000"/><rect x="13" y="3" width="1" height="1" fill="#000000"/><rect x="13" y="4" width="1" height="1" fill="#000000"/><rect x="13" y="5" width="1" height="1" fill="#000000"/><rect x="13" y="6" width="1" height="1" fill="#000000"/><rect x="13" y="7" width="1" height="1" fill="#000000"/><rect x="13" y="8" width="1" height="1" fill="#000000"/><rect x="13" y="9" width="1" height="1" fill="#000000"/><rect x="13" y="10" width="1" height="1" fill="#000000"/><rect x="13" y="11" width="1" height="1" fill="#000000"/><rect x="13" y="12" width="1" height="1" fill="#000000"/></g></svg>
         <label class="volume-label" for="volume">relative audio</label>
@@ -117,14 +118,26 @@
         <li>Select how often they should play.</li>
         <li>Press Activate, then hide the phone or speaker.</li>
       </ol>
+      <p class="info-note">Already playing music? Leave it playing - the sounds mix in on top
+         of it. Set how loud they sit with the relative audio slider.</p>
     </section>
   </section>
 
   <!-- ── Tab 2: settings ── -->
   <section class="panel hidden" id="panel-settings" role="tabpanel" aria-labelledby="tab-settings">
 
-    <!-- Toggles: chaos timing + test mode + start with a sound -->
+    <!-- Toggles: share the speaker + chaos timing + test mode + start with a sound -->
     <section class="section toggle-grid">
+      <!-- Share the speaker: on, the prank mixes into whatever is already playing
+           (see applyAudioSessionType / startKeepAlive in app.js). Off, it claims the
+           output, which is what an iPhone requires for locked-screen playback. -->
+      <button class="toggle toggle-mix" id="mix-toggle" role="switch" aria-checked="true">
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        <span class="toggle-text">
+          <span class="toggle-title">Share the speaker</span>
+          <span class="toggle-sub" id="mix-sub">plays under your music</span>
+        </span>
+      </button>
       <button class="toggle" id="randomize-toggle" role="switch" aria-checked="true">
         <span class="toggle-track"><span class="toggle-thumb"></span></span>
         <span class="toggle-text">
@@ -159,7 +172,7 @@
 
     <!-- Version + offline status (version is tappable: checks for an update) -->
     <section class="section settings-meta">
-      <button class="version" id="version" type="button" title="Check for updates">v26.09.18b</button>
+      <button class="version" id="version" type="button" title="Check for updates">v26.09.20a</button>
       <span class="offline-badge" id="offline-badge">✓ works offline</span>
     </section>
 
@@ -223,6 +236,7 @@
       <p><strong>For the most reliable results:</strong> install poltergeist.exe from <strong>Chrome</strong> (Settings → Install to Home Screen) rather than running it in a browser tab, then check that Android isn't battery-restricting it, Settings → Apps → poltergeist.exe → Battery → Unrestricted. Once installed from Chrome it appears there under its own name, separate from the browser.</p>
       <p><strong>Brave:</strong> Brave can only add a shortcut, not a real installed app, so Android never gives poltergeist.exe its own battery setting and background sounds are more likely to be cut off. The app still works, but install from Chrome if you want it to survive a pocketed phone.</p>
       <p>Works over Bluetooth. Connect your speaker before hitting UNLEASH. A near-silent signal runs in the background to keep the speaker awake during long gaps.</p>
+      <p><strong>Playing on top of music:</strong> with <strong>Share the speaker</strong> on (Settings, and it is on by default) poltergeist.exe mixes into whatever is already playing instead of stopping it - start your music, then hit UNLEASH, and use the relative audio slider to set how far underneath it the sounds sit. On <strong>Android</strong> this costs nothing but the Resume/Stop buttons in the notification shade. On an <strong>iPhone</strong> it costs locked-screen playback: iOS only keeps a web page's audio running behind a lock screen while that page has claimed the output for itself, so if the phone is going in a pocket, turn Share the speaker off.</p>
       <p>Use Test Mode to preview each sound before hiding the device. It exits the active session automatically.</p>
     </div>
     <button class="help-close-btn" id="help-close-btn">Close</button>

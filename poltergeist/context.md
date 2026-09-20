@@ -61,6 +61,13 @@ These are the explicit asks. Treat them as a checklist.
       `onended` fires, so `clearScheduled()` can still reach them. (They used to be
       dropped one second after their start time, which left up to ten seconds of sound
       coming out of a hidden speaker after you pressed STOP.)
+- [x] **Plays on top of whatever is already playing** — starting the prank must not stop
+      the music it is meant to hide under; that is the whole reason the volume control is
+      a *relative* audio slider. Settings -> **Share the speaker**, on by default. It is a
+      toggle rather than unconditional behaviour because on iOS the OS makes mixing and
+      locked-screen playback mutually exclusive. See "Share the speaker" below for what
+      each side costs, and do not regress it by unconditionally creating the keep-alive
+      `<audio>` element or setting MediaSession metadata.
 - [x] **Close button (X, top right)** — `shutdownApp()`. No web page can terminate its own
       OS process; there is no such API, and on Android the system alone decides when to
       reclaim a process. So the X does the part that actually matters: stops the queue,
@@ -358,6 +365,53 @@ Only SOUNDS pass through it. The wake primer and the keep-alive have their own g
 purpose: the keep-alive must stay above Chrome's audibility threshold or the whole
 locked-screen mechanism collapses, so it must not be scalable to zero by this slider.
 
+The slider only makes sense if the other audio is still playing, which is what **Share
+the speaker** (below) is for. Do not change one without reading the other.
+
+## Share the speaker (mixing with other media)
+
+The slider above is worded as a *relative* level, and that word is the whole point: the
+prank is meant to sit under someone's music, not to replace it. Getting the OS to allow
+that meant giving up the three things that claim the audio output.
+
+`mixWithMedia` (Settings -> **Share the speaker**, default **on**, persisted in
+`STATE_KEY`) selects between:
+
+| | Share the speaker ON | OFF |
+|---|---|---|
+| `navigator.audioSession.type` (iOS 16.4+) | `'ambient'` | `'playback'` |
+| Keep-alive `<audio>` element | not created | created |
+| MediaSession metadata + handlers | cleared | set |
+| Other app's music | keeps playing | stops |
+| Locked-screen playback | Android yes, iPhone no | yes |
+| Shade controls (Resume/Stop/Close) | none | yes |
+
+Why each one:
+
+* **iOS.** `audioSession.type` is the OS-level contract. `'playback'` means "this page
+  owns the output" and iOS stops the other app; `'ambient'` means "mix me in". The catch
+  is not negotiable: `'playback'` is the *literal* condition in WebCore's
+  `shouldOverrideBackgroundPlaybackRestriction()`, so an iPhone only keeps a page's audio
+  alive behind a lock screen while that page is claiming the output. **On iOS, mixing and
+  locked-screen playback are mutually exclusive.** That is precisely why this is a toggle
+  the user sets and not a decision made for them, and why the help modal says so plainly.
+* **Both platforms.** An `HTMLMediaElement`, and a MediaSession carrying metadata and
+  action handlers, are what promote a page to a *controllable media player*. Android
+  answers that with full audio focus (`AudioFocusType::kGain`) and pauses whatever was
+  playing. A plain Web Audio graph does not: Chromium files it as ambient content and
+  asks for no focus at all.
+* **Android keeps both.** The audibility gate that pins the media wakelock (see the audio
+  engine section) is power-based, measured on the output stream, and has nothing to do
+  with audio focus. The Web Audio keep-alive tone satisfies it on its own, so dropping the
+  `<audio>` element costs the shade controls and nothing else.
+
+The toggle is safe to flip mid-session: its handler re-applies the session type, rebuilds
+the keep-alive under the new rule, and sets or clears the shade entry.
+
+**Do not** "simplify" this by always creating the keep-alive `<audio>` element, or by
+setting MediaSession metadata unconditionally. Either one silently reintroduces the
+original bug: hitting UNLEASH kills the music it was supposed to hide under.
+
 ## Speaker state and the hero art
 
 The hero shows the pixel ghost and speaker. The speaker's three wave arcs are separate
@@ -389,6 +443,11 @@ nulled or they push the real controls out of the compact view.
 
 `stopAnnoying()` sets `playbackState = 'paused'`, never `'none'`: `'none'` dismisses the
 notification outright and takes Resume with it.
+
+All of this applies only while **Share the speaker** is off. With it on, `setMediaSession()`
+delegates to `clearMediaSession()` and the app deliberately has no shade entry, because
+registering one is what takes the audio focus away from the music. The in-app X is still
+the way to close; only the shade shortcut to it is gone.
 
 ---
 

@@ -27,6 +27,25 @@
    every real sound so a speaker that dozed off mid-gap is awake by the time the
    sound plays.
 
+   Sharing the speaker with whatever is already playing:
+   The point of this app is to sit UNDER someone's music, not to replace it, so by
+   default it asks the OS to mix rather than to take the output over. Two separate
+   things had to give way for that, one per platform:
+     * iOS  — navigator.audioSession.type. 'playback' means "this page owns the
+              output" and iOS stops the other app; 'ambient' means "mix me in".
+     * both — an HTMLMediaElement and a MediaSession with metadata/handlers make this
+              page a *controllable media player*, which on Android takes full audio
+              focus (AudioFocusType::kGain) and pauses whatever was playing. A plain
+              Web Audio graph does not: Chromium files it as ambient content.
+   The catch is on iOS only, and it is an OS rule we cannot argue with: 'playback' is
+   the literal condition in WebCore's shouldOverrideBackgroundPlaybackRestriction(),
+   so an iPhone will only keep a page's audio alive behind a locked screen while that
+   page is claiming the output for itself. Mixing and locked-screen playback are
+   therefore mutually exclusive on iOS, which is why "Share the speaker" is a toggle
+   the user sets rather than a decision made for them. On Android both still hold at
+   once: the audibility gate that pins the media wakelock (see below) is power-based
+   and reads the Web Audio stream just fine, with no audio focus involved.
+
    Separately, on Android, per-app battery optimization for Chrome itself can cut
    background audio regardless of anything this page does — that is an OS-level
    setting (Settings → Apps → Chrome → Battery → Unrestricted), not something any
@@ -34,7 +53,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.09.18b';
+const APP_VERSION = 'v26.09.20a';
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 // Drop real files into resources/ (see resources/README.md). Until a matching file
@@ -124,6 +143,7 @@ let customSeconds = null;
 let randomize     = true;
 let testMode      = false;       // when on, tapping a sound previews it (no arm/disarm)
 let startWithSound = true;       // UNLEASH fires one sound at once (vs. a discreet start)
+let mixWithMedia   = true;       // play UNDER other apps' audio instead of taking the output
 const armed       = new Set();   // ids of active sounds
 
 let audioCtx     = null;
@@ -159,13 +179,7 @@ function ensureAudio() {
     try { audioCtx = opts ? new Ctx(opts) : new Ctx(); break; } catch (e) { /* try simpler */ }
   }
 
-  // iOS/Safari only (16.4+). WebKit backgrounds an AudioContext the instant the page is
-  // hidden *unless* the audio session type is 'playback' — this exact property is the
-  // literal condition in WebCore's shouldOverrideBackgroundPlaybackRestriction(). It is
-  // the one lever that makes locked-screen playback work at all on an iPhone.
-  try {
-    if (navigator.audioSession) navigator.audioSession.type = 'playback';
-  } catch {}
+  applyAudioSessionType();
 
   // If the OS suspends the context (audio focus lost to a call/notification while
   // locked), every pre-scheduled sound is dead until it is resumed. Take it back.
@@ -242,6 +256,22 @@ function loadFirstAvailable(sound, i) {
     .catch(() => { if (!stale()) loadFirstAvailable(sound, i + 1); });
 }
 
+// ── Audio session (iOS/Safari 16.4+) ─────────────────────────────────────────
+// The OS-level contract with every other app on the phone:
+//   'ambient'  — mix this page into whatever is already playing (share the speaker).
+//   'playback' — this page owns the output; iOS stops the other app.
+// 'playback' is also the literal condition in WebCore's
+// shouldOverrideBackgroundPlaybackRestriction(), i.e. the only thing that keeps audio
+// alive behind a locked iPhone screen. So on iOS the two are mutually exclusive and
+// this follows the user's choice rather than picking for them. No-op everywhere else
+// (Android has no such property; there the mixing is handled by NOT becoming a
+// controllable media player — see startKeepAlive / setMediaSession).
+function applyAudioSessionType() {
+  try {
+    if (navigator.audioSession) navigator.audioSession.type = mixWithMedia ? 'ambient' : 'playback';
+  } catch {}
+}
+
 // ── Keep-alive ───────────────────────────────────────────────────────────────
 // Holds the audio output (and the BT link) open between sounds AND keeps the page
 // counted as "playing audio" so Android doesn't freeze it when the screen locks.
@@ -276,7 +306,14 @@ function startKeepAlive() {
   // (notably iOS), and it is the strongest "this tab plays media" signal on
   // Android. Redundant with the buffer above on purpose — either alone keeps the
   // page alive if the other is muted or fails.
-  startKeepAliveEl();
+  //
+  // But that strength is exactly the problem when sharing the speaker: an
+  // HTMLMediaElement is a *persistent player*, so Android grants it full audio focus
+  // and pauses the music the prank was supposed to hide under. The Web Audio buffer
+  // above carries no such focus request and still satisfies the audibility gate that
+  // pins the media wakelock, so in mix mode we run on that alone.
+  if (mixWithMedia) releaseKeepAliveEl();
+  else startKeepAliveEl();
 }
 
 function stopKeepAlive() {
@@ -305,6 +342,19 @@ function startKeepAliveEl() {
   }
   keepAliveEl.currentTime = 0;
   keepAliveEl.play().catch(() => {});
+}
+
+// Fully let go of the keep-alive element and the blob: URL behind it. Pausing alone
+// hands the audio focus back, but only this frees the decoder and the object URL.
+function releaseKeepAliveEl() {
+  if (keepAliveEl) {
+    try { keepAliveEl.pause(); keepAliveEl.removeAttribute('src'); keepAliveEl.load(); } catch {}
+  }
+  if (keepAliveUrl) {
+    try { URL.revokeObjectURL(keepAliveUrl); } catch {}
+    keepAliveUrl = null;
+  }
+  keepAliveEl = null;
 }
 
 // 10 s mono WAV of the faint keep-alive tone (250 full cycles at 25 Hz, so it
@@ -594,24 +644,10 @@ function shutdownApp() {
   clearTimeout(previewStopTimer);
 
   // Drop the lock-screen controls, or the media notification outlives the app.
-  if ('mediaSession' in navigator) {
-    try {
-      ['play', 'pause', 'stop', 'previoustrack', 'nexttrack']
-        .forEach(a => navigator.mediaSession.setActionHandler(a, null));
-      navigator.mediaSession.metadata = null;
-      navigator.mediaSession.playbackState = 'none';
-    } catch {}
-  }
+  clearMediaSession();
 
   // Release the keep-alive element and the blob: URL backing it.
-  if (keepAliveEl) {
-    try { keepAliveEl.pause(); keepAliveEl.removeAttribute('src'); keepAliveEl.load(); } catch {}
-  }
-  if (keepAliveUrl) {
-    try { URL.revokeObjectURL(keepAliveUrl); } catch {}
-    keepAliveUrl = null;
-  }
-  keepAliveEl = null;
+  releaseKeepAliveEl();
 
   // close(), not suspend(): this is what hands the audio device back to the OS. Null the
   // reference too — ensureAudio() early-returns on a truthy audioCtx, so leaving a closed
@@ -633,8 +669,8 @@ function shutdownApp() {
   masterGain = null;
   primerGain = null;
 
-  // iOS: hand the 'playback' audio session category back, so the OS stops treating this
-  // page as a media player.
+  // iOS: hand the audio session category back, so the OS stops treating this page as
+  // a media player at all.
   try { if (navigator.audioSession) navigator.audioSession.type = 'auto'; } catch {}
 
   try { window.close(); } catch {}
@@ -740,6 +776,11 @@ function previewSound(sound, btn) {
 // so the shade only ever offers the action that makes sense right now.
 function setMediaSession() {
   if (!('mediaSession' in navigator)) return;
+  // Sharing the speaker: metadata plus action handlers is what promotes this page to a
+  // controllable media player, and Android answers that with full audio focus — the
+  // music stops and these controls replace its lock-screen card. Giving up the shade
+  // entry is the price of playing underneath it.
+  if (mixWithMedia) { clearMediaSession(); return; }
   try {
     navigator.mediaSession.metadata = new MediaMetadata({
       title:  'poltergeist.exe',
@@ -752,6 +793,17 @@ function setMediaSession() {
     });
   } catch {}
   updateMediaSessionState();
+}
+
+// Hand the shade entry back: no metadata, no handlers, no playback state.
+function clearMediaSession() {
+  if (!('mediaSession' in navigator)) return;
+  try {
+    ['play', 'pause', 'stop', 'previoustrack', 'nexttrack']
+      .forEach(a => navigator.mediaSession.setActionHandler(a, null));
+    navigator.mediaSession.metadata = null;
+    navigator.mediaSession.playbackState = 'none';
+  } catch {}
 }
 
 function updateMediaSessionState() {
@@ -900,6 +952,8 @@ const elTestToggle  = document.getElementById('testmode-toggle');
 const elTestSub     = document.getElementById('testmode-sub');
 const elStartToggle = document.getElementById('startsound-toggle');
 const elStartSub    = document.getElementById('startsound-sub');
+const elMixToggle   = document.getElementById('mix-toggle');
+const elMixSub      = document.getElementById('mix-sub');
 const elInstallBtn  = document.getElementById('install-btn');
 const elUpdateBtn   = document.getElementById('update-btn');
 const elVersion     = document.getElementById('version');
@@ -1427,6 +1481,37 @@ elStartToggle.addEventListener('click', () => {
   renderStartSound();
 });
 
+// ── UI: share-the-speaker toggle ─────────────────────────────────────────────
+// On  → mix into whatever is already playing (the point of the relative audio slider:
+//        the prank sits underneath the music instead of replacing it).
+// Off → take the output over, which is what buys locked-screen playback on an iPhone
+//        and the Resume/Stop controls in the notification shade.
+// Safe to flip mid-session: everything it changes is re-applied right here.
+
+function renderMixMode() {
+  elMixToggle.setAttribute('aria-checked', mixWithMedia ? 'true' : 'false');
+  elMixSub.textContent = mixWithMedia
+    ? 'plays under your music'
+    : 'takes over (lock-screen safe)';
+}
+
+elMixToggle.addEventListener('click', () => {
+  mixWithMedia = !mixWithMedia;
+  saveState();
+  renderMixMode();
+  applyAudioSessionType();
+  // The keep-alive element and the shade entry are the two things that claim the
+  // output, so both have to be rebuilt under the new rule — but only while a session
+  // is actually live; when idle there is nothing holding anything.
+  if (running) {
+    startKeepAlive();
+    setMediaSession();
+  } else if (mixWithMedia) {
+    releaseKeepAliveEl();
+    clearMediaSession();
+  }
+});
+
 // ── Buttons: launch + test ───────────────────────────────────────────────────
 
 elLaunch.addEventListener('click', () => { running ? stopAnnoying() : startAnnoying(); });
@@ -1473,6 +1558,7 @@ function saveState() {
       randomize,
       testMode,
       startWithSound,
+      mixWithMedia,
       volumePct,
     }));
   } catch {}
@@ -1491,6 +1577,7 @@ function loadState() {
     if (typeof s.randomize === 'boolean') randomize = s.randomize;
     if (typeof s.testMode === 'boolean') testMode = s.testMode;
     if (typeof s.startWithSound === 'boolean') startWithSound = s.startWithSound;
+    if (typeof s.mixWithMedia === 'boolean') mixWithMedia = s.mixWithMedia;
     if (typeof s.volumePct === 'number' && isFinite(s.volumePct))
       volumePct = Math.min(100, Math.max(0, Math.round(s.volumePct)));
 
@@ -1958,6 +2045,7 @@ renderIntervals();
 renderRandomize();
 renderTestMode();
 renderStartSound();
+renderMixMode();
 setLaunchBtn();
 elHeroStatus.textContent = idleStatus();
 

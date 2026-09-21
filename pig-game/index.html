@@ -991,7 +991,10 @@
       position: absolute;
       inset: -4px;
       padding: 4px;
-      border-radius: inherit;
+      /* The pseudo is 4px larger on every side, so its corners must be 4px rounder than
+         the button's, or the ring's inner edge cuts across the button's rounded corner
+         (which is what made it look like it did not follow the button). */
+      border-radius: calc(var(--radius) + 4px);
       background: conic-gradient(from var(--pig-angle),
           #ef4444, #f97316, #fbbf24, #22c55e, #06b6d4, #6366f1, #a21caf, #ef4444);
       -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);

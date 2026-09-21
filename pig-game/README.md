@@ -195,6 +195,42 @@ worked before, and what replaced it:
 On iPhone the installed app has its own storage, separate from Safari: download from
 inside the installed app, not from the Safari tab.
 
+## Reachability, not `navigator.onLine` (v26.09.21a)
+
+Audited offline end to end in a real browser (Chrome, cache warmed, then the origin made
+unreachable). What worked: the shell loads from `pig-game-shell-*` with no network at all,
+the 14 precached sound effects play, and a byte-range request for a cached `.mp3` comes
+back `206` with a correct `Content-Range` — which is what iOS media playback needs
+([web.dev](https://web.dev/articles/sw-range-requests),
+[philna.sh](https://philna.sh/blog/2018/10/23/service-workers-beware-safaris-range-request/)).
+
+What did **not** work: every offline behaviour hung off `navigator.onLine === false`, and
+that flag only reports that a network interface exists. In the place this app is used —
+festival wifi that leads nowhere, one bar of signal that carries nothing, a captive portal
+— `onLine` stays `true`, so:
+
+- no cloud markers and no dimming: the library looked fully playable;
+- tapping an undownloaded track said "Could not play this track." instead of naming the
+  actual reason;
+- **"Download for offline" started anyway** and ground through the remaining 900 MB one
+  failure at a time, finishing with "⚠️ 0 saved, 28 failed. Tap to retry just those."
+
+Fixed by making one cached verdict from a real probe the single source of truth:
+
+- `checkNetwork()` / `isOffline()` reuse the `manifest.webmanifest?probe=` request the
+  update button already made. The verdict is cached ~15 s, parallel callers share one
+  in-flight probe, and `onLine === false` is still believed immediately (never a false
+  negative). Flipping the verdict repaints the markers, the dimming and the summary.
+- Probed on launch, on every return to the foreground and on `online` — a phone that walks
+  out of range fires no event at all.
+- Playback errors name the real cause: a track that is not in the cache failed because the
+  bytes had to come off the network, whatever `onLine` says.
+- The download bails out after three back-to-back failures if the probe says the network
+  is gone: "📴 Connection lost. 150 MB saved; tap to continue once you are back online."
+  instead of a list of every remaining file.
+- The worker now ignores non-`GET` requests. Cache Storage only holds `GET`, so
+  `serveShell`'s `cache.put()` on the success path would have thrown a `TypeError`.
+
 **Close (X, top right)** — `shutdownApp()`. A web page cannot end its own OS process, so
 the X releases everything the app holds: the music element and its buffered media
 (`removeAttribute('src')` + `load()`), every sound effect, the seek timer, the lock-screen

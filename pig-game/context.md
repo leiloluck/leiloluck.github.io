@@ -38,6 +38,13 @@ The version lives in `version.js` only, so `tools/check_versions.py` (which expe
 
 ## Offline
 
+- **Verified** (2026-09-21, real browser, origin made unreachable): the shell loads with no
+  network, the precached sound effects play, and a Range request for a cached mp3 returns a
+  correct `206`.
+- "Am I offline?" is **never** `navigator.onLine` alone — that flag is true on a wifi that
+  leads nowhere, which is this app's normal habitat. `checkNetwork()` / `isOffline()` in
+  `index.html` keep a cached verdict from a real `manifest.webmanifest?probe=` request, and
+  the cloud markers, the dimming, the playback messages and the download guard all read it.
 - Sound effects (~1.6 MB) are precached on install.
 - Music (~940 MB, mostly one-hour tracks) is fetched by **Download for offline**: resumable,
   one file at a time streamed into `pig-game-audio`, size-verified, with a storage check

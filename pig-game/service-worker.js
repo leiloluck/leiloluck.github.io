@@ -145,6 +145,10 @@ self.addEventListener('fetch', (e) => {
   // Only handle our own scope
   if (!url.pathname.startsWith(new URL(self.registration.scope).pathname)) return;
 
+  // Cache Storage only holds GET: cache.put() throws a TypeError on anything else, and
+  // serveShell writes to the cache on the success path. Let the rest go to the network.
+  if (req.method !== 'GET') return;
+
   // The page's connectivity probe must always reach the real network and must never be
   // answered from the cache — serveShell falls back to the cache with ignoreSearch, so
   // an offline device would otherwise get a cached 200 and look online, and the Update

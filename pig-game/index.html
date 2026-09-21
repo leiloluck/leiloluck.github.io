@@ -1087,12 +1087,17 @@
       toast._t = setTimeout(() => { t.hidden = true; }, ms);
     }
 
-    // Offline, a track that was never downloaded cannot play. The old build tried anyway
-    // and produced silence with no explanation.
+    // A track that was never downloaded cannot play without a network. The old build tried
+    // anyway and produced silence with no explanation; then it gated the explanation on
+    // `navigator.onLine === false`, which is the wrong question in the place this app is
+    // used — see isOffline() below. Anything already in the cache plays regardless, so ask
+    // about the cache first and only fall back to the network verdict.
     function unavailableOffline(file) {
-      if (navigator.onLine !== false) return false;
       const btn = document.querySelector(`.btn[data-url="${CSS.escape(absUrl(file))}"]`);
-      if (!btn || !btn.classList.contains('not-offline')) return false;
+      if (!btn) return false;                             // unknown file: let it try
+      if (!btn.classList.contains('not-offline')) return false;   // saved: always playable
+      checkNetwork();                                     // refresh the verdict for next time
+      if (!isOffline()) return false;                     // believed online: let it stream
       toast('Not downloaded yet. Connect once and tap "Download for offline".');
       return true;
     }
@@ -1133,9 +1138,19 @@
         });
         musicAudio.addEventListener('error', (e) => {
           console.warn('Music playback error:', e);
-          if (!closing && activeMusicUrl) toast(navigator.onLine === false
-            ? 'This track is not saved for offline.'
-            : 'Could not play this track.');
+          if (!closing && activeMusicUrl) {
+            // Say which of the two things went wrong. A track that is not in the cache
+            // failed because the bytes had to come off the network and did not, whatever
+            // navigator.onLine claims — so re-probe, which also dims the other unsaved
+            // tracks and stops "Download for offline" from walking into the same wall.
+            const btn = document.querySelector(
+              `.btn[data-url="${CSS.escape(new URL(activeMusicUrl, location.href).href)}"]`);
+            const unsaved = !btn || btn.classList.contains('not-offline');
+            if (unsaved) checkNetwork({ maxAge: 0 });
+            toast(unsaved
+              ? 'Not saved for offline. Connect once and tap "Download for offline".'
+              : 'Could not play this track.');
+          }
           updatePlayerIcon();
         });
       }
@@ -1964,11 +1979,54 @@
       } catch { return false; }
     }
 
+    // ---------- Is the network actually usable? ----------
+    //
+    // `navigator.onLine` only reports that a network interface exists, and that is the
+    // wrong question in the place this app gets used: at a festival the phone sits on a
+    // wifi that leads nowhere, or on one bar that carries nothing, and onLine stays true
+    // the whole time. Every offline behaviour here used to hang off onLine and therefore
+    // did nothing in exactly the case the offline library exists for — no cloud markers,
+    // no dimming, a generic "Could not play this track", and a "Download for offline"
+    // that marched through the remaining 900 MB failing one file at a time.
+    //
+    // So: keep a cached verdict from a real probe (the update button already had one),
+    // refresh it lazily, and re-probe the moment something actually fails. onLine is still
+    // trusted when it says false — that answer is never a false negative.
+    let netDown = false;        // last verdict: the network is there but unusable
+    let netProbedAt = 0;
+    let netProbe = null;        // in-flight probe, shared by parallel callers
+
+    function isOffline() { return navigator.onLine === false || netDown; }
+
+    // maxAge 0 forces a fresh probe; otherwise a recent verdict is reused.
+    function checkNetwork({ maxAge = 15000 } = {}) {
+      if (navigator.onLine === false) {
+        setNetDown(true);
+        return Promise.resolve(false);
+      }
+      if (netProbe) return netProbe;
+      if (Date.now() - netProbedAt < maxAge) return Promise.resolve(!netDown);
+      netProbe = isReallyOnline().then(up => {
+        netProbe = null;
+        netProbedAt = Date.now();
+        setNetDown(!up);
+        return up;
+      }).catch(() => { netProbe = null; return !netDown; });
+      return netProbe;
+    }
+
+    function setNetDown(down) {
+      netProbedAt = Date.now();
+      if (netDown === down) return;
+      netDown = down;
+      refreshOfflineState();    // repaint the markers, the dimming and the summary
+    }
+
     const CACHE_PREFIX = 'pig-game-';           // must match service-worker.js
     const AUDIO_CACHE_NAME = CACHE_PREFIX + 'audio';
 
     async function runUpdate() {
-      if (!await isReallyOnline()) {
+      if (!await checkNetwork({ maxAge: 0 })) {
         statusSpan.textContent = 'Offline — running from cache';
         setTimeout(() => { statusSpan.textContent = ''; }, 3000);
         return;
@@ -2107,7 +2165,7 @@
     }
 
     async function refreshOfflineState() {
-      document.body.classList.toggle('is-offline', navigator.onLine === false);
+      document.body.classList.toggle('is-offline', isOffline());
       if (!('caches' in window) || !libraryFiles.length) return;
       let cache;
       try { cache = await caches.open(AUDIO_CACHE_NAME); } catch { return; }
@@ -2197,7 +2255,12 @@
       const oldFailList = document.getElementById('failed-files-list');
       if (oldFailList) oldFailList.remove();
 
-      if (navigator.onLine === false) { toast('You are offline. Connect to download.'); return; }
+      // A real probe, not navigator.onLine: starting a 940 MB download on a wifi that
+      // leads nowhere produced a list of every file that failed and nothing else.
+      if (!await checkNetwork({ maxAge: 5000 })) {
+        toast('No connection. Connect to the internet, then tap this again.');
+        return;
+      }
       if (navigator.storage && navigator.storage.persist) {
         try { await navigator.storage.persist(); } catch {}
       }
@@ -2228,6 +2291,8 @@
       holdWakeLock(true);
 
       let doneBytes = 0, doneFiles = 0;
+      let backToBackFails = 0;      // a dead connection, not a bad file
+      let connectionLost = false;
       const failed = [];
       const paint = (extra = 0, current = '') => {
         const pct = totalBytes ? ((doneBytes + extra) / totalBytes) * 100 : 100;
@@ -2249,6 +2314,7 @@
           });
           doneBytes += f.bytes;
           doneFiles++;
+          backToBackFails = 0;
           const btn = document.querySelector(`.btn[data-url="${CSS.escape(f.url)}"]`);
           if (btn) btn.classList.remove('not-offline');
         } catch (err) {
@@ -2257,6 +2323,13 @@
           failed.push(f);
           if (err && err.name === 'QuotaExceededError') {
             toast('Storage is full. Free some space, then tap "Download the rest".', 6000);
+            break;
+          }
+          // Three in a row is a lost connection, not three bad files. Stop and say so,
+          // instead of grinding through the rest of the library and listing all of it as
+          // "failed" — which is what a phone leaving wifi mid-download used to produce.
+          if (++backToBackFails >= 3 && !await checkNetwork({ maxAge: 0 })) {
+            connectionLost = true;
             break;
           }
         }
@@ -2270,6 +2343,9 @@
       if (closing) return;
       if (stopped) {
         downloadStatus.textContent = `Stopped. ${mb(doneBytes)} saved; tap to continue where it left off.`;
+      } else if (connectionLost) {
+        downloadStatus.textContent =
+          `📴 Connection lost. ${mb(doneBytes)} saved; tap to continue once you are back online.`;
       } else if (failed.length) {
         downloadStatus.textContent = `⚠️ ${doneFiles} saved, ${failed.length} failed. Tap to retry just those.`;
         const failList = document.createElement('div');
@@ -2302,8 +2378,15 @@
     }
     checkAndShowDownloadSection();
 
-    window.addEventListener('online', refreshOfflineState);
+    // 'online' only means an interface came back, so verify it before believing it.
+    window.addEventListener('online', () => checkNetwork({ maxAge: 0 }));
     window.addEventListener('offline', refreshOfflineState);
+    // Probe on launch and on every return to the foreground: a phone that walked out of
+    // range, or onto a captive-portal wifi, never fires an event at all.
+    checkNetwork({ maxAge: 0 });
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && !closing) checkNetwork({ maxAge: 20000 });
+    });
     // The worker precaches the sound effects on install; repaint once it has.
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.addEventListener('message', (e) => {

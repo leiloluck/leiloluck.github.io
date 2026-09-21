@@ -80,6 +80,9 @@ The version lives in `version.js` only, so `tools/check_versions.py` (which expe
   **Download for offline** lives here only, never in a music tab. The download paints the
   progress bar and confirms with a toast on start, success, partial failure and lost
   connection (`downloadLibrary()`), and success also reads "All tracks work offline".
+  **Delete offline files** sits under it (quiet outlined red, shown only once something is
+  saved): it empties the `pig-game-audio` cache — music, precached effects, partials — and
+  nothing else, so the shell cache still launches the app offline (`deleteOfflineFiles()`).
 - The play bar is a play/pause button, the seek bar, and a "Now playing" track name,
   all aligned to the content column (`--max-width`) rather than stretched full width.
 - The loaded track keeps a rainbow ring at all times (`.is-current`), so it is obvious

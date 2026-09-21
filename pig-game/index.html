@@ -694,6 +694,42 @@
       margin: 0 auto;
     }
 
+    /* Destructive, so it is a quiet outlined red rather than a filled button: it sits
+       under "Download for offline" and should never compete with it. */
+    .btn-delete {
+      max-width: 280px;
+      margin: 12px auto 0;
+      flex-direction: row;
+      gap: 8px;
+      padding: 12px;
+      font-size: 15px;
+      background: transparent;
+      border: 1.5px solid rgba(239, 68, 68, 0.55);
+      color: #fca5a5;
+      box-shadow: none;
+      outline: none;
+      text-shadow: none;
+    }
+
+    .btn-delete .icon {
+      font-size: 18px;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .btn-delete:hover {
+        background: rgba(239, 68, 68, 0.12);
+        filter: none;
+      }
+    }
+
+    .btn-delete:active {
+      background: rgba(239, 68, 68, 0.2);
+    }
+
+    .btn-delete:disabled {
+      opacity: 0.5;
+    }
+
     .btn-update {
       background: var(--accent);
     }
@@ -1155,6 +1191,10 @@
           <button id="btn-download-all" class="btn indigo btn-download">
             <span class="icon">⬇️</span>
             <span>Download for offline</span>
+          </button>
+          <button id="btn-delete-all" class="btn btn-delete" hidden>
+            <span class="icon">🗑️</span>
+            <span>Delete offline files</span>
           </button>
         </div>
       </div>
@@ -2372,6 +2412,7 @@
     //    re-downloaded rather than trusted forever.
     const downloadSection = document.getElementById('download-section');
     const btnDownloadAll = document.getElementById('btn-download-all');
+    const btnDeleteAll = document.getElementById('btn-delete-all');
     const downloadProgressContainer = document.getElementById('download-progress-container');
     const downloadProgressBar = document.getElementById('download-progress-bar');
     const downloadStatus = document.getElementById('download-status');
@@ -2379,6 +2420,7 @@
     const offlineStorage = document.getElementById('offline-storage');
 
     let downloadAbort = null;     // AbortController of the running download, if any
+    let downloadRun = null;       // the running downloadLibrary() promise, so Delete can wait
     let wakeLock = null;
 
     const mb = (b) => b >= 1e9 ? (b / 1e9).toFixed(b >= 1e11 ? 0 : 1) + ' GB'
@@ -2415,6 +2457,8 @@
       } else {
         offlineSummary.textContent = `${have} of ${total} tracks saved for offline · ${mb(totalBytes - haveBytes)} left`;
       }
+      // Delete is only meaningful once something is actually saved.
+      btnDeleteAll.hidden = have === 0;
       if (!downloadAbort) setDownloadButton(have === total ? 'done' : (have ? 'resume' : 'start'));
 
       if (navigator.storage && navigator.storage.estimate) {
@@ -2600,13 +2644,84 @@
 
     btnDownloadAll.addEventListener('click', () => {
       if (downloadAbort) { downloadAbort.abort(); return; }   // the button is "Stop" while running
-      downloadLibrary().catch(err => {
+      downloadRun = downloadLibrary().catch(err => {
         console.error('Download failed:', err);
         downloadAbort = null;
         holdWakeLock(false);
         downloadStatus.textContent = '❌ Download failed. Check the connection and tap again.';
         toast('Download failed. Check the connection and tap again.', 5000);
         refreshOfflineState();
+      }).finally(() => { downloadRun = null; });
+    });
+
+    // ---------- Delete offline files ----------
+    //
+    // The audio cache is the only big thing this app writes (~940 MB), and until now the
+    // only way to reclaim it was Chrome's site settings or wiping the browser profile.
+    // This empties `pig-game-audio` (music, effects, any partial leftovers) and nothing
+    // else: the shell cache stays, so the app still launches offline. The tracks remain
+    // on the website and can be downloaded again. Cache Storage is per origin, so this
+    // touches only this app's cache, never the other apps on leiloluck.github.io.
+    async function deleteOfflineFiles() {
+      // Stop a running download first and let it settle, so nothing is still writing
+      // into the cache while we empty it.
+      if (downloadRun) {
+        if (downloadAbort) downloadAbort.abort();
+        try { await downloadRun; } catch {}
+      }
+
+      let hadKeys = 0;
+      try { hadKeys = (await (await caches.open(AUDIO_CACHE_NAME)).keys()).length; } catch {}
+      if (!hadKeys) { toast('No offline files to delete.'); return; }
+
+      if (!confirm('Delete the offline audio files?\n\nThis frees the space they take on this device. '
+        + 'The tracks stay on the website, so you can download them again any time.')) return;
+
+      let before = 0;
+      if (navigator.storage && navigator.storage.estimate) {
+        try { before = (await navigator.storage.estimate()).usage || 0; } catch {}
+      }
+
+      btnDeleteAll.disabled = true;
+      const hadFiles = hadKeys;
+      try {
+        // Delete the whole cache: it drops every track, the precached sound effects and
+        // any half-written leftovers in one go.
+        await caches.delete(AUDIO_CACHE_NAME);
+      } catch (err) {
+        console.warn('Delete offline files failed:', err);
+        toast('Could not delete the files. Try again.');
+        btnDeleteAll.disabled = false;
+        return;
+      }
+      btnDeleteAll.disabled = false;
+
+      // Back to the empty library: clear the progress line, the old failure list, and
+      // repaint the summary and every track's cloud marker.
+      const oldFailList = document.getElementById('failed-files-list');
+      if (oldFailList) oldFailList.remove();
+      downloadProgressContainer.style.display = 'none';
+      downloadProgressBar.style.width = '0%';
+      downloadProgressBar.classList.remove('progress-success');
+      downloadStatus.textContent = '';
+      await refreshOfflineState();
+
+      let freed = 0;
+      if (navigator.storage && navigator.storage.estimate) {
+        try {
+          const after = (await navigator.storage.estimate()).usage || 0;
+          if (before > after) freed = before - after;
+        } catch {}
+      }
+      toast(freed
+        ? `🗑️ Deleted ${hadFiles} offline files · ${mb(freed)} freed.`
+        : '🗑️ Offline files deleted.');
+    }
+
+    btnDeleteAll.addEventListener('click', () => {
+      deleteOfflineFiles().catch(err => {
+        console.error('Delete offline files failed:', err);
+        toast('Could not delete the files. Try again.');
       });
     });
 

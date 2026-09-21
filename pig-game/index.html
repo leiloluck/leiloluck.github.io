@@ -306,8 +306,9 @@
 
     /* Colorful music progress bar */
     #music-seek {
-      margin: 0 16px;
-      flex: 1;
+      margin: 0;
+      flex: 1 1 auto;
+      min-width: 0;
       height: 10px;
       border-radius: 6px;
       background: linear-gradient(90deg, var(--error) 0%, var(--warning) 20%, var(--success) 40%, var(--blue) 60%, var(--accent) 80%, var(--accent-magenta) 100%);
@@ -453,41 +454,76 @@
       left: 0;
       width: 100%;
       border-top: 1px solid var(--accent-magenta);
-      padding: 10px 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      padding: 10px 14px;
+      padding-left: max(14px, env(safe-area-inset-left, 0px));
+      padding-right: max(14px, env(safe-area-inset-right, 0px));
       z-index: 1000;
       box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.12);
       background: linear-gradient(180deg, var(--surface-bar-solid) 0%, var(--surface-dark) 100%);
     }
 
-    .player-label {
-      width: 90px;
+    /* Keeps the player aligned with the content column instead of stretching the
+       controls across the whole window on a wide screen. */
+    .player-inner {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto;
       display: flex;
       align-items: center;
+      gap: 14px;
+    }
+
+    .player-label {
+      flex: 0 1 170px;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
       justify-content: center;
     }
 
-    .player-label-text {
-      font-weight: bold;
+    .player-label-kicker {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    .player-track-name {
+      font-size: 13px;
+      font-weight: 700;
       color: var(--text-bright);
-      font-size: 16px;
-      text-shadow: 0 1px 4px #000;
-      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .btn-playpause {
+      flex: 0 0 auto;
       width: 48px;
       height: 48px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 28px;
+      font-size: 22px;
+      line-height: 1;
+      border: 2px solid rgba(255, 255, 255, 0.85);
+      border-radius: 50%;
+      background: linear-gradient(150deg, var(--accent), var(--accent-magenta));
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+      cursor: pointer;
+      transition: transform 0.06s ease, filter 0.06s ease;
     }
 
-    .player-end-spacer {
-      width: 60px;
+    .btn-playpause:active {
+      transform: scale(0.94);
+      filter: brightness(0.92);
+    }
+
+    @media (max-width: 520px) {
+      .player-label { flex-basis: 108px; }
+      .player-inner { gap: 10px; }
     }
 
     .tab-item {
@@ -518,6 +554,20 @@
       color: var(--accent);
     }
 
+    /* The gear sits hard right, set apart from the music-phase tabs. It does not grow,
+       so the five phase tabs share the remaining width evenly. */
+    .tab-item--settings {
+      flex: 0 0 auto;
+      margin-left: auto;
+      padding-left: 14px;
+      padding-right: 14px;
+      color: var(--text-dim);
+    }
+
+    .tab-item--settings.active {
+      color: var(--accent);
+    }
+
     .tab-icon {
       font-size: 24px;
       line-height: 1;
@@ -529,6 +579,9 @@
       letter-spacing: 0.3px;
     }
 
+    /* Each tab is its own card. The card look lives here (not on a wrapper) so the
+       Settings tab, which is a plain sibling of the generated music sections, gets the
+       same frame with no extra markup. */
     .content-section {
       display: none;
     }
@@ -537,6 +590,11 @@
       display: flex;
       flex-direction: column;
       gap: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-card);
+      padding: 16px;
+      min-height: 200px;
     }
 
     @media (max-width:720px) {
@@ -549,14 +607,6 @@
       }
     }
 
-    /* Play/Pause Button - Custom Style */
-    .play-pause-button {
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      box-shadow: none;
-    }
-
     /* ---------- Utility & Component Classes ---------- */
 
     .version-badge {
@@ -565,17 +615,17 @@
       margin-right: 8px;
     }
 
-    .loading-msg {
-      text-align: center;
-      padding: 40px;
-      color: var(--subtext);
-    }
-
+    .loading-msg,
     .error-msg {
       text-align: center;
       padding: 40px;
-      color: var(--error);
+      background: var(--surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-card);
     }
+
+    .loading-msg { color: var(--subtext); }
+    .error-msg { color: var(--error); }
 
     /* Clears both fixed bars plus the gesture-nav inset, so the last row of buttons is
        always reachable. Kept in sync with the real bar height by JS on load/resize. */
@@ -583,10 +633,9 @@
       height: calc(var(--tab-bar-h, 70px) + var(--player-h, 64px) + 16px);
     }
 
-    /* Download Section */
+    /* Download Section — lives inside the Settings tab only. */
     .download-section {
-      display: none;
-      margin-top: 16px;
+      display: block;
     }
 
     .download-center {
@@ -882,6 +931,53 @@
     }
     body.is-offline .btn.not-offline { opacity: 0.4; filter: grayscale(0.6); }
 
+    /* ---------- Now-playing track highlight ----------
+       The loaded track keeps a rainbow ring around its button at all times, so it is
+       obvious which track the play bar belongs to. While it is actually playing the
+       ring spins: `--pig-angle` rotates the conic gradient, which reads as the rainbow
+       travelling around the boundary. The ring is a masked pseudo-element, not a
+       border, so it follows the button's round corners; the mask cuts out the middle so
+       the button's own colour shows through. Registered with @property so the angle is
+       interpolated (Chrome/Edge 85+, Safari 16.4+, Firefox 128+); where @property is
+       unsupported the ring simply stays static. */
+    @property --pig-angle {
+      syntax: "<angle>";
+      initial-value: 0deg;
+      inherits: false;
+    }
+
+    .btn.is-current {
+      outline: none;
+    }
+
+    .btn.is-current::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      padding: 4px;
+      border-radius: inherit;
+      background: conic-gradient(from var(--pig-angle),
+          #ef4444, #f97316, #fbbf24, #22c55e, #06b6d4, #6366f1, #a21caf, #ef4444);
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      mask-composite: exclude;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .btn.is-current.is-playing::before {
+      animation: pig-rainbow-spin 3.2s linear infinite;
+    }
+
+    @keyframes pig-rainbow-spin {
+      to { --pig-angle: 360deg; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .btn.is-current.is-playing::before { animation: none; }
+    }
+
     .offline-summary {
       font-size: 15px;
       font-weight: 700;
@@ -923,6 +1019,67 @@
       background: rgba(239, 68, 68, 0.1);
       border-radius: 8px;
     }
+
+    /* ---------- Settings tab ----------
+       Same shape as the other apps' Settings panels: a short description, then one
+       labelled block per job (the app, the offline library), each with a status line and
+       a full-width button. */
+    .settings-about {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .settings-app-name {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .settings-lead {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--subtext);
+    }
+
+    .settings-block {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .settings-label {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    .settings-hint {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.45;
+      color: var(--subtext);
+    }
+
+    .settings-status {
+      margin: 0;
+      min-height: 1.2em;
+      font-size: 13px;
+      color: var(--accent);
+    }
+
+    /* The big install/update button shows the icon at a larger size than a track tile. */
+    .btn-settings-install .icon {
+      font-size: 30px;
+    }
+
+    .btn-settings-install {
+      padding: 18px;
+      font-size: 17px;
+    }
   </style>
 </head>
 
@@ -949,31 +1106,57 @@
 
   <main>
 
-    <section class="card" id="audio-content">
+    <div id="audio-content">
       <!-- Content will be dynamically loaded from audio-files.json -->
       <div class="loading-msg">
         Loading audio files...
       </div>
-    </section>
+    </div>
 
-    <!-- Download All Section -->
-    <section class="card download-section" id="download-section">
-      <div class="download-center">
-        <div class="download-icon">📥</div>
-        <div class="download-title">Offline library</div>
-        <div class="offline-summary" id="offline-summary">Checking what is saved…</div>
-        <div class="offline-storage" id="offline-storage"></div>
-        <div class="download-warning">⚠️ Large download: use Wi-Fi and keep the app open. It resumes where it stopped.</div>
-        <div id="download-progress-container" class="download-progress">
-          <div class="progress-track">
-            <div id="download-progress-bar" class="progress-fill"></div>
-          </div>
-          <div id="download-status" class="download-status-text">0 / 0 files</div>
-        </div>
-        <button id="btn-download-all" class="btn indigo btn-download">
-          <span class="icon">⬇️</span>
-          <span>Download for offline</span>
+    <!-- Settings tab: a short description, the app install/update control, and the offline
+         library. The download tooling lives here only, out of the per-phase music tabs. -->
+    <section class="content-section" data-tab="settings" id="settings-section">
+      <div class="settings-about">
+        <div class="settings-app-name">Pig Game Track App 🐖🐖</div>
+        <p class="settings-lead">
+          Music for each phase of the Pig game — Start, Mid, End and Victory — plus short
+          sound effects. Music loops under the effects, and the Music / SFX slider sets the
+          balance between them. Install it to use it offline.
+        </p>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="settings-block">
+        <div class="settings-label">App</div>
+        <button class="btn indigo btn-settings-install" id="btn-settings-install" type="button">
+          <span class="icon" id="btn-settings-install-icon">📲</span>
+          <span id="btn-settings-install-label">Install App</span>
         </button>
+        <p class="settings-status" id="settings-status" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Offline library -->
+      <div class="download-section" id="download-section">
+        <div class="download-center">
+          <div class="download-icon">📥</div>
+          <div class="download-title">Offline library</div>
+          <div class="offline-summary" id="offline-summary">Checking what is saved…</div>
+          <div class="offline-storage" id="offline-storage"></div>
+          <div class="download-warning">⚠️ Large download: use Wi-Fi and keep the app open. It resumes where it stopped.</div>
+          <div id="download-progress-container" class="download-progress">
+            <div class="progress-track">
+              <div id="download-progress-bar" class="progress-fill"></div>
+            </div>
+            <div id="download-status" class="download-status-text">0 / 0 files</div>
+          </div>
+          <button id="btn-download-all" class="btn indigo btn-download">
+            <span class="icon">⬇️</span>
+            <span>Download for offline</span>
+          </button>
+        </div>
       </div>
     </section>
 
@@ -981,13 +1164,11 @@
 
   </main>
 
-  <!-- Bottom Tab Bar -->
+  <!-- Bottom Tab Bar. Five music-phase tabs share the width; the Settings gear sits at
+       the far right. There is no "All" tab any more: with Settings added, six equal
+       tabs were too tight, and the phase tabs already cover the library. -->
   <nav class="tab-bar">
-    <div class="tab-item active" data-tab="all">
-      <div class="tab-icon">📱</div>
-      <div class="tab-label">All</div>
-    </div>
-    <div class="tab-item" data-tab="start">
+    <div class="tab-item active" data-tab="start">
       <div class="tab-icon">🎬</div>
       <div class="tab-label">Start</div>
     </div>
@@ -1006,6 +1187,10 @@
     <div class="tab-item" data-tab="sounds">
       <div class="tab-icon">🔊</div>
       <div class="tab-label">Sounds</div>
+    </div>
+    <div class="tab-item tab-item--settings" data-tab="settings">
+      <div class="tab-icon">⚙️</div>
+      <div class="tab-label">Settings</div>
     </div>
   </nav>
 
@@ -1036,14 +1221,16 @@
 
   <!-- Persistent Music Player -->
   <div id="music-player" class="music-player">
-    <div class="player-label">
-      <div class="player-label-text">Media<br>Control</div>
+    <div class="player-inner">
+      <button id="btn-playpause" class="btn-playpause" type="button" aria-label="Play or pause">
+        <span id="icon-playpause">▶️</span>
+      </button>
+      <input type="range" id="music-seek" min="0" value="0" step="0.01" aria-label="Track position">
+      <div class="player-label">
+        <span class="player-label-kicker">Now playing</span>
+        <span class="player-track-name" id="player-track-name">Nothing yet</span>
+      </div>
     </div>
-    <button id="btn-playpause" class="play-pause-button btn-playpause">
-      <span id="icon-playpause">▶️</span>
-    </button>
-    <input type="range" id="music-seek" min="0" value="0" step="0.01">
-    <div class="player-end-spacer"></div>
   </div>
 
   <script>
@@ -1113,6 +1300,7 @@
       const trackIdx = musicPlaylist.findIndex(t => t.path === file);
       if (trackIdx !== -1) currentTrackIndex = trackIdx;
       const trackInfo = trackIdx !== -1 ? musicPlaylist[trackIdx] : null;
+      setNowPlaying(trackInfo ? trackInfo.displayName : file);
 
       // Create persistent audio element on first use
       if (!musicAudio) {
@@ -1182,6 +1370,7 @@
       }
       activeMusicUrl = null;
       if (window.stopSeekUpdates) window.stopSeekUpdates();
+      setNowPlaying('');
       updatePlayerIcon();
     }
 
@@ -1360,9 +1549,9 @@
       }
       container.innerHTML = '';
 
-      // Group files by category type
+      // Group files by category type. There is no "all" tab: the phase tabs cover the
+      // library, and Settings holds the offline tooling.
       const categoriesByTab = {
-        'all': [],
         'start': [],
         'mid': [],
         'end': [],
@@ -1372,9 +1561,6 @@
 
       // Map categories to tabs based on their type and title
       data.categories.forEach(category => {
-        // All categories go to 'all' tab
-        categoriesByTab.all.push(category);
-
         if (category.type === 'sound') {
           categoriesByTab.sounds.push(category);
         } else if (category.type === 'music') {
@@ -1398,7 +1584,7 @@
         const section = document.createElement('div');
         section.className = 'content-section';
         section.dataset.tab = tabName;
-        if (tabName === 'all') section.classList.add('active'); // All tab active by default
+        if (tabName === 'start') section.classList.add('active'); // Start is the default tab
 
         const categories = categoriesByTab[tabName];
 
@@ -1466,8 +1652,8 @@
           });
         }
 
-        // Add relative volume slider to sounds tab and all tab
-        if (tabName === 'sounds' || tabName === 'all') {
+        // Add relative volume slider to the sounds tab
+        if (tabName === 'sounds') {
           const volumeSliderSection = document.createElement('div');
           volumeSliderSection.className = 'slider-section';
 
@@ -1553,6 +1739,28 @@
       const icon = document.getElementById('icon-playpause');
       const playing = isPlaying();
       icon.textContent = playing ? '⏸️' : '▶️';
+      updateTrackHighlight();
+    }
+
+    function setNowPlaying(name) {
+      const el = document.getElementById('player-track-name');
+      if (el) el.textContent = name || 'Nothing yet';
+    }
+
+    // The loaded track keeps a rainbow ring (see .is-current / .is-playing in the CSS).
+    // It is always marked so it is clear which track the play bar belongs to; it only
+    // spins while the music is actually playing.
+    function updateTrackHighlight() {
+      const buttons = document.querySelectorAll('.btn.is-current');
+      const currentAbs = activeMusicUrl ? new URL(activeMusicUrl, location.href).href : null;
+      buttons.forEach(b => {
+        if (b.dataset.url !== currentAbs) b.classList.remove('is-current', 'is-playing');
+      });
+      if (!currentAbs) return;
+      const btn = document.querySelector(`.btn[data-url="${CSS.escape(currentAbs)}"]`);
+      if (!btn) return;
+      btn.classList.add('is-current');
+      btn.classList.toggle('is-playing', isPlaying());
     }
 
     document.getElementById('btn-playpause').addEventListener('click', () => {
@@ -1920,8 +2128,19 @@
     const INSTALLED_KEY = 'piggame-installed';
 
     // ---------- Update (for the installed app) ----------
+    // The header keeps the compact install/update control; Settings carries a big twin
+    // that mirrors it. Both labels are set from one string here so they cannot drift.
+    const btnSettingsInstall = document.getElementById('btn-settings-install');
+    const settingsInstallIcon = document.getElementById('btn-settings-install-icon');
+    const settingsInstallLabel = document.getElementById('btn-settings-install-label');
+    const settingsStatus = document.getElementById('settings-status');
+
     function setInstallLabel(text) {
       document.getElementById('btn-install-label').textContent = text;
+      if (!settingsInstallLabel) return;
+      const m = text.match(/^([^\w\s]+)\s*(.*)$/);
+      settingsInstallIcon.textContent = m ? m[1] : '📲';
+      settingsInstallLabel.textContent = m ? m[2] : text;
     }
 
     function showUpdateButton() {
@@ -2121,6 +2340,17 @@
       openInstallSheet();                 // iOS, Brave on Android, or no live prompt
     });
 
+    // The Settings tab's big twin runs the exact same action. The header's status line is
+    // echoed below it, so feedback ("Checking…", "Up to date ✓", "Offline — running from
+    // cache") appears where the button was tapped.
+    btnSettingsInstall.addEventListener('click', () => btnInstall.click());
+
+    if (settingsStatus && 'MutationObserver' in window) {
+      new MutationObserver(() => {
+        settingsStatus.textContent = statusSpan.textContent;
+      }).observe(statusSpan, { childList: true, characterData: true, subtree: true });
+    }
+
     // ---------- Offline library ----------
     //
     // The library is ~940 MB, so this has to survive a phone going to sleep, a dropped
@@ -2274,10 +2504,12 @@
       todo.sort((a, b) => a.bytes - b.bytes);
       const totalBytes = todo.reduce((a, f) => a + f.bytes, 0);
 
+      let warnedStorage = false;
       if (navigator.storage && navigator.storage.estimate) {
         try {
           const { usage = 0, quota = 0 } = await navigator.storage.estimate();
           if (quota && quota - usage < totalBytes) {
+            warnedStorage = true;
             toast(`Not enough storage: needs ${mb(totalBytes)}, ${mb(quota - usage)} available. Downloading what fits.`, 6000);
           }
         } catch {}
@@ -2301,6 +2533,9 @@
           + (current ? ` · ${current}` : '');
       };
       paint();
+      if (!warnedStorage) {
+        toast(`Downloading ${todo.length} files · ${mb(totalBytes)}. Keep the app open.`, 4500);
+      }
 
       for (const f of todo) {
         if (signal.aborted) break;
@@ -2348,6 +2583,7 @@
           `📴 Connection lost. ${mb(doneBytes)} saved; tap to continue once you are back online.`;
       } else if (failed.length) {
         downloadStatus.textContent = `⚠️ ${doneFiles} saved, ${failed.length} failed. Tap to retry just those.`;
+        toast('Some files did not download. Tap again to retry just those.', 5000);
         const failList = document.createElement('div');
         failList.id = 'failed-files-list';
         failList.className = 'failed-files-list';
@@ -2356,7 +2592,8 @@
         downloadSection.querySelector('div').appendChild(failList);
       } else {
         downloadProgressBar.classList.add('progress-success');
-        downloadStatus.textContent = `✅ Done: ${mb(totalBytes)} saved.`;
+        downloadStatus.textContent = `✅ Done: ${mb(totalBytes)} saved. All tracks work offline.`;
+        toast('✅ Download complete — the library works offline now.', 5000);
       }
       refreshOfflineState();
     }
@@ -2368,13 +2605,15 @@
         downloadAbort = null;
         holdWakeLock(false);
         downloadStatus.textContent = '❌ Download failed. Check the connection and tap again.';
+        toast('Download failed. Check the connection and tap again.', 5000);
         refreshOfflineState();
       });
     });
 
-    // The section only makes sense with a service worker to serve the cache back.
+    // The block lives in the Settings tab; hide it only where the platform cannot serve
+    // the audio cache back.
     function checkAndShowDownloadSection() {
-      if ('serviceWorker' in navigator && 'caches' in window) downloadSection.style.display = 'block';
+      if (!('serviceWorker' in navigator) || !('caches' in window)) downloadSection.hidden = true;
     }
     checkAndShowDownloadSection();
 

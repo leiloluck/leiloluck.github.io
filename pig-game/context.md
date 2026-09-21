@@ -68,6 +68,26 @@ The version lives in `version.js` only, so `tools/check_versions.py` (which expe
   `window.close()`. In a plain tab (where close is refused) a "Closed" screen offers
   **Open again**.
 
+## Tabs, Settings and the play bar
+
+- Five phase tabs — Start, Mid, End, Victory, Sounds. There is **no All tab**: adding
+  Settings made six equal tabs too tight, so Settings takes the far right under a gear.
+  Each tab is its own card (`.content-section.active`), so the Settings panel, a plain
+  sibling of the generated music sections, shares the same frame.
+- **Settings** holds a short description of the app, a big Install/Update button (a twin
+  of the compact header control — `setInstallLabel()` drives both, and the header's status
+  line is mirrored underneath with a `MutationObserver`), and the whole offline library.
+  **Download for offline** lives here only, never in a music tab. The download paints the
+  progress bar and confirms with a toast on start, success, partial failure and lost
+  connection (`downloadLibrary()`), and success also reads "All tracks work offline".
+- The play bar is a play/pause button, the seek bar, and a "Now playing" track name,
+  all aligned to the content column (`--max-width`) rather than stretched full width.
+- The loaded track keeps a rainbow ring at all times (`.is-current`), so it is obvious
+  which track the bar controls; while it is playing the ring spins (`.is-playing`). The
+  ring is a masked pseudo-element driven by an `@property --pig-angle` conic gradient: it
+  is static where `@property` is unsupported, and still under `prefers-reduced-motion`.
+  `updateTrackHighlight()` in `index.html` maintains the classes.
+
 ## Style
 
 Deliberately loud and colourful (it is a party game), an explicit exception to the

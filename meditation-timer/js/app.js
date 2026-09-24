@@ -11,7 +11,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.09.24';   // format vYY.MM.DD — keep in lockstep with sw.js + index.html
+const APP_VERSION = 'v26.09.24a';   // format vYY.MM.DD — keep in lockstep with sw.js + index.html
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 //

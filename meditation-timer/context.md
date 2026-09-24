@@ -320,9 +320,13 @@ the ensō and a soft glow behind it *breathe* (10 s cycle, about six breaths a m
 It animates transform/opacity only (compositor, zero cost when hidden). Paused holds and
 dims it. `prefers-reduced-motion` disables the breathing and the ring transition.
 
-**Icon:** the same ensō in gold leaf on sumi with a small vermilion seal (hanko) at lower
-right, like a signed brush painting. The maskable variant keeps everything inside the 40 %
-safe circle; the iOS 180 px icon is full-bleed and opaque.
+**Icon:** the same ensō in gold leaf on sumi with a clock reading 10:10 inside it — a 12
+o'clock index, an hour and a minute hand, and a pivot — plus the small vermilion seal
+(hanko) at lower right, like a signed brush painting. The clock turns the brush ring into a
+dial, pairing the hand-drawn circle with measured time. The maskable variant keeps
+everything inside the 40 % safe circle; the iOS 180 px icon is full-bleed and opaque. All
+four PNGs are rendered from the same artwork as `icon.svg` (headless Chrome); the maskable
+and full-bleed variants are not committed as SVG.
 
 ---|---|
 | Background | `linear-gradient(to bottom right, #3d2900, #000000)` |

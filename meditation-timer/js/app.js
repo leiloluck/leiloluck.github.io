@@ -11,7 +11,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.09.18b';   // format vYY.MM.DD — keep in lockstep with sw.js + index.html
+const APP_VERSION = 'v26.09.24';   // format vYY.MM.DD — keep in lockstep with sw.js + index.html
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 //
@@ -810,7 +810,9 @@ function setMediaSession() {
     pauseSession();
     setStatus('paused from the lock screen');
   });
-  navigator.mediaSession.setActionHandler('stop',  stopSession);
+  // The notification's stop/close control shuts the app down entirely, the same as the
+  // in-app X, so it can be closed from the lock screen without opening it first.
+  navigator.mediaSession.setActionHandler('stop',  shutdownApp);
 }
 
 // Surface the countdown on the lock screen where the platform supports it.

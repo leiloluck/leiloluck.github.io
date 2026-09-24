@@ -1484,6 +1484,9 @@
       const ms = navigator.mediaSession;
       ms.setActionHandler('play', () => resumeBackground());
       ms.setActionHandler('pause', () => pauseBackground());
+      // The notification's stop/close control shuts the app down entirely, the same as the
+      // in-app X, so it can be closed from the shade without opening it first.
+      ms.setActionHandler('stop', () => shutdownApp());
       ms.setActionHandler('previoustrack', () => playPreviousTrack());
       ms.setActionHandler('nexttrack', () => playNextTrack());
       ms.setActionHandler('seekto', (d) => {
@@ -2780,7 +2783,7 @@
 
       if ('mediaSession' in navigator) {
         try {
-          ['play', 'pause', 'previoustrack', 'nexttrack', 'seekto', 'seekbackward', 'seekforward']
+          ['play', 'pause', 'stop', 'previoustrack', 'nexttrack', 'seekto', 'seekbackward', 'seekforward']
             .forEach(a => navigator.mediaSession.setActionHandler(a, null));
           navigator.mediaSession.metadata = null;
           navigator.mediaSession.playbackState = 'none';

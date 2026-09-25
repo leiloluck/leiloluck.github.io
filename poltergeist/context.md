@@ -223,6 +223,24 @@ Two caches, and the split matters:
 deletion — in `activate`, in `hardReset()`, anywhere — must be prefix-scoped, and must
 skip the sounds cache.
 
+### Delete app
+
+Settings -> **Delete app** (`deleteApp()` in `js/app.js`) removes everything this app
+stored on the device. It first stops the run and releases every audio resource by calling
+`shutdownApp()`, which returns before its own close screen thanks to the `deleting` flag.
+It then unregisters this app's worker (filtered by scope), deletes every `poltergeist-*`
+cache, removes this app's localStorage keys (`soundannoyer-state`,
+`soundannoyer-installed`, `soundannoyer-drift-recovered`) and any IndexedDB, and shows a
+"deleted" screen. Every step is prefix-scoped, because Cache Storage and localStorage are
+per ORIGIN and this site hosts several apps: `localStorage.clear()` or an unscoped
+`caches.keys()` sweep would destroy the Meditation Timer's 44 MB soundtrack. It never
+reloads, because a reload would reinstall the app on the spot.
+
+A web page cannot uninstall its own PWA: the home-screen icon belongs to the OS and no API
+removes it. What the button guarantees is that every byte the app wrote and its worker
+registration are gone, so the icon is an empty shell that reinstalls from scratch if
+opened again. The deleted screen says exactly that.
+
 ### Offline-first + freshness
 
 - **Cache-first service worker** (`sw.js`). On install it precaches the whole shell,

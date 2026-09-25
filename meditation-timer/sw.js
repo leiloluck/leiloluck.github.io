@@ -34,7 +34,7 @@
 
 'use strict';
 
-const VERSION      = 'v26.09.24a';
+const VERSION      = 'v26.09.25b';
 const CACHE_PREFIX = 'meditation-timer-';        // never touch caches outside this prefix
 const CACHE        = CACHE_PREFIX + VERSION;
 const AUDIO_CACHE  = CACHE_PREFIX + 'audio';     // unversioned on purpose — see header

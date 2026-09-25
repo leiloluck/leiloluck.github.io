@@ -142,6 +142,12 @@
       <button class="btn btn-action" id="update-btn" type="button">Check for updates</button>
     </section>
 
+    <section class="section">
+      <p class="section-label">Delete app</p>
+      <p class="settings-status" id="delete-status">Removes the app from this device: the app shell, the saved soundtrack and your settings. Nothing on the website is touched.</p>
+      <button class="btn btn-action btn-danger" id="delete-btn" type="button">Delete app and data</button>
+    </section>
+
     <section class="section settings-about">
       <p class="section-label">How it works</p>
       <ul class="settings-list">
@@ -149,7 +155,7 @@
         <li>Three bells close the session. They are scheduled ahead, so they ring with the screen locked too.</li>
         <li>Pause and play from the lock screen. The × stops everything and frees the audio.</li>
       </ul>
-      <button class="version" id="version" type="button" title="Check for updates">v26.09.24a</button>
+      <button class="version" id="version" type="button" title="Check for updates">v26.09.25b</button>
     </section>
   </section>
 
@@ -164,6 +170,19 @@
     <p class="closed-copy">Audio stopped and released.</p>
     <p class="closed-sub" id="closed-sub"></p>
     <button class="btn-small" id="reopen-btn" type="button">Open again</button>
+  </div>
+</div>
+
+<!-- Shown after the app is deleted. Every file, cache and setting this app stored is
+     gone and its service worker is unregistered. A web page cannot uninstall its own
+     PWA, so the final step (removing the icon) belongs to the OS; opening this page
+     again reinstalls it fresh. See deleteApp() in app.js. -->
+<div class="closed-layer hidden" id="deleted-layer" role="dialog" aria-modal="true" aria-labelledby="deleted-title">
+  <div class="closed-panel">
+    <h2 id="deleted-title">App deleted</h2>
+    <p class="closed-copy">Its saved soundtrack, offline files and settings are gone from this device.</p>
+    <p class="closed-sub" id="deleted-sub"></p>
+    <button class="btn-small" id="deleted-reopen-btn" type="button">Open again</button>
   </div>
 </div>
 

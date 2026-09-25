@@ -202,6 +202,13 @@ tappable version label:
   do not remove this guard** — wiping caches with no network bricks the app. The probe
   fetches an actual byte rather than trusting `navigator.onLine`, which reports `true`
   on a captive portal or a dead uplink.
+- **Delete app** — `deleteApp()` reuses `shutdownApp()`'s teardown (releasing every audio
+  resource) but skips its close screen via the `deleting` flag, then unregisters this
+  app's worker (scope-filtered), deletes every `meditation-timer-*` cache, its
+  localStorage keys and any IndexedDB, and shows a "deleted" screen. Prefix-scoped,
+  because Cache Storage and localStorage are per ORIGIN and this site hosts several apps.
+  It never reloads (a reload would reinstall); removing the home-screen icon is the OS's
+  to do, which no web page can automate.
 - **Download for offline** — fetches the large `.mp3` (the soundtrack is ~44 MB, too big
   to precache) so the full app works without a connection; shows "Audio offline ✓" once
   cached. It now checks **this app's own caches** for the actual soundtrack URL. The old

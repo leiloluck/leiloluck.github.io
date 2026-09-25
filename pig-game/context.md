@@ -83,6 +83,12 @@ The version lives in `version.js` only, so `tools/check_versions.py` (which expe
   **Delete offline files** sits under it (quiet outlined red, shown only once something is
   saved): it empties the `pig-game-audio` cache — music, precached effects, partials — and
   nothing else, so the shell cache still launches the app offline (`deleteOfflineFiles()`).
+  **Delete app** sits last (also quiet outlined red): `deleteApp()` unregisters this app's
+  service worker, deletes every `pig-game-*` cache and its localStorage key and any
+  IndexedDB, then shows a "deleted" screen. Every step is prefix-scoped, because Cache
+  Storage and localStorage are per ORIGIN and the other apps share it. It never reloads
+  (a reload would immediately reinstall). A web page cannot remove its own home-screen
+  icon, so that final step is left to the user and the screen says so.
 - The play bar is a play/pause button, the seek bar, and a "Now playing" track name,
   all aligned to the content column (`--max-width`) rather than stretched full width.
 - The loaded track keeps a rainbow ring at all times (`.is-current`), so it is obvious

@@ -170,9 +170,18 @@
     <!-- Which browser installs this properly on this phone (installAdvice() in app.js). -->
     <p class="install-note" id="install-note" hidden></p>
 
+    <!-- Delete app: removes everything this app stored on the device and unregisters its
+         service worker. Never touches the other apps that share this origin. See
+         deleteApp() in app.js. -->
+    <section class="section">
+      <p class="section-label">Delete app</p>
+      <p class="settings-note">Removes poltergeist.exe from this device: its saved sounds, caches and settings. It stays on the website, so you can install it again later.</p>
+      <button class="btn-small btn-danger" id="delete-btn" type="button">Delete app and data</button>
+    </section>
+
     <!-- Version + offline status (version is tappable: checks for an update) -->
     <section class="section settings-meta">
-      <button class="version" id="version" type="button" title="Check for updates">v26.09.20a</button>
+      <button class="version" id="version" type="button" title="Check for updates">v26.09.25b</button>
       <span class="offline-badge" id="offline-badge">✓ works offline</span>
     </section>
 
@@ -260,6 +269,21 @@
     <button class="help-close-btn hidden" id="open-chrome-btn">Open in Chrome</button>
     <button class="help-close-btn hidden" id="install-proceed-btn">Install here anyway</button>
     <button class="help-close-btn" id="install-close-btn">Got it</button>
+  </section>
+</div>
+
+<!-- Shown after the app is deleted. Every sound, cache and setting this app stored is
+     gone and its service worker is unregistered. A web page cannot uninstall its own
+     PWA, so the final step, removing the icon, belongs to the OS; opening this page
+     again installs it fresh. See deleteApp() in app.js. -->
+<div class="modal-layer hidden" id="deleted-layer" role="dialog" aria-modal="true" aria-labelledby="deleted-title">
+  <div class="modal-backdrop"></div>
+  <section class="help-modal" tabindex="-1">
+    <p class="help-modal-kicker">Deleted</p>
+    <h2 id="deleted-title">App deleted</h2>
+    <p class="help-summary">Its saved sounds, caches and settings are gone from this device.</p>
+    <p class="help-summary" id="deleted-sub"></p>
+    <button class="help-close-btn" id="deleted-reopen-btn" type="button">Open again</button>
   </section>
 </div>
 

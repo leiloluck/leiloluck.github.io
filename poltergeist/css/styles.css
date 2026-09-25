@@ -691,6 +691,13 @@ body.test-mode .sound-btn  { background-color: #d8d4bf; }
 .settings-actions { display: flex; flex-direction: row; flex-wrap: wrap; gap: 6px; }
 .settings-actions .btn-small { flex: 1 1 118px; }
 
+/* Explanatory line under a section label, quieter than the control it describes. */
+.settings-note { margin: 0; font-size: 11px; line-height: 1.45; color: var(--muted); }
+
+/* Destructive: red text on the ordinary raised face, so it still reads as a Win98
+   button while the action itself is unmistakably the dangerous one. */
+.btn-danger { color: var(--danger); }
+
 .btn-small {
   min-height: 38px;
   padding: 8px 12px;

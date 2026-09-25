@@ -11,7 +11,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.09.24a';   // format vYY.MM.DD — keep in lockstep with sw.js + index.html
+const APP_VERSION = 'v26.09.25b';   // format vYY.MM.DD — keep in lockstep with sw.js + index.html
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 //
@@ -692,6 +692,7 @@ function onSessionEnd() {
 // INSTALLED app window qualifies, so this really closes the app there; in a plain tab it
 // silently does nothing, so a "closed" screen explains that instead of a dead button.
 let closing = false;
+let deleting = false;   // set by deleteApp(): shutdownApp then skips the close() screen
 
 function shutdownApp() {
   closing = true;
@@ -749,6 +750,8 @@ function shutdownApp() {
   setStatus('');
   closeCustomTimeModal();
   closeInstallModal();
+
+  if (deleting) return;   // deleteApp() shows its own screen; the window must stay open
 
   try { window.close(); } catch {}
 
@@ -867,6 +870,9 @@ const elCloseBtn      = document.getElementById('close-btn');
 const elClosedLayer   = document.getElementById('closed-layer');
 const elClosedSub     = document.getElementById('closed-sub');
 const elReopenBtn     = document.getElementById('reopen-btn');
+const elDeletedLayer  = document.getElementById('deleted-layer');
+const elDeletedSub    = document.getElementById('deleted-sub');
+const elDeletedReopen = document.getElementById('deleted-reopen-btn');
 const elDurationLabel = document.getElementById('duration-label');
 const elStatus        = document.getElementById('status');
 const elPlayBtn       = document.getElementById('btn-play');
@@ -884,6 +890,7 @@ const elPanelMeditate = document.getElementById('panel-meditate');
 const elPanelSettings = document.getElementById('panel-settings');
 const elUpdateBtn     = document.getElementById('update-btn');
 const elOfflineBtn    = document.getElementById('offline-btn');
+const elDeleteBtn     = document.getElementById('delete-btn');
 const elVersion       = document.getElementById('version');
 const elInstallModalLayer   = document.getElementById('install-modal-layer');
 const elInstallModal        = document.getElementById('install-modal');
@@ -1731,6 +1738,101 @@ elOfflineBtn.addEventListener('click', async () => {
   }
 });
 
+// ── Delete app ───────────────────────────────────────────────────────────────
+//
+// Removes everything this app put on the device: its service-worker registration, its
+// Cache Storage (the shell, the precached bell AND the ~44 MB soundtrack), its
+// localStorage keys and, best-effort, any IndexedDB it created.
+//
+// Two rules, both load-bearing:
+//   * Cache Storage, localStorage, sessionStorage and IndexedDB are scoped to the
+//     ORIGIN, not the path, and this origin hosts several apps. `localStorage.clear()`
+//     or an unfiltered `caches.keys()` sweep would erase poltergeist.exe and the Pig
+//     Game along with this app. Every step below is prefix-scoped.
+//   * A web page CANNOT uninstall its own PWA. There is no API, and the home-screen
+//     icon is the OS's to remove. What this does guarantee is that every byte the app
+//     stored is gone and its worker is unregistered, so the icon becomes an empty shell
+//     that reinstalls from scratch the next time the page is opened.
+//
+// The browser's HTTP cache is unreachable from script (Clear-Site-Data needs a response
+// header, which a static GitHub Pages host cannot send). It is small and self-expiring.
+const APP_SCOPE = new URL('./', location.href).pathname;   // '/meditation-timer/'
+const DELETE_KEYS = [CUSTOM_KEY, INSTALLED_KEY, DRIFT_KEY, AUDIO_CACHED_KEY];
+
+async function usedBytes() {
+  try { return navigator.storage && navigator.storage.estimate ? ((await navigator.storage.estimate()).usage || 0) : 0; }
+  catch { return 0; }
+}
+
+// No app here uses IndexedDB today; this keeps the wipe honest if one ever does.
+async function dropIndexedDB() {
+  if (!('indexedDB' in window) || !indexedDB.databases) return;
+  try {
+    for (const db of await indexedDB.databases()) {
+      if (db.name && (db.name.startsWith('meditation-timer') || db.name.startsWith('meditation'))) {
+        indexedDB.deleteDatabase(db.name);
+      }
+    }
+  } catch {}
+}
+
+async function deleteApp() {
+  if (!confirm('Delete this app from your device?\n\n'
+    + 'Its saved soundtrack, offline files and settings are removed, and it will stop '
+    + 'working offline. You can install it again later.')) return;
+
+  elDeleteBtn.disabled = true;
+
+  // Release every audio resource and stop all timers first (the same teardown the X
+  // does), but keep the window so this screen can be shown.
+  deleting = true;
+  shutdownApp();
+
+  const before = await usedBytes();
+
+  // 1. This app's worker only. The scope filter is what protects the other apps' workers.
+  try {
+    const regs = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(regs
+      .filter(r => new URL(r.scope).pathname.startsWith(APP_SCOPE))
+      .map(r => r.unregister()));
+  } catch {}
+
+  // 2. Cache Storage: only the caches this app created.
+  try {
+    const keys = await caches.keys();
+    await Promise.all(keys.filter(k => k.startsWith(CACHE_PREFIX)).map(k => caches.delete(k)));
+  } catch {}
+
+  // 3. localStorage: explicit keys only, never clear().
+  DELETE_KEYS.forEach(k => { try { localStorage.removeItem(k); } catch {} });
+  try {
+    Object.keys(sessionStorage).filter(k => k.startsWith('meditation'))
+      .forEach(k => sessionStorage.removeItem(k));
+  } catch {}
+  await dropIndexedDB();
+
+  const freed = Math.max(0, before - await usedBytes());
+  const mb = freed >= 1e9 ? (freed / 1e9).toFixed(1) + ' GB' : Math.round(freed / 1e6) + ' MB';
+
+  // Never reload: that would re-fetch the shell and re-register the worker.
+  elDeletedSub.textContent = (freed > 100000 ? `${mb} freed. ` : '')
+    + 'To remove the icon, delete it from your home screen like any other app. '
+    + 'Opening this page again installs it fresh.';
+  elDeletedLayer.classList.remove('hidden');
+  document.body.classList.add('modal-open');
+  elDeletedReopen.focus();
+}
+
+elDeleteBtn.addEventListener('click', () => {
+  deleteApp().catch(err => {
+    console.error('Delete app failed:', err);
+    elDeleteBtn.disabled = false;
+  });
+});
+
+elDeletedReopen.addEventListener('click', () => location.reload());
+
 // ── Init ─────────────────────────────────────────────────────────────────────
 
 elVersion.textContent = APP_VERSION;
@@ -1862,6 +1964,7 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.ready.then(async () => {
     const swVersion = await getSwVersion();
     if (!swVersion || swVersion === APP_VERSION) return;
+    if (closing) return;          // the app was closed or deleted: do not reinstall it
     if (state !== 'idle') return;
     // Record the exact pair we tried. If a deploy really is internally inconsistent,
     // repairing cannot fix it, and retrying every launch would wipe the cache and reload

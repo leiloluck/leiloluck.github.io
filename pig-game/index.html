@@ -1201,6 +1201,23 @@
           </button>
         </div>
       </div>
+
+      <div class="divider"></div>
+
+      <!-- Delete app: removes everything this app stored on the device, including the
+           shell and the downloaded library, and unregisters its service worker. See
+           deleteApp() — it never touches the other apps that share this origin. -->
+      <div class="settings-block">
+        <div class="settings-label">Delete app</div>
+        <p class="settings-hint">
+          Removes the app from this device: its offline music, its caches and its saved
+          settings. The tracks stay on the website, so you can install it again later.
+        </p>
+        <button id="btn-delete-app" class="btn btn-delete" type="button">
+          <span class="icon">🗑️</span>
+          <span>Delete app and data</span>
+        </button>
+      </div>
     </section>
 
     <div class="bottom-spacer"></div>
@@ -1257,6 +1274,20 @@
       <p>All audio stopped and released.</p>
       <p id="closed-sub"></p>
       <button class="btn indigo" id="btn-reopen" type="button">Open again</button>
+    </div>
+  </div>
+
+  <!-- Shown after the app is deleted. Every file, cache and setting this app stored is
+       gone and its service worker is unregistered. A web page cannot uninstall its own
+       PWA, so the final step (removing the icon) belongs to the OS; opening this page
+       again reinstalls it fresh. See deleteApp(). -->
+  <div class="closed-layer" id="deleted-layer" role="dialog" aria-modal="true" aria-labelledby="deleted-title" hidden>
+    <div class="closed-panel">
+      <div class="closed-icon">🗑️</div>
+      <h2 id="deleted-title">App deleted</h2>
+      <p>Its offline music, caches and saved settings are gone from this device.</p>
+      <p id="deleted-sub"></p>
+      <button class="btn indigo" id="btn-deleted-reopen" type="button">Open again</button>
     </div>
   </div>
 
@@ -2443,6 +2474,7 @@
     }
 
     async function refreshOfflineState() {
+      if (closing) return;   // the app was closed or deleted: never recreate a deleted cache
       document.body.classList.toggle('is-offline', isOffline());
       if (!('caches' in window) || !libraryFiles.length) return;
       let cache;
@@ -2817,6 +2849,122 @@
 
     document.getElementById('btn-close').addEventListener('click', shutdownApp);
     document.getElementById('btn-reopen').addEventListener('click', reopenApp);
+
+    // ---------- Delete app ----------
+    //
+    // Removes everything this app put on the device: its service-worker registration,
+    // its Cache Storage entries (the shell AND the ~940 MB audio library), its
+    // localStorage keys and, best-effort, any IndexedDB it created.
+    //
+    // Two rules, both load-bearing:
+    //   * Cache Storage, localStorage, sessionStorage and IndexedDB are scoped to the
+    //     ORIGIN, not the path, and this origin hosts several apps. `localStorage.clear()`
+    //     or an unfiltered `caches.keys()` sweep would erase the Meditation Timer and
+    //     poltergeist.exe along with this app. Every step below is prefix-scoped.
+    //   * A web page CANNOT uninstall its own PWA. There is no API, and the home-screen
+    //     icon is the OS's to remove. What this does guarantee is that every byte the app
+    //     stored is gone and its worker is unregistered, so the icon becomes an empty
+    //     shell that reinstalls from scratch the next time the page is opened.
+    //
+    // The browser's HTTP cache is unreachable from script (Clear-Site-Data needs a
+    // response header, which a static GitHub Pages host cannot send). It is small,
+    // self-expiring, and insignificant next to the Cache Storage cleared here.
+    const APP_SCOPE = new URL('./', location.href).pathname;   // '/pig-game/'
+    const DELETE_KEYS = [INSTALLED_KEY];
+
+    const usedBytes = async () => {
+      try { return navigator.storage && navigator.storage.estimate ? ((await navigator.storage.estimate()).usage || 0) : 0; }
+      catch { return 0; }
+    };
+
+    // No app here uses IndexedDB today; this keeps the wipe honest if one ever does.
+    const dropIndexedDB = async () => {
+      if (!('indexedDB' in window) || !indexedDB.databases) return;
+      try {
+        for (const db of await indexedDB.databases()) {
+          if (db.name && (db.name.startsWith('pig-game') || db.name.startsWith('piggame'))) {
+            indexedDB.deleteDatabase(db.name);
+          }
+        }
+      } catch {}
+    };
+
+    async function deleteApp() {
+      if (!confirm('Delete this app from your device?\n\n'
+        + 'Its offline music, caches and saved settings are removed, and it will stop '
+        + 'working offline.\n\nThe tracks stay on the website, so you can install it '
+        + 'again later.')) return;
+
+      const btn = document.getElementById('btn-delete-app');
+      btn.disabled = true;
+
+      // Stop everything the app is running before erasing its storage: a download in
+      // flight, the wake lock, the player, and the lock-screen controls.
+      if (downloadAbort) downloadAbort.abort();
+      holdWakeLock(false);
+      userPaused = true;
+      if (window.stopSeekUpdates) window.stopSeekUpdates();
+      releaseEl(musicAudio);
+      musicAudio = null;
+      activeMusicUrl = null;
+      activeSfx.forEach(releaseEl);
+      activeSfx.clear();
+      if ('mediaSession' in navigator) {
+        try {
+          ['play', 'pause', 'stop', 'previoustrack', 'nexttrack', 'seekto', 'seekbackward', 'seekforward']
+            .forEach(a => navigator.mediaSession.setActionHandler(a, null));
+          navigator.mediaSession.metadata = null;
+          navigator.mediaSession.playbackState = 'none';
+        } catch {}
+      }
+      closeInstallSheet();
+      closing = true;   // a queued update must not reload the app we are deleting
+
+      const before = await usedBytes();
+
+      // 1. This app's worker only. The scope filter is what keeps the other apps' workers.
+      try {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs
+          .filter(r => new URL(r.scope).pathname.startsWith(APP_SCOPE))
+          .map(r => r.unregister()));
+      } catch {}
+
+      // 2. Cache Storage: only the caches this app created.
+      try {
+        const keys = await caches.keys();
+        await Promise.all(keys.filter(k => k.startsWith(CACHE_PREFIX)).map(k => caches.delete(k)));
+      } catch {}
+
+      // 3. localStorage: explicit keys only, never clear().
+      DELETE_KEYS.forEach(k => { try { localStorage.removeItem(k); } catch {} });
+      try {
+        Object.keys(sessionStorage).filter(k => k.startsWith('pig-game') || k.startsWith('piggame'))
+          .forEach(k => sessionStorage.removeItem(k));
+      } catch {}
+      await dropIndexedDB();
+
+      const freed = Math.max(0, before - await usedBytes());
+
+      // Never reload: that would re-fetch the shell and re-register the worker.
+      document.getElementById('deleted-sub').textContent = (freed > 100000 ? `${mb(freed)} freed. ` : '')
+        + 'To remove the icon, delete it from your home screen like any other app. '
+        + 'Opening this page again installs it fresh.';
+      document.getElementById('deleted-layer').hidden = false;
+      lockPageScroll(true);
+      document.getElementById('btn-deleted-reopen').focus();
+    }
+
+    document.getElementById('btn-delete-app').addEventListener('click', () => {
+      deleteApp().catch(err => {
+        console.error('Delete app failed:', err);
+        toast('Could not delete the app. Try again.');
+        const b = document.getElementById('btn-delete-app');
+        if (b) b.disabled = false;
+      });
+    });
+
+    document.getElementById('btn-deleted-reopen').addEventListener('click', () => location.reload());
 
     // Start App
     loadAudioFiles();

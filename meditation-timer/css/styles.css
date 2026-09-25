@@ -596,6 +596,19 @@ body.paused .countdown { color: var(--muted); }
   background: transparent;
 }
 
+/* Destructive: quiet outlined vermilion, the colour otherwise reserved for the close
+   control. It sits under Updates and must never compete with the Install button. */
+.btn-danger {
+  border-color: rgba(208, 85, 58, 0.55);
+  color: var(--shu);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn-danger:hover:not(:disabled) { border-color: var(--shu); color: var(--shu); }
+}
+
+.btn-danger:active:not(:disabled) { background: rgba(208, 85, 58, 0.12); }
+
 .settings-list {
   list-style: none;
   display: flex;

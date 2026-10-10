@@ -11,7 +11,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.09.25b';   // format vYY.MM.DD — keep in lockstep with sw.js + index.html
+const APP_VERSION = 'v26.10.10';   // format vYY.MM.DD — keep in lockstep with sw.js + index.html
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 //
@@ -29,14 +29,16 @@ const SOUNDS = [
     file: './resources/bowls long interval.mp3',
     type: 'loop',
   },
-  {
-    id: 'bowl-bell',
-    label: 'Interval bell',
-    sub: 'every 1 min',
-    file: './resources/Single bowl sound.mp3',
-    type: 'interval',
-    intervalMs: 60000,
-  },
+  // Hidden for now (fixed 1-min interval); a randomized bell mode will replace it.
+  // The file is still fetched and decoded — it IS the end-of-session chime.
+  // {
+  //   id: 'bowl-bell',
+  //   label: 'Interval bell',
+  //   sub: 'every 1 min',
+  //   file: './resources/Single bowl sound.mp3',
+  //   type: 'interval',
+  //   intervalMs: 60000,
+  // },
 ];
 
 // ── Fade constants (seconds) ─────────────────────────────────────────────────
@@ -1043,7 +1045,7 @@ function renderSounds() {
 
 // ── Duration buttons ─────────────────────────────────────────────────────────
 
-const PRESETS = [5, 10, 15, 20];
+const PRESETS = [5, 10, 15, 20, 25];
 
 function renderDurations() {
   elDurationGroup.innerHTML = '';

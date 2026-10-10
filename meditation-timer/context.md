@@ -2,7 +2,7 @@
 
 A minimalist meditation timer PWA. The user selects a sound and a duration; audio fades in at the start and fades out at the end. Installable on Android + iPhone, offline-first.
 
-**Version:** v26.09.18b (format `vYY.MM.DD` — year.month.day; bump on every change, in
+**Version:** v26.10.10 (format `vYY.MM.DD` — year.month.day; bump on every change, in
 lockstep across `index.html`, `sw.js` `VERSION`, and `js/app.js` `APP_VERSION`).
 
 ---
@@ -167,6 +167,12 @@ routed through the gain node so beats fade with the envelope). This replaced the
 `setTimeout` + `audioEl` approach, which silently stopped advancing whenever the
 screen was locked. `startKeepAlive()` keeps the context alive between beats.
 
+**The `bowl-bell` catalogue entry is commented out for now** (v26.10.10) — the fixed
+1-minute interval is being replaced by a randomized bell mode. Hiding the *entry* only
+removes it from the Sound selector; `Single bowl sound.mp3` is still fetched and decoded
+in both modes, because it is the end-of-session chime (`loadBell()` is not driven by
+`SOUNDS`).
+
 ---
 
 ## Timer
@@ -302,8 +308,8 @@ Otherwise the clock would shift sideways every second.
 
 **Layout:** a full-height column (`100svh`). The ensō section is the only flexible child,
 so on tall phones the spare height goes to the hero and the controls sit at the bottom,
-in thumb reach. Durations are a 3-column grid (two rows). Screens under 680 px tall shrink
-the ensō and drop the bell hint.
+in thumb reach. Durations are a 3-column grid (5/10/15, then 20/25/Custom — two rows).
+Screens under 680 px tall shrink the ensō and drop the bell hint.
 
 **Tabs:** header, then two tabs (`TABS` + `showTab()` in app.js, same pattern as
 poltergeist): **Meditate** (the practice screen above) and **Settings**. A running session
@@ -370,7 +376,7 @@ dead context and refill the memory the X just released.
 | File | Duration | Type |
 |---|---|---|
 | `resources/bowls long interval.mp3` | ~44 MB, ~1 hr | `loop` |
-| `resources/Single bowl sound.mp3` | ~1.5 MB, ~39 s | `interval` (60 s cycle) |
+| `resources/Single bowl sound.mp3` | ~1.5 MB, ~39 s | end chime; `interval` entry hidden for now |
 
 Both files have metadata stripped via `ffmpeg -i input.mp3 -map_metadata -1 -c:a copy output.mp3`.
 

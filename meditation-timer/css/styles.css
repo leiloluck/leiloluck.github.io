@@ -500,8 +500,9 @@ body.paused .countdown { color: var(--muted); }
   width: 100%;
 }
 
-#sound-group    { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-/* Three across: 5 / 10 / 15, then 20, [saved custom], Custom. Two rows instead of three. */
+/* auto-fit: one sound fills the row; two sounds share it. */
+#sound-group    { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+/* Three across: 5 / 10 / 15, then 20 / 25 / Custom. Two rows instead of three. */
 #duration-group { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 
 .btn {

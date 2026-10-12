@@ -1,0 +1,1746 @@
+<!DOCTYPE html>
+<!-- bells.html — study page for the bell strikes extracted from "bowls long interval.mp3".
+     Tab 1 "Extracted": the six unique, non-overlapping bells (data: bells/bells-data.js,
+     full 117-clip record: bells/bells-full.json).
+     Tab 2 "Generated": investigation of synthesizing new bells — (A) from the measured
+     modal pattern with damped sines, (B) by repitching/layering the real recordings.
+     Tab 3 "Tuned": interval distributions, the chord study (chords are OUT of the final
+     product), and the pattern player (singles only).
+     Tab 4 "Tuned 2": full-session preview — the pool (5 bells × 5 pitches), end-aware
+     sampling, the app's triple stop chime. Sources: ../resources/sources.md. -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bell study</title>
+<style>
+  :root {
+    --bg: #14100b; --surface: #1e1710; --surface-2: #261d14; --border: #3a2e22;
+    --accent: #c9934a; --text: #f0e2cc; --muted: #bda98d; --strike: #e8604c; --ok: #93c47d;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px 16px 64px; }
+  h1 { font-size: 22px; font-weight: 500; margin: 0 0 10px; }
+  h2 { font-size: 16px; font-weight: 500; margin: 0 0 6px; }
+  p { margin: 0 0 8px; }
+  .muted { color: var(--muted); }
+  small { color: var(--muted); }
+  code { background: var(--surface-2); padding: 1px 4px; font-size: 13px; }
+  pre { background: var(--surface-2); border: 1px solid var(--border); padding: 10px; overflow-x: auto; font-size: 13px; line-height: 1.5; }
+  .stats { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+  .stat { background: var(--surface); border: 1px solid var(--border); padding: 8px 12px; min-width: 110px; }
+  .stat b { display: block; font-size: 20px; font-weight: 500; color: var(--accent); }
+  .panel { background: var(--surface); border: 1px solid var(--border); padding: 12px; margin: 12px 0; }
+  .panel h2 { margin-bottom: 8px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin: 10px 0; }
+  .controls label { cursor: pointer; user-select: none; display: flex; align-items: center; gap: 6px; }
+  select, button.btn { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); padding: 7px 10px; font: inherit; cursor: pointer; }
+  select:hover, button.btn:hover { border-color: var(--accent); }
+  button.btn.primary { color: var(--accent); border-color: var(--accent); }
+  input[type=range] { accent-color: var(--accent); width: 130px; }
+  canvas { display: block; width: 100%; }
+  #overview { height: 70px; cursor: pointer; }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 8px; font-size: 13px; }
+  .legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; margin-right: 4px; background: var(--c); vertical-align: -1px; }
+  .clip { display: grid; grid-template-columns: 40px 1fr; gap: 8px; align-items: center; padding: 5px 0; }
+  .clip + .clip { border-top: 1px solid var(--border); }
+  .clip canvas { height: 46px; cursor: pointer; background: var(--surface-2); }
+  .clip.gen canvas { height: 64px; }
+  .clip-meta { grid-column: 2; font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 0 14px; }
+  .clip-meta a { color: #d9b26e; text-decoration: underline; }
+  .clip-meta b { color: var(--text); font-weight: 500; }
+  .play { width: 40px; height: 40px; border: 1px solid var(--border); background: transparent; color: var(--accent); font-size: 14px; cursor: pointer; }
+  .play.on { background: var(--accent); color: var(--bg); }
+  .tag { font-size: 12px; padding: 1px 6px; border: 1px solid var(--border); color: var(--muted); }
+  .tag.tuned { border-color: var(--ok); color: var(--ok); }
+  .tag.flat { border-color: var(--strike); color: var(--strike); }
+  details summary { cursor: pointer; color: var(--muted); font-size: 13px; margin-top: 6px; }
+  .flash { outline: 2px solid var(--accent); }
+  .tabs { display: inline-flex; gap: 8px; }
+  .tab { background: transparent; color: var(--muted); border: 1px solid var(--border); padding: 8px 18px; font: inherit; cursor: pointer; }
+  .tab[aria-selected="true"] { color: var(--accent); border-color: var(--accent); }
+  .tabrow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 6px 0 16px; }
+  #stop-all { position: fixed; left: 18px; bottom: 18px; z-index: 60; margin-left: 0; box-shadow: 0 3px 14px rgba(0,0,0,0.6); }
+  #dist-figure, #pat-timeline, #final-timeline { width: 100%; background: var(--surface-2); border: 1px solid var(--border); }
+  .track-row { display: grid; grid-template-columns: 44px 1fr; gap: 8px; padding: 9px 0; align-items: start; }
+  .track-row + .track-row { border-top: 1px solid var(--border); }
+  .track-row .row-head { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; color: var(--muted); margin: 0 0 4px; }
+  .track-row .row-head b { color: var(--text); font-weight: 500; }
+  .track-row canvas { width: 100%; height: 122px; background: var(--surface-2); border: 1px solid var(--border); cursor: pointer; }
+  .audit-row { padding: 9px 0; }
+  .audit-row + .audit-row { border-top: 1px solid rgba(58,46,34,0.6); }
+  .audit-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 12px; align-items: center; margin-bottom: 5px; }
+  .audit-label { font-size: 13px; }
+  .audit-btns { display: flex; gap: 6px; }
+  .audit-btn { padding: 4px 9px; font-size: 13px; }
+  .audit-cv { width: 100%; height: 64px; background: var(--surface-2); border: 1px solid var(--border); cursor: pointer; }
+  .ab-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+  .ab-cap { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; margin-bottom: 4px; }
+  @media (max-width: 700px) { .ab-grid { grid-template-columns: 1fr; } }
+  button.btn.sel { color: var(--accent); border-color: var(--accent); }
+  .hidden { display: none; }
+  table.modes { border-collapse: collapse; font-size: 13px; margin: 6px 0; }
+  table.modes th, table.modes td { border: 1px solid var(--border); padding: 4px 8px; text-align: left; font-weight: 400; }
+  table.modes th { color: var(--muted); }
+  .families { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 700px) { .families { grid-template-columns: 1fr; } .clip-meta { font-size: 12px; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Bell study <span class="muted" style="font-size:13px; font-weight:400">· rev 14 (2026-10-11)</span></h1>
+  <div class="tabrow">
+    <div class="tabs" role="tablist" aria-label="Sections">
+      <button class="tab" id="tab-extracted" type="button" role="tab" aria-selected="true">Extracted</button>
+      <button class="tab" id="tab-generated" type="button" role="tab" aria-selected="false">Generated</button>
+      <button class="tab" id="tab-tuned" type="button" role="tab" aria-selected="false">Tuned</button>
+      <button class="tab" id="tab-final" type="button" role="tab" aria-selected="false">Tuned 2</button>
+    </div>
+    <button class="btn" id="stop-all" type="button" title="Stop everything that is playing">■ Stop all</button>
+  </div>
+
+  <!-- ── TAB 1: EXTRACTED ─────────────────────────────────────────────────── -->
+  <section id="panel-extracted">
+    <p class="muted">Every bell strike cut out of <code>bowls long interval.mp3</code> (55:16). The track is a sequence of recorded strikes separated by digital silence, so clips were cut at those silences — no filtering or editing. Then the set was cleaned: <b>15 clips contained overlapping strikes</b> and were deleted; of the remaining 102 clips, repeated placements of the same recording were merged, keeping the longest tail; finally two same-pitch pairs turned out to be separate takes of the same bowl (97–99.8&nbsp;% waveform-identical) and only one of each was kept. Result: <b>6 unique, non-overlapping bells</b>. The full 117-clip record stays in <code>bells/bells-full.json</code>.</p>
+    <p class="muted"><b>Reading the notes:</b> "C3&nbsp;−27¢" means the strongest partial sits 27 <i>cents</i> below standard C3 — a cent is 1/100 of a semitone (1200 per octave). Hand-made bowls are essentially never exactly on a note; that slight detune and the slow beating it causes are a large part of the character.</p>
+
+    <div class="stats" id="stats"></div>
+
+    <div class="panel">
+      <h2>Full track</h2>
+      <p class="muted" style="font-size:13px">Loudness of the whole 55-minute track; marks show where the six kept bells occur. Click to jump to one.</p>
+      <canvas id="overview"></canvas>
+      <div class="legend" id="legend"></div>
+    </div>
+
+    <div class="controls">
+      <label><input type="checkbox" id="opt-scale" checked> Common time scale (compare lengths)</label>
+    </div>
+
+    <div id="rows"></div>
+  </section>
+
+  <!-- ── TAB 2: GENERATED ─────────────────────────────────────────────────── -->
+  <section id="panel-generated" class="hidden">
+
+    <div class="panel">
+      <h2>What the six bells are made of (measured)</h2>
+      <p class="muted">Each bell is a sum of a few very stable partials. Two "families" appear — two different bowls, each recorded at three pitches. The lower table is from the literature on singing bowls (see <code>resources/sources.md</code>).</p>
+      <div class="families">
+        <table class="modes">
+          <tr><th colspan="2">Family 1 — tuned (C3 130.8 · G3 195.9 · C4 261.6 Hz)</th></tr>
+          <tr><td>modes at</td><td>1 · 2.84 · 5.48 <span class="muted">(+ rumble at 0.43/0.51)</span></td></tr>
+          <tr><td>fundamental</td><td>close pair, beating 1.3–4.5 Hz</td></tr>
+          <tr><td>decay (τ)</td><td>4–7 s; rumble 9–19 s</td></tr>
+          <tr><td>strike</td><td>sharp — peak within 5–30 ms</td></tr>
+        </table>
+        <table class="modes">
+          <tr><th colspan="2">Family 2 — 27¢ flat (C3 128.8 · G3 193.0 · C4 257.6 Hz)</th></tr>
+          <tr><td>modes at</td><td>1 · 2.80 · 5.19 · 8.01 · 11.28</td></tr>
+          <tr><td>fundamental</td><td>close pair, beating 4.4–5.8 Hz</td></tr>
+          <tr><td>decay (τ)</td><td>1.5–6 s (upper modes 0.7–3.5 s)</td></tr>
+          <tr><td>strike</td><td>soft swell — peak after 0.2–0.45 s</td></tr>
+        </table>
+      </div>
+      <table class="modes" style="margin-top:10px">
+        <tr><th>From the literature (sources.md)</th><th></th></tr>
+        <tr><td>Fundamentals of real bowls</td><td>mostly 100–800 Hz; large bowls (20 cm+) under 250 Hz — the six bells (129–262 Hz) sit in that range (Mindful Store)</td></tr>
+        <tr><td>Mode structure</td><td>every mode comes as a <i>pair</i> split by 1–11 Hz → the beating that makes bowls "shimmer"; first mode ratios ≈ 1 : 2.8 : 5.2 (Inácio et al. 2003)</td></tr>
+        <tr><td>Decay</td><td>very slow damping (0.002–0.015 %); one measured bowl beats at 6.68 Hz and rings ~50 s (Park et al. 2021)</td></tr>
+      </table>
+      <p class="muted" style="font-size:13px; margin-top:8px">The extracted bells match this pattern remarkably well — including the beating pairs (1.3–5.8 Hz) and the 1&nbsp;:&nbsp;2.84&nbsp;:&nbsp;5.48 stack. That is what makes synthesis feasible: the recipe is only ~10 numbers per bell.</p>
+    </div>
+
+    <div class="panel">
+      <h2>A · Generate from the pattern</h2>
+      <p class="muted">A bell is a sum of damped sine waves — each partial gets a frequency, level, decay time and phase — plus a strike transient: a short noise burst split into low/mid/high bands, each decaying at its own rate, and every partial starts in phase the way a real strike excites it (modes alone <i>or</i> a naive noise click alone both sound synthetic — see sources.md, DAFx 2019). Randomize within the measured ranges and every bell is new but still belongs to the family. This runs in the page on the fly (no files); the whole recipe is the loop below.</p>
+      <div class="controls">
+        <label>Family
+          <select id="gen-family">
+            <option value="auto">random</option>
+            <option value="tuned">1 · tuned</option>
+            <option value="flat">2 · 27¢ flat</option>
+          </select>
+        </label>
+        <label>Pitch
+          <select id="gen-pitch">
+            <option value="">random of the six</option>
+            <option value="130.8">C3 130.8</option>
+            <option value="195.9">G3 195.9</option>
+            <option value="261.6">C4 261.6</option>
+            <option value="128.8">C3 128.8 (flat)</option>
+            <option value="193.0">G3 193.0 (flat)</option>
+            <option value="257.6">C4 257.6 (flat)</option>
+          </select>
+        </label>
+        <label>Detune ±<span id="gen-cents-val">25</span>¢ <input type="range" id="gen-cents" min="0" max="60" value="25"></label>
+        <label>Character
+          <select id="gen-char">
+            <option value="calm">calm (long, soft)</option>
+            <option value="default" selected>as measured</option>
+            <option value="bright">bright (short, more upper modes)</option>
+          </select>
+        </label>
+        <button class="btn primary" id="gen-go">Generate &amp; play</button>
+      </div>
+      <div id="gen-rows"></div>
+      <details>
+        <summary>The whole synthesis (it is this short)</summary>
+<pre>// one bell = sum of damped sines; partials taken from the family table above
+const d = new Float32Array(len);            // len ≈ 15 s · 44100
+for (const p of partials) {                 // ~6–12 partials
+  const w = 2*Math.PI*p.f/sr;
+  const d1 = Math.exp(-1/(p.tau*sr));                 // decay factor
+  const d2 = Math.exp(-(1/p.tau + 1/p.rise)/sr);      // rise factor (contact time)
+  let e1 = p.amp, e2 = p.amp, phase = p.phi;
+  for (let i = 0; i &lt; len; i++, e1 *= d1, e2 *= d2) {
+    d[i] += (e1 - e2) * Math.sin(phase);   // rise then decay, like a struck resonator
+    phase += w;                            // (+ a few cents of settling glide)
+  }
+}
+// strike: one short noise burst split low/mid/high, each band decaying at its own
+// rate (impact-sound recipe, sources.md). All modes start in phase: one polarity.
+// Then normalize.</pre>
+      </details>
+    </div>
+
+    <div class="panel">
+      <h2>B · Manipulate the real recordings</h2>
+      <p class="muted">The safest variation: replay an existing bell at a slightly different speed (<code>playbackRate</code>). Pitch and decay scale together, exactly as if the bowl were a bit smaller or bigger — artifact-free, but it can't leave the neighbourhood of the original: ±25–50¢ sounds like a sibling, ±100¢+ starts to sound like the same bell transposed. Layering two or three real bells a few tens of cents apart gives a richer composite that is still 100&nbsp;% real recordings.</p>
+      <div class="controls">
+        <label>Bell <select id="rep-bell"></select></label>
+        <label>Repitch <span id="rep-cents-val">−30</span>¢ <input type="range" id="rep-cents" min="-150" max="150" value="-30"></label>
+        <span class="muted" id="rep-info" style="font-size:13px"></span>
+        <button class="btn primary" id="rep-play">Play repitched</button>
+        <button class="btn" id="rep-layer">Play as 3-bell layer</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>So how realistic is it?</h2>
+      <p>For a meditation interval bell, <b>both routes are realistic</b> — the sustained ring is the easy part, because these bowls are almost pure steady partials (damping 0.002–0.015&nbsp;%). Route&nbsp;A reproduces that faithfully as long as the beating pairs and the family-specific attack (sharp vs slow swell) are kept; it gives unlimited, never-repeating bells but the strike transient is the hardest part to fake. Route&nbsp;B is bulletproof and instantly convincing but only varies around six existing sounds.</p>
+      <p class="muted">Suggested next step (for the app, later): keep the six real bells and pick one at random per interval with a tiny random repitch (±10–20¢) — no repetition, no risk. That route is developed in the <b>Tuned</b> tab: live pitching measurements, loudness-matched chords, and interval patterns. Synthesized bells (route&nbsp;A) can be auditioned as extra material and, if they hold up against the real ones by ear, mixed in as additional voices.</p>
+      <p class="muted" style="font-size:13px">Sources for the acoustics: <code>resources/sources.md</code> — Inácio, Henrique &amp; Antunes 2003; Terwagne &amp; Bush 2011; Sabat 2022; Park et al. 2021; Mindful Store 2024. Everything in this tab is a study — none of it is in the shipped app.</p>
+    </div>
+
+  </section>
+
+  <!-- ── TAB 3: TUNED — the chosen route: pitch and combine the real bells ── -->
+  <section id="panel-tuned" class="hidden">
+
+    <div class="panel">
+      <h2>1 · Live pitching vs. a pre-rendered library</h2>
+      <p class="muted">You chose route B (pitch the real bells). Should it happen live on the device, or should pitched files be baked into a small library? Measured on this machine — Chrome, six bells, real files:</p>
+      <table class="modes">
+        <tr><th></th><th>live — <code>playbackRate</code> on decoded bells</th><th>pre-rendered library</th></tr>
+        <tr><td>one-time cost</td><td>decode all six: ~0.5 s of CPU total, 40 MB RAM</td><td>zero on the device (paid at build time)</td></tr>
+        <tr><td>per pitched bell</td><td>~0.01 ms — a rate parameter; the audio engine re-samples natively for free</td><td>~30–70 ms render + encode per variant, plus a file to ship</td></tr>
+        <tr><td>files to ship</td><td>the six bells, 1.75 MB total</td><td>6 bells × N variants; 5 variants ≈ 8 MB, 12 ≈ 20 MB</td></tr>
+        <tr><td>timing</td><td>sample-accurate scheduling on the audio clock (chords, patterns, lock screen)</td><td>fine per file, but arbitrary chord combinations can't be baked without a combinatorial explosion</td></tr>
+        <tr><td>flexibility</td><td>any detune value, any combination, instantly</td><td>only the baked variants (which you'd re-pitch with playbackRate anyway)</td></tr>
+      </table>
+      <p><b>Verdict: pitch live.</b> Re-sampling is native to the audio engine — the only real costs are a one-time decode (~40 MB RAM for six bells; can be lazy or mono if a phone ever complains) and exactly nothing per note. A pre-rendered library buys nothing here, except the option of <i>time-preserving</i> pitch shift — which is precisely the manipulation we do <b>not</b> want: route B's charm is that a pitched bell is pitched <i>and</i> stretched together (a smaller/larger bowl). Pre-render only if you ever need a single shareable stream file.</p>
+      <canvas id="pitched-figure" style="height:250px;background:var(--surface-2);border:1px solid var(--border);margin-top:6px"></canvas>
+      <p class="muted" style="font-size:13px">The same numbers as bars. Left: work to prepare one pitched bell (log scale — three orders of magnitude apart). Middle: data that ships with the app. Right: the one-time cost when a session starts. Baking moves work to build time but buys nothing on the device — resampling is native, chords can't be baked combinatorially, and every baked file adds download weight and a generation of lossy encoding.</p>
+      <p class="muted" style="font-size:13px">(The chord files on this page are pre-rendered anyway — not for the app, but because a page opened from <code>file://</code> cannot mix audio sample-accurately: fetching the mp3s for Web Audio decoding is blocked. The shipped app is http-served and schedules buffer sources, so there everything runs live and sample-accurate — exactly how its existing triple end-bell already works.)</p>
+    </div>
+
+    <div class="panel">
+      <h2>2 · Chords — 2–3 bells at once, same loudness as one bell</h2>
+      <p class="muted">Why the old layer test was "quite loud and off": the three bells launched as separate media elements (tens of ms apart, sometimes more), and three bells simply stacked sum to about +4.8 dB. The fix is a gain system — measured loudness (stereo RMS) of the six bells:</p>
+      <table class="modes" id="loud-table"></table>
+      <p class="muted" style="font-size:13px">Their loudness spans 6.3 dB — the quietest and loudest differ by more than a doubling of amplitude. Note: the flat family is recorded almost out of phase between channels (correlation −0.67) while the tuned family is in phase (+0.66) — a mono downmix loses up to 6 dB on the flat ones, so loudness must be measured in stereo, which is what headphones and stereo speakers play.</p>
+      <p><b>The system:</b> normalise every bell to one reference loudness (here the quietest, so no gain exceeds 1), then a chord of N bells divides each member by <b>√N</b> (−3 dB for two, −4.8 dB for three). Uncorrelated sounds add in <i>power</i>, so dividing amplitudes by √N gives the sum the power of one bell: a chord rings as loud as a single bell. Measured result: the tuned trio lands 1.3 dB under a single bell (residual comes from the bells being slightly correlated). Every event in a session — single or chord, at any pitch — can then sit at one session loudness; that is what makes 30 minutes of random bells feel calm instead of jumpy.</p>
+      <div id="chord-rows"></div>
+      <p class="muted" style="font-size:13px;margin-top:8px">The chord <i>onset</i> — the first tens of milliseconds — is a separate problem with its own measurements and options: § 3. Chords themselves are out of the final product; this stays for the record.</p>
+    </div>
+
+    <div class="panel">
+      <h2>3 · The chord onset — why the first moments feel off, and the options</h2>
+      <p class="muted">Feedback: chords sound good <i>during</i> the sound, but a bit odd at the very start. Three measured contributors:</p>
+      <table class="modes">
+        <tr><th>contributor</th><th>what was measured</th></tr>
+        <tr><td><b>1 · An unreliable head on every bell file</b></td><td>The six bells are <i>stream slices</i> of the source MP3 (copied, not re-encoded). A slice starts mid-frame, so its first ~10–25 ms is reconstructed differently by different decoders — for the C3 bell the same file's first 20 ms comes out <b>22 dB apart</b> (ffmpeg vs libmpg123). A single bell hides this; a baked chord triples it: the trio carries ≈ −17 dBFS rms of sound in its first 25 ms, before the strike proper.</td></tr>
+        <tr><td><b>2 · The strike transients bunch</b></td><td>Three strikes of the same instruments, recorded the same way, land within a few ms of each other — the attack transients add almost linearly, while the sustained partials add as power (the ÷√N law of § 2). The trio's onset peak therefore sits ≈ 6 dB above the scaled peak of its loudest single member — hotter than the balanced body around it.</td></tr>
+        <tr><td><b>3 · Density</b></td><td>C3+G3+C4 stacks three sharp attacks. The duet (chord 03) has two; the flat set's soft swell is too slow to bunch at all — its trio shows no onset spike.</td></tr>
+      </table>
+      <p>The three fixes below all start from the same trio and can be combined. <b>Re-cut</b> cures 1 at the source; <b>stagger</b> and <b>soft onset</b> cure 2 — and in the live app both are free: a scheduling offset or a gain envelope on one buffer source, nothing to bake.</p>
+      <div id="onset-rows"></div>
+      <p class="muted" style="font-size:13px">Measured, channel 1: baseline first-25 ms −17.1 dB rms, onset peak −3.2 dBFS; re-cut <i>silent</i> / −3.2 dBFS; staggered −21.0 dB / −3.9 dBFS; soft-onset −19.7 dB / −4.9 dBFS. Body level unchanged in all four (−13.6 dB). Belt-and-braces build: re-cut + stagger + a small duck. Separate quirk, not shown here: the flat family is recorded anti-phase between channels (correlation −0.67) — on a mono speaker its chords (and its singles) lose up to 6 dB in the downmix; flipping one channel of those recordings would fix it.</p>
+    </div>
+
+    <div class="panel">
+      <h2>4 · When should the next bell come? (interval distributions)</h2>
+      <p class="muted">First, what the long track you extracted from actually does: 140 strikes over 55 min, median gap <b>24.5 s</b> (IQR 18.8–25.5 s) — a near-metronome at ~24 s that <i>never waits for the bells to ring out</i> (the big C3 bell rings 28 s) and sometimes fires tight repeats at 8–15 s. That regularity — not the sounds — is what made it feel repetitive.</p>
+      <canvas id="dist-figure" style="height:600px"></canvas>
+      <div class="controls">
+        <button class="btn" id="fig-download">⤓ Download figure as PNG</button>
+        <span class="muted" style="font-size:13px">Left: interval distribution. Right: a simulated 10-minute session with the ring drawn as a bar — nothing overlaps, by construction.</span>
+      </div>
+      <p><b>Common rule for all schemes:</b> an event's wait clock starts once the previous bell is <i>barely audible</i> — the moment it crosses a set threshold (default −40 dB below its own peak; adjustable in the player below). The bell itself is never cut: it keeps ringing underneath the wait and even underneath whatever comes next. Measured on these six recordings, waiting for true silence instead is pointless — from −40 dB to the noise floor takes under a second — the part that actually feels long is the quiet-but-audible stretch <i>above</i> the threshold, which is now visible and tunable. A chord counts as <i>one</i> event.</p>
+      <table class="modes">
+        <tr><th>scheme</th><th>what it feels like</th></tr>
+        <tr><td>Fixed (every 60 s)</td><td>what the app did before. Perfectly predictable; pleasant for minutes, mechanical over half an hour.</td></tr>
+        <tr><td>Uniform [45–90 s]</td><td>bounded and safe, but flat: every wait in the range is equally likely, so it neither surprises nor breathes. Reads as "random", not as natural.</td></tr>
+        <tr><td>Gaussian 65 ± 15 s (truncated 45–90)</td><td>most gaps cluster near the average → the ear learns the typical wait and it <i>feels regular</i> again; the tail never produces a genuinely long pause.</td></tr>
+        <tr><td><b>Truncated exponential</b> — wait ~Exp counted from the barely-audible point; floor 8 s; default cut-off at <b>twice the longest sound</b> — no gap beyond 2 × 28 s = 56 s, with the cut mass re-spread over the shorter waits (adjustable in the player)</td><td><b>Recommended.</b> This is the memoryless distribution of a Poisson process: the wait doesn't know how long you've already waited, so it is mathematically unpredictable — usually a few seconds, occasionally right up to the cut-off. The floor guarantees no overlap; the cut-off puts a hard ceiling on the longest gap and the probability of anything beyond it is exactly zero — the remaining mass is redistributed smoothly over the shorter waits (re-normalised density, no spike at the limit). (People systematically misperceive true randomness — real streaks feel non-random — which is why the tail should be capped; see sources.md.)</td></tr>
+      </table>
+    </div>
+
+    <div class="panel">
+      <h2>5 · Pattern player (preview of the app behaviour)</h2>
+      <p class="muted">Eight events from the palette (five bells — the flat C4 −27¢ is retired; chords are out of the final product), pitched live ±20¢ at the matched gains. Dots are the singles; each event's audible length is printed next to it. A pattern is sampled when you open the tab or change a setting; <b>click anywhere on the timeline to start from there</b>, or Play to run the whole thing.</p>
+      <div class="controls">
+        <label>Distribution
+          <select id="pat-dist">
+            <option value="fixed">fixed 60 s</option>
+            <option value="uniform">uniform 45–90 s</option>
+            <option value="gauss">gaussian 65 ± 15 s</option>
+            <option value="exp" selected>truncated exponential (recommended)</option>
+          </select>
+        </label>
+        <label>Ring threshold
+          <select id="pat-thresh">
+            <option value="30">−30 dB</option>
+            <option value="35">−35 dB</option>
+            <option value="40" selected>−40 dB (default)</option>
+            <option value="45">−45 dB</option>
+            <option value="50">−50 dB</option>
+          </select>
+        </label>
+        <label>Max wait
+          <select id="pat-maxwait">
+            <option value="rule" selected>2× longest sound — 56 s gap (default)</option>
+            <option value="15">15 s</option>
+            <option value="30">30 s</option>
+            <option value="45">45 s</option>
+            <option value="60">60 s</option>
+            <option value="none">no cap</option>
+          </select>
+        </label>
+        <label>Speed
+          <select id="pat-speed">
+            <option value="1">×1 · real time</option>
+            <option value="2">×2</option>
+            <option value="4" selected>×4</option>
+            <option value="8">×8</option>
+          </select>
+        </label>
+        <button class="btn primary" id="pat-play">▶ Play pattern</button>
+        <button class="btn" id="pat-stop">■ Stop</button>
+      </div>
+      <canvas id="pat-timeline" style="height:150px"></canvas>
+      <p class="muted" style="font-size:12px">darker bar = audible ring · tick = the threshold is crossed (the wait clock starts here) · faint bar = the inaudible tail, still ringing underneath and never cut · dotted line = the wait the distribution sampled for that gap (capped at Max wait; the cut-off mass is re-spread smoothly, no spike at the limit) · <b>Speed</b> replays the whole pattern tape-style: gaps and bell lengths shrink together and the bells pitch up with the factor (×1 = real time; ×4/×8 to feel the rhythm without the wait).</p>
+    </div>
+
+  </section>
+
+  <!-- ── TAB 4: FINAL — full-session preview of the product (singles only) ── -->
+  <section id="panel-final" class="hidden">
+    <div class="panel">
+      <h2>Tuned 2 · session preview (singles only, end-aware)</h2>
+      <p class="muted">The product behaviour, assembled: <b>a sound right at the start</b> (random), then the pool — each of the five bells (colour) at one of five pitches (the mark on the timeline shows the semitone offset; the C4 slides down only, −4…0, since it is already the highest bell), never the same bell at the same pitch twice in a row. The whole session is sampled up front, and nothing may collide with the ending: the last bell rings out with no preemptive fade, then a little gap, then the triple stop chime (exactly the app's ending).</p>
+      <p class="muted">All six session lengths are sampled below at once. <b>Click any timeline to start from that point</b> — events before it are skipped, and playback resumes 0.4 s later. Each ▶ plays its variant from the beginning.</p>
+      <div class="controls">
+        <label>Average wait <select id="final-mean">
+          <option value="5">5 s</option>
+          <option value="8" selected>8 s (default)</option>
+          <option value="12">12 s</option>
+          <option value="16">16 s</option>
+          <option value="22">22 s</option>
+        </select></label>
+        <span class="muted" style="font-size:13px">Max gap <b>fixed</b> at twice the longest sound — 56 s (the § 4 rule; not settable)</span>
+        <label>Speed <select id="final-speed">
+          <option value="1" selected>×1 · real time</option>
+          <option value="2">×2</option>
+          <option value="4">×4</option>
+          <option value="8">×8</option>
+        </select></label>
+        <button class="btn" id="final-stop">■ Stop</button>
+      </div>
+      <div id="final-rows"></div>
+      <div class="legend" id="final-legend"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Sound audit — every bell × every pitch in the product</h2>
+      <p class="muted">All five bells at their pitch offsets (the others slide −2…+2 semitones; the C4 only downward, −4…0 — it is already the highest bell; live <code>playbackRate</code>, same as the app), at the loudness-matched volume. Each row shows the bell's waveform — the playhead moves across it while it plays (faster at higher pitches, because it is literally the same file played faster). Click a waveform to replay it at the last pitch you chose for that bell; the buttons pick the pitch. Listen for clicks, clipping or odd artefacts.</p>
+      <div id="audit-used"></div>
+      <h2 style="margin-top:16px">Discarded sound</h2>
+      <p class="muted">The flat C4 −27¢ — discarded because it is short and cuts off unnaturally early. Kept on the shelf in case you change your mind.</p>
+      <div id="audit-discarded"></div>
+      <p class="muted" style="font-size:12px">For reference: every file's own peak measures between −2.3 and −7.8 dBFS with zero clipped samples — the files are clean. Any crackle heard during previews came from overlapping sounds summing past full scale (mainly the ×2–×8 preview speeds); the players now scale overlaps down automatically.</p>
+      <h2 style="margin-top:16px">Crackle test — original vs. safe version (A/B)</h2>
+      <p class="muted">The crackle is intermittent and never at the same spot, which rules out a corrupted file (that would click at the same moment every time) and points at the playback link itself: Chromium's Bluetooth audio buffering, or the speaker waking from standby. This section isolates what remains. Each bell is playable two ways: <b>original</b>, and a <b>safe</b> version pre-rendered with a 5 ms fade-in (removes any pop at the very first sample) and a lookahead limiter pinned at −1 dBFS. The safe files are lossless FLAC and their measured peaks are identical to the originals to six decimals — nothing here even reaches −2.3 dBFS, so the limiter does <i>nothing</i> audible. That is the point: if you can hear any difference at all, tell me. Also new: every play now waits 0.4 s after the click, and the link-warm option below keeps the audio stream from ever going quiet.</p>
+      <div class="controls" style="margin-bottom:6px">
+        <label class="muted" style="font-size:13px"><input type="checkbox" id="warm" checked> keep the link warm — an inaudible 25 Hz tone (−54 dBFS) runs while this page is open, so a sleeping Bluetooth speaker never has to wake mid-playback (same trick the app already uses)</label>
+      </div>
+      <div id="ab-rows"></div>
+      <h2 style="margin-top:16px">Denoise test — original vs. strength menu</h2>
+      <p class="muted" style="font-size:13px">Every bell plays its original plus spectral subtraction of increasing strength (all lossless FLAC). The number on each cell is that file's measured hiss-band reduction; ring level moves 0.01&nbsp;dB at most and the mallet strike loses 1.2–2.9&nbsp;dB. <b>FFT strong</b> (nr24) and <b>FFT max</b> (nr40) are the lighter settings, good on all bells. <b>FFT ultra</b> was rebuilt this round to fix the wub-wub: that underwater modulation came from the denoiser's gains wobbling frame to frame, so ultra now runs the deep subtraction with slow gain adaptation — same depth (59–62&nbsp;dB gone, including the C3's stubborn 4–8&nbsp;kHz layer that nothing else touched) with a measurably steadier residual, and barely touching tonal content on C3/C4 (~2&nbsp;dB). On the G3&nbsp;−27¢ ultra still shaves one partial ~29&nbsp;dB — ear-check it, and take FFT max there if it bothers. Deeper than this, subtraction starts eating the bell itself: that is the practical ceiling. (Tried and not shown: NLM — too subtle by ear; DeepFilterNet3 — deleted the partials outright; hand-built spectral gates — ate the bell or did nothing; dry/wet blending — re-imports the noise. Details in <code>resources/sources.md</code>.)</p>
+      <div id="denoise-rows"></div>
+      <h2 style="margin-top:16px">Playback reference — synthetic tones</h2>
+      <p class="muted" style="font-size:13px">Two files that have never been near a microphone, an MP3 encoder or a denoiser: a plain 220&nbsp;Hz sine, and a modelled twin of the C3&nbsp;−27¢ (same strong partials, same decays, none of the recording). If <i>these</i> crackle on your speakers, the artefact is in the playback chain — Bluetooth buffering, the browser, or a standby wake-up — not in the recordings; if they stay perfectly clean while a bell still bothers you, the artefact lives in that file.</p>
+      <div id="ref-rows"></div>
+    </div>
+  </section>
+</main>
+
+<script src="bells/bells-data.js?v=8"></script>
+<script src="bells/pattern-data.js?v=8"></script>
+<script src="bells/onset-chords-data.js?v=8"></script>
+<script>
+'use strict';
+const D = window.BELLS;
+const COLORS = ['#c9934a','#6fa8dc','#93c47d','#e06666','#b4a7d6','#f6b26b'];
+const NOTES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const noteName = f => { const m = 69 + 12 * Math.log2(f / 440), r = Math.round(m), c = Math.round((m - r) * 100); return `${NOTES[(r % 12 + 12) % 12]}${Math.floor(r / 12) - 1}${c ? (c > 0 ? ' +' : ' ') + c + '¢' : ''}`; };
+const secs = s => s >= 10 ? s.toFixed(1) + ' s' : s.toFixed(2) + ' s';
+const rnd = (a, b) => a + (b - a) * Math.random();
+const rndi = (a, b) => Math.floor(rnd(a, b + 1));
+const db2amp = db => Math.pow(10, db / 20);
+
+// ── tabs ─────────────────────────────────────────────────────────────────────
+const TAB_NAMES = ['extracted', 'generated', 'tuned', 'final'];
+function showTab(which) {
+  TAB_NAMES.forEach(n => {
+    document.getElementById('tab-' + n).setAttribute('aria-selected', String(n === which));
+    document.getElementById('panel-' + n).classList.toggle('hidden', n !== which);
+  });
+  try { history.replaceState(null, '', '#' + which); } catch {}
+  requestAnimationFrame(redrawAll);
+}
+TAB_NAMES.forEach(n => document.getElementById('tab-' + n).onclick = () => showTab(n));
+if (TAB_NAMES.includes(location.hash.slice(1))) showTab(location.hash.slice(1));
+document.getElementById('stop-all').onclick = () => { stopAll(); stopPattern(); };
+
+// ── shared playback ─────────────────────────────────────────────────────────
+// element player (real mp3 files) and buffer player (synthesized) share one "now playing" slot
+let elAudio = new Audio();
+let elCurrent = null;        // { btn, canvas, clip }
+let bufSource = null, bufCurrent = null;
+let extraEls = [];           // layered playback elements
+
+// Every play waits a short beat before the first sample, so a sleeping Bluetooth
+// link/speaker can come out of standby before audio arrives — that wake-up is a
+// classic crackle/pop moment, and this page was playing instantly after the click.
+const PREROLL = 400;
+let prerollTimers = [];
+function afterPreroll(fn) { const id = setTimeout(() => { prerollTimers = prerollTimers.filter(t => t !== id); fn(); }, PREROLL); prerollTimers.push(id); }
+function clearPrerolls() { prerollTimers.forEach(clearTimeout); prerollTimers = []; }
+
+// Stopping must fade, not cut. Pausing a bell mid-cycle is an instant step to zero,
+// and that step is the click/pop in the speaker. 150 ms is short enough to feel
+// instant and long enough to be inaudible, and it always finishes well before the
+// next sound starts (PREROLL is 400 ms).
+const STOP_FADE = 150;
+function softPause(el) {
+  if (!el || el.paused || el.ended) return;
+  el.__soft = true;
+  const v0 = el.volume, t0 = performance.now();
+  const iv = setInterval(() => {
+    const k = Math.min(1, (performance.now() - t0) / STOP_FADE);
+    try { el.volume = v0 * (1 - k); } catch {}
+    if (k >= 1) {
+      clearInterval(iv);
+      try { el.pause(); } catch {}
+      try { el.volume = v0; } catch {}
+    }
+  }, 20);
+}
+function resetElCurrent() {
+  if (!elCurrent) return;
+  const c = elCurrent; elCurrent = null;
+  c.btn.classList.remove('on'); c.btn.textContent = '▶';
+  if (c.canvas && c.canvas.clientWidth) drawWave(c.canvas, c.entry, null);
+}
+// Interactive playbacks fade in over ~70 ms: the ramp swallows the very first samples,
+// which is where element starts (and Bluetooth wake-ups) click. Inaudible on the sound.
+function softPlay(el, target) {
+  const tgt = Math.min(1, target == null ? 1 : target);
+  try { el.volume = 0; } catch {}
+  const t0 = performance.now();
+  const iv = setInterval(() => {
+    const k = Math.min(1, (performance.now() - t0) / 70);
+    try { el.volume = tgt * k; } catch {}
+    if (k >= 1) clearInterval(iv);
+  }, 10);
+  try { el.play().catch(() => {}); } catch {}
+}
+function stopAll() {
+  clearPrerolls();
+  if (elCurrent) { softPause(elAudio); resetElCurrent(); }
+  if (bufSource) {
+    const s = bufSource, g = bufCurrent && bufCurrent.g;
+    bufSource = null;
+    if (g) { const t = actx().currentTime; try { g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(g.gain.value, t); g.gain.linearRampToValueAtTime(0, t + STOP_FADE / 1000); } catch {} }
+    setTimeout(() => { try { s.stop(); } catch {} }, STOP_FADE + 40);
+  }
+  extraEls.forEach(e => softPause(e)); extraEls = [];
+  if (bufCurrent) { const c = bufCurrent; bufCurrent = null; c.btn.classList.remove('on'); c.btn.textContent = '▶'; drawWave(c.canvas, c.entry, null); }
+  stopPattern();
+  stopFinal();
+}
+elAudio.addEventListener('ended', () => stopAll());
+
+// Media elements default to preservesPitch=true: playbackRate then time-stretches (tempo
+// changes, pitch stays). Turn that off so the bell changes pitch and decay together, the
+// way a resampled bell behaves.
+function setPitchPreserving(el, on) {
+  for (const p of ['preservesPitch', 'webkitPreservesPitch', 'mozPreservesPitch']) {
+    if (p in el) el[p] = on;
+  }
+}
+
+function playElement(entry, btn, canvas) {
+  const same = elCurrent && elCurrent.entry === entry;
+  stopAll();
+  if (same) return;                        // clicking the current item (playing or pending) stops it
+  elCurrent = { entry, btn, canvas };
+  btn.classList.add('on'); btn.textContent = '■';
+  afterPreroll(() => {
+    // the source is swapped only after the old sound has faded out (STOP_FADE << PREROLL),
+    // so superseding a sound never cuts it off mid-waveform
+    elAudio.src = entry.url;
+    setPitchPreserving(elAudio, false);
+    elAudio.playbackRate = entry.rate || 1;
+    softPlay(elAudio, 1);
+    requestAnimationFrame(progressElement);
+  });
+}
+function progressElement() {
+  if (!elCurrent || elAudio.paused) return;
+  drawWave(elCurrent.canvas, elCurrent.entry, elAudio.currentTime);
+  requestAnimationFrame(progressElement);
+}
+elAudio.addEventListener('pause', () => {
+  if (elAudio.__soft) { elAudio.__soft = false; return; }   // deliberate soft stop: state was already reset
+  resetElCurrent();
+});
+
+function playBuffer(entry, btn, canvas) {
+  if (bufCurrent && bufCurrent.entry === entry && bufSource) { stopAll(); return; }
+  stopAll();
+  const src = actx().createBufferSource();
+  entry.start = actx().currentTime + 0.03;
+  src.buffer = entry.buffer;
+  const g = actx().createGain(); g.gain.value = 0.9;
+  src.connect(g).connect(actx().destination);
+  src.start(entry.start);
+  bufSource = src; bufCurrent = { entry, btn, canvas, g };
+  btn.classList.add('on'); btn.textContent = '■';
+  src.onended = () => { if (bufCurrent && bufCurrent.entry === entry) { bufCurrent = null; bufSource = null; btn.classList.remove('on'); btn.textContent = '▶'; drawWave(canvas, entry, null); } };
+  requestAnimationFrame(progressBuffer);
+}
+function progressBuffer() {
+  if (!bufCurrent || !bufSource) return;
+  const t = actx().currentTime - bufCurrent.entry.start;
+  drawWave(bufCurrent.canvas, bufCurrent.entry, Math.max(0, t));
+  requestAnimationFrame(progressBuffer);
+}
+
+// ── canvas helpers ───────────────────────────────────────────────────────────
+function sizeCanvas(cv) {
+  const r = devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight;
+  if (cv.width !== Math.round(w * r) || cv.height !== Math.round(h * r)) { cv.width = Math.round(w * r); cv.height = Math.round(h * r); }
+  const ctx = cv.getContext('2d'); ctx.setTransform(r, 0, 0, r, 0, 0); return [ctx, w, h];
+}
+function entryWave(e) { return e.wave; }
+function entryDur(e) { return e.dur; }
+function entryColor(e) { return e.color || 'var(--accent)'; }
+let maxDur = Math.max(...D.clips.map(c => c.dur));
+
+function drawWave(cv, entry, playhead) {
+  const [ctx, w, h] = sizeCanvas(cv);
+  if (!w) return;
+  ctx.clearRect(0, 0, w, h);
+  const common = document.getElementById('opt-scale').checked;
+  const span = common ? maxDur : entryDur(entry), ww = w * entryDur(entry) / span;
+  const P = entryWave(entry).length, mid = h / 2;
+  ctx.fillStyle = entryColor(entry);
+  for (let x = 0; x < ww; x++) {
+    const v = entryWave(entry)[Math.min(P - 1, Math.floor(x / ww * P))];
+    const y = Math.max(0.5, v * (mid - 2));
+    ctx.fillRect(x, mid - y, 1, 2 * y);
+  }
+  ctx.fillStyle = 'rgba(240,226,204,0.85)'; ctx.font = '11px system-ui';
+  if (common) for (let t = 5; t < span; t += 5) { const x = t / span * w; ctx.fillRect(x, h - 4, 1, 4); if (t % 10 === 0 && x < w - 20) ctx.fillText(t + 's', x + 2, h - 2); }
+  if (playhead != null) { ctx.fillStyle = '#fff'; ctx.fillRect(playhead / span * w, 0, 1.5, h); }
+}
+const redrawList = [];
+function redrawAll() {
+  redrawList.forEach(([cv, e]) => cv.clientWidth && drawWave(cv, e, null));
+  drawOverview();
+  if (typeof drawDistFigure === 'function') drawDistFigure();
+  if (typeof drawPitchedFigure === 'function') drawPitchedFigure();
+  if (typeof drawPatTimeline === 'function') drawPatTimeline(patPlayhead);
+  if (typeof drawFinalRows === 'function') drawFinalRows();
+}
+addEventListener('resize', redrawAll);
+
+// ── TAB 1: extracted rows ────────────────────────────────────────────────────
+document.getElementById('stats').innerHTML = [
+  [117, 'clips extracted'],
+  [15, 'overlapping — deleted'],
+  [96, 'duplicate placements — merged'],
+  [D.clips.length, 'unique bells left'],
+].map(([n, t]) => `<div class="stat"><b>${n}</b>${t}</div>`).join('');
+
+const rows = document.getElementById('rows');
+D.clips.forEach((c, i) => {
+  const entry = {
+    clip: c, url: 'bells/' + c.file, dur: c.dur, wave: c.wave,
+    color: COLORS[i % COLORS.length],
+  };
+  c._entry = entry;
+  const row = document.createElement('div');
+  row.className = 'clip'; row.id = 'clip-' + c.id;
+  const btn = document.createElement('button'); btn.className = 'play'; btn.textContent = '▶'; btn.title = 'Play ' + c.file;
+  const cv = document.createElement('canvas');
+  const meta = document.createElement('div'); meta.className = 'clip-meta';
+  const tag = c.layer === 'flat' ? '<span class="tag flat">27¢ flat set</span>' : '<span class="tag tuned">tuned set</span>';
+  meta.innerHTML =
+    `<span><b>${noteName(c.partials[0])}</b> (${c.partials[0]} Hz)</span>` +
+    tag +
+    `<span>${secs(c.dur)}</span>` +
+    `<span>placed ${c.occurrences}× in the track</span>` +
+    `<span>peak ${c.peak_db} dB</span>` +
+    `<span>partials ${c.partials.join(', ')} Hz</span>` +
+    `<span><a href="bells/${c.file}" download>${c.file}</a></span>`;
+  btn.onclick = () => playElement(entry, btn, cv);
+  cv.onclick = () => playElement(entry, btn, cv);
+  row.append(btn, cv, meta);
+  rows.append(row);
+  redrawList.push([cv, entry]);
+});
+
+// overview
+const ov = document.getElementById('overview');
+function drawOverview() {
+  const [ctx, w, h] = sizeCanvas(ov);
+  if (!w) return;
+  const T = D.duration;
+  ctx.clearRect(0, 0, w, h);
+  const O = D.overview;
+  ctx.fillStyle = '#f0e2cc';
+  for (let x = 0; x < w; x++) {
+    const v = O[Math.floor(x / w * O.length)], y = Math.max(0, (v + 70) / 70) * (h - 14);
+    ctx.fillRect(x, h - 14 - y, 1, y);
+  }
+  D.clips.forEach((c, i) => {
+    ctx.fillStyle = COLORS[i % COLORS.length];
+    ctx.fillRect(c.start / T * w, 0, Math.max(2, c.dur / T * w), 10);
+  });
+  ctx.fillStyle = 'rgba(240,226,204,0.85)'; ctx.font = '11px system-ui';
+  for (let m = 5; m * 60 < T; m += 5) { const x = m * 60 / T * w; ctx.fillRect(x, h - 14, 1, 4); ctx.fillText(m + 'm', x + 2, h - 2); }
+}
+ov.addEventListener('click', e => {
+  const t = e.offsetX / ov.clientWidth * D.duration;
+  const c = D.clips.find(c => t >= c.start && t <= c.start + c.dur) || D.clips.reduce((a, b) => Math.abs(b.start - t) < Math.abs(a.start - t) ? b : a);
+  const row = document.getElementById('clip-' + c.id);
+  row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  row.classList.add('flash'); setTimeout(() => row.classList.remove('flash'), 1500);
+});
+document.getElementById('legend').innerHTML = D.clips.map((c, i) =>
+  `<span style="--c:${COLORS[i % COLORS.length]}">${noteName(c.partials[0])}${c.layer === 'flat' ? ' (flat)' : ''}</span>`).join('');
+
+// ── TAB 2: synth engine ──────────────────────────────────────────────────────
+let AC = null;
+function actx() {
+  if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+  if (AC.state === 'suspended') AC.resume();
+  return AC;
+}
+
+// family templates measured from the six bells (see sources.md)
+// strike model: coherent impulse-like mode start (one polarity per strike, tiny jitter),
+// two-exponential rise+decay envelopes, subtle pitch glide, and a strike transient made of
+// three decaying noise bands (impact-sound recipe — see sources.md, DAFx 2019).
+const FAMILIES = {
+  tuned: {
+    swell: false, riseMs: [3, 9], glideC: [1, 6],
+    noise: { db: [-18, -12], w: [0, -3, -7], riseMs: [1.5, 3.5],
+             tau: [[0.10, 0.22], [0.03, 0.05], [0.02, 0.04]] },
+    modes: [
+      { ratio: 1.000, spreadHz: [1.3, 4.5], comps: 2, ampDb: [-8, 0],    tau: [4, 7] },
+      { ratio: 2.84,  spreadHz: [3.7, 7.0], comps: 2, ampDb: [-25, -19], tau: [3, 4.5] },
+      { ratio: 5.48,  spreadHz: [2.0, 6.0], comps: 1, ampDb: [-43, -37], tau: [2.5, 4.5] },
+      { ratio: 0.43,  spreadHz: [0.5, 2.0], comps: 1, ampDb: [-55, -48], tau: [9, 19] },
+      { ratio: 0.51,  spreadHz: [0.5, 2.0], comps: 1, ampDb: [-52, -46], tau: [9, 19] },
+    ],
+  },
+  flat: {
+    swell: true, swellMs: [280, 480], glideC: [0.5, 3],
+    noise: { db: [-14, -8], w: [0, -2, -5], riseFrac: 0.18,
+             tau: [[0.30, 0.50], [0.12, 0.25], [0.08, 0.18]] },
+    modes: [
+      { ratio: 1.000, spreadHz: [4.4, 5.8], comps: 2, ampDb: [-6, 0],    tau: [1.5, 6] },
+      { ratio: 2.80,  spreadHz: [2.0, 4.0], comps: 1, ampDb: [-27, -19], tau: [0.7, 3.5] },
+      { ratio: 5.19,  spreadHz: [2.0, 5.0], comps: 1, ampDb: [-52, -42], tau: [5, 7.5], opt: 0.7 },
+      { ratio: 8.01,  spreadHz: [2.0, 6.0], comps: 1, ampDb: [-50, -37], tau: [3, 8],   opt: 0.8 },
+      { ratio: 11.28, spreadHz: [2.0, 6.0], comps: 1, ampDb: [-50, -37], tau: [1, 3],   opt: 0.7 },
+    ],
+  },
+};
+const CHAR = { calm: { decay: 1.25, bright: 0.7 }, default: { decay: 1, bright: 1 }, bright: { decay: 0.8, bright: 1.4 } };
+const PITCHES = [128.8, 130.8, 193.0, 195.9, 257.6, 261.6];
+
+function makeBell(opts) {
+  const sr = 44100;
+  const fam = FAMILIES[opts.family];
+  const f0 = opts.f0 * Math.pow(2, opts.detune / 1200);
+  const comps = [];
+  const strikeSign = Math.random() < 0.5 ? -1 : 1;   // one polarity per strike: all modes start coherently
+  const startPhase = () => strikeSign * Math.PI / 2 + rnd(-0.25, 0.25);
+  for (const m of fam.modes) {
+    if (m.opt && Math.random() > m.opt) continue;
+    const n = m.comps, spread = rnd(m.spreadHz[0], m.spreadHz[1]);
+    for (let i = 0; i < n; i++) {
+      const off = (n === 1 ? 0 : (i / (n - 1) - 0.5) * spread) * rnd(0.7, 1.3);
+      comps.push({
+        f: f0 * m.ratio + off,
+        a: db2amp(rnd(m.ampDb[0], m.ampDb[1])),
+        tau: rnd(m.tau[0], m.tau[1]) * opts.character.decay,
+        phi: startPhase(),
+      });
+    }
+  }
+  for (let i = 0, extra = rndi(0, 3); i < extra; i++)   // a few unique weak modes - the "not the same bell" spice
+    comps.push({ f: f0 * rnd(3, 12), a: db2amp(rnd(-56, -44)), tau: rnd(0.8, 3) * opts.character.decay, phi: startPhase() });
+  for (const c of comps) if (c.f / f0 > 2) c.a *= opts.character.bright;
+
+  const maxTau = Math.max(...comps.map(c => c.tau));
+  const durS = Math.max(6, Math.min(15, maxTau * 3));
+  const len = Math.ceil(sr * durS);
+  const buf = actx().createBuffer(1, len, sr);
+  const d = buf.getChannelData(0);
+
+  const attackS = fam.swell ? rnd(fam.swellMs[0], fam.swellMs[1]) / 1000 : rnd(fam.riseMs[0], fam.riseMs[1]) / 1000;
+  // soft-contact family: one shared swell envelope; sharp family: per-mode two-exponential rise
+  let swellEnv = null;
+  if (fam.swell) {
+    swellEnv = new Float32Array(len);
+    for (let i = 0; i < len; i++) { const x = Math.min(1, i / (attackS * sr)); swellEnv[i] = 0.5 - 0.5 * Math.cos(Math.PI * x); }
+  }
+
+  for (const c of comps) {
+    const w = 2 * Math.PI * c.f / sr;
+    const glide = rnd(fam.glideC[0], fam.glideC[1]) * (Math.random() < 0.7 ? 1 : -1) / 1200;
+    const gstep = Math.exp(-1 / (rnd(0.06, 0.25) * sr));
+    const d1 = Math.exp(-1 / (c.tau * sr));
+    const tr = attackS * rnd(0.8, 1.25);
+    const d2 = Math.exp(-(1 / c.tau + 1 / tr) / sr);
+    let e1 = c.a, e2 = c.a, ph = c.phi, gt = 1;
+    for (let i = 0; i < len; i++) {
+      const env = swellEnv ? e1 * swellEnv[i] : (e1 - e2);
+      d[i] += env * Math.sin(ph);
+      ph += w * (1 + glide * gt);
+      gt *= gstep; e1 *= d1; e2 *= d2;
+    }
+  }
+
+  // strike transient: noise split into low/mid/high bands, each with its own rise and decay
+  const nz = fam.noise;
+  const nAmp = db2amp(rnd(nz.db[0], nz.db[1]));
+  const aL = 1 - Math.exp(-2 * Math.PI * 350 / sr);
+  const aM = 1 - Math.exp(-2 * Math.PI * 1200 / sr);
+  const riseN = (nz.riseMs ? rnd(nz.riseMs[0], nz.riseMs[1]) : attackS * nz.riseFrac * 1000) / 1000;
+  const dRise = Math.exp(-1 / (riseN * sr));
+  const dDec = nz.tau.map(([t0, t1]) => Math.exp(-1 / (rnd(t0, t1) * sr)));
+  const nw = nz.w.map(db2amp);
+  const eN1 = [1, 1, 1], eN2 = [1, 1, 1];
+  let lpL = 0, lpM = 0;
+  for (let i = 0; i < len; i++) {
+    const x = Math.random() * 2 - 1;
+    lpL += aL * (x - lpL);
+    lpM += aM * (x - lpM);
+    const bands = [lpL, lpM - lpL, x - lpM];
+    let s = 0;
+    for (let k = 0; k < 3; k++) {
+      s += nw[k] * (eN1[k] - eN2[k]) * bands[k];
+      eN1[k] *= dRise; eN2[k] *= dDec[k];
+    }
+    d[i] += nAmp * s;
+  }
+
+  // truncation fade + normalize
+  const fade = Math.min(len, sr * 1.5);
+  for (let i = 0; i < fade; i++) d[len - 1 - i] *= i / fade;
+  let peak = 0; for (let i = 0; i < len; i++) peak = Math.max(peak, Math.abs(d[i]));
+  if (peak > 0) for (let i = 0; i < len; i++) d[i] = d[i] / peak * 0.55;
+
+  return { buffer: buf, partials: comps, f0, dur: durS, attackS, family: opts.family };
+}
+
+function waveFromBuffer(buf, points = 600) {
+  const d = buf.getChannelData(0), P = points, L = Math.floor(d.length / P), out = [];
+  let mx = 0;
+  for (let p = 0; p < P; p++) {
+    let m = 0;
+    for (let i = 0; i < L; i++) m = Math.max(m, Math.abs(d[p * L + i]));
+    out.push(m); mx = Math.max(mx, m);
+  }
+  return out.map(v => v / (mx || 1));
+}
+
+let genCount = 0;
+const genRows = document.getElementById('gen-rows');
+document.getElementById('gen-go').onclick = () => {
+  const famSel = document.getElementById('gen-family').value;
+  const family = famSel === 'auto' ? (Math.random() < 0.5 ? 'tuned' : 'flat') : famSel;
+  const pitchSel = document.getElementById('gen-pitch').value;
+  const f0 = pitchSel ? parseFloat(pitchSel) : PITCHES[rndi(0, PITCHES.length - 1)];
+  const detune = rnd(-1, 1) * parseFloat(document.getElementById('gen-cents').value);
+  const character = CHAR[document.getElementById('gen-char').value];
+  const bell = makeBell({ family, f0, detune, character });
+
+  genCount++;
+  const entry = {
+    dur: bell.dur, wave: waveFromBuffer(bell.buffer), buffer: bell.buffer,
+    color: family === 'tuned' ? '#93c47d' : '#e06666',
+  };
+  const row = document.createElement('div');
+  row.className = 'clip gen';
+  const btn = document.createElement('button'); btn.className = 'play'; btn.textContent = '▶';
+  const cv = document.createElement('canvas');
+  const meta = document.createElement('div'); meta.className = 'clip-meta';
+  const shown = bell.partials.slice().sort((a, b) => b.a - a.a).slice(0, 4)
+    .map(p => Math.round(p.f * 10) / 10).join(', ');
+  meta.innerHTML =
+    `<span><b>${noteName(bell.f0)}</b> (${bell.f0.toFixed(1)} Hz)</span>` +
+    `<span class="tag ${family}">${family === 'tuned' ? 'tuned' : 'flat'}</span>` +
+    `<span>${bell.partials.length} partials</span>` +
+    `<span>strike ${Math.round(bell.attackS * 1000)} ms</span>` +
+    `<span>strongest: ${shown} Hz</span>` +
+    `<span>#${genCount}</span>`;
+  btn.onclick = () => playBuffer(entry, btn, cv);
+  cv.onclick = btn.onclick;
+  row.append(btn, cv, meta);
+  genRows.prepend(row);
+  while (genRows.children.length > 7) genRows.lastChild.remove();
+  redrawList.push([cv, entry]);
+  requestAnimationFrame(() => drawWave(cv, entry, null));
+  playBuffer(entry, btn, cv);   // the click is our gesture — play the fresh bell right away
+};
+
+// ── TAB 2: repitch engine ────────────────────────────────────────────────────
+const repBell = document.getElementById('rep-bell');
+D.clips.forEach((c, i) => {
+  const o = document.createElement('option');
+  o.value = i; o.textContent = `${noteName(c.partials[0])} · ${c.file} · ${secs(c.dur)}`;
+  repBell.append(o);
+});
+const repCents = document.getElementById('rep-cents');
+const repInfo = document.getElementById('rep-info');
+function repUpdate() {
+  const c = D.clips[+repBell.value];
+  const cents = parseFloat(repCents.value);
+  document.getElementById('rep-cents-val').textContent = cents;
+  const rate = Math.pow(2, cents / 1200);
+  repInfo.textContent = `rate ×${rate.toFixed(3)} → ${(c.partials[0] * rate).toFixed(1)} Hz, new length ${(c.dur / rate).toFixed(1)} s`;
+}
+repBell.onchange = repUpdate; repCents.oninput = repUpdate; repUpdate();
+
+function repEntry(i, cents, gain) {
+  const c = D.clips[i];
+  return { url: 'bells/' + c.file, rate: Math.pow(2, cents / 1200), dur: c.dur, wave: c.wave, color: COLORS[i % COLORS.length], gain };
+}
+let repBtn = document.getElementById('rep-play');
+repBtn.onclick = () => {
+  const entry = repEntry(+repBell.value, parseFloat(repCents.value));
+  const cv = document.createElement('canvas'); cv.className = 'hidden';
+  playElement(entry, repBtn, cv);
+};
+document.getElementById('rep-layer').onclick = () => {
+  stopAll();
+  const cents = parseFloat(repCents.value);
+  const others = [0, 1, 2, 3, 4, 5].filter(i => i !== +repBell.value).sort(() => Math.random() - 0.5).slice(0, 2);
+  const mix = [+repBell.value, ...others];
+  const offsets = [cents, cents + rnd(10, 40) * (Math.random() < 0.5 ? -1 : 1), cents - rnd(10, 40) * (Math.random() < 0.5 ? -1 : 1)];
+  const base = [0.9, 0.55, 0.55];
+  const events = mix.map((i, k) => ({ t: 0, ring: 60, peakAmp: db2amp(D.clips[i].peak_db), base: base[k], entry: repEntry(i, offsets[k]) }));
+  scheduleGains(events, ev => ev.base, 1);          // 3 simultaneous bells: /√3 + peak safety, no clipping
+  const els = events.map(ev => {
+    const el = new Audio(ev.entry.url);
+    setPitchPreserving(el, false);
+    el.playbackRate = ev.entry.rate;
+    el.volume = ev.gain;
+    return el;
+  });
+  afterPreroll(() => els.forEach((e, k) => softPlay(e, events[k].gain)));
+  extraEls = els;
+  const last = els[els.length - 1];
+  last.onended = () => { els.forEach(e => e.pause()); if (extraEls === els) extraEls = []; };
+};
+
+// ── TAB 3: TUNED — loudness table, chord demos, distribution figure, player ──
+const P = window.PATTERN;
+const bellKey = i => 'bell_' + String(i).padStart(3, '0');
+// retired: the flat C4 −27¢ (bell_005, 257.6 Hz) — too short and it cuts off
+// unnaturally early in the source track. The tuned C4 (bell_006) is back in the
+// palette, pitched downward only (see BELL_OFFSETS below).
+const RETIRED = new Set([5]);
+const BELL_POOL = [1, 2, 3, 4, 5, 6].filter(b => !RETIRED.has(b));
+const bellGain = {};
+{
+  const ref = Math.min(...Object.values(P.bells).map(b => b.rms_db));   // quietest bell plays at volume 1
+  for (const [name, b] of Object.entries(P.bells)) bellGain[name] = db2amp(ref - b.rms_db);
+}
+function randn() {
+  const u = 1 - Math.random();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * Math.random());
+}
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+document.getElementById('loud-table').innerHTML =
+  '<tr><th>bell</th><th>note</th><th>loudness (stereo RMS)</th><th>audible ring (to −40 dB)</th><th>quiet tail (−30→−40 dB)</th><th>volume as a single</th></tr>' +
+  D.clips.map((c, i) => {
+    const b = P.bells[bellKey(i + 1)];
+    const tag = RETIRED.has(i + 1) ? ' <span class="tag flat">retired</span>' : '';
+    return `<tr><td>${c.file}</td><td>${noteName(c.partials[0])}${tag}</td><td>${b.rms_db} dBFS</td><td>${b.ring40} s</td><td>${(b.ring40 - b.ring30).toFixed(1)} s</td><td>×${bellGain[bellKey(i + 1)].toFixed(2)}</td></tr>`;
+  }).join('') +
+  '<tr><td colspan="6" class="muted" style="font-size:12px">a chord divides these further: ÷√2 (duo), ÷√3 (trio) · the scheduling threshold is adjustable in the player (−30…−50 dB) · the retired bell stays in the archive but is out of the player palette</td></tr>';
+
+const chordRows = document.getElementById('chord-rows');
+P.chords.forEach((ch, i) => {
+  const entry = { url: 'bells/' + ch.file, dur: ch.dur, wave: ch.wave, color: i === 3 ? '#e8604c' : '#93c47d' };
+  const row = document.createElement('div'); row.className = 'clip';
+  const btn = document.createElement('button'); btn.className = 'play'; btn.textContent = '▶'; btn.title = 'Play ' + ch.file;
+  const cv = document.createElement('canvas');
+  const meta = document.createElement('div'); meta.className = 'clip-meta';
+  const members = ch.members.map(m => noteName(D.clips[m - 1].partials[0])).join(' + ');
+  const hasRetired = ch.members.some(m => RETIRED.has(m));
+  meta.innerHTML = `<span><b>${ch.label}</b></span><span>${members}</span><span>${secs(ch.dur)}</span>` +
+    `<span>RMS ${ch.rms_db} dBFS (${(ch.rms_db - Math.min(...Object.values(P.bells).map(b => b.rms_db))).toFixed(1)} dB vs a single)</span>` +
+    `<span>peak ${ch.peak_db} dBFS</span>` +
+    (i === 3 ? '<span class="tag flat">no √N rule — +1.8 dB and near clipping (the "quite loud" one)</span>' : '<span class="tag tuned">loudness-matched</span>') +
+    (hasRetired ? ' <span class="tag flat">contains the retired C4</span>' : '') +
+    `<span><a href="bells/${ch.file}" download>${ch.file}</a></span>`;
+  btn.onclick = () => playElement(entry, btn, cv);
+  cv.onclick = btn.onclick;
+  row.append(btn, cv, meta);
+  chordRows.append(row);
+  redrawList.push([cv, entry]);
+});
+
+// chord-onset investigation (§ 3): baseline vs the three fixes, with measured numbers
+{
+  const onsetRows = document.getElementById('onset-rows');
+  const OC = window.ONSET_CHORDS || {};
+  const base = P.chords[0];
+  const list = [
+    { d: { file: base.file, dur: base.dur, wave: base.wave }, c: '#c9934a', tag: '',
+      label: 'the tuned trio as baked (baseline)', note: 'first 25 ms −17 dB rms · onset peak −3.2 dBFS' },
+    { d: OC['chord-07-tuned-trio-recut'], c: '#93c47d', tag: 'tuned',
+      label: 're-cut bells — true silence head', note: 'first 25 ms silent · peak −3.2 dBFS · body unchanged' },
+    { d: OC['chord-05-tuned-trio-stagger'], c: '#6fa8dc', tag: 'tuned',
+      label: 'staggered onsets (+8 / +12 / +12 ms)', note: 'first 25 ms −21 dB · peak −3.9 dBFS' },
+    { d: OC['chord-06-tuned-trio-softonset'], c: '#b4a7d6', tag: 'tuned',
+      label: 'soft onset (−3.5 dB, τ 60 ms)', note: 'first 25 ms −20 dB · peak −4.9 dBFS' },
+  ];
+  list.forEach(v => {
+    if (!v.d) return;
+    const entry = { url: 'bells/' + v.d.file, dur: v.d.dur, wave: v.d.wave, color: v.c };
+    const row = document.createElement('div'); row.className = 'clip';
+    const btn = document.createElement('button'); btn.className = 'play'; btn.textContent = '▶'; btn.title = 'Play ' + v.d.file;
+    const cv = document.createElement('canvas');
+    const meta = document.createElement('div'); meta.className = 'clip-meta';
+    meta.innerHTML = `<span><b>${v.label}</b></span>` +
+      (v.tag ? `<span class="tag ${v.tag}">${v.tag === 'tuned' ? 'fix' : 'baseline'}</span>` : '<span class="tag">baseline</span>') +
+      `<span>${secs(v.d.dur)}</span><span>${v.note}</span>`;
+    btn.onclick = () => playElement(entry, btn, cv);
+    cv.onclick = btn.onclick;
+    row.append(btn, cv, meta);
+    onsetRows.append(row);
+    redrawList.push([cv, entry]);
+  });
+}
+
+// interval schemes — one sampler shared by figure, stats and player
+const RING_SIM = 17;
+const MAX_RING = Math.max(...Object.values(P.bells).map(b => b.ring40));   // 28 s — the longest audible ring
+const RULE_WAIT = Math.max(1, MAX_RING - 8);   // wait that puts the longest gap at 2 × the longest sound
+const WAIT = { floor: 8, mean: 8, max: Infinity, gap: 2 * MAX_RING };   // gap = ceiling on the whole gap; else max = wait cap after the threshold
+// truncated exponential on [a,b] via inverse CDF: the mass beyond b is redistributed
+// smoothly (re-normalised density), never piled into a spike at the limit
+function truncExp(rand, a, b, theta) {
+  const u = rand();
+  const Fb = 1 - Math.exp(-(b - a) / theta);
+  return a - theta * Math.log(1 - u * Fb);
+}
+function drawInterval(dist, ring, rand) {
+  if (dist === 'fixed') return 60;
+  if (dist === 'uniform') return 45 + 45 * rand();
+  if (dist === 'gauss') {
+    for (;;) {   // rejection sampling: truncated Gaussian, no spikes at the limits
+      let u = 0, v = 0;
+      while (u === 0) u = rand(); while (v === 0) v = rand();
+      const z = Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+      const x = 65 + 15 * z;
+      if (x >= 45 && x <= 90) return x;
+    }
+  }
+  const b = WAIT.gap != null
+    ? Math.max(0.001, WAIT.gap - ring - WAIT.floor)         // never beyond twice the longest sound
+    : Math.max(0.001, WAIT.max - WAIT.floor);
+  return ring + WAIT.floor + truncExp(rand, 0, b, WAIT.mean);
+}
+const SCHEMES = [
+  ['fixed', 'Fixed · every 60 s'],
+  ['uniform', 'Uniform 45–90 s'],
+  ['gauss', 'Gaussian 65 ± 15 s (truncated 45–90)'],
+  ['exp', 'Truncated exponential after the fade (recommended · cut off at 2× the longest sound)'],
+];
+
+function quantile(sorted, p) { return sorted[Math.min(sorted.length - 1, Math.floor(p * sorted.length))]; }
+function drawDistFigure() {
+  const cv = document.getElementById('dist-figure');
+  const [ctx, w, h] = sizeCanvas(cv);
+  if (!w) return;
+  ctx.clearRect(0, 0, w, h);
+  ctx.font = '13px system-ui'; ctx.fillStyle = '#f0e2cc';
+  ctx.fillText('Intervals between bell events — shape (left) and a simulated 10-minute session (right)', 10, 20);
+  const leftW = Math.min(360, Math.max(220, w * 0.36));
+  const x1 = leftW + 40, tw = w - x1 - 12;
+  const rowH = 104, yStart = 40, span = 600;
+  // row 0: the measured track
+  {
+    const y0 = yStart, hh = 78;
+    ctx.font = '12px system-ui'; ctx.fillStyle = '#c9934a';
+    ctx.fillText('Measured: your source track', 10, y0 + 12);
+    ctx.fillStyle = '#8a7060'; ctx.font = '11px system-ui';
+    ctx.fillText(`140 strikes · median ${P.ioi.median} s — near-metronome`, 10, y0 + 28);
+    const counts = P.ioi.counts, mx = Math.max(...counts);
+    const bx = 10, bw = leftW - 10, bh = hh - 30;
+    for (let i = 0; i < counts.length; i++) {
+      ctx.fillStyle = '#c9934a';
+      const bhh = counts[i] / mx * bh;
+      ctx.fillRect(bx + i / counts.length * bw, y0 + 34 + (bh - bhh), bw / counts.length - 1, bhh);
+    }
+    ctx.fillStyle = 'rgba(240,226,204,0.75)';
+    ctx.fillText('0 s', bx, y0 + 34 + bh + 12); ctx.fillText('30', bx + bw / 2 - 6, y0 + 34 + bh + 12); ctx.fillText('60', bx + bw - 12, y0 + 34 + bh + 12);
+    // measured runs never wait for ring-out; show its own timeline
+    const onsets = P.ioi.onsets, t0 = onsets[0] - 2;
+    const yM = y0 + 40;
+    for (const o of onsets) {
+      const t = o - t0; if (t > span) break;
+      const x = x1 + t / span * tw;
+      ctx.fillStyle = 'rgba(201,147,74,0.8)';
+      ctx.fillRect(x, yM - 4, 2, 8);
+    }
+    ctx.fillStyle = 'rgba(240,226,204,0.75)';
+    ctx.fillText('first 10 minutes of the real track', x1, yM + 22);
+    ctx.fillStyle = 'rgba(255,255,255,0.15)'; ctx.fillRect(x1, y0 + hh + 2, w - x1 - 10, 1);
+  }
+  // rows 1..4
+  SCHEMES.forEach(([dist, label], r) => {
+    const y0 = yStart + rowH * (r + 1) + 6;
+    const rng = mulberry32(700 + r * 131);
+    const draws = []; for (let i = 0; i < 4000; i++) draws.push(drawInterval(dist, RING_SIM, rng));
+    const sorted = draws.slice().sort((a, b) => a - b);
+    const med = quantile(sorted, 0.5), p10 = quantile(sorted, 0.1), p90 = quantile(sorted, 0.9);
+    ctx.font = '12px system-ui'; ctx.fillStyle = '#f0e2cc';
+    ctx.fillText(label, 10, y0 + 12);
+    ctx.fillStyle = '#8a7060'; ctx.font = '11px system-ui';
+    ctx.fillText(`median ${med.toFixed(0)} s · 10–90%: ${p10.toFixed(0)}–${p90.toFixed(0)} s`, 10, y0 + 28);
+    // histogram (3 s bins, 0-150 s)
+    const bins = new Array(50).fill(0);
+    for (const d of draws) bins[Math.min(49, Math.floor(d / 3))]++;
+    const mx = Math.max(...bins), bh = 52, bx = 10, bw = leftW - 10;
+    bins.forEach((v, i) => {
+      ctx.fillStyle = dist === 'fixed' ? '#c9934a' : (dist === 'exp' ? '#93c47d' : '#6fa8dc');
+      const bhh = v / mx * bh;
+      ctx.fillRect(bx + i / 50 * bw, y0 + 34 + (bh - bhh), bw / 50 - 1, bhh);
+    });
+    ctx.fillStyle = 'rgba(240,226,204,0.75)';
+    ctx.fillText('0 s', bx, y0 + 34 + bh + 12); ctx.fillText('75', bx + bw / 2, y0 + 34 + bh + 12); ctx.fillText('150', bx + bw - 16, y0 + 34 + bh + 12);
+    // simulated timeline, seeded; ring bars show the no-overlap rule
+    const rng2 = mulberry32(900 + r * 97);
+    const midY = y0 + 52;
+    let t = 4;
+    while (t < 600) {
+      const x = x1 + t / span * tw;
+      const ring = RING_SIM;
+      ctx.fillStyle = 'rgba(147,195,125,0.18)';
+      ctx.fillRect(x, midY + 5, Math.max(2, ring / span * tw), 7);
+      ctx.fillStyle = dist === 'exp' ? '#93c47d' : '#6fa8dc';
+      ctx.beginPath(); ctx.arc(x, midY, 3.5, 0, 2 * Math.PI); ctx.fill();
+      t += Math.max(drawInterval(dist, ring, rng2), ring + 8);
+    }
+    ctx.fillStyle = 'rgba(240,226,204,0.75)'; ctx.font = '11px system-ui';
+    ctx.fillText('10-minute simulation (bar = ring to the threshold)', x1, midY + 26);
+    ctx.fillStyle = 'rgba(255,255,255,0.15)'; ctx.fillRect(10, y0 + 86, w - 20, 1);
+  });
+}
+// live vs pre-rendered — the table as bars (§ 1)
+function drawPitchedFigure() {
+  const cv = document.getElementById('pitched-figure');
+  if (!cv) return;
+  const [ctx, w, h] = sizeCanvas(cv);
+  if (!w) return;
+  ctx.clearRect(0, 0, w, h);
+  ctx.font = '11px system-ui'; ctx.fillStyle = 'rgba(240,226,204,0.85)';
+  ctx.fillText('work per pitched bell (log scale) · data shipped · one-time launch cost — measured on this machine, six real bells', 10, 16);
+  const cols = [
+    { title: 'prep work per pitched bell', sub: 'log scale', map: v => (Math.log10(v) + 2) / 4, bars: [
+        { label: 'live · playbackRate', v: 0.01, text: '~0.01 ms', c: '#93c47d' },
+        { label: 'baked · render + encode', v: 50, text: '30–70 ms', c: '#6fa8dc' } ] },
+    { title: 'files to ship', sub: 'MB', map: v => v / 20, bars: [
+        { label: 'live · the six bells', v: 1.75, text: '1.75 MB', c: '#93c47d' },
+        { label: 'baked · +5 variants', v: 8, text: '≈ 8 MB', c: '#6fa8dc' },
+        { label: 'baked · +12 variants', v: 20, text: '≈ 20 MB', c: '#6fa8dc' } ] },
+    { title: 'one-time cost at launch', sub: '', map: v => v / 0.5, bars: [
+        { label: 'live · decode once', v: 0.5, text: '~0.5 s CPU · 40 MB RAM', c: '#93c47d' },
+        { label: 'baked · nothing', v: 0, text: '0 (paid at build time)', c: '#6fa8dc' } ] },
+  ];
+  const gap = 16, cw = (w - 20 - gap * 2) / 3;
+  cols.forEach((col, ci) => {
+    const x0 = 10 + ci * (cw + gap);
+    ctx.font = '12px system-ui'; ctx.fillStyle = '#f0e2cc';
+    ctx.fillText(col.title, x0, 42);
+    if (col.sub) { ctx.fillStyle = '#8a7060'; ctx.font = '11px system-ui'; ctx.fillText(col.sub, x0, 56); }
+    let y = 74;
+    col.bars.forEach(b => {
+      ctx.fillStyle = '#8a7060'; ctx.font = '11px system-ui';
+      ctx.fillText(b.label, x0, y);
+      const bw = Math.max(2, col.map(b.v) * (cw - 12));
+      ctx.fillStyle = b.c;
+      ctx.fillRect(x0, y + 5, bw, 15);
+      ctx.fillStyle = '#f0e2cc';
+      ctx.fillText(b.text, x0 + bw + 5, y + 17);
+      y += 44;
+    });
+  });
+}
+document.getElementById('fig-download').onclick = () => {
+  const a = document.createElement('a');
+  a.href = document.getElementById('dist-figure').toDataURL('image/png');
+  a.download = 'bell-interval-distributions.png';
+  a.click();
+};
+
+// pattern player
+let patEvents = [], patTimer = null, patEls = [], patTotal = 600, patPlayhead = null, patPlayingFlag = false, patRAF = 0, patStart = 0, patSpeed = 1;
+function stopPattern() {
+  patPlayingFlag = false;
+  if (patTimer) { clearTimeout(patTimer); patTimer = null; }
+  if (patRAF) { cancelAnimationFrame(patRAF); patRAF = 0; }
+  patEls.forEach(e => softPause(e)); patEls = [];
+  patPlayhead = null;
+  if (patEvents.length) drawPatTimeline(null);
+}
+const bellRing = (name, thr) => P.bells[name]['ring' + thr];
+
+// ── schedule-aware gains (the anti-clipping system) ──
+// When sounds overlap in wall-clock time (faster preview speeds, layered chords),
+// their sum can exceed full scale and the browser mixer clips hard — that is the
+// intermittent static/click. So: overlap count n → each event /√n (power sum stays
+// equal to one sound), then a worst-case sweep (each source at its file peak) that
+// scales the whole schedule down if the linear sum could still reach full scale.
+function eventPeakAmp(ev) {
+  if (ev.peakAmp != null) return ev.peakAmp;
+  if (ev.chord) return db2amp(ev.chord.peak_db);
+  return db2amp(D.clips[ev.bell - 1].peak_db);
+}
+function scheduleGains(events, baseFn, speed) {
+  const sp = speed || 1;
+  events.forEach((ev, i) => {
+    const a = ev.t / sp, b = a + Math.min(2.5, ev.ring);
+    let n = 1;
+    events.forEach((o, j) => {
+      if (j === i) return;
+      const oa = o.t / sp;
+      if (oa < b && oa + o.ring > a) n++;
+    });
+    ev.gain = baseFn(ev) / Math.sqrt(n);
+  });
+  let maxSum = 0;
+  events.forEach(e0 => {
+    const t = e0.t / sp;
+    let s = 0;
+    events.forEach(ev => {
+      const a = ev.t / sp;
+      if (a <= t && t <= a + Math.min(2.5, ev.ring)) s += ev.gain * eventPeakAmp(ev);
+    });
+    maxSum = Math.max(maxSum, s);
+  });
+  if (maxSum > 0.87) events.forEach(ev => ev.gain *= 0.87 / maxSum);
+}
+function buildEvents(n, dist, thr) {
+  const evs = []; let t = 0, lastBell = 0;
+  for (let k = 0; k < n; k++) {
+    let b = BELL_POOL[rndi(0, BELL_POOL.length - 1)];
+    if (b === lastBell) b = BELL_POOL[rndi(0, BELL_POOL.length - 1)];
+    lastBell = b;
+    const ring = bellRing(bellKey(b), thr);
+    const tail = P.bells[bellKey(b)].ring50;
+    evs.push({ t, bell: b, cents: rnd(-20, 20), ring, tail, label: noteName(D.clips[b - 1].partials[0]) });
+    t += Math.max(drawInterval(dist, ring, Math.random), ring + 8);
+  }
+  patTotal = evs[evs.length - 1].t + evs[evs.length - 1].tail + 3;
+  return evs;
+}
+function refreshPattern() {
+  const dist = document.getElementById('pat-dist').value;
+  const thr = +document.getElementById('pat-thresh').value;
+  const mw = document.getElementById('pat-maxwait').value;
+  if (mw === 'rule') { WAIT.gap = 2 * MAX_RING; WAIT.max = Infinity; }
+  else if (mw === 'none') { WAIT.gap = null; WAIT.max = Infinity; }
+  else { WAIT.gap = null; WAIT.max = +mw; }
+  patSpeed = parseFloat(document.getElementById('pat-speed').value) || 1;
+  patEvents = buildEvents(8, dist, thr);
+  patPlayhead = null;
+  drawPatTimeline(null);
+}
+['pat-dist', 'pat-thresh', 'pat-maxwait'].forEach(id => document.getElementById(id).onchange = refreshPattern);
+document.getElementById('pat-speed').onchange = e => {
+  patSpeed = parseFloat(e.target.value) || 1;
+  if (patPlayingFlag) stopPattern(); else drawPatTimeline(null);
+};
+document.getElementById('pat-play').onclick = () => playPattern(0);
+document.getElementById('pat-stop').onclick = () => stopPattern();
+document.getElementById('pat-timeline').onclick = e => {
+  if (!patEvents.length) return;
+  const r = e.target.getBoundingClientRect();
+  const frac = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+  playPattern(frac * patTotal / patSpeed);
+};
+function playPattern(fromTime) {
+  stopAll(); stopPattern();
+  if (!patEvents.length) refreshPattern();
+  patSpeed = parseFloat(document.getElementById('pat-speed').value) || 1;
+  scheduleGains(patEvents, ev => bellGain[bellKey(ev.bell)], patSpeed);
+  const total = patTotal / patSpeed;
+  patStart = performance.now() + PREROLL - fromTime * 1000;
+  patPlayingFlag = true;
+  // starting from a clicked position: skip everything before it (otherwise all past
+  // events fire at once)
+  let idx = 0;
+  while (idx < patEvents.length && patEvents[idx].t / patSpeed < fromTime) idx++;
+  const fire = () => {
+    if (!patPlayingFlag) return;
+    const now = (performance.now() - patStart) / 1000;
+    while (idx < patEvents.length && patEvents[idx].t / patSpeed <= now + 0.05) {
+      const ev = patEvents[idx++];
+      const el = new Audio();
+      el.src = 'bells/' + D.clips[ev.bell - 1].file;
+      el.volume = ev.gain != null ? ev.gain : bellGain[bellKey(ev.bell)];
+      setPitchPreserving(el, false);
+      el.playbackRate = Math.pow(2, ev.cents / 1200) * patSpeed;
+      el.play().catch(() => {});
+      patEls.push(el);
+    }
+    patTimer = idx < patEvents.length ? setTimeout(fire, 50) : null;
+  };
+  fire();
+  (function tick() {
+    if (!patPlayingFlag) return;
+    const now = (performance.now() - patStart) / 1000;
+    patPlayhead = Math.max(0, now);
+    drawPatTimeline(patPlayhead);
+    if (now < total) patRAF = requestAnimationFrame(tick);
+    else { patPlayingFlag = false; patPlayhead = null; }
+  })();
+}
+function drawPatTimeline(playhead) {
+  const cv = document.getElementById('pat-timeline');
+  const [ctx, w, h] = sizeCanvas(cv);
+  if (!w) return;
+  ctx.clearRect(0, 0, w, h);
+  const sp = patSpeed || 1;
+  const total = patTotal / sp;
+  ctx.font = '11px system-ui'; ctx.fillStyle = 'rgba(240,226,204,0.75)';
+  const step = total <= 150 ? 15 : 60;
+  for (let s = 0; s <= total + 1e-9; s += step) {
+    const x = s / total * w;
+    ctx.fillRect(x, h - 18, 1, 5);
+    const lab = step < 60 ? Math.round(s) + 's' : Math.round(s / 60) + 'm';
+    if (w > 520 || (s / step) % 2 === 0) ctx.fillText(lab, x + 2, h - 6);
+  }
+  if (!patEvents.length) { ctx.fillStyle = 'var(--muted)'; ctx.fillText('press ▶ play pattern (or change a setting to sample a new one)', 10, h / 2); return; }
+  const midY = h * 0.38;
+  patEvents.forEach((ev, i) => {
+    const t = ev.t / sp, ring = ev.ring / sp, tail = ev.tail / sp;
+    const x = t / total * w;
+    const xt = x + ring / total * w;                          // threshold point: wait clock starts here
+    const done = playhead != null && playhead >= t;
+    // audible ring up to the threshold
+    ctx.fillStyle = 'rgba(201,147,74,0.26)';
+    ctx.fillRect(x, midY + 6, Math.max(2, ring / total * w), 10);
+    // the inaudible tail, still ringing underneath (never cut)
+    ctx.fillStyle = 'rgba(201,147,74,0.08)';
+    ctx.fillRect(xt, midY + 6, Math.max(1, (tail - ring) / total * w), 10);
+    // threshold tick
+    ctx.fillStyle = 'rgba(240,226,204,0.75)';
+    ctx.fillRect(xt, midY + 1, 1, 20);
+    // marker
+    ctx.fillStyle = done ? '#c9934a' : 'rgba(184,164,138,0.9)';
+    ctx.beginPath(); ctx.arc(x, midY, 4, 0, 2 * Math.PI); ctx.fill();
+    ctx.fillStyle = 'rgba(240,226,204,0.75)'; ctx.font = '11px system-ui';
+    ctx.fillText(ev.label + ' · ' + Math.round(ev.ring) + 's', x + 6, midY - 8);
+    // sampled wait, drawn from the threshold point to the next event
+    const nxt = patEvents[i + 1];
+    if (nxt) {
+      const x2 = nxt.t / sp / total * w;
+      ctx.strokeStyle = 'rgba(184,164,138,0.75)';
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(xt, midY + 30); ctx.lineTo(x2, midY + 30); ctx.stroke();
+      ctx.setLineDash([]);
+      const waitS = Math.round(nxt.t - ev.t - ev.ring);
+      if (x2 - xt > 34) {
+        ctx.fillStyle = 'rgba(240,226,204,0.75)';
+        ctx.fillText('wait ' + waitS + ' s', (xt + x2) / 2 - 16, midY + 44);
+      }
+    }
+  });
+  if (playhead != null) { ctx.fillStyle = '#fff'; ctx.fillRect(playhead / total * w, 4, 1.5, h - 24); }
+}
+
+// ── TAB 4: FINAL — full-session preview (singles only, end-aware) ────────────
+const FINAL_OFFS = [-2, -1, 0, 1, 2];        // default pitch offsets (semitones)
+const BELL_OFFSETS = { 6: [-4, -3, -2, -1, 0] };   // the tuned C4 slides down only — it is already the highest bell
+const offsetsFor = b => BELL_OFFSETS[b] || FINAL_OFFS;
+const FINAL_GAP = 3;                         // the little gap before the ending sound
+const FINAL_DURS = [1, 5, 10, 15, 20, 25];   // the app's presets (plus 1 min for quick tests)
+const FINAL_END_OFFS = [0, 0.4, 0.8];        // triple stop chime, as in the app
+let finalRows = [], finalMean = 8, finalSpeed = 1, finalPlayingRow = null;
+let finalPlaying = false, finalEls = [], finalTimer = null, finalRAF = 0, finalStart = 0, finalPlayheadT = 0;
+
+const FINAL_POOL = [];
+for (const b of BELL_POOL) {
+  for (const semi of offsetsFor(b)) {
+    const rate = Math.pow(2, semi / 12);
+    FINAL_POOL.push({ bell: b, semi, rate,
+      ring: P.bells[bellKey(b)].ring40 / rate,
+      tail: P.bells[bellKey(b)].ring50 / rate });
+  }
+}
+
+function pickFinal(prev) {
+  for (let i = 0; i < 40; i++) {
+    const e = FINAL_POOL[rndi(0, FINAL_POOL.length - 1)];
+    if (!prev || e.bell !== prev.bell || e.semi !== prev.semi) return e;
+  }
+  return FINAL_POOL[rndi(0, FINAL_POOL.length - 1)];
+}
+
+// Sample the whole session up front. End rule: nothing may collide with the ending —
+// if the next sample cannot ring out before D − GAP it is pulled left (squeezed) so it
+// just fits; if even that fails it is dropped, and the last bell is shifted so its ring
+// ends exactly at D − GAP: last bell rings out → little gap → triple chime.
+function sampleFinal(D) {
+  const deadline = D - FINAL_GAP;
+  const evs = [Object.assign({ t: 0 }, pickFinal(null))];   // constraint: a sound right at the start
+  let prev = evs[0];
+  for (;;) {
+    const cand = Object.assign({}, pickFinal(prev));
+    const b = Math.max(0.001, 2 * MAX_RING - prev.ring - WAIT.floor);
+    const t = prev.t + prev.ring + WAIT.floor + truncExp(Math.random, 0, b, finalMean);
+    if (t + cand.ring <= deadline) { cand.t = t; evs.push(cand); prev = cand; continue; }
+    const tFit = deadline - cand.ring;
+    if (tFit >= prev.t + prev.ring + 1) { cand.t = tFit; evs.push(cand); }
+    break;
+  }
+  if (evs.length > 1) {
+    const last = evs[evs.length - 1];
+    const pause = deadline - (last.t + last.ring);
+    if (pause > 0.05) last.t += pause;
+  }
+  return evs;
+}
+
+function updateFinalRowInfo(row) {
+  const last = row.events[row.events.length - 1];
+  row.infoEl.textContent = `· ${row.events.length} bells · last rings out at ${Math.round(last.t + last.ring)} s · chime at ${row.durS} s`;
+}
+
+function drawPitchMark(ctx, x, y, semi, col) {
+  ctx.save();
+  ctx.font = '9px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = col;
+  ctx.fillText((semi > 0 ? '+' : '') + semi, x, y);
+  ctx.restore();
+}
+
+function drawFinalRow(row, playhead) {
+  const cv = row.canvas;
+  const [ctx, w, h] = sizeCanvas(cv);
+  if (!w) return;
+  ctx.clearRect(0, 0, w, h);
+  const Dsec = row.durS;
+  const step = Dsec <= 120 ? 15 : (Dsec <= 600 ? 60 : 120);
+  ctx.font = '11px system-ui'; ctx.fillStyle = 'rgba(240,226,204,0.75)';
+  for (let s = 0; s <= Dsec + 1e-9; s += step) {
+    const x = s / Dsec * w;
+    ctx.fillRect(x, h - 16, 1, 5);
+    const lab = step < 60 ? Math.round(s) + 's' : Math.round(s / 60) + 'm';
+    if (w > 520 || (s / step) % 2 === 0) ctx.fillText(lab, x + 2, h - 4);
+  }
+  // ending zone — the last bell must ring out before this
+  const xz = (Dsec - FINAL_GAP) / Dsec * w;
+  ctx.fillStyle = 'rgba(147,195,125,0.10)';
+  ctx.fillRect(xz, 0, w - xz, h - 20);
+  ctx.fillStyle = 'rgba(147,195,125,0.65)';
+  if (w - xz > 100) ctx.fillText('ring out → ' + FINAL_GAP + ' s → chime', Math.max(xz + 4, w - 175), 11);
+  const midY = h * 0.42;
+  const events = row.events;
+  events.forEach((ev, i) => {
+    const x = ev.t / Dsec * w;
+    const xt = x + ev.ring / Dsec * w;
+    const col = COLORS[(ev.bell - 1) % COLORS.length];
+    const done = playhead != null && playhead >= ev.t;
+    ctx.globalAlpha = 0.28; ctx.fillStyle = col;
+    ctx.fillRect(x, midY + 6, Math.max(2, ev.ring / Dsec * w), 9);
+    ctx.globalAlpha = 0.12;
+    ctx.fillRect(xt, midY + 6, Math.max(1, (ev.tail - ev.ring) / Dsec * w), 9);
+    ctx.globalAlpha = 0.55; ctx.fillStyle = 'rgba(240,226,204,0.85)';
+    ctx.fillRect(xt, midY + 1, 1, 19);
+    ctx.globalAlpha = done ? 1 : 0.4;
+    drawPitchMark(ctx, x, midY, ev.semi, col);
+    ctx.globalAlpha = 1;
+    // how long the sound is (only when the marker fits)
+    const ringPx = ev.ring / Dsec * w;
+    if (ringPx >= 30) {
+      ctx.fillStyle = 'rgba(240,226,204,0.85)';
+      ctx.textAlign = 'center';
+      ctx.fillText(Math.round(ev.ring) + ' s', x + ringPx / 2, midY + 30);
+      ctx.textAlign = 'left';
+    }
+    // how long the break is
+    const nxt = events[i + 1];
+    if (nxt) {
+      const x2 = nxt.t / Dsec * w;
+      ctx.strokeStyle = 'rgba(184,164,138,0.75)';
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(xt, midY + 42); ctx.lineTo(x2, midY + 42); ctx.stroke();
+      ctx.setLineDash([]);
+      if (x2 - xt >= 36) {
+        ctx.fillStyle = 'rgba(240,226,204,0.75)';
+        ctx.textAlign = 'center';
+        ctx.fillText('wait ' + Math.round(nxt.t - ev.t - ev.ring) + ' s', (xt + x2) / 2, midY + 55);
+        ctx.textAlign = 'left';
+      }
+    }
+  });
+  if (playhead != null) {
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(Math.min(w - 1.5, playhead / Dsec * w), 4, 1.5, h - 18);
+  }
+}
+function drawFinalRows() {
+  finalRows.forEach(row => row.canvas && drawFinalRow(row, row === finalPlayingRow ? finalPlayheadT : null));
+}
+function ensureFinalRows() {
+  const host = document.getElementById('final-rows');
+  host.innerHTML = '';
+  finalRows = FINAL_DURS.map(min => {
+    const row = { min, durS: min * 60, events: [] };
+    const el = document.createElement('div'); el.className = 'track-row';
+    const btn = document.createElement('button'); btn.className = 'play'; btn.textContent = '▶'; btn.title = 'Play from the beginning';
+    const main = document.createElement('div');
+    const head = document.createElement('div'); head.className = 'row-head';
+    head.innerHTML = `<span><b>${min} min</b> <span class="fin-info"></span></span><span>click the timeline to start from there</span>`;
+    const cv = document.createElement('canvas');
+    main.append(head, cv); el.append(btn, main); host.append(el);
+    row.el = el; row.canvas = cv; row.btn = btn; row.infoEl = head.querySelector('.fin-info');
+    btn.onclick = () => playFinalRow(row, 0);
+    cv.onclick = e => {
+      const r = cv.getBoundingClientRect();
+      const frac = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+      playFinalRow(row, frac * row.durS);
+    };
+    return row;
+  });
+}
+function refreshFinalRows() {
+  finalRows.forEach(row => {
+    row.events = sampleFinal(row.durS);
+    updateFinalRowInfo(row);
+    drawFinalRow(row, null);
+  });
+}
+
+function playFinalRow(row, fromTime) {
+  if (!row || !row.events.length) return;
+  stopAll();
+  finalPlayingRow = row;
+  finalSpeed = parseFloat(document.getElementById('final-speed').value) || 1;
+  scheduleGains(row.events, ev => bellGain[bellKey(ev.bell)], finalSpeed);
+  finalStart = performance.now() + PREROLL - fromTime * 1000 / finalSpeed;
+  finalPlaying = true;
+  // resuming from a clicked position: skip everything before it silently
+  let idx = 0;
+  while (idx < row.events.length && row.events[idx].t < fromTime - 0.05) idx++;
+  let endIdx = 0;
+  while (endIdx < FINAL_END_OFFS.length && row.durS + FINAL_END_OFFS[endIdx] < fromTime - 0.05) endIdx++;
+  const fire = () => {
+    if (!finalPlaying) return;
+    const sNow = (performance.now() - finalStart) / 1000 * finalSpeed;
+    while (idx < row.events.length && row.events[idx].t <= sNow + 0.05) {
+      const ev = row.events[idx++];
+      const el = new Audio();
+      el.src = 'bells/' + D.clips[ev.bell - 1].file.replace(/\.mp3$/, '_safe.flac');
+      setPitchPreserving(el, false);
+      el.playbackRate = ev.rate;
+      el.volume = ev.gain != null ? ev.gain : bellGain[bellKey(ev.bell)];
+      el.play().catch(() => {});
+      finalEls.push(el);
+    }
+    while (endIdx < FINAL_END_OFFS.length && row.durS + FINAL_END_OFFS[endIdx] <= sNow + 0.05) {
+      const el = new Audio('Single bowl sound.mp3');
+      el.volume = 0.9;
+      el.play().catch(() => {});
+      finalEls.push(el); endIdx++;
+    }
+  };
+  fire();
+  finalTimer = setInterval(fire, 40);
+  (function tick() {
+    if (!finalPlaying) return;
+    const sNow = (performance.now() - finalStart) / 1000 * finalSpeed;
+    finalPlayheadT = Math.max(0, sNow);
+    drawFinalRow(row, finalPlayheadT);
+    if (sNow < row.durS + 2) finalRAF = requestAnimationFrame(tick);
+    else {
+      finalPlaying = false; finalPlayingRow = null;
+      if (finalTimer) { clearInterval(finalTimer); finalTimer = null; }
+      drawFinalRow(row, null);
+    }
+  })();
+}
+function stopFinal() {
+  finalPlaying = false;
+  if (finalTimer) { clearInterval(finalTimer); finalTimer = null; }
+  if (finalRAF) { cancelAnimationFrame(finalRAF); finalRAF = 0; }
+  finalEls.forEach(e => softPause(e)); finalEls = [];
+  if (finalPlayingRow) { const row = finalPlayingRow; finalPlayingRow = null; drawFinalRow(row, null); }
+}
+
+// wiring
+{
+  document.getElementById('final-mean').onchange = e => {
+    finalMean = parseFloat(e.target.value) || 8;
+    stopFinal();
+    refreshFinalRows();
+  };
+  document.getElementById('final-speed').onchange = e => { finalSpeed = parseFloat(e.target.value) || 1; };
+  document.getElementById('final-stop').onclick = () => stopFinal();
+  document.getElementById('final-legend').innerHTML =
+    BELL_POOL.map(b => `<span style="--c:${COLORS[(b - 1) % COLORS.length]}">${noteName(D.clips[b - 1].partials[0])}</span>`).join('') +
+    `<span style="--c:transparent">pitch marks = semitone offset (C4: −4…0; others: −2…+2)</span>`;
+
+  // sound audit — every bell × every pitch, with waveform + moving playhead
+  let rowAudioSeq = 0;
+  function playRowUrl(entry, rate, cv) {
+    stopAll();
+    const el = new Audio(entry.url);
+    setPitchPreserving(el, false);
+    el.playbackRate = rate;
+    const vol = Math.min(1, entry.vol || 1);
+    el.volume = 0;
+    extraEls = [el];                       // Stop-all (and any other playback) stops it too
+    const seq = ++rowAudioSeq;
+    el.onended = () => { if (seq === rowAudioSeq) drawWave(cv, entry, null); };
+    el.addEventListener('pause', () => drawWave(cv, entry, null));   // soft stop: clear the playhead
+    afterPreroll(() => {
+      if (seq !== rowAudioSeq) return;
+      softPlay(el, vol);
+      (function tick() {
+        if (seq !== rowAudioSeq || el.paused || el.ended) return;
+        drawWave(cv, entry, el.currentTime);
+        requestAnimationFrame(tick);
+      })();
+    });
+  }
+  function playAudit(b, semi, cv) {
+    const c = D.clips[b - 1];
+    playRowUrl({ url: 'bells/' + c.file, dur: c.dur, wave: c.wave, color: COLORS[(b - 1) % COLORS.length], vol: bellGain[bellKey(b)] },
+               Math.pow(2, semi / 12), cv);
+  }
+  const mkAudit = (host, pool, extra) => {
+    pool.forEach(b => {
+      const row = document.createElement('div'); row.className = 'audit-row';
+      const head = document.createElement('div'); head.className = 'audit-head';
+      const lab = document.createElement('div'); lab.className = 'audit-label';
+      lab.innerHTML = `${noteName(D.clips[b - 1].partials[0])} <span class="muted">${D.clips[b - 1].file}</span>` + (extra || '');
+      const btns = document.createElement('div'); btns.className = 'audit-btns';
+      const cv = document.createElement('canvas'); cv.className = 'audit-cv';
+      const entry = { dur: D.clips[b - 1].dur, wave: D.clips[b - 1].wave, color: COLORS[(b - 1) % COLORS.length] };
+      row._semi = 0;
+      offsetsFor(b).forEach(semi => {
+        const btn = document.createElement('button');
+        btn.className = 'btn audit-btn'; btn.type = 'button';
+        btn.textContent = (semi > 0 ? '+' : '') + semi;
+        btn.title = `${D.clips[b - 1].file} at ${semi} semitones (×${Math.pow(2, semi / 12).toFixed(3)})`;
+        btn.onclick = () => { row._semi = semi; playAudit(b, semi, cv); };
+        btns.append(btn);
+      });
+      cv.onclick = () => playAudit(b, row._semi, cv);
+      head.append(lab, btns);
+      row.append(head, cv);
+      host.append(row);
+      redrawList.push([cv, entry]);
+      requestAnimationFrame(() => drawWave(cv, entry, null));
+    });
+  };
+  mkAudit(document.getElementById('audit-used'), BELL_POOL, '');
+  mkAudit(document.getElementById('audit-discarded'), [5], ' <span class="tag flat">discarded</span>');
+
+  // ── crackle A/B: original vs pre-rendered safe version ─────────────────────
+  // A live limiter is impossible for file:// media (Chrome silences any local file routed
+  // through Web Audio: "MediaElementAudioSource outputs zeroes due to CORS access
+  // restrictions"), so the safe path is baked offline: 5 ms fade-in + lookahead limiter
+  // at −1 dBFS, lossless FLAC, verified transparent below the ceiling.
+  function mkPairRows(host, mkPairs) {
+    BELL_POOL.forEach(b => {
+      const c = D.clips[b - 1];
+      const row = document.createElement('div'); row.className = 'audit-row';
+      const head = document.createElement('div'); head.className = 'audit-head';
+      const lab = document.createElement('div'); lab.className = 'audit-label';
+      lab.innerHTML = `${noteName(c.partials[0])} <span class="muted">${c.file}</span>`;
+      head.append(lab);
+      const grid = document.createElement('div'); grid.className = 'ab-grid';
+      mkPairs(b, c).forEach(([kind, url, note, color]) => {
+        const cell = document.createElement('div'); cell.className = 'ab-cell';
+        const cap = document.createElement('div'); cap.className = 'ab-cap';
+        cap.innerHTML = `<b>${kind}</b> <span class="muted">${note}</span>`;
+        const cv = document.createElement('canvas'); cv.className = 'audit-cv';
+        const entry = { dur: c.dur, wave: c.wave, color, vol: bellGain[bellKey(b)] };
+        cv.onclick = () => playRowUrl({ url, dur: entry.dur, wave: entry.wave, color: entry.color, vol: entry.vol }, 1, cv);
+        cell.append(cap, cv); grid.append(cell);
+        redrawList.push([cv, entry]);
+        requestAnimationFrame(() => drawWave(cv, entry, null));
+      });
+      row.append(head, grid);
+      document.getElementById(host).append(row);
+    });
+  }
+  mkPairRows('ab-rows', (b, c) => [
+    ['original', 'bells/' + c.file, 'the file as-is', COLORS[(b - 1) % COLORS.length]],
+    ['safe', 'bells/' + c.file.replace(/\.mp3$/, '_safe.flac'), '5 ms fade-in + −1 dBFS limiter (lossless)', '#4ec9a0'],
+  ]);
+  const DEN_STATS = { 1: [16.2, 24.3, 61.5], 2: [24.0, 39.9, 61.4], 3: [23.4, 35.5, 62.1], 4: [23.9, 39.9, 61.0], 6: [23.9, 39.8, 58.9] };
+  const DEN_VARIANTS = [
+    ['FFT strong', 'f2', '#7fb3d5', 'spectral subtraction nr24'],
+    ['FFT max', 'f3', '#b4a7d6', 'spectral subtraction nr40'],
+    ['FFT ultra', 'f4', '#93c47d', 'nr64 · slow-adapt smooth gains'],
+  ];
+  const DEN_WARN = { 3: { f2: ' · shaves a partial ~18 dB', f3: ' · shaves a partial ~20 dB', f4: ' · shaves a partial ~29 dB' } };
+  mkPairRows('denoise-rows', (b, c) => [
+    ['original', 'bells/' + c.file, 'the file as-is', COLORS[(b - 1) % COLORS.length]],
+    ...DEN_VARIANTS.map(([label, tag, color, note], i) =>
+      i < DEN_STATS[b].length ? [
+        label,
+        'bells/' + c.file.replace(/\.mp3$/, '_den_' + tag + '.flac'),
+        'hiss −' + DEN_STATS[b][i] + ' dB · ' + note + ((DEN_WARN[b] || {})[tag] || ''),
+        color,
+      ] : null).filter(Boolean),
+  ]);
+
+  // synthetic playback-reference tones (never touched a mic, an MP3 or a denoiser)
+  {
+    const mkRef = (label, note, color, url, dur, wave) => {
+      const row = document.createElement('div'); row.className = 'audit-row';
+      const head = document.createElement('div'); head.className = 'audit-head';
+      const lab = document.createElement('div'); lab.className = 'audit-label';
+      lab.innerHTML = `<b>${label}</b> <span class="muted">${note}</span>`;
+      head.append(lab);
+      const cv = document.createElement('canvas'); cv.className = 'audit-cv';
+      const entry = { dur, wave, color, vol: 0.8 };
+      cv.onclick = () => playRowUrl({ url, dur, wave, color, vol: 0.8 }, 1, cv);
+      row.append(head, cv);
+      document.getElementById('ref-rows').append(row);
+      redrawList.push([cv, entry]);
+      requestAnimationFrame(() => drawWave(cv, entry, null));
+    };
+    mkRef('Sine 220 Hz', 'pure tone · 10 s · −9 dBFS', '#8ab4d8', 'bells/ref-sine-220.flac', 10, new Array(480).fill(0.6));
+    const w = [];
+    for (let i = 0; i < 480; i++) {
+      const t = i / 480 * 16; let e = 0;
+      for (const [f, a, tau] of [[128.8, 1, 10], [360.4, 0.25, 6], [1031.6, 0.08, 4], [1452.7, 0.063, 3.5], [2176.6, 0.035, 2.8], [2905.3, 0.022, 2.2]]) e += a * Math.exp(-t / tau);
+      w.push(Math.min(1, e));
+    }
+    const mx = Math.max(...w);
+    mkRef('Modelled C3 −27¢', 'synthetic twin of bell_001 · noise-free · 16 s', '#4ec9a0', 'bells/ref-bell-c3.flac', 16, w.map(v => v / mx));
+
+    // same tones, but synthesized in-memory and played through Web Audio — the exact playback
+    // path the shipping app uses for its bells (decoded buffers on the audio clock, no media
+    // elements). If the file rows above crackle but these stay clean, the artefact is in
+    // Chrome's media-element path, not in the app's engine; if both crackle, it is the link.
+    const mkBuf = (dur, fn) => {
+      const n = Math.round(dur * 48000);
+      const buf = actx().createBuffer(2, n, 48000);
+      const ch0 = buf.getChannelData(0), ch1 = buf.getChannelData(1);
+      for (let i = 0; i < n; i++) { const v = fn(i / 48000); ch0[i] = v; ch1[i] = v; }
+      return buf;
+    };
+    const mkRefBuf = (label, note, color, dur, wave, makeBuf) => {
+      const row = document.createElement('div'); row.className = 'audit-row';
+      const head = document.createElement('div'); head.className = 'audit-head';
+      const lab = document.createElement('div'); lab.className = 'audit-label';
+      lab.innerHTML = `<b>${label}</b> <span class="muted">${note}</span>`;
+      head.append(lab);
+      const cv = document.createElement('canvas'); cv.className = 'audit-cv';
+      const entry = { dur, wave, color, buffer: null, start: 0 };
+      const dummy = document.createElement('button'); dummy.className = 'hidden';
+      cv.onclick = () => {
+        if (!entry.buffer) entry.buffer = makeBuf();
+        playBuffer(entry, dummy, cv);
+      };
+      row.append(head, cv);
+      document.getElementById('ref-rows').append(row);
+      redrawList.push([cv, entry]);
+      requestAnimationFrame(() => drawWave(cv, entry, null));
+    };
+    mkRefBuf('Sine 220 Hz — live', 'synthesized in-memory · Web Audio (the app’s bell path)', '#c9934a', 10,
+      new Array(480).fill(0.6),
+      () => mkBuf(10, t => 0.35 * Math.sin(2 * Math.PI * 220 * t) * Math.min(1, Math.min(t, 10 - t) / 0.03)));
+    mkRefBuf('Modelled C3 — live', 'synthesized in-memory · Web Audio (the app’s bell path)', '#e8a04c', 16,
+      w.map(v => v / mx),
+      () => mkBuf(16, t => {
+        let e = 0;
+        for (const [f, a, tau] of [[128.8, 1, 10], [360.4, 0.25, 6], [1031.6, 0.08, 4], [1452.7, 0.063, 3.5], [2176.6, 0.035, 2.8], [2905.3, 0.022, 2.2]]) e += a * Math.exp(-t / tau) * Math.sin(2 * Math.PI * f * t);
+        return 0.45 * e * Math.min(1, t / 0.004);
+      }));
+  }
+
+  // keep the audio link warm: a 25 Hz tone at amplitude 0.002 (−54 dBFS, inaudible) — the
+  // same recipe the shipping app uses. Chrome parks the output device when the stream is
+  // digital silence (its audibility gate), which is exactly when a Bluetooth link drops to
+  // standby and the next sound arrives into a cold amplifier.
+  let WARM = null, WARMG = null;
+  const warm = document.getElementById('warm');
+  try { warm.checked = localStorage.getItem('bellsWarm') !== '0'; } catch {}
+  function applyWarm() {
+    try { localStorage.setItem('bellsWarm', warm.checked ? '1' : '0'); } catch {}
+    if (warm.checked) {
+      const ac = actx();
+      if (!WARM) {
+        WARM = ac.createOscillator(); WARMG = ac.createGain();
+        WARM.frequency.value = 25; WARMG.gain.value = 0.002;
+        WARM.connect(WARMG).connect(ac.destination); WARM.start();
+      }
+    } else if (WARM) {
+      try { WARM.stop(); } catch {}
+      WARM.disconnect(); WARMG.disconnect(); WARM = null; WARMG = null;
+    }
+  }
+  warm.onchange = applyWarm;
+  addEventListener('pointerdown', function arm() { removeEventListener('pointerdown', arm); applyWarm(); });
+}
+
+ensureFinalRows();
+refreshFinalRows();
+refreshPattern();
+redrawAll();
+</script>
+</body>
+</html>

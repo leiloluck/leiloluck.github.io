@@ -116,12 +116,15 @@
     Nothing here is part of the installed app; nothing is uploaded anywhere.
   </p>
 
-  <h2>Cat meow candidates</h2>
-  <p class="group-note">
-    Replacements for the current <code>cat-meow.mp3</code>. All loudness-matched to the
-    app's sounds (&minus;14 LUFS). Pick the one that actually sounds cute.
-  </p>
-  <div id="candidates"></div>
+  <section id="candidates-section" hidden>
+    <h2>Replacement candidates</h2>
+    <p class="group-note">
+      Files in <code>candidates/</code> being auditioned. Add one to the
+      <code>CANDIDATES</code> list in this file (and to candidates/README.md) to see it
+      here. Empty right now — the last winner became the live <code>kitty-meow.mp3</code>.
+    </p>
+    <div id="candidates"></div>
+  </section>
 
   <h2>In the app</h2>
   <p class="group-note">The twelve sounds the app fires today.</p>
@@ -146,25 +149,17 @@
 'use strict';
 
 // ── What to audition ─────────────────────────────────────────────────────────
-// Candidates first: these are the replacement files in candidates/ (sources and
-// licences in candidates/README.md). Then the twelve live app sounds.
-const CANDIDATES = [
-  { icon: '🐱', title: 'Little meow #1', file: 'candidates/meow-1-bigsoundbank-0494.mp3',
-    meta: '0.5 s · studio, mono · BigSoundBank s0494 · CC0 (Joseph SARDIN)',
-    url: 'https://bigsoundbank.com/little-meow-of-a-cat-s0494.html', dur: 0.53 },
-  { icon: '🐱', title: 'Little meow #2', file: 'candidates/meow-2-bigsoundbank-1472.mp3',
-    meta: '1.0 s · studio, mono · BigSoundBank s1472 · CC0 (Joseph SARDIN)',
-    url: 'https://bigsoundbank.com/little-meow-of-a-cat-2-s1472.html', dur: 1.02 },
-  { icon: '🐱', title: 'Little meow #3', file: 'candidates/meow-3-bigsoundbank-1473.mp3',
-    meta: '1.0 s · studio, mono · BigSoundBank s1473 · CC0 (Joseph SARDIN)',
-    url: 'https://bigsoundbank.com/little-meow-of-a-cat-3-s1473.html', dur: 1.02 },
-  { icon: '🐱', title: 'Cute kitten meow', file: 'candidates/meow-4-freesound-448084-cute-kitten.mp3',
-    meta: '0.7 s · Freesound 448084 by Breviceps · CC0',
-    url: 'https://freesound.org/people/Breviceps/sounds/448084/', dur: 0.65 },
-];
+// Replacements being auditioned live in candidates/ — empty since the cute kitten meow
+// (Freesound 448084) won and shipped as ../kitty-meow.mp3 on 2026-10-12. To audition a
+// new one: drop the file in candidates/, normalize it to −14 LUFS, then add an entry
+// here (title, file, meta, url) and a row in candidates/README.md.
+const CANDIDATES = [];
 
+// The app's live sounds (canonical filenames from js/app.js). The Cat entry is the CC0
+// cute kitten meow that won the last audition; cat-meow.mp3 remains only as an offline
+// fallback inside the app, so it is not listed here.
 const SOUNDS = [
-  { icon: '🐱', title: 'Cat',           file: 'cat-meow.mp3' },
+  { icon: '🐱', title: 'Cat',           file: 'kitty-meow.mp3' },
   { icon: '🐶', title: 'Dog',           file: 'dog-bark.mp3' },
   { icon: '🚪', title: 'Knock',         file: 'knock.mp3' },
   { icon: '🐦', title: 'Sparrow',       file: 'bird-chirp.mp3' },
@@ -356,11 +351,14 @@ document.getElementById('reset-btn').addEventListener('click', () => {
 });
 
 // ── Build the page ───────────────────────────────────────────────────────────
-const candBox = document.getElementById('candidates');
-for (const c of CANDIDATES) {
-  const el = row(c, 'candidate');
-  paintVerdicts(el, c.file);
-  candBox.appendChild(el);
+if (CANDIDATES.length) {
+  document.getElementById('candidates-section').hidden = false;
+  const candBox = document.getElementById('candidates');
+  for (const c of CANDIDATES) {
+    const el = row(c, 'candidate');
+    paintVerdicts(el, c.file);
+    candBox.appendChild(el);
+  }
 }
 const soundBox = document.getElementById('sounds');
 for (const s of SOUNDS) {

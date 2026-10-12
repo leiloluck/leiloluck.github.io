@@ -8,7 +8,7 @@ exact name. Until a matching file is present, the app plays a synthesized stand-
 
 | Button | Canonical filename (+ aliases) | Notes |
 |---|---|---|
-| 🐱 Cat | `cat-meow.mp3` (`gato-miau`, `meow`) | a meow |
+| 🐱 Cat | `kitty-meow.mp3` (`cat-meow`, `gato-miau`, `meow`) | the cute CC0 kitten meow; `cat-meow.mp3` is only an offline fallback |
 | 🐶 Dog | `dog-bark.mp3` (`bark`, `ladrido`) | one or two barks |
 | 🚪 Knock | `knock.mp3` (`knock-on-wood`, `toque`) | a few knocks |
 | 🐦 Sparrow | `bird-chirp.mp3` (`sparrow`, `pajaro`) | a chirp or two |
@@ -24,8 +24,10 @@ exact name. Until a matching file is present, the app plays a synthesized stand-
 Each sound accepts any name in its `files:` list (`js/app.js`); the first that
 decodes wins. Want another name? Add it there.
 
-> All 12 files above are present, renamed to their canonical names, and
-> loudness-normalized. ✓ There is no real **Doorbell** ding-dong yet — the closest
+> All 12 files above are present under their canonical names and loudness-normalized.
+> The Cat file is `kitty-meow.mp3` — the CC0 "Cute Kitten Meow" chosen in the
+> 2026-10-12 audition (record in `candidates/README.md`); `cat-meow.mp3` remains only
+> as an offline fallback. ✓ There is no real **Doorbell** ding-dong yet — the closest
 > is **Ding**. Drop a `doorbell.mp3` and it will be used for the Ding button, or add
 > a dedicated entry in `SOUNDS`.
 

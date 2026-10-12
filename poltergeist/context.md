@@ -287,6 +287,13 @@ opened again. The deleted screen says exactly that.
   Crickets, Crowd gasp, Ding, Mosquito, Mouse, Vibrate, Sneeze, Morning birds.
   (The placeholder Doorbell was dropped once real sounds arrived; "Ding" covers the
   bell niche, and a `doorbell.mp3` would be picked up by the Ding entry.)
+- **Cat is `kitty-meow.mp3`** since v26.10.12d: the CC0 "Cute Kitten Meow"
+  (Freesound 448084 by Breviceps) chosen in the 2026-10-12 audition (record and
+  workflow in `resources/candidates/README.md`, tool page `resources/sounds.html`).
+  The old meme `cat-meow.mp3` sits second in the Cat `files:` list purely as an
+  offline fallback for installs that predate the swap. The new filename is
+  deliberate: the sounds cache is unversioned and cache-first, so a file replaced
+  at the same URL would keep serving the old bytes.
 
 ### Test mode
 

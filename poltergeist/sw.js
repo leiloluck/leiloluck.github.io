@@ -34,7 +34,7 @@
 
 'use strict';
 
-const VERSION      = 'v26.10.12c';
+const VERSION      = 'v26.10.12d';
 const CACHE_PREFIX = 'poltergeist-';           // never touch caches outside this prefix
 const CACHE        = CACHE_PREFIX + VERSION;
 const AUDIO_CACHE  = CACHE_PREFIX + 'sounds';    // unversioned on purpose — see header
@@ -56,6 +56,7 @@ const SHELL = [
 // Sounds — precached so the app is fully playable offline immediately. Added
 // best-effort: a file that's been renamed/removed must not block the install.
 const SOUNDS = [
+  './resources/kitty-meow.mp3',
   './resources/cat-meow.mp3',
   './resources/dog-bark.mp3',
   './resources/mouse-squeak.mp3',

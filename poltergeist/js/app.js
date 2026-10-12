@@ -53,7 +53,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.10.12c';
+const APP_VERSION = 'v26.10.12d';
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 // Drop real files into resources/ (see resources/README.md). Until a matching file
@@ -66,8 +66,12 @@ const APP_VERSION = 'v26.10.12c';
 // then human sounds, then mechanical/object sounds — easier to scan.
 const SOUNDS = [
   // — animals: mammals —
+  // The Cat sound is the CC0 "cute kitten meow" (Freesound 448084) since v26.10.12d,
+  // shipped as kitty-meow.mp3. cat-meow.mp3 stays second in the list purely as an
+  // offline fallback for installs that predate it; a new filename was required because
+  // the sounds cache is unversioned and cache-first.
   { id: 'cat',          name: 'Cat',          tag: 'meow',    emoji: '🐱', synth: synthMeow,
-    files: ['cat-meow.mp3', 'gato-miau.mp3', 'meow.mp3'] },
+    files: ['kitty-meow.mp3', 'cat-meow.mp3', 'gato-miau.mp3', 'meow.mp3'] },
   { id: 'dog',          name: 'Dog',          tag: 'bark',    emoji: '🐶', synth: synthBark,
     files: ['dog-bark.mp3', 'bark.mp3', 'ladrido.mp3'] },
   { id: 'mouse',        name: 'Mouse',        tag: 'squeak',  emoji: '🐭', synth: synthBlip,

@@ -7,7 +7,10 @@
      Tab 3 "Tuned": interval distributions, the chord study (chords are OUT of the final
      product), and the pattern player (singles only).
      Tab 4 "Tuned 2": full-session preview — the pool (5 bells × 5 pitches), end-aware
-     sampling, the app's triple stop chime. Sources: ../resources/sources.md. -->
+     sampling, the app's triple stop chime. Sources: ../resources/sources.md.
+     Tab 5 "Tuned 3": the palette revision — G3 −27¢ (bell_003) and C4 (bell_006) retired
+     as the two shortest tails; three bells × seven pitches (±3 semitones), denoised
+     files only, pitched live. -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -89,13 +92,14 @@
 </head>
 <body>
 <main>
-  <h1>Bell study <span class="muted" style="font-size:13px; font-weight:400">· rev 14 (2026-10-11)</span></h1>
+  <h1>Bell study <span class="muted" style="font-size:13px; font-weight:400">· rev 15 (2026-10-12)</span></h1>
   <div class="tabrow">
     <div class="tabs" role="tablist" aria-label="Sections">
       <button class="tab" id="tab-extracted" type="button" role="tab" aria-selected="true">Extracted</button>
       <button class="tab" id="tab-generated" type="button" role="tab" aria-selected="false">Generated</button>
       <button class="tab" id="tab-tuned" type="button" role="tab" aria-selected="false">Tuned</button>
       <button class="tab" id="tab-final" type="button" role="tab" aria-selected="false">Tuned 2</button>
+      <button class="tab" id="tab-tuned3" type="button" role="tab" aria-selected="false">Tuned 3</button>
     </div>
     <button class="btn" id="stop-all" type="button" title="Stop everything that is playing">■ Stop all</button>
   </div>
@@ -339,7 +343,7 @@ for (const p of partials) {                 // ~6–12 partials
   <!-- ── TAB 4: FINAL — full-session preview of the product (singles only) ── -->
   <section id="panel-final" class="hidden">
     <div class="panel">
-      <h2>Tuned 2 · session preview (singles only, end-aware)</h2>
+      <h2>Tuned 2 · session preview (singles only, end-aware) <span class="muted" style="font-size:12px; font-weight:400">· palette revised in Tuned 3</span></h2>
       <p class="muted">The product behaviour, assembled: <b>a sound right at the start</b> (random), then the pool — each of the five bells (colour) at one of five pitches (the mark on the timeline shows the semitone offset; the C4 slides down only, −4…0, since it is already the highest bell), never the same bell at the same pitch twice in a row. The whole session is sampled up front, and nothing may collide with the ending: the last bell rings out with no preemptive fade, then a little gap, then the triple stop chime (exactly the app's ending).</p>
       <p class="muted">All six session lengths are sampled below at once. <b>Click any timeline to start from that point</b> — events before it are skipped, and playback resumes 0.4 s later. Each ▶ plays its variant from the beginning.</p>
       <div class="controls">
@@ -385,6 +389,23 @@ for (const p of partials) {                 // ~6–12 partials
       <div id="ref-rows"></div>
     </div>
   </section>
+
+  <!-- ── TAB 5: TUNED 3 — the palette revision: 3 bells × ±3 semitones, denoised only ── -->
+  <section id="panel-tuned3" class="hidden">
+    <div class="panel">
+      <h2>Tuned 3 · the palette, recut: three bells, seven pitches each</h2>
+      <p class="muted">Two bells leave the palette: <b>G3 −27¢</b> (<code>bell_003.mp3</code> — audible ring to −40&nbsp;dB: 14.0&nbsp;s) and <b>C4</b> (<code>bell_006.mp3</code> — 13.8&nbsp;s). They were the two shortest tails of the five-bell set — the others ring 18.7–28.0&nbsp;s — and by ear they stop noticeably early, as if the source had damped them. The flat C4 −27¢ (<code>bell_005</code>, 8.3&nbsp;s) already sits on the shelf from the previous round for the same reason.</p>
+      <p class="muted">In exchange the pitch window widens: every remaining bell now slides <b>−3 … +3 semitones</b> (was −2…+2; the C4's −4…0 retires with the bell). 3 bells × 7 pitches = 21 palette entries. A lower strike is automatically a longer one — live <code>playbackRate</code> stretches pitch and time together, so −3 rings ~19&nbsp;% longer and +3 ~16&nbsp;% shorter, exactly like a slightly larger or smaller bowl. That's the natural relation, not an artefact; nothing needs compensating. The palette's shortest audible ring rises from 13.8&nbsp;s to <b>15.7&nbsp;s</b> (the G3 at +3), and its span becomes 108–233&nbsp;Hz — one semitone lower than the old palette ever went at the bottom (108.3 vs 114.7&nbsp;Hz), two semitones below the retired C4's ceiling at the top.</p>
+      <p class="muted" style="font-size:13px">Every play button below is the <b>denoised</b> file — the exact FLAC bytes the app already ships (<code>bell_00X_den_f4.flac</code> ≡ <code>resources/random/bell-*.flac</code>, FFT ultra; the MP3 fallback twins are encoded from these). The raw MP3s, the "safe" versions, and the synthesized material are not used in this tab; every pitch is live <code>playbackRate</code>, so no pitched variant files exist or ship.</p>
+      <canvas id="t3-figure" style="height:196px;background:var(--surface-2);border:1px solid var(--border);margin-top:6px"></canvas>
+    </div>
+
+    <div class="panel">
+      <h2>Inspect — every bell × every pitch</h2>
+      <p class="muted">The same playback path as the Tuned 2 audit and the app: live <code>playbackRate</code> on the denoised file, loudness-matched volume. The playhead moves faster at higher pitches (same file, played faster). Click a waveform to replay it at the last pitch you chose for that bell; the buttons pick the pitch and their tooltip prints the resulting Hz and audible ring. The thing to judge by ear: whether ±3 still sounds like the bell, or has left its character.</p>
+      <div id="t3-rows"></div>
+    </div>
+  </section>
 </main>
 
 <script src="bells/bells-data.js?v=8"></script>
@@ -402,7 +423,7 @@ const rndi = (a, b) => Math.floor(rnd(a, b + 1));
 const db2amp = db => Math.pow(10, db / 20);
 
 // ── tabs ─────────────────────────────────────────────────────────────────────
-const TAB_NAMES = ['extracted', 'generated', 'tuned', 'final'];
+const TAB_NAMES = ['extracted', 'generated', 'tuned', 'final', 'tuned3'];
 function showTab(which) {
   TAB_NAMES.forEach(n => {
     document.getElementById('tab-' + n).setAttribute('aria-selected', String(n === which));
@@ -576,6 +597,7 @@ function redrawAll() {
   if (typeof drawPitchedFigure === 'function') drawPitchedFigure();
   if (typeof drawPatTimeline === 'function') drawPatTimeline(patPlayhead);
   if (typeof drawFinalRows === 'function') drawFinalRows();
+  if (typeof drawTuned3Figure === 'function') drawTuned3Figure();
 }
 addEventListener('resize', redrawAll);
 
@@ -1120,6 +1142,61 @@ function drawPitchedFigure() {
     });
   });
 }
+// Tuned 3 — the revised palette: three bells, every offset −3…+3, denoised files only.
+const T3_POOL = [1, 2, 4];                 // C3 −27¢, C3, G3 −1¢ (003 and 006 retired)
+const T3_OFFS = [-3, -2, -1, 0, 1, 2, 3];
+
+// Tuned 3 — the palette as windows on a log-pitch axis: a solid bar = a kept bell's ±3
+// span (one tick per semitone step), a dashed grey bar = a retired bell's former window.
+function drawTuned3Figure() {
+  const cv = document.getElementById('t3-figure');
+  if (!cv) return;
+  const [ctx, w, h] = sizeCanvas(cv);
+  if (!w) return;
+  ctx.clearRect(0, 0, w, h);
+  const fmin = 100, fmax = 285;
+  const xL = Math.min(268, w * 0.36), xR = Math.max(xL + 40, w - 24);
+  const X = f => xL + Math.log(f / fmin) / Math.log(fmax / fmin) * (xR - xL);
+  ctx.font = '11px system-ui';
+  ctx.fillStyle = 'rgba(240,226,204,0.85)';
+  ctx.fillText('Palette on a log pitch axis — solid bar: in Tuned 3 (±3 semitone steps) · dashed grey: retired', 10, 16);
+  const y0 = 42, rowH = 27;
+  for (const [f, name] of [[130.8, 'C3'], [195.9, 'G3'], [261.6, 'C4']]) {
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    ctx.fillRect(X(f), y0 - 14, 1, 5 * rowH - 8);
+    ctx.fillStyle = 'rgba(240,226,204,0.55)';
+    ctx.textAlign = 'center'; ctx.fillText(name + ' ' + f, X(f), y0 + 5 * rowH + 2); ctx.textAlign = 'left';
+  }
+  const rows = [
+    { b: 1, offs: [-3, -2, -1, 0, 1, 2, 3] },
+    { b: 2, offs: [-3, -2, -1, 0, 1, 2, 3] },
+    { b: 3, offs: [-2, -1, 0, 1, 2], retired: true },
+    { b: 4, offs: [-3, -2, -1, 0, 1, 2, 3] },
+    { b: 6, offs: [-4, -3, -2, -1, 0], retired: true },
+  ];
+  rows.forEach((row, r) => {
+    const c = D.clips[row.b - 1], f0 = c.partials[0], y = y0 + r * rowH;
+    const col = COLORS[(row.b - 1) % COLORS.length];
+    const ps = row.offs.map(s => f0 * Math.pow(2, s / 12));
+    const a = Math.min(...ps), b = Math.max(...ps);
+    ctx.fillStyle = row.retired ? 'rgba(232,96,76,0.9)' : 'rgba(240,226,204,0.9)';
+    ctx.fillText(`${noteName(f0)} · bell_${String(row.b).padStart(3, '0')}`, 10, y + 4);
+    ctx.fillStyle = 'rgba(184,164,138,0.85)';
+    ctx.fillText(`${Math.round(a)}–${Math.round(b)} Hz` + (row.retired ? ' · retired' : ''), 150, y + 4);
+    if (row.retired) {
+      ctx.setLineDash([4, 3]);
+      ctx.strokeStyle = 'rgba(184,164,138,0.55)';
+      ctx.strokeRect(X(a), y - 5.5, Math.max(2, X(b) - X(a)), 11);
+      ctx.setLineDash([]);
+    } else {
+      ctx.globalAlpha = 0.22; ctx.fillStyle = col;
+      ctx.fillRect(X(a), y - 5.5, Math.max(2, X(b) - X(a)), 11);
+      ctx.globalAlpha = 0.85;
+      for (const p of ps) ctx.fillRect(X(p) - 0.5, y - 7.5, 1.5, 15);
+      ctx.globalAlpha = 1;
+    }
+  });
+}
 document.getElementById('fig-download').onclick = () => {
   const a = document.createElement('a');
   a.href = document.getElementById('dist-figure').toDataURL('image/png');
@@ -1593,6 +1670,47 @@ function stopFinal() {
   };
   mkAudit(document.getElementById('audit-used'), BELL_POOL, '');
   mkAudit(document.getElementById('audit-discarded'), [5], ' <span class="tag flat">discarded</span>');
+
+  // ── Tuned 3 — the revised palette: three bells × ±3 semitones, denoised FLACs only ──
+  // Same playback path as the audit above with two changes: the file played is the
+  // denoised FLAC the app ships (bell_00X_den_f4.flac — byte-identical to
+  // resources/random/bell-*.flac), and the offsets are the new ±3 window. Live
+  // playbackRate as everywhere: pitch and decay scale together, so each button's
+  // tooltip prints the resulting Hz and the audible ring that follows from the rate.
+  {
+    const host = document.getElementById('t3-rows');
+    T3_POOL.forEach(b => {
+      const c = D.clips[b - 1];
+      const entry = {
+        url: 'bells/' + c.file.replace(/\.mp3$/, '_den_f4.flac'),
+        dur: c.dur, wave: c.wave, color: COLORS[(b - 1) % COLORS.length],
+        vol: bellGain[bellKey(b)],
+      };
+      const row = document.createElement('div'); row.className = 'audit-row';
+      const head = document.createElement('div'); head.className = 'audit-head';
+      const lab = document.createElement('div'); lab.className = 'audit-label';
+      lab.innerHTML = `${noteName(c.partials[0])} <span class="muted">${c.file} → ${c.file.replace(/\.mp3$/, '_den_f4.flac')} (the shipped file)</span>`;
+      const btns = document.createElement('div'); btns.className = 'audit-btns';
+      const cv = document.createElement('canvas'); cv.className = 'audit-cv';
+      let last = 0;
+      const ring40 = P.bells[bellKey(b)].ring40;
+      T3_OFFS.forEach(semi => {
+        const rate = Math.pow(2, semi / 12);
+        const btn = document.createElement('button');
+        btn.className = 'btn audit-btn'; btn.type = 'button';
+        btn.textContent = (semi > 0 ? '+' : '') + semi;
+        btn.title = `${semi} semitones (×${rate.toFixed(3)}) → ${(c.partials[0] * rate).toFixed(1)} Hz · audible ring ≈ ${(ring40 / rate).toFixed(1)} s`;
+        btn.onclick = () => { last = semi; playRowUrl(entry, rate, cv); };
+        btns.append(btn);
+      });
+      cv.onclick = () => playRowUrl(entry, Math.pow(2, last / 12), cv);
+      head.append(lab, btns);
+      row.append(head, cv);
+      host.append(row);
+      redrawList.push([cv, entry]);
+      requestAnimationFrame(() => drawWave(cv, entry, null));
+    });
+  }
 
   // ── crackle A/B: original vs pre-rendered safe version ─────────────────────
   // A live limiter is impossible for file:// media (Chrome silences any local file routed

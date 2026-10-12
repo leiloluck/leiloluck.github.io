@@ -41,7 +41,7 @@ Don't add knowledge files for:
 
 1. Read [`pwa-offline-installable.md`](./pwa-offline-installable.md) — copy the manifest, SW, and PWA JS patterns.
 2. Read [`versioning.md`](./versioning.md) — set up the three-location version sync.
-3. Copy the file structure from `sound-annoyer/` or `meditation-timer/` as a starting template.
+3. Copy the file structure from `poltergeist/` or `meditation-timer/` as a starting template.
 
 ### Updating an existing app
 
@@ -61,7 +61,7 @@ Don't add knowledge files for:
 
 | App | SW Version | Pattern | Notable Features |
 |---|---|---|---|
-| `sound-annoyer/` | `v26.07.13` | Network-first shell, cache-first audio | Faint-tone keep-alive for locked-screen playback (see `locked-screen-audio.md`), wake primer for Bluetooth |
+| `poltergeist/` | `v26.10.12b` | Network-first shell, cache-first audio | Faint-tone keep-alive for locked-screen playback (see `locked-screen-audio.md`), wake primer for Bluetooth. Renamed from `sound-annoyer/` in Aug 2026 |
 | `meditation-timer/` | `v26.07.13` | Same pattern | Streaming audio support (range requests), offline-safe update, "Download for offline" button, tappable version for updates |
 | `harm-reduction-guide/` | *(no SW yet)* | Not yet a PWA | Documentation dashboard — offline not needed yet |
 

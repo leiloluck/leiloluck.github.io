@@ -341,14 +341,14 @@ The move is not free, and the cost was accepted deliberately:
 * The manifest `id` changed from `/sound-annoyer/` to `/poltergeist/`. Chrome identifies
   an installed app by `id`, so **every pre-rename installation is orphaned** and has to be
   installed again. There is no way to keep an installed app across an `id` change.
-* `/sound-annoyer/` therefore keeps two files as a migration shim, and they should NOT be
-  deleted while anyone might still have the old install or a bookmark:
-  * `index.html` redirects to `/poltergeist/`.
-  * `sw.js` is a retirement worker. A cache-first worker outlives its app: without this,
-    the old worker would keep serving the old cached shell forever and the redirect would
-    never be reached. It deletes only `sound-annoyer-*` caches (`caches.keys()` is per
-    ORIGIN, so a wider sweep would destroy `poltergeist-*` or the meditation timer's 44 MB
-    soundtrack), unregisters itself, then navigates any open window to the new URL.
+* `/sound-annoyer/` kept a two-file migration shim for the transition: `index.html`
+  redirected to `/poltergeist/`, and `sw.js` was a retirement worker (a cache-first worker
+  outlives its app, so without it the old cached shell would have been served forever and
+  the redirect never reached). The owner had it **removed on 2026-10-12**: old
+  `/sound-annoyer/` URLs now 404, and a device that still carries the cached retirement
+  worker keeps being redirected to `/poltergeist/` until the browser drops it (its script
+  now 404s, which unregisters it). The `sound-annoyer-*` caches it used to clean up are
+  long gone, and every remaining cache sweep is prefix-scoped anyway.
 * **localStorage keys deliberately kept their old names** (`soundannoyer-state`,
   `soundannoyer-installed`, `soundannoyer-drift-recovered`). Storage is scoped to the
   ORIGIN, not the path, so reusing them carries every saved setting across the move.

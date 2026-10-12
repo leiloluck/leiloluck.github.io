@@ -24,7 +24,7 @@
   (`vYY.MM.DD`), not a service-worker cache key.
 - **Privacy:** no analytics, cookies, or tracking.
 
-### PWA subpages (`sound-annoyer/`, `meditation-timer/`, …)
+### PWA subpages (`poltergeist/`, `meditation-timer/`, …)
 - Installable PWAs with a service worker. The version constant appears in three
   places in lockstep — `index.html`, `sw.js` (`VERSION`), and `js/app.js`
   (`APP_VERSION`) — format `vYY.MM.DD`; bump all three on every change. See each

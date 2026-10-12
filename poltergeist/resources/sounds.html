@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<!-- sounds.html — poltergeist.exe sound workshop (resources/ tool page, NOT part of the app)
+     Audition every sound the app can fire and every candidate replacement, give each one
+     a verdict (good / okay / replace) plus an optional comment, then copy the generated
+     feedback report and hand it back to the agent. Feedback is kept in localStorage only;
+     nothing is sent anywhere. See resources/README.md and candidates/README.md. -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐱</text></svg>">
+<title>poltergeist.exe — sound workshop</title>
+<style>
+  :root {
+    --bg: #101418;
+    --panel: #171c22;
+    --panel-2: #1d242c;
+    --border: #2b333d;
+    --text: #e8eef4;
+    --muted: #93a1af;
+    --faint: #66727f;
+    --good: #57c98b;
+    --okay: #e2b45f;
+    --bad: #e07575;
+    --accent: #6fb3d9;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    padding: 20px 14px 60px;
+  }
+  main { max-width: 780px; margin: 0 auto; }
+  h1 { font-size: 22px; margin-bottom: 4px; }
+  .sub { color: var(--muted); font-size: 13px; margin-bottom: 22px; }
+  .sub code { background: var(--panel-2); padding: 1px 5px; border-radius: 5px; }
+  h2 {
+    font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted); margin: 26px 0 10px;
+  }
+  h2:first-of-type { margin-top: 0; }
+  .group-note { color: var(--faint); font-size: 12px; margin: -4px 0 10px; }
+
+  .row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+  .row.playing { border-color: var(--accent); }
+  .row-head { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .play {
+    flex: none; width: 44px; height: 44px;
+    border: 1px solid var(--border); border-radius: 50%;
+    background: var(--panel-2); color: var(--text);
+    font-size: 17px; cursor: pointer;
+  }
+  .play:hover { border-color: var(--accent); }
+  .play:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .row.playing .play { background: var(--accent); border-color: var(--accent); color: #0b0f13; }
+  .names { min-width: 0; }
+  .title { font-weight: 600; }
+  .file { color: var(--faint); font-size: 12px; word-break: break-all; }
+  .meta { color: var(--faint); font-size: 12px; margin-top: 2px; }
+  .meta a { color: var(--muted); }
+  .meta a:hover { color: var(--accent); }
+
+  .rate { display: flex; gap: 6px; flex-wrap: wrap; }
+  .rate button {
+    min-height: 34px; padding: 5px 12px;
+    border: 1px solid var(--border); border-radius: 999px;
+    background: transparent; color: var(--muted); font-size: 13px; cursor: pointer;
+  }
+  .rate button:hover { border-color: var(--muted); color: var(--text); }
+  .rate button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .rate button[aria-pressed="true"][data-v="good"] { border-color: var(--good); color: var(--good); }
+  .rate button[aria-pressed="true"][data-v="okay"] { border-color: var(--okay); color: var(--okay); }
+  .rate button[aria-pressed="true"][data-v="bad"]  { border-color: var(--bad);  color: var(--bad); }
+
+  .comment {
+    width: 100%; background: var(--panel-2); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); padding: 8px 10px; font: inherit; font-size: 13px;
+  }
+  .comment::placeholder { color: var(--faint); }
+  .comment:focus { outline: none; border-color: var(--accent); }
+
+  .report textarea {
+    width: 100%; min-height: 180px; resize: vertical;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    color: var(--text); font: 12px/1.5 ui-monospace, Consolas, monospace;
+    padding: 12px;
+  }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .actions button {
+    min-height: 38px; padding: 8px 16px;
+    border: 1px solid var(--border); border-radius: 999px;
+    background: var(--panel-2); color: var(--text); font-size: 13px; cursor: pointer;
+  }
+  .actions button:hover { border-color: var(--accent); }
+  .actions button.primary { border-color: var(--accent); color: var(--accent); }
+  .actions button.danger { color: var(--bad); border-color: rgba(224, 117, 117, 0.5); }
+  .copied { color: var(--good); font-size: 12px; align-self: center; }
+</style>
+</head>
+<body>
+<main>
+  <h1>poltergeist.exe — sound workshop</h1>
+  <p class="sub">
+    Audition every sound and give it a verdict. Your feedback is saved in this browser
+    (localStorage) only — copy the report at the bottom and paste it back to Marcel.
+    Nothing here is part of the installed app; nothing is uploaded anywhere.
+  </p>
+
+  <h2>Cat meow candidates</h2>
+  <p class="group-note">
+    Replacements for the current <code>cat-meow.mp3</code>. All loudness-matched to the
+    app's sounds (&minus;14 LUFS). Pick the one that actually sounds cute.
+  </p>
+  <div id="candidates"></div>
+
+  <h2>In the app</h2>
+  <p class="group-note">The twelve sounds the app fires today.</p>
+  <div id="sounds"></div>
+
+  <h2>Feedback report</h2>
+  <p class="group-note">Only entries you rated or commented on are listed.</p>
+  <div class="report">
+    <textarea id="report" readonly aria-label="Feedback report"></textarea>
+    <div class="actions">
+      <button class="primary" id="copy-btn">Copy report</button>
+      <button id="download-btn">Download .txt</button>
+      <button class="danger" id="reset-btn">Reset all feedback</button>
+      <span class="copied" id="copied" hidden>copied ✓</span>
+    </div>
+  </div>
+</main>
+
+<audio id="player" preload="none"></audio>
+
+<script>
+'use strict';
+
+// ── What to audition ─────────────────────────────────────────────────────────
+// Candidates first: these are the replacement files in candidates/ (sources and
+// licences in candidates/README.md). Then the twelve live app sounds.
+const CANDIDATES = [
+  { icon: '🐱', title: 'Little meow #1', file: 'candidates/meow-1-bigsoundbank-0494.mp3',
+    meta: '0.5 s · studio, mono · BigSoundBank s0494 · CC0 (Joseph SARDIN)',
+    url: 'https://bigsoundbank.com/little-meow-of-a-cat-s0494.html', dur: 0.53 },
+  { icon: '🐱', title: 'Little meow #2', file: 'candidates/meow-2-bigsoundbank-1472.mp3',
+    meta: '1.0 s · studio, mono · BigSoundBank s1472 · CC0 (Joseph SARDIN)',
+    url: 'https://bigsoundbank.com/little-meow-of-a-cat-2-s1472.html', dur: 1.02 },
+  { icon: '🐱', title: 'Little meow #3', file: 'candidates/meow-3-bigsoundbank-1473.mp3',
+    meta: '1.0 s · studio, mono · BigSoundBank s1473 · CC0 (Joseph SARDIN)',
+    url: 'https://bigsoundbank.com/little-meow-of-a-cat-3-s1473.html', dur: 1.02 },
+  { icon: '🐱', title: 'Cute kitten meow', file: 'candidates/meow-4-freesound-448084-cute-kitten.mp3',
+    meta: '0.7 s · Freesound 448084 by Breviceps · CC0',
+    url: 'https://freesound.org/people/Breviceps/sounds/448084/', dur: 0.65 },
+];
+
+const SOUNDS = [
+  { icon: '🐱', title: 'Cat',           file: 'cat-meow.mp3' },
+  { icon: '🐶', title: 'Dog',           file: 'dog-bark.mp3' },
+  { icon: '🚪', title: 'Knock',         file: 'knock.mp3' },
+  { icon: '🐦', title: 'Sparrow',       file: 'bird-chirp.mp3' },
+  { icon: '🦗', title: 'Crickets',      file: 'crickets.mp3' },
+  { icon: '😱', title: 'Crowd gasp',    file: 'crowd-gasp.mp3' },
+  { icon: '🛎️', title: 'Ding',          file: 'ding.mp3' },
+  { icon: '🦟', title: 'Mosquito',      file: 'mosquito.mp3' },
+  { icon: '🐭', title: 'Mouse',         file: 'mouse-squeak.mp3' },
+  { icon: '📳', title: 'Vibrate',       file: 'phone-vibrate.mp3' },
+  { icon: '🤧', title: 'Sneeze',        file: 'sneeze.mp3' },
+  { icon: '🐤', title: 'Morning birds', file: 'morning-birds.mp3' },
+];
+
+const KEY = 'poltergeist-sound-feedback-v1';
+const player = document.getElementById('player');
+
+// rating[file] = { verdict: 'good'|'okay'|'bad'|'', note: '' }
+let rating = {};
+try { rating = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch { rating = {}; }
+
+let playingFile = null;
+
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(rating)); } catch { /* private mode */ }
+  renderReport();
+}
+
+function row(entry, group) {
+  const el = document.createElement('div');
+  el.className = 'row';
+  el.dataset.file = entry.file;
+
+  const head = document.createElement('div');
+  head.className = 'row-head';
+
+  const play = document.createElement('button');
+  play.className = 'play';
+  play.type = 'button';
+  play.textContent = '▶';
+  play.setAttribute('aria-label', 'Play ' + entry.title);
+  play.addEventListener('click', () => toggle(entry.file, play));
+  head.appendChild(play);
+
+  const names = document.createElement('div');
+  names.className = 'names';
+  const title = document.createElement('div');
+  title.className = 'title';
+  title.textContent = entry.icon + ' ' + entry.title;
+  names.appendChild(title);
+  const file = document.createElement('div');
+  file.className = 'file';
+  file.textContent = group === 'candidate' ? entry.file.split('/').pop() : entry.file;
+  names.appendChild(file);
+  if (entry.meta) {
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    meta.textContent = entry.meta + ' · ';
+    const a = document.createElement('a');
+    a.href = entry.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+    a.textContent = 'source';
+    meta.appendChild(a);
+    names.appendChild(meta);
+  }
+  head.appendChild(names);
+  el.appendChild(head);
+
+  const rate = document.createElement('div');
+  rate.className = 'rate';
+  const opts = [
+    ['good', '👍 good'],
+    ['okay', '🤷 okay'],
+    ['bad', '👎 replace'],
+  ];
+  for (const [v, label] of opts) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.dataset.v = v;
+    b.textContent = label;
+    b.setAttribute('aria-pressed', 'false');
+    b.addEventListener('click', () => {
+      const cur = rating[entry.file] || {};
+      cur.verdict = cur.verdict === v ? '' : v;    // tap again to clear
+      rating[entry.file] = cur;
+      save();
+      paintVerdicts(el, entry.file);
+    });
+    rate.appendChild(b);
+  }
+  el.appendChild(rate);
+
+  const note = document.createElement('input');
+  note.className = 'comment';
+  note.type = 'text';
+  note.placeholder = 'comment (optional)';
+  note.value = (rating[entry.file] || {}).note || '';
+  note.addEventListener('input', () => {
+    const cur = rating[entry.file] || {};
+    cur.note = note.value.trim();
+    rating[entry.file] = cur;
+    save();
+  });
+  el.appendChild(note);
+
+  el.dataset.title = entry.title;
+  return el;
+}
+
+function paintVerdicts(el, file) {
+  const cur = rating[file] || {};
+  el.querySelectorAll('.rate button').forEach(b => {
+    b.setAttribute('aria-pressed', String(b.dataset.v === cur.verdict));
+  });
+}
+
+function toggle(file, btn) {
+  if (playingFile === file) {
+    player.pause();
+    return;
+  }
+  playingFile = file;
+  player.src = file;
+  player.play().catch(() => { /* tap-to-play guards; the button already is a tap */ });
+}
+
+player.addEventListener('play', () => paintPlaying());
+player.addEventListener('pause', () => paintPlaying());
+player.addEventListener('ended', () => { playingFile = null; paintPlaying(); });
+
+function paintPlaying() {
+  for (const el of document.querySelectorAll('.row')) {
+    const on = player.paused ? false : el.dataset.file === playingFile;
+    el.classList.toggle('playing', on);
+    el.querySelector('.play').textContent = on ? '■' : '▶';
+  }
+}
+
+// ── Feedback report ──────────────────────────────────────────────────────────
+function renderReport() {
+  const label = { good: 'good', okay: 'okay', bad: 'REPLACE' };
+  const order = [...CANDIDATES, ...SOUNDS];
+  const lines = [];
+  lines.push('poltergeist.exe — sound feedback');
+  lines.push('date: ' + new Date().toISOString().slice(0, 10));
+  lines.push('');
+  let n = 0;
+  for (const entry of order) {
+    const cur = rating[entry.file] || {};
+    if (!cur.verdict && !cur.note) continue;
+    n++;
+    const head = cur.verdict ? label[cur.verdict] : 'noted';
+    lines.push(('[' + head + '] ' + entry.title + ' (' + entry.file.split('/').pop() + ')')
+      + (cur.note ? ' — "' + cur.note + '"' : ''));
+  }
+  lines.push('');
+  lines.push(n ? n + ' entr' + (n === 1 ? 'y' : 'ies') + ' rated or commented.'
+              : 'nothing rated yet.');
+  document.getElementById('report').value = lines.join('\n');
+}
+
+document.getElementById('copy-btn').addEventListener('click', async () => {
+  const ta = document.getElementById('report');
+  try {
+    await navigator.clipboard.writeText(ta.value);
+  } catch {
+    ta.select(); document.execCommand('copy');
+  }
+  const done = document.getElementById('copied');
+  done.hidden = false;
+  setTimeout(() => { done.hidden = true; }, 1800);
+});
+
+document.getElementById('download-btn').addEventListener('click', () => {
+  const blob = new Blob([document.getElementById('report').value], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'poltergeist-sound-feedback.txt';
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+document.getElementById('reset-btn').addEventListener('click', () => {
+  if (!confirm('Clear every verdict and comment on this page?')) return;
+  rating = {};
+  save();
+  for (const el of document.querySelectorAll('.row')) {
+    paintVerdicts(el, el.dataset.file);
+    el.querySelector('.comment').value = '';
+  }
+});
+
+// ── Build the page ───────────────────────────────────────────────────────────
+const candBox = document.getElementById('candidates');
+for (const c of CANDIDATES) {
+  const el = row(c, 'candidate');
+  paintVerdicts(el, c.file);
+  candBox.appendChild(el);
+}
+const soundBox = document.getElementById('sounds');
+for (const s of SOUNDS) {
+  const el = row(s, 'sound');
+  paintVerdicts(el, s.file);
+  soundBox.appendChild(el);
+}
+renderReport();
+</script>
+</body>
+</html>

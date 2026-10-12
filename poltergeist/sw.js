@@ -34,7 +34,7 @@
 
 'use strict';
 
-const VERSION      = 'v26.10.12b';
+const VERSION      = 'v26.10.12c';
 const CACHE_PREFIX = 'poltergeist-';           // never touch caches outside this prefix
 const CACHE        = CACHE_PREFIX + VERSION;
 const AUDIO_CACHE  = CACHE_PREFIX + 'sounds';    // unversioned on purpose — see header
@@ -125,6 +125,11 @@ async function serve(request) {
   // network and must never be stored — otherwise a cached 200 would make an offline
   // device look online and the Update button could wipe the caches with no way back.
   if (url.searchParams.has('probe')) return fetch(request);
+
+  // resources/sounds.html is the sound-workshop tool page, not app content: always serve
+  // it from the network, never cache it. Auditioning must show the latest list, and a
+  // cached copy would keep hiding edits until the next version bump.
+  if (url.pathname.endsWith('/resources/sounds.html')) return fetch(request);
 
   // Sounds are served from (and added to) the persistent cache; everything else from the
   // version-keyed shell cache.

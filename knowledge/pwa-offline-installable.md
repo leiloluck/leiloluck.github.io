@@ -1,6 +1,6 @@
 # How to Make a Web App Installable & Offline-Capable
 
-> **Canonical reference implementation in this repo:** `sound-annoyer/`  
+> **Canonical reference implementation in this repo:** `poltergeist/` (renamed from `sound-annoyer/` in August 2026)  
 > **Also follows this pattern:** `meditation-timer/`  
 > **Tech:** Plain HTML, CSS, JS. No framework. No build step. No npm.
 

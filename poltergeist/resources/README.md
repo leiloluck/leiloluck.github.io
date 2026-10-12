@@ -1,4 +1,4 @@
-# resources/ — SoundAnnoyer sound files
+# resources/ — poltergeist.exe sound files
 
 Drop your `.mp3` files **here**. The app loads them automatically on the next
 reload — no code change needed. Each sound accepts **several filenames** (English
@@ -28,6 +28,17 @@ decodes wins. Want another name? Add it there.
 > loudness-normalized. ✓ There is no real **Doorbell** ding-dong yet — the closest
 > is **Ding**. Drop a `doorbell.mp3` and it will be used for the Ding button, or add
 > a dedicated entry in `SOUNDS`.
+
+## Auditioning sounds — `sounds.html`
+
+Open **`resources/sounds.html`** (on the live site:
+`leiloluck.github.io/poltergeist/resources/sounds.html`) to play the app's twelve sounds
+and any replacement candidates, rate each one 👍 good / 🤷 okay / 👎 replace with an
+optional comment, and copy the generated feedback report. It is a local tool page: the
+feedback lives in that browser's `localStorage` and is never uploaded. The app's service
+worker deliberately never caches this page (`sw.js` serves it network-only), so edits show
+up immediately. Replacement candidates live in `candidates/` — sources and licences in
+its README.
 
 ## Loudness — keep volumes consistent
 

@@ -1,6 +1,6 @@
 # Audio That Keeps Playing While the Screen Is Locked
 
-> **Canonical implementations in this repo:** `sound-annoyer/` (random prank sounds), `meditation-timer/` (interval bells).
+> **Canonical implementations in this repo:** `poltergeist/` (random prank sounds; renamed from `sound-annoyer/`), `meditation-timer/` (interval bells).
 > **Priority platform:** Android Chrome. iOS notes at the end.
 > **Verified 2026-08-30** against Chromium and WebKit source, and Android 17's background-audio
 > hardening notice. This revision replaces two things the earlier draft got wrong or left vague:

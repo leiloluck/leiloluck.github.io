@@ -2,7 +2,7 @@
 
 A minimalist meditation timer PWA. The user selects a sound and a duration; audio fades in at the start and fades out at the end. Installable on Android + iPhone, offline-first.
 
-**Version:** v26.10.12 (format `vYY.MM.DD` — year.month.day; bump on every change, in
+**Version:** v26.10.13 (format `vYY.MM.DD` — year.month.day; bump on every change, in
 lockstep across `index.html`, `sw.js` `VERSION`, and `js/app.js` `APP_VERSION`).
 
 ---
@@ -184,7 +184,10 @@ decoded `AudioBufferSourceNode` whose `playbackRate` pitches it (the C4 slides d
 - **The whole session is sampled instantly at start** (`sampleRandomPlan`): a strike at
   t = 0, then waits = ring-out + 8 s floor + a truncated-exponential draw (mean 8 s, hard
   cap 56 s = 2 × the longest audible ring), and never the same bell at the same pitch
-  twice in a row (`pickRandomBell`).
+  twice in a row (`pickRandomBell`). **The wait clock starts when the bell crosses its
+  audible threshold (`ring40`) — not when its file ends**: the silent tail (bell_001
+  carries ~1.3 s of it) is never counted as waiting time, and no sound is ever cut —
+  every strike plays its full buffer to its natural end.
 - **The ending is protected by the sample, not by a fade.** Nothing may collide with the
   last 3 s: the final bell is pulled in / dropped so it rings out, a 3 s gap follows, then
   the existing triple chime (`END_BELL_OFFSETS`) rings at the nominal end. The gain node
@@ -193,10 +196,14 @@ decoded `AudioBufferSourceNode` whose `playbackRate` pitches it (the C4 slides d
   only, so the UI never claims "Fading out…" while a bowl is still singing.
 - **Pause/stop never cut a ringing bell**: `clearFutureSources()` drops only strikes that
   have not started; the sounding one rides the 2 s gain fade and is stopped when the fade
-  lands. Resume re-schedules the remaining plan (`scheduleAudioFrom` skips events already
-  past; a bell interrupted mid-ring is not restarted).
-- A late decode re-lays the plan in place (`loadRandomBells` → `resyncRunningSession`);
-  switching away from the mode frees the ~30 MB of decoded PCM (`randomBuffers = null`).
+  lands. `fadeBellOut()` gives the end chime (which bypasses the fade gain) the same
+  2 s ramp — before it, stopping during the final bell hard-cut it. Resume re-schedules
+  the remaining plan (`scheduleAudioFrom` skips events already past; a bell interrupted
+  mid-ring is not restarted).
+- A late decode re-samples the remainder of the session (translated so a strike lands
+  immediately — the session never opens in silence waiting for a download) and relays it
+  via `resyncRunningSession`; switching away from the mode frees the ~30 MB of decoded
+  PCM (`randomBuffers = null`).
 - The last-used Sound mode and duration come back on open
   (`localStorage`: `meditation-sound`, `meditation-duration`); with no stored preference
   the first open selects Random bells (beta), which sits second in the selector.

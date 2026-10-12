@@ -11,7 +11,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.10.12';   // format vYY.MM.DD — keep in lockstep with sw.js + index.html
+const APP_VERSION = 'v26.10.13';   // format vYY.MM.DD — keep in lockstep with sw.js + index.html
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 //
@@ -243,6 +243,19 @@ function bellOutGain() {
   return bellOut;
 }
 
+// The end chime deliberately bypasses the fade gain, so a pause/stop must fade it
+// separately — otherwise stopping while the final bell rings would hard-cut it, the one
+// cutoff left in the app. Every (re)schedule restores the level (see scheduleAudioFrom).
+function fadeBellOut() {
+  if (!bellOut || !audioCtx) return;
+  const t = audioCtx.currentTime;
+  try {
+    bellOut.gain.cancelScheduledValues(t);
+    bellOut.gain.setValueAtTime(Math.max(bellOut.gain.value, 0.001), t);
+    bellOut.gain.linearRampToValueAtTime(0, t + PAUSE_FADE_OUT);
+  } catch {}
+}
+
 // Stop and forget every source we scheduled ahead (used on pause / stop / sound switch).
 function clearScheduledSources() {
   scheduledSources.forEach(s => {
@@ -381,10 +394,18 @@ function loadRandomBells() {
   )).then(buffers => {
     if (stale() || buffers.some(x => !x)) return;
     randomBuffers = buffers;
-    // The decode landed after the session began: lay the remaining plan onto the clock.
+    // The decode landed after the session began: nothing has rung yet, so re-sample the
+    // remainder — translated by the elapsed time so a strike lands right now, instead of
+    // the session opening in silence until the first full wait elapses.
     if (state === 'playing' && audioCtx && startTimestamp !== null) {
       const elapsed = elapsedMs + (performance.now() - startTimestamp);
-      if (sessionDurationMs - elapsed > 0) { resyncRunningSession(); setStatus(''); }
+      const remaining = Math.max(0, sessionDurationMs - elapsed);
+      if (remaining > 0) {
+        const shift = elapsed / 1000;
+        randomPlan = sampleRandomPlan(remaining / 1000).map(ev => ({ t: ev.t + shift, pool: ev.pool }));
+        resyncRunningSession();
+        setStatus('');
+      }
     }
   }).catch(() => {
     if (stale()) return;
@@ -547,6 +568,12 @@ function stopSilentKeepAlive() {
 
 function scheduleAudioFrom(remainingMs, resuming) {
   const t0      = audioCtx.currentTime;
+
+  // A previous pause/stop may have faded the chime path (fadeBellOut) — restore it.
+  if (bellOut) {
+    bellOut.gain.cancelScheduledValues(t0);
+    bellOut.gain.setValueAtTime(0.55, t0);
+  }
   // Never negative: a resume after the session should already have ended, or a clock
   // jump, otherwise makes every scheduled bell fire at once and throws RangeError out of
   // the gain ramps below.
@@ -777,6 +804,7 @@ function pauseSession() {
   gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
   gainNode.gain.setValueAtTime(Math.max(gainNode.gain.value, 0.001), audioCtx.currentTime);
   gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + PAUSE_FADE_OUT);
+  fadeBellOut();
   bgFadeTimeout = setTimeout(() => {
     if (state === 'paused') {
       if (audioEl) audioEl.pause();
@@ -834,6 +862,7 @@ function stopSession() {
     gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
     gainNode.gain.setValueAtTime(Math.max(gainNode.gain.value, 0.001), audioCtx.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + PAUSE_FADE_OUT);
+    fadeBellOut();
     bgFadeTimeout = setTimeout(() => {
       if (audioEl) audioEl.pause();
       clearScheduledSources();

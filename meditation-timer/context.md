@@ -2,7 +2,7 @@
 
 A minimalist meditation timer PWA. The user selects a sound and a duration; audio fades in at the start and fades out at the end. Installable on Android + iPhone, offline-first.
 
-**Version:** v26.10.10 (format `vYY.MM.DD` — year.month.day; bump on every change, in
+**Version:** v26.10.12 (format `vYY.MM.DD` — year.month.day; bump on every change, in
 lockstep across `index.html`, `sw.js` `VERSION`, and `js/app.js` `APP_VERSION`).
 
 ---
@@ -167,11 +167,39 @@ routed through the gain node so beats fade with the envelope). This replaced the
 `setTimeout` + `audioEl` approach, which silently stopped advancing whenever the
 screen was locked. `startKeepAlive()` keeps the context alive between beats.
 
-**The `bowl-bell` catalogue entry is commented out for now** (v26.10.10) — the fixed
-1-minute interval is being replaced by a randomized bell mode. Hiding the *entry* only
-removes it from the Sound selector; `Single bowl sound.mp3` is still fetched and decoded
-in both modes, because it is the end-of-session chime (`loadBell()` is not driven by
-`SOUNDS`).
+**The `bowl-bell` catalogue entry is commented out** — the fixed 1-minute interval has
+been replaced by the randomized bell mode below. Hiding the *entry* only removes it from
+the Sound selector; `Single bowl sound.mp3` is still fetched and decoded in both modes,
+because it is the end-of-session chime (`loadBell()` is not driven by `SOUNDS`).
+
+### `type: 'random'`
+
+Random bells (the second, beta-default Sound entry; the study behind it lives in
+`resources/bells.html`'s "Tuned 2" tab and `resources/sources.md`). Five denoised,
+loudness-matched bell recordings (`resources/random/*.flac`, lossless, ~5.8 MB total,
+precached best-effort into the audio cache). No media element plays; every strike is a
+decoded `AudioBufferSourceNode` whose `playbackRate` pitches it (the C4 slides down only,
+−4…0 semitones; the rest −2…+2).
+
+- **The whole session is sampled instantly at start** (`sampleRandomPlan`): a strike at
+  t = 0, then waits = ring-out + 8 s floor + a truncated-exponential draw (mean 8 s, hard
+  cap 56 s = 2 × the longest audible ring), and never the same bell at the same pitch
+  twice in a row (`pickRandomBell`).
+- **The ending is protected by the sample, not by a fade.** Nothing may collide with the
+  last 3 s: the final bell is pulled in / dropped so it rings out, a 3 s gap follows, then
+  the existing triple chime (`END_BELL_OFFSETS`) rings at the nominal end. The gain node
+  sits at 1 for the whole session (no start/end fades — the bells ARE the session; the
+  pause/stop fades still have the gain to ramp). `tick()`'s "finishing" flip is loop-mode
+  only, so the UI never claims "Fading out…" while a bowl is still singing.
+- **Pause/stop never cut a ringing bell**: `clearFutureSources()` drops only strikes that
+  have not started; the sounding one rides the 2 s gain fade and is stopped when the fade
+  lands. Resume re-schedules the remaining plan (`scheduleAudioFrom` skips events already
+  past; a bell interrupted mid-ring is not restarted).
+- A late decode re-lays the plan in place (`loadRandomBells` → `resyncRunningSession`);
+  switching away from the mode frees the ~30 MB of decoded PCM (`randomBuffers = null`).
+- The last-used Sound mode and duration come back on open
+  (`localStorage`: `meditation-sound`, `meditation-duration`); with no stored preference
+  the first open selects Random bells (beta), which sits second in the selector.
 
 ---
 
@@ -278,6 +306,8 @@ The `serveAudio` function strips the `Range` header from the cache key so the st
 |---|---|
 | `meditation-custom-min` | Saved custom duration (integer, minutes) |
 | `meditation-audio-cached` | `'1'` after "Download for offline" succeeds |
+| `meditation-sound` | Last-used Sound mode id (`bowls` \| `random`) |
+| `meditation-duration` | Last-used duration in minutes (preset or custom) |
 
 ---
 
@@ -376,7 +406,8 @@ dead context and refill the memory the X just released.
 | File | Duration | Type |
 |---|---|---|
 | `resources/bowls long interval.mp3` | ~44 MB, ~1 hr | `loop` |
-| `resources/Single bowl sound.mp3` | ~1.5 MB, ~39 s | end chime; `interval` entry hidden for now |
+| `resources/Single bowl sound.mp3` | ~1.5 MB, ~39 s | end chime (also the hidden `interval` entry's file) |
+| `resources/random/bell-1-c3-flat.flac` … `bell-6-c4.flac` (5 files) | ~5.8 MB total | `random` mode — denoised recordings (spectral subtraction, see `resources/sources.md`); names carry the bell and pitch |
 
 Both files have metadata stripped via `ffmpeg -i input.mp3 -map_metadata -1 -c:a copy output.mp3`.
 

@@ -11,7 +11,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.10.10';   // format vYY.MM.DD — keep in lockstep with sw.js + index.html
+const APP_VERSION = 'v26.10.12';   // format vYY.MM.DD — keep in lockstep with sw.js + index.html
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 //
@@ -29,7 +29,16 @@ const SOUNDS = [
     file: './resources/bowls long interval.mp3',
     type: 'loop',
   },
-  // Hidden for now (fixed 1-min interval); a randomized bell mode will replace it.
+  {
+    id: 'random',
+    label: 'Random bells',
+    sub: 'avg 8 s · never repeats',
+    // Not played as a continuous track — random mode schedules decoded buffers. The file
+    // field exists so element swaps (ensureAudio / sound switch) stay branch-free.
+    file: './resources/Single bowl sound.mp3',
+    type: 'random',
+  },
+  // Hidden for now (fixed 1-min interval); its role is now covered by the random mode.
   // The file is still fetched and decoded — it IS the end-of-session chime.
   // {
   //   id: 'bowl-bell',
@@ -66,7 +75,17 @@ function randn() {
 
 // ── State ────────────────────────────────────────────────────────────────────
 
-let selectedSound     = SOUNDS[0];
+const SOUND_KEY = 'meditation-sound';
+
+function loadSoundPref() {
+  try { return localStorage.getItem(SOUND_KEY); } catch { return null; }
+}
+
+// The last-used sound comes back on every open. First-ever open (beta): random bells,
+// per the current study — the soundtrack stays one tap away.
+let selectedSound     = SOUNDS.find(s => s.id === loadSoundPref())
+                     || SOUNDS.find(s => s.id === 'random')
+                     || SOUNDS[0];
 let selectedMinutes   = 15;
 let state             = 'idle';   // idle | playing | paused | finishing
 let sessionDurationMs = 0;
@@ -236,6 +255,158 @@ function clearScheduledSources() {
   scheduledSources = [];
 }
 
+// ── Random bells mode ────────────────────────────────────────────────────────
+//
+// The session model studied in resources/bells.html (its "Tuned 2" tab), shipped: five
+// denoised bell recordings, loudness-matched, pitched with playbackRate (the C4 downward
+// only — it is already the highest), the whole session sampled in one go at start, never
+// the same bell at the same pitch twice in a row, and the ending protected — the last
+// bell rings out, a 3 s gap, then the existing triple chime. Every strike is an
+// AudioBufferSourceNode scheduled on the audio clock up front, so the whole session
+// (including its ending) survives a locked screen exactly like the interval beats and
+// end bell always have.
+//
+// Measured metadata (resources/sources.md): ring40/ring50 in seconds, gain = loudness
+// match from stereo RMS (quietest bell = 1.0).
+
+const RANDOM_BELLS = [
+  { label: 'C3 −27¢', file: './resources/random/bell-1-c3-flat.flac', ring40: 20.7, ring50: 21.4, gain: 1.00 },
+  { label: 'C3',      file: './resources/random/bell-2-c3.flac',      ring40: 28.0, ring50: 28.0, gain: 0.72 },
+  { label: 'G3 −27¢', file: './resources/random/bell-3-g3-flat.flac', ring40: 14.0, ring50: 14.4, gain: 0.79 },
+  { label: 'G3 −1¢',  file: './resources/random/bell-4-g3.flac',      ring40: 18.7, ring50: 19.5, gain: 0.67 },
+  { label: 'C4',      file: './resources/random/bell-6-c4.flac',      ring40: 13.8, ring50: 14.6, gain: 0.80 },
+];
+const RANDOM_OFFS    = [-2, -1, 0, 1, 2];
+const RANDOM_OFFS_C4 = [-4, -3, -2, -1, 0];   // the C4 slides down only
+const RANDOM_GAP     = 3;      // ring-out gap before the triple chime
+const RANDOM_FLOOR   = 8;      // wait floor after the audible ring (study default)
+const RANDOM_MEAN    = 8;      // average extra wait (truncated exponential)
+const RANDOM_MAXGAP  = 56;     // 2 × the longest audible ring (28 s) — the § 4 rule
+
+const RANDOM_POOL = [];
+RANDOM_BELLS.forEach((b, bi) => {
+  const offs = b.label === 'C4' ? RANDOM_OFFS_C4 : RANDOM_OFFS;
+  offs.forEach(semi => {
+    const rate = Math.pow(2, semi / 12);
+    RANDOM_POOL.push({ bi, semi, rate, ring: b.ring40 / rate });
+  });
+});
+
+let randomBuffers = null;   // decoded AudioBuffers, index-aligned with RANDOM_BELLS
+let randomPlan    = null;   // the sampled schedule for the running session: [{t, pool}]
+
+function pickRandomBell(prev) {
+  for (let i = 0; i < 40; i++) {
+    const e = RANDOM_POOL[Math.floor(Math.random() * RANDOM_POOL.length)];
+    if (!prev || e.bi !== prev.bi || e.semi !== prev.semi) return e;
+  }
+  return RANDOM_POOL[Math.floor(Math.random() * RANDOM_POOL.length)];
+}
+
+// Truncated exponential on [0,b] via inverse CDF — the mass past the cap is re-spread
+// smoothly, never piled into a spike at the limit (see resources/sources.md).
+function truncExp(rand, a, b, theta) {
+  const u = rand();
+  const Fb = 1 - Math.exp(-(b - a) / theta);
+  return a - theta * Math.log(1 - u * Fb);
+}
+
+// Sample the whole session instantly. End rule: nothing may collide with the ending —
+// a candidate that cannot ring out before D − GAP is pulled in to just fit; if even that
+// fails it is dropped, and the last bell is shifted so its ring ends exactly at D − GAP:
+// last bell rings out → little gap → triple chime.
+function sampleRandomPlan(durSec) {
+  const deadline = durSec - RANDOM_GAP;
+  const evs = [{ t: 0, pool: pickRandomBell(null) }];   // a sound right at the start
+  let prev = evs[0];
+  for (;;) {
+    const cand = { pool: pickRandomBell(prev.pool) };
+    const b = Math.max(0.001, RANDOM_MAXGAP - prev.pool.ring - RANDOM_FLOOR);
+    const t = prev.t + prev.pool.ring + RANDOM_FLOOR + truncExp(Math.random, 0, b, RANDOM_MEAN);
+    if (t + cand.pool.ring <= deadline) { cand.t = t; evs.push(cand); prev = cand; continue; }
+    const tFit = deadline - cand.pool.ring;
+    if (tFit >= prev.t + prev.pool.ring + 1) { cand.t = tFit; evs.push(cand); }
+    break;
+  }
+  if (evs.length > 1) {
+    const last = evs[evs.length - 1];
+    const pause = deadline - (last.t + last.pool.ring);
+    if (pause > 0.05) last.t += pause;
+  }
+  return evs;
+}
+
+// One strike: the bell's buffer resampled by playbackRate (pitch and decay scale
+// together, exactly like the study page), loudness-matched, faded by the session gain.
+function scheduleRandomHit(when, pool) {
+  const src = audioCtx.createBufferSource();
+  src.buffer = randomBuffers[pool.bi];
+  src.playbackRate.value = pool.rate;
+  const g = audioCtx.createGain();
+  g.gain.value = RANDOM_BELLS[pool.bi].gain;
+  src.connect(g);
+  g.connect(gainNode);
+  src.start(when);
+  src.__random = true;
+  src.__when = when;
+  src.onended = () => { scheduledSources = scheduledSources.filter(s => s !== src); };
+  scheduledSources.push(src);
+  return src;
+}
+
+// Pausing must not cut a ringing bell mid-waveform (that is the click): stop only the
+// strikes that have not started yet — the one that is sounding rides the 2 s gain fade,
+// and clearScheduledSources() finishes the job when the fade is done.
+function clearFutureSources() {
+  const now = audioCtx ? audioCtx.currentTime : 0;
+  scheduledSources = scheduledSources.filter(s => {
+    if (s.__random && s.__when > now) {
+      try { s.onended = null; } catch {}
+      try { s.stop(); } catch {}
+      try { s.disconnect(); } catch {}
+      return false;
+    }
+    return true;
+  });
+}
+
+function loadRandomBells() {
+  if (randomBuffers || !audioCtx) return;
+  const ctx = audioCtx;
+  const stale = () => closing || ctx !== audioCtx;
+  Promise.all(RANDOM_BELLS.map(b =>
+    fetch(b.file)
+      .then(r => { if (!r.ok) throw new Error(b.file + ' ' + r.status); return r.arrayBuffer(); })
+      .then(buf => stale() ? null : ctx.decodeAudioData(buf))
+  )).then(buffers => {
+    if (stale() || buffers.some(x => !x)) return;
+    randomBuffers = buffers;
+    // The decode landed after the session began: lay the remaining plan onto the clock.
+    if (state === 'playing' && audioCtx && startTimestamp !== null) {
+      const elapsed = elapsedMs + (performance.now() - startTimestamp);
+      if (sessionDurationMs - elapsed > 0) { resyncRunningSession(); setStatus(''); }
+    }
+  }).catch(() => {
+    if (stale()) return;
+    if (state === 'idle') setStatus('bells unavailable — reconnect once to save them offline');
+  });
+}
+
+// Rebuild the running session's schedule in place (a late decode landed). Same dance as
+// loadBell's reschedule: scheduleAudioFrom reads the GLOBAL elapsedMs for its origin, so
+// sync it first, then restore the pause/resume bookkeeping.
+function resyncRunningSession() {
+  const elapsed = elapsedMs + (performance.now() - startTimestamp);
+  clearScheduledSources();
+  const savedElapsed = elapsedMs;
+  const savedStart = startTimestamp;
+  elapsedMs = elapsed;
+  startTimestamp = performance.now();
+  scheduleAudioFrom(Math.max(0, sessionDurationMs - elapsed), true);
+  elapsedMs = savedElapsed;
+  startTimestamp = savedStart;
+}
+
 // Keep-alive between scheduled events while the screen is locked — important for
 // 'interval' mode, which has no continuously-playing media element of its own.
 //
@@ -386,26 +557,46 @@ function scheduleAudioFrom(remainingMs, resuming) {
 
   // ── Gain envelope ──
   gainNode.gain.cancelScheduledValues(t0);
-  const startGain = resuming ? Math.max(gainNode.gain.value, 0.0001) : 0;
-  gainNode.gain.setValueAtTime(startGain, t0);
-
-  let fadeInEnd;
-  if (!resuming) {
-    gainNode.gain.linearRampToValueAtTime(1, t0 + fades.in);
-    fadeInEnd = t0 + fades.in;
-  } else if (elapsedMs < fades.in * 1000) {
-    const timeLeft = Math.max(RESUME_FADE_IN, fades.in - elapsedSec);
-    gainNode.gain.linearRampToValueAtTime(1, t0 + timeLeft);
-    fadeInEnd = t0 + timeLeft;
+  if (selectedSound.type === 'random') {
+    // Random mode has no continuous track to fade — the bells ARE the session. Gain sits
+    // at 1 the whole way (so the pause/stop fades always have something to ramp), the
+    // first strike rings fully at t = 0, and the ending is protected by the sampled plan
+    // (last bell rings out → 3 s gap → triple chime), not by a fade. No session-end ramp
+    // here — it would cut the final bell mid-ring.
+    const startGain = resuming ? Math.max(gainNode.gain.value, 0.0001) : 1;
+    gainNode.gain.setValueAtTime(startGain, t0);
+    if (resuming) gainNode.gain.linearRampToValueAtTime(1, t0 + RESUME_FADE_IN);
   } else {
-    gainNode.gain.linearRampToValueAtTime(1, t0 + RESUME_FADE_IN);
-    fadeInEnd = t0 + RESUME_FADE_IN;
+    const startGain = resuming ? Math.max(gainNode.gain.value, 0.0001) : 0;
+    gainNode.gain.setValueAtTime(startGain, t0);
+
+    let fadeInEnd;
+    if (!resuming) {
+      gainNode.gain.linearRampToValueAtTime(1, t0 + fades.in);
+      fadeInEnd = t0 + fades.in;
+    } else if (elapsedMs < fades.in * 1000) {
+      const timeLeft = Math.max(RESUME_FADE_IN, fades.in - elapsedSec);
+      gainNode.gain.linearRampToValueAtTime(1, t0 + timeLeft);
+      fadeInEnd = t0 + timeLeft;
+    } else {
+      gainNode.gain.linearRampToValueAtTime(1, t0 + RESUME_FADE_IN);
+      fadeInEnd = t0 + RESUME_FADE_IN;
+    }
+
+    // Hold at full, then fade out to land on zero exactly at the end.
+    const fadeOutAnchor = Math.max(fadeInEnd, t0 + Math.max(0, remSec - fades.out));
+    gainNode.gain.setValueAtTime(1, fadeOutAnchor);
+    gainNode.gain.linearRampToValueAtTime(0, t0 + remSec);
   }
 
-  // Hold at full, then fade out to land on zero exactly at the end.
-  const fadeOutAnchor = Math.max(fadeInEnd, t0 + Math.max(0, remSec - fades.out));
-  gainNode.gain.setValueAtTime(1, fadeOutAnchor);
-  gainNode.gain.linearRampToValueAtTime(0, t0 + remSec);
+  // ── Random bells — the whole session's plan, sampled at start ──
+  if (selectedSound.type === 'random' && randomPlan && randomBuffers) {
+    randomPlan.forEach(ev => {
+      const when = t0 + (ev.t - elapsedSec);
+      if (when < t0 - 0.001) return;              // already rang (resume)
+      scheduleRandomHit(Math.max(t0, when), ev.pool);
+    });
+  }
 
   // ── Interval beats (faded, through the gain node, with subtle pitch variation) ──
   if (selectedSound.type === 'interval') {
@@ -503,8 +694,10 @@ function tick(now) {
 
   updateCountdown(remainingMs);
 
-  // Reflect the fade-out window in the UI (pause is locked out during fade-out).
-  if (state === 'playing' && remainingMs <= fades.out * 1000) {
+  // Reflect the fade-out window in the UI (pause is locked out during fade-out). Loop
+  // mode only: random mode has no session fade — the last bell is ringing out there, so
+  // the UI must not claim "fading out" while a bowl is still singing.
+  if (selectedSound.type === 'loop' && state === 'playing' && remainingMs <= fades.out * 1000) {
     state = 'finishing';
     setPlayBtn('disabled');
   }
@@ -547,6 +740,13 @@ function startSession() {
     audioEl.play().catch(() => {});
   }
 
+  // Random mode: sample the entire session now — every wait, pitch and the protected
+  // ending are decided before the first strike rings.
+  if (selectedSound.type === 'random') {
+    randomPlan = sampleRandomPlan(sessionDurationMs / 1000);
+    if (!randomBuffers) loadRandomBells();
+  }
+
   setMediaSession();
   updateMediaPosition();
   navigator.mediaSession && (navigator.mediaSession.playbackState = 'playing');
@@ -556,7 +756,9 @@ function startSession() {
   setPlayBtn('pause');
   // If the bell never loaded there will be no interval beats and no end chime. Say so
   // rather than letting the session run its course and end in silence.
-  setStatus(bellBuffer ? '' : (bellFailed ? 'no bell — check your connection' : 'loading bell…'));
+  setStatus(
+    selectedSound.type === 'random' && !randomBuffers ? 'loading bells…'
+      : bellBuffer ? '' : (bellFailed ? 'no bell — check your connection' : 'loading bell…'));
 
   rafId = requestAnimationFrame(tick);
 }
@@ -568,7 +770,9 @@ function pauseSession() {
   cancelAnimationFrame(rafId);
   clearTimeout(bgFadeTimeout);
   clearTimeout(endHoldTimeout);
-  clearScheduledSources();
+  // Random mode: let the sounding bell ride the 2 s fade (cutting it would click);
+  // only the strikes that have not started yet are dropped now.
+  if (selectedSound.type === 'random') clearFutureSources(); else clearScheduledSources();
 
   gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
   gainNode.gain.setValueAtTime(Math.max(gainNode.gain.value, 0.001), audioCtx.currentTime);
@@ -578,6 +782,7 @@ function pauseSession() {
       if (audioEl) audioEl.pause();
       stopKeepAlive();
       stopSilentKeepAlive();
+      clearScheduledSources();
       gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
       gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
     }
@@ -619,7 +824,7 @@ function stopSession() {
   cancelAnimationFrame(rafId);
   clearTimeout(bgFadeTimeout);
   clearTimeout(endHoldTimeout);
-  clearScheduledSources();
+  if (selectedSound.type === 'random') clearFutureSources(); else clearScheduledSources();
   stopKeepAlive();
   stopSilentKeepAlive();
 
@@ -631,6 +836,7 @@ function stopSession() {
     gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + PAUSE_FADE_OUT);
     bgFadeTimeout = setTimeout(() => {
       if (audioEl) audioEl.pause();
+      clearScheduledSources();
       if (gainNode) {
         gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
         gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
@@ -733,6 +939,8 @@ function shutdownApp() {
   gainNode = null;
   bellOut = null;
   bellBuffer = null;
+  randomBuffers = null;
+  randomPlan = null;
 
   // close(), not suspend(). Null it too: ensureAudio() rebuilds everything from scratch if
   // the window survives and the app is opened again.
@@ -860,6 +1068,7 @@ function getSelectableCustomTime() {
 function setSelectedDuration(min) {
   if (state !== 'idle') stopSession();
   selectedMinutes = min;
+  try { localStorage.setItem('meditation-duration', String(min)); } catch {}
   renderDurations();
   showIdleCountdown();
 }
@@ -1020,6 +1229,7 @@ function renderSounds() {
     btn.addEventListener('click', () => {
       if (state !== 'idle') stopSession();
       selectedSound = sound;
+      try { localStorage.setItem(SOUND_KEY, sound.id); } catch {}
       renderSounds();
       // Re-point the existing element instead of tearing the whole graph down. The old
       // code closed the AudioContext and dropped bellBuffer, which meant the next session
@@ -1038,6 +1248,10 @@ function renderSounds() {
           gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
         }
       }
+      // Preload the five bells when random is picked (so Begin is instant); release
+      // their decoded PCM (~45 MB) the moment the mode is left again.
+      if (sound.type === 'random') loadRandomBells();
+      else randomBuffers = null;
     });
     elSoundGroup.appendChild(btn);
   });
@@ -1838,6 +2052,11 @@ elDeletedReopen.addEventListener('click', () => location.reload());
 // ── Init ─────────────────────────────────────────────────────────────────────
 
 elVersion.textContent = APP_VERSION;
+// Coming back to the app shows the last settings used — the sound mode and the duration.
+try {
+  const savedMin = parseInt(localStorage.getItem('meditation-duration'), 10);
+  if (savedMin >= 1 && savedMin <= 180) selectedMinutes = savedMin;
+} catch {}
 renderSounds();
 renderDurations();
 showIdleCountdown();

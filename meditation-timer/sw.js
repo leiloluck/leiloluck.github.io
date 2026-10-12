@@ -34,7 +34,7 @@
 
 'use strict';
 
-const VERSION      = 'v26.10.10';
+const VERSION      = 'v26.10.12';
 const CACHE_PREFIX = 'meditation-timer-';        // never touch caches outside this prefix
 const CACHE        = CACHE_PREFIX + VERSION;
 const AUDIO_CACHE  = CACHE_PREFIX + 'audio';     // unversioned on purpose — see header
@@ -58,6 +58,17 @@ const PRECACHE = [
 // Not part of the atomic shell: added best-effort into the persistent audio cache.
 const BELL = './resources/Single bowl sound.mp3';
 
+// The random-bells mode's five denoised recordings (lossless, ~12 MB total). Same
+// best-effort treatment as the bell above: they are core session content that must work
+// offline, but they must never block or bust a shell update.
+const RANDOM_BELLS = [
+  './resources/random/bell-1-c3-flat.flac',
+  './resources/random/bell-2-c3.flac',
+  './resources/random/bell-3-g3-flat.flac',
+  './resources/random/bell-4-g3.flac',
+  './resources/random/bell-6-c4.flac',
+];
+
 // Always fetch precache entries from the network, never the HTTP cache. See header.
 const fresh = url => new Request(url, { cache: 'reload' });
 
@@ -74,6 +85,11 @@ self.addEventListener('install', event => {
     const audio = await caches.open(AUDIO_CACHE);
     if (!(await audio.match(new Request(new URL(BELL, self.location).href)))) {
       try { await audio.add(fresh(BELL)); } catch {}
+    }
+    for (const f of RANDOM_BELLS) {
+      if (!(await audio.match(new Request(new URL(f, self.location).href)))) {
+        try { await audio.add(fresh(f)); } catch {}
+      }
     }
     // NO skipWaiting() here — deliberately. The shell is served cache-first, so a worker
     // that activates mid-session hands new CSS/JS to a page still running the old code.
@@ -110,7 +126,7 @@ self.addEventListener('fetch', event => {
   // could then wipe the caches with no way to refill them.
   if (url.searchParams.has('probe')) { event.respondWith(fetch(request)); return; }
 
-  if (url.pathname.endsWith('.mp3')) {
+  if (url.pathname.endsWith('.mp3') || url.pathname.endsWith('.flac')) {
     event.respondWith(serveAudio(event));
     return;
   }

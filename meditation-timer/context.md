@@ -2,7 +2,7 @@
 
 A minimalist meditation timer PWA. The user selects a sound and a duration; audio fades in at the start and fades out at the end. Installable on Android + iPhone, offline-first.
 
-**Version:** v26.10.16 (format `vYY.MM.DD` — year.month.day; bump on every change, in
+**Version:** v26.10.17 (format `vYY.MM.DD` — year.month.day; bump on every change, in
 lockstep across `index.html`, `sw.js` `VERSION`, `js/app.js` `APP_VERSION` and this file).
 
 ---
@@ -118,7 +118,7 @@ stage (`src.__g`) and start time (`src.__when`), set by `scheduleBuffer()`:
 | Update reload | only when idle AND after `quietAt` | (same) | (same) |
 | X close | hard stop + `ctx.close()` — deliberate | hard stop | released |
 
-Peaks: random bells × their loudness gain are ≤ 0.575 FS (measured on the decoded
+Peaks: random bells × their loudness gain are ≤ 0.50 FS (measured on the decoded
 buffers), strikes never overlap by construction, and the chime path has the 0.55
 headroom gain. The only overlap is a released (fading, ≤ −6 dB within 0.2 s) bell under a
 fresh strike after an immediate Stop → Begin.
@@ -216,19 +216,21 @@ untested path alive through the no-cut refactor. It is in git history at v26.10.
 ### `type: 'random'`
 
 Random bells (the second, beta-default Sound entry; the study behind it lives in
-`resources/bells.html`'s "Tuned 2" tab and `resources/sources.md`). Five denoised,
-loudness-matched bell recordings (`resources/random/*.flac`, lossless, ~6.1 MB total,
-precached best-effort into the audio cache). No media element plays; every strike is a
-decoded `AudioBufferSourceNode` whose `playbackRate` pitches it (the C4 slides down only,
-−4…0 semitones; the rest −2…+2), with its own gain stage carrying the loudness match.
+`resources/bells.html`'s "Tuned 3" tab and `resources/sources.md`). Three denoised,
+loudness-matched bell recordings (`resources/random/*.flac`, lossless, ~3.9 MB total,
+precached best-effort into the audio cache) — G3 −27¢ and C4 were retired as the
+palette's two shortest tails (v26.10.17). No media element plays; every strike is a
+decoded `AudioBufferSourceNode` whose `playbackRate` pitches it across ±3 semitones
+(one palette of 3 bells × 7 pitches), with its own gain stage carrying the loudness
+match.
 
 - **Codec fallback (v26.10.14).** WebKit's `decodeAudioData` (AudioFileReaderCocoa.mm)
   maps FLAC to `audio/flac` and decodes it through AVFoundation, so iOS 11+ *should*
   decode it — unverified on a device. `loadRandomBell()` therefore tries `.flac`, and on a
   **decode** failure (not a network one) switches `randomCodec` to `'mp3'` for the page's
-  life and loads the 320 kbps twins (`resources/random/*.mp3`, ~4.0 MB, same mean/peak
+  life and loads the 320 kbps twins (`resources/random/*.mp3`, ~2.7 MB, same mean/peak
   level to 0.1 dB, ~−85 dB codec noise floor — 50 dB under the recordings' own hiss). The
-  first bell is the probe, so a FLAC-less engine fetches one FLAC, not five. The twins are
+  first bell is the probe, so a FLAC-less engine fetches one FLAC, not three. The twins are
   not precached; the page stores them in the audio cache itself on fallback (a first-visit
   fetch is not yet controlled by the worker). `RANDOM_BELLS[].file` has no extension.
 - `loadRandomBells()` has an in-flight guard (`randomLoading`; init, the selector and Begin
@@ -270,9 +272,9 @@ decoded `AudioBufferSourceNode` whose `playbackRate` pitches it (the C4 slides d
 
   | Level | Buttons | floor | mean | max strike-to-strike | `minGap`† | ≈ strikes / 15 min |
   |---|---|---|---|---|---|---|
-  | 1 scarce | one bell | 20 s | 20 s | 100 s | 8 s | 17 |
-  | 2 default | two bells | 8 s | 8 s | 56 s | 1 s | 26 |
-  | 3 frequent | three bells | 3 s | 3 s | 40 s | 1 s | 36 |
+  | 1 scarce | one bell | 20 s | 20 s | 100 s | 8 s | 16 |
+  | 2 default | two bells | 8 s | 8 s | 56 s | 1 s | 24 |
+  | 3 frequent | three bells | 3 s | 3 s | 40 s | 1 s | 32 |
 
   † the least the pulled-in final bell may follow the previous ring-out (the ending rule
   above); level 1 asks for 8 s so a scarce session does not end with two bells in a row.
@@ -355,7 +357,7 @@ Two caches, and the split matters:
 
 - `meditation-timer-<VERSION>` — the shell. Version-keyed, replaced wholesale on every
   bump, so index.html / app.js / styles.css always come from one deploy and cannot skew.
-- `meditation-timer-audio` — the bell, the five FLAC bells, the MP3 twins (only on an
+- `meditation-timer-audio` — the bell, the three FLAC bells, the MP3 twins (only on an
   engine that fell back) and (once downloaded) the ~44 MB soundtrack.
   **Unversioned and never evicted.** It used to live in the versioned cache, so every
   single version bump silently threw away a 44 MB download the user had deliberately
@@ -527,8 +529,8 @@ dead context and refill the memory the X just released.
 |---|---|---|
 | `resources/bowls long interval.mp3` | ~44 MB, ~1 hr | `loop` |
 | `resources/Single bowl sound.mp3` | ~1.5 MB, ~39 s | end chime (`BELL_FILE`), every mode |
-| `resources/random/bell-1-c3-flat.flac` … `bell-6-c4.flac` (5 files) | ~6.1 MB total, 15–28 s, 48 kHz/24-bit stereo | `random` mode — denoised recordings (spectral subtraction, see `resources/sources.md`); names carry the bell and pitch |
-| `resources/random/*.mp3` (5 twins) | ~4.0 MB total | FLAC-less fallback: `ffmpeg -i x.flac -map_metadata -1 -c:a libmp3lame -b:a 320k x.mp3` (48 kHz kept; mean/peak identical to the FLAC within 0.1 dB). Re-encode them whenever a FLAC changes. |
+| `resources/random/bell-1-c3-flat.flac` … `bell-4-g3.flac` (3 files: bells 1, 2, 4) | ~3.9 MB total, 20–28 s, 48 kHz/24-bit stereo | `random` mode — denoised recordings (spectral subtraction, see `resources/sources.md`); names carry the bell and pitch. G3 −27¢ and C4 retired in v26.10.17 (the palette's two shortest tails — see the study's "Tuned 3" tab) |
+| `resources/random/*.mp3` (3 twins) | ~2.7 MB total | FLAC-less fallback: `ffmpeg -i x.flac -map_metadata -1 -c:a libmp3lame -b:a 320k x.mp3` (48 kHz kept; mean/peak identical to the FLAC within 0.1 dB). Re-encode them whenever a FLAC changes. |
 
 All files have metadata stripped (`-map_metadata -1`; for MP3 sources with `-c:a copy`).
 

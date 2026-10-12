@@ -33,7 +33,7 @@
 
 'use strict';
 
-const VERSION      = 'v26.10.16';
+const VERSION      = 'v26.10.17';
 const CACHE_PREFIX = 'meditation-timer-';        // never touch caches outside this prefix
 const CACHE        = CACHE_PREFIX + VERSION;
 const AUDIO_CACHE  = CACHE_PREFIX + 'audio';     // unversioned on purpose — see header
@@ -57,20 +57,18 @@ const PRECACHE = [
 // Not part of the atomic shell: added best-effort into the persistent audio cache.
 const BELL = './resources/Single bowl sound.mp3';
 
-// The random-bells mode's five denoised recordings (lossless FLAC, ~6 MB total). Same
+// The random-bells mode's three denoised recordings (lossless FLAC, ~3.9 MB total). Same
 // best-effort treatment as the bell above: they are core session content that must work
 // offline, but they must never block or bust a shell update.
 //
-// Their 320 kbps .mp3 twins (~4 MB) are deliberately NOT precached: only an engine that
+// Their 320 kbps .mp3 twins (~2.7 MB) are deliberately NOT precached: only an engine that
 // cannot decode FLAC needs them, and app.js stores them in AUDIO_CACHE itself the moment
 // it falls back (serveAudio below would too, but not for the fetches a page makes before
 // this worker controls it — i.e. the very first visit).
 const RANDOM_BELLS = [
   './resources/random/bell-1-c3-flat.flac',
   './resources/random/bell-2-c3.flac',
-  './resources/random/bell-3-g3-flat.flac',
   './resources/random/bell-4-g3.flac',
-  './resources/random/bell-6-c4.flac',
 ];
 
 // Always fetch precache entries from the network, never the HTTP cache. See header.

@@ -11,7 +11,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.10.16';   // format vYY.MM.DD — keep in lockstep with sw.js + index.html
+const APP_VERSION = 'v26.10.17';   // format vYY.MM.DD — keep in lockstep with sw.js + index.html
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 //
@@ -283,37 +283,37 @@ function clearScheduledSources() {
 
 // ── Random bells mode ────────────────────────────────────────────────────────
 //
-// The session model studied in resources/bells.html (its "Tuned 2" tab), shipped: five
-// denoised bell recordings, loudness-matched, pitched with playbackRate (the C4 downward
-// only — it is already the highest), the whole session sampled in one go at start, never
-// the same bell at the same pitch twice in a row, and the ending protected — the last
-// bell rings out, a 3 s gap, then the existing triple chime. Every strike is an
-// AudioBufferSourceNode scheduled on the audio clock up front, so the whole session
-// (including its ending) survives a locked screen exactly like the end bell always has.
+// The session model studied in resources/bells.html (its "Tuned 3" tab), shipped: three
+// denoised bell recordings (G3 −27¢ and C4 retired — the palette's two shortest tails),
+// loudness-matched, each pitched live across ±3 semitones, the whole session sampled in
+// one go at start, never the same bell at the same pitch twice in a row, and the ending
+// protected — the last bell rings out, a 3 s gap, then the existing triple chime. Every
+// strike is an AudioBufferSourceNode scheduled on the audio clock up front, so the whole
+// session (including its ending) survives a locked screen exactly like the end bell
+// always has.
 //
 // Measured metadata (resources/sources.md): ring40/ring50 in seconds, gain = loudness
 // match from stereo RMS (quietest bell = 1.0). `file` has no extension: '.flac' first,
 // '.mp3' (320 kbps twins, same loudness to 0.1 dB) where FLAC cannot be decoded.
-// Peaks after `gain` are ≤ 0.57 FS (bell-6 −2.9 dBFS × 0.80), and strikes never overlap
+// Peaks after `gain` are ≤ 0.50 FS (bell-2 −3.3 dBFS × 0.72), and strikes never overlap
 // by construction, so the bells need no headroom stage of their own.
 
 const RANDOM_BELLS = [
   { label: 'C3 −27¢', file: './resources/random/bell-1-c3-flat', ring40: 20.7, ring50: 21.4, gain: 1.00 },
   { label: 'C3',      file: './resources/random/bell-2-c3',      ring40: 28.0, ring50: 28.0, gain: 0.72 },
-  { label: 'G3 −27¢', file: './resources/random/bell-3-g3-flat', ring40: 14.0, ring50: 14.4, gain: 0.79 },
   { label: 'G3 −1¢',  file: './resources/random/bell-4-g3',      ring40: 18.7, ring50: 19.5, gain: 0.67 },
-  { label: 'C4',      file: './resources/random/bell-6-c4',      ring40: 13.8, ring50: 14.6, gain: 0.80 },
 ];
-const RANDOM_OFFS    = [-2, -1, 0, 1, 2];
-const RANDOM_OFFS_C4 = [-4, -3, -2, -1, 0];   // the C4 slides down only
+const RANDOM_OFFS    = [-3, -2, -1, 0, 1, 2, 3];   // every bell — the C4's −4…0 retired with it
 const RANDOM_GAP     = 3;      // ring-out gap before the triple chime
 
 // "Random bells amount" (Settings): how long the app waits between strikes. A wait is the
 // previous bell's audible ring + `floor` + a truncated-exponential draw (mean `mean`),
-// capped so no strike-to-strike distance exceeds `maxgap` (level 2 keeps the study's rule:
-// 2 × the longest audible ring, 28 s). `minGap` is the least the pulled-in final bell may
-// follow the previous ring-out (see sampleRandomPlan). Yield over 15 min, measured with
-// the sampler test: one bell ≈ 17, two ≈ 26 (the study default), three ≈ 36 strikes.
+// capped so no strike-to-strike distance exceeds `maxgap` (level 2's 56 s dates from the
+// five-bell palette — 2 × its 28 s longest ring; the ±3 window stretches the longest
+// ring to 33 s, so the same cap simply binds a little sooner — overlap stays impossible
+// by construction either way). `minGap` is the least the pulled-in final bell may follow
+// the previous ring-out (see sampleRandomPlan). Yield over 15 min, measured with the
+// sampler test: one bell ≈ 16, two ≈ 24 (the study default), three ≈ 32 strikes.
 const RANDOM_AMOUNTS = [
   { id: 1, label: 'One bell',    floor: 20, mean: 20, maxgap: 100, minGap: 8 },   // scarce
   { id: 2, label: 'Two bells',   floor: 8,  mean: 8,  maxgap: 56,  minGap: 1 },   // the default
@@ -323,8 +323,7 @@ let randomAmount = 2;   // id of the chosen entry; restored from localStorage at
 
 const RANDOM_POOL = [];
 RANDOM_BELLS.forEach((b, bi) => {
-  const offs = b.label === 'C4' ? RANDOM_OFFS_C4 : RANDOM_OFFS;
-  offs.forEach(semi => {
+  RANDOM_OFFS.forEach(semi => {
     const rate = Math.pow(2, semi / 12);
     RANDOM_POOL.push({ bi, semi, rate, ring: b.ring40 / rate });
   });
@@ -429,8 +428,8 @@ function loadRandomBells(attempt = 0) {
   const ctx = audioCtx;
   // Also stale once the user has left random mode: no 30 MB of PCM for a mode not in use.
   const stale = () => closing || ctx !== audioCtx || selectedSound.type !== 'random';
-  // The first bell is the codec probe; the other four follow in parallel. An engine that
-  // cannot decode FLAC therefore fetches one FLAC, not five.
+  // The first bell is the codec probe; the other two follow in parallel. An engine that
+  // cannot decode FLAC therefore fetches one FLAC, not three.
   loadRandomBell(ctx, RANDOM_BELLS[0], stale)
     .then(first => first && Promise.all(
       [first, ...RANDOM_BELLS.slice(1).map(b => loadRandomBell(ctx, b, stale))]))
@@ -1327,7 +1326,7 @@ function renderSounds() {
       selectedSound = sound;
       try { localStorage.setItem(SOUND_KEY, sound.id); } catch {}
       renderSounds();
-      // Preload the five bells when random is picked (so Begin is instant); release
+      // Preload the three bells when random is picked (so Begin is instant); release
       // their decoded PCM (~30 MB) the moment the mode is left again (a bell still fading
       // holds its own buffer until it ends).
       if (sound.type === 'random') loadRandomBells();

@@ -308,8 +308,9 @@ opened again. The deleted screen says exactly that.
 - The UI is split into two tabs under a sticky segmented control:
   - **Annoy** — the entire app: hero/countdown, UNLEASH (+ skip), the sound grid, and
     the interval picker. Sized to fit one screen on common phones.
-  - **Settings** — the three toggles (chaos / test / start-with-a-sound), the
-    How-it-works / Install / Update buttons, and the version + offline badge.
+  - **Settings** — the three toggles (chaos / test / start-with-a-sound), the app plate
+    (the home-screen icon the OS will install, next to the name), the How-it-works /
+    Install / Update buttons, and the version + offline badge.
 - **There is no nested scroll container.** The whole page scrolls as one. The previous
   build made the sound grid its own `overflow:auto; overscroll-behavior:contain`
   scroller, which *trapped* touches: a finger landing on a sound button couldn't

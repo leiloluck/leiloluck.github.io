@@ -688,6 +688,19 @@ body.test-mode .sound-btn  { background-color: #d8d4bf; }
 
 /* ── Small buttons + settings ────────────────────────────────────────────── */
 
+/* The app plate: the home-screen icon and name, in the same white field the info
+   panels use. It shows what gets installed, right above the Install button. */
+.app-plate {
+  flex-direction: row;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 9px;
+  background: var(--btn-hilite);
+  box-shadow: var(--field);
+}
+.app-plate-icon { width: 40px; height: 40px; flex: 0 0 auto; }
+.app-plate-name { font-size: 13px; font-weight: bold; }
+
 .settings-actions { display: flex; flex-direction: row; flex-wrap: wrap; gap: 6px; }
 .settings-actions .btn-small { flex: 1 1 118px; }
 

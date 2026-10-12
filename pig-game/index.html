@@ -1069,6 +1069,21 @@
       gap: 8px;
     }
 
+    /* The app's own icon (the one the OS puts on the home screen) beside the name, so
+       the installed result is visible right above the Install button. */
+    .settings-app-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .settings-app-icon {
+      width: 48px;
+      height: 48px;
+      flex: 0 0 auto;
+      border-radius: 50%;      /* the artwork is a round pig face */
+    }
+
     .settings-app-name {
       font-size: 20px;
       font-weight: 700;
@@ -1156,7 +1171,10 @@
          library. The download tooling lives here only, out of the per-phase music tabs. -->
     <section class="content-section" data-tab="settings" id="settings-section">
       <div class="settings-about">
-        <div class="settings-app-name">Pig Game Track App 🐖🐖</div>
+        <div class="settings-app-header">
+          <img class="settings-app-icon" src="./icon-192.png" alt="" width="48" height="48">
+          <div class="settings-app-name">Pig Game Track App 🐖🐖</div>
+        </div>
         <p class="settings-lead">
           Music for each phase of the Pig game — Start, Mid, End and Victory — plus short
           sound effects. Music loops under the effects, and the Music / SFX slider sets the

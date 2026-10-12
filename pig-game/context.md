@@ -74,9 +74,11 @@ The version lives in `version.js` only, so `tools/check_versions.py` (which expe
   Settings made six equal tabs too tight, so Settings takes the far right under a gear.
   Each tab is its own card (`.content-section.active`), so the Settings panel, a plain
   sibling of the generated music sections, shares the same frame.
-- **Settings** holds a short description of the app, a big Install/Update button (a twin
-  of the compact header control — `setInstallLabel()` drives both, and the header's status
-  line is mirrored underneath with a `MutationObserver`), and the whole offline library.
+- **Settings** holds a short description of the app headed by its own icon (the same
+  `icon-192.png` the OS installs, so the installed result is visible before the tap), a big
+  Install/Update button (a twin of the compact header control — `setInstallLabel()` drives
+  both, and the header's status line is mirrored underneath with a `MutationObserver`),
+  and the whole offline library.
   **Download for offline** lives here only, never in a music tab. The download paints the
   progress bar and confirms with a toast on start, success, partial failure and lost
   connection (`downloadLibrary()`), and success also reads "All tracks work offline".

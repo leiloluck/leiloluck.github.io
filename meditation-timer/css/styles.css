@@ -3,7 +3,9 @@
    one vermilion (shu) note for the close control. Mincho serif for the voice, rounded
    gothic for the controls. The brushed ensō is the hero and the progress ring.
    Full-height column (100svh): header, tabs, then the active panel (Meditate: ensō takes
-   the spare height, then controls; Settings: install/update/offline, version).
+   the spare height, then controls; Settings: manual, bells amount, app, delete). Every
+   vertical size is a fluid clamp on svh, so both pages fit a phone screen whole; the
+   panels' own scrollbars are a fallback for landscape and very large system text.
    Palette and type choices are documented in context.md ("Design"). */
 
 /* ── Fonts: self-hosted Latin subsets, SIL OFL 1.1 (licences in ../fonts/) ── */
@@ -56,7 +58,9 @@
 
   --radius:    14px;
   --page-pad-x: clamp(16px, 5vw, 24px);
-  --control-gap: clamp(8px, 1.2svh, 10px);
+  /* Every vertical rhythm step scales with the small viewport height (svh), so on a
+     short screen the whole column shrinks together instead of only the ensō. */
+  --control-gap: clamp(6px, 1.1svh, 10px);
 }
 
 
@@ -115,7 +119,10 @@ body {
   font-size: 15px;
   line-height: 1.45;
   height: 100vh;      /* fallback for engines without the newer units */
-  height: 100dvh;     /* follows Chrome's URL bar, so the bottom row is never pushed off */
+  /* svh is the SMALL viewport height — the screen with every browser bar showing. It is
+     the one height that never overflows, so the app fits even with Chrome's URL bar up.
+     (dvh would grow when the bar retracts and shrink again while the bar animates.) */
+  height: 100svh;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -138,11 +145,11 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: clamp(6px, 1svh, 10px);
-  padding-top: max(env(safe-area-inset-top, 0px), 10px);
+  gap: clamp(5px, 0.9svh, 10px);
+  padding-top: max(env(safe-area-inset-top, 0px), clamp(6px, 1.2svh, 10px));
   /* safe-area-max-inset-* is the constant maximum; the plain inset shrinks as Chrome's
      bottom chin retracts, which reflows the page mid-scroll. */
-  padding-bottom: max(env(safe-area-max-inset-bottom, env(safe-area-inset-bottom, 0px)), 10px);
+  padding-bottom: max(env(safe-area-max-inset-bottom, env(safe-area-inset-bottom, 0px)), clamp(6px, 1.2svh, 10px));
   padding-left: max(var(--page-pad-x), env(safe-area-inset-left, 0px));
   padding-right: max(var(--page-pad-x), env(safe-area-inset-right, 0px));
   min-height: 0;
@@ -161,7 +168,7 @@ body {
 .header h1 {
   text-align: left;
   font-family: var(--serif);
-  font-size: clamp(18px, 2.6svh, 21px);
+  font-size: clamp(16px, 2.5svh, 21px);
   font-weight: 700;
   letter-spacing: 0.06em;
   color: var(--text);
@@ -172,15 +179,15 @@ body {
 .btn-close {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  height: 36px;
-  padding: 0 12px 0 14px;
+  gap: 7px;
+  height: clamp(30px, 5.4svh, 36px);
+  padding: 0 10px 0 12px;
   border-radius: 999px;
   border: 1px solid var(--border);
   background: transparent;
   color: var(--muted);
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: clamp(12px, 2svh, 13px);
   font-weight: 500;
   letter-spacing: 0.03em;
   white-space: nowrap;
@@ -189,7 +196,7 @@ body {
 }
 
 .btn-close-x {
-  font-size: 20px;
+  font-size: clamp(16px, 2.7svh, 20px);
   line-height: 1;
   transform: translateY(-1px);
 }
@@ -220,14 +227,14 @@ body {
   z-index: 1;                /* above the highlight, so the label is never tinted */
   flex: 1 1 0;
   min-width: 0;
-  min-height: 34px;
-  padding: 6px 10px;
+  min-height: clamp(28px, 4.9svh, 34px);
+  padding: 5px 10px;
   border: 0;
   border-radius: 999px;
   background: transparent;
   color: var(--muted);
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: clamp(12px, 2svh, 13px);
   font-weight: 500;
   letter-spacing: 0.04em;
   cursor: pointer;
@@ -298,11 +305,12 @@ body {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: clamp(10px, 1.8svh, 18px);
+  gap: clamp(7px, 1.3svh, 16px);
   padding-inline: 4px;
   overflow-x: hidden;
-  overflow-y: auto;
+  overflow-y: auto;      /* fallback only: the fluid sizing below keeps both pages fitting */
   overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
   scrollbar-width: none;
 }
@@ -326,12 +334,12 @@ body {
 .install-banner,
 .install-note {
   margin: 0;
-  padding: 8px 12px;
+  padding: 5px 9px;
   border: 1px solid var(--border);
   border-radius: 10px;
   background: var(--surface);
   color: var(--text);
-  font-size: 13px;
+  font-size: clamp(11px, 1.8svh, 12.5px);
   line-height: 1.4;
   text-align: center;
 }
@@ -361,8 +369,10 @@ body {
 .enso-wrap {
   position: relative;
   flex: none;
-  width: min(80vw, 38svh, 340px);                 /* fallback without container units */
-  width: min(100cqw, calc(100cqh - 26px), 440px); /* 26px: the status line under the ring */
+  width: min(74vw, 38svh, 300px);                 /* fallback without container units */
+  /* The ring is the only flexible block: it takes whatever height the controls leave,
+     capped so it never dominates the column. 24px = the status line's room under the ring. */
+  width: min(100cqw, calc(100cqh - 24px), 40svh, 340px);
   aspect-ratio: 1;
   display: grid;
   place-items: center;
@@ -425,8 +435,8 @@ body:not(.running):not(.paused) #enso-arc {
 .countdown {
   font-family: var(--serif);
   font-weight: 700;
-  font-size: clamp(36px, min(15vw, 8.4svh), 76px);   /* fallback */
-  font-size: clamp(24px, 19cqw, 84px);               /* scales with the ring */
+  font-size: clamp(30px, min(13vw, 7svh), 64px);   /* fallback */
+  font-size: clamp(20px, 17cqw, 68px);             /* scales with the ring */
   line-height: 1;
   color: var(--text);
   letter-spacing: 0.01em;
@@ -448,22 +458,22 @@ body:not(.running):not(.paused) #enso-arc {
 }
 
 .duration-label {
-  font-size: 13px;
+  font-size: clamp(11px, 1.6svh, 13px);
   font-weight: 500;
   color: var(--muted);
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  min-height: 18px;
+  min-height: 16px;
   text-align: center;
 }
 
 .status {
   flex: none;
-  font-size: 13px;
+  font-size: clamp(11px, 1.7svh, 13px);
   color: var(--accent);
   letter-spacing: 0.06em;
-  min-height: 18px;
-  line-height: 18px;
+  min-height: 15px;
+  line-height: 15px;
   text-align: center;
 }
 
@@ -512,11 +522,11 @@ body.paused .countdown { color: var(--muted); }
 
 .btn-play {
   flex: 1;
-  min-height: 54px;
-  padding: 12px 20px;
+  min-height: clamp(38px, 6.8svh, 52px);
+  padding: 8px 16px;
   border-radius: 999px;
   font-family: var(--serif);
-  font-size: 19px;
+  font-size: clamp(15px, 2.5svh, 19px);
   font-weight: 700;
   letter-spacing: 0.12em;
   border: 1px solid var(--accent);
@@ -538,11 +548,11 @@ body.paused .countdown { color: var(--muted); }
 }
 
 .btn-reset {
-  min-height: 54px;
-  padding: 12px 22px;
+  min-height: clamp(38px, 6.8svh, 52px);
+  padding: 8px 18px;
   border-radius: 999px;
   font-family: var(--sans);
-  font-size: 15px;
+  font-size: clamp(13px, 2svh, 15px);
   font-weight: 700;
   letter-spacing: 0.08em;
   border: 1px solid var(--border-hi);
@@ -566,12 +576,12 @@ body.paused .countdown { color: var(--muted); }
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 12px;
+  font-size: clamp(10px, 1.7svh, 12px);
   font-weight: 700;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--muted);
-  margin-bottom: 8px;
+  margin-bottom: clamp(3px, 0.8svh, 7px);
 }
 
 /* A thin brush-rule after the label: structure without a box. */
@@ -597,14 +607,14 @@ body.paused .countdown { color: var(--muted); }
 
 .btn {
   min-width: 0;
-  min-height: 48px;
-  padding: 9px 8px;
-  border-radius: var(--radius);
+  min-height: clamp(32px, 6.2svh, 46px);
+  padding: 6px 6px;
+  border-radius: clamp(10px, 1.6svh, 14px);
   background: rgba(255, 255, 255, 0.015);
   border: 1px solid var(--border);
   color: var(--text);
   font-family: var(--sans);
-  font-size: 15px;
+  font-size: clamp(12.5px, 2svh, 15px);
   font-weight: 500;
   line-height: 1.2;
   cursor: pointer;
@@ -615,8 +625,8 @@ body.paused .countdown { color: var(--muted); }
 
 .btn-detail {
   display: block;
-  margin-top: 3px;
-  font-size: 12px;
+  margin-top: 2px;
+  font-size: clamp(10.5px, 1.7svh, 12px);
   font-weight: 500;
   color: var(--muted);
 }
@@ -644,33 +654,32 @@ body.paused .countdown { color: var(--muted); }
 }
 
 /* ── Settings tab ──
-   Same vocabulary as the Meditate tab: a section label with its brush rule, then a line
-   of status copy and one full-width button per job, then "How it works" and the version.
-   space-between shares a tall phone's spare height evenly between the sections instead
-   of leaving one empty block. */
+   Same vocabulary as the Meditate tab: a section label with its brush rule, then the
+   controls. The sections flow top to bottom at their natural size — no space-between,
+   which used to stretch the gaps into large empty bands on a tall phone. Any spare
+   height simply stays below Delete app. */
 
 .panel-settings {
-  gap: clamp(8px, 2svh, 22px);
-  justify-content: space-between;
+  gap: clamp(5px, 1.1svh, 13px);
   padding-top: 2px;
 }
 
 .settings-status {
   color: var(--muted);
-  font-size: 13px;
-  line-height: 1.5;
-  margin-bottom: 10px;
+  font-size: clamp(11.5px, 1.8svh, 13px);
+  line-height: 1.4;
+  margin-bottom: clamp(3px, 0.8svh, 8px);
 }
 
 .panel-settings .install-note {
   text-align: left;
-  margin-bottom: 10px;
+  margin-bottom: clamp(3px, 0.8svh, 8px);
 }
 
 .btn-action {
   width: 100%;
-  min-height: 46px;
-  font-size: 14px;
+  min-height: clamp(32px, 6svh, 44px);
+  font-size: clamp(12px, 1.8svh, 14px);
   letter-spacing: 0.04em;
 }
 
@@ -704,10 +713,10 @@ body.paused .countdown { color: var(--muted); }
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 1px;
   font-family: var(--serif);
-  font-size: 13px;
-  line-height: 1.55;
+  font-size: clamp(10.5px, 1.8svh, 12.5px);
+  line-height: 1.4;
   color: var(--muted);
 }
 
@@ -729,22 +738,22 @@ body.paused .countdown { color: var(--muted); }
 }
 
 /* Install, Check for updates and the version share one section: a gap between them. */
-.section .btn-action + .btn-action { margin-top: var(--control-gap); }
+.section .btn-action + .btn-action { margin-top: clamp(4px, 0.9svh, 10px); }
 
 /* The app card: icon, name, version, one status line. The version is a button (tap to
    check for updates), kept small and quiet beside the name. */
 .app-card {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 10px;
+  gap: 10px;
+  margin-bottom: clamp(3px, 0.8svh, 8px);
 }
 
 .app-icon {
-  width: 52px;
-  height: 52px;
+  width: clamp(34px, 6svh, 48px);
+  height: clamp(34px, 6svh, 48px);
   flex: none;
-  border-radius: 12px;
+  border-radius: clamp(8px, 1.4svh, 12px);
   box-shadow: 0 0 0 1px var(--border);
 }
 
@@ -753,9 +762,9 @@ body.paused .countdown { color: var(--muted); }
 .app-name {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: 7px;
   font-family: var(--serif);
-  font-size: 15px;
+  font-size: clamp(14px, 2.1svh, 15px);
   font-weight: 700;
   color: var(--text);
 }
@@ -777,12 +786,12 @@ body.paused .countdown { color: var(--muted); }
   align-items: center;
   justify-content: center;
   gap: 2px;
-  min-height: 52px;
+  min-height: clamp(34px, 6.6svh, 52px);
 }
 
 .btn-amount svg {
-  width: 21px;
-  height: 21px;
+  width: clamp(16px, 2.7svh, 21px);
+  height: clamp(16px, 2.7svh, 21px);
   flex: none;
   fill: currentColor;
 }
@@ -1096,33 +1105,10 @@ body.session-complete .enso-glow { opacity: 1; transform: scale(1.05); }
   .app { --slide-dur: 0.01s; }   /* switch pages without the slide */
 }
 
-/* ── Short screens (small phones, landscape): the ensō gives up height first ── */
-
-@media (max-height: 680px) {
-  .app { gap: 8px; }
-  .btn, .btn-play, .btn-reset { min-height: 42px; }
-  .btn-play { font-size: 17px; }
-  .section-label { margin-bottom: 5px; }
-  .panel { gap: 8px; }
-}
-
-@media (max-height: 600px) {
-  .app-icon { width: 40px; height: 40px; border-radius: 10px; }
-  .settings-list { font-size: 12px; gap: 2px; }
-  .settings-status { margin-bottom: 6px; }
-  .app-card { margin-bottom: 4px; }
-  .panel-settings { gap: 4px; }
-  .section .btn-action + .btn-action { margin-top: 6px; }
-  .btn, .btn-play, .btn-reset { min-height: 38px; }
-  .btn-action { min-height: 38px; }
-  .btn-amount { min-height: 42px; }
-  .tab { min-height: 30px; }
-}
-
-@media (max-width: 360px) {
-  .btn { font-size: 14px; padding: 8px 4px; }
-  .btn-detail { font-size: 11px; }
-}
+/* ── Short screens ──
+   No height breakpoints: every vertical size above is a clamp on svh, so a short phone
+   scales the whole column down smoothly (ring, buttons, labels together) instead of
+   jumping between fixed sizes. The panel scroll stays as a safety net only. */
 
 @media (min-width: 700px) and (min-height: 820px) {
   .app { max-width: 460px; }

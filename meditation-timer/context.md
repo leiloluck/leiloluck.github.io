@@ -2,7 +2,7 @@
 
 A minimalist meditation timer PWA. The user selects a sound and a duration; audio fades in at the start and fades out at the end. Installable on Android + iPhone, offline-first.
 
-**Version:** v26.10.17 (format `vYY.MM.DD` — year.month.day; bump on every change, in
+**Version:** v26.10.12b (format `vYY.MM.DD` — year.month.day; bump on every change, in
 lockstep across `index.html`, `sw.js` `VERSION`, `js/app.js` `APP_VERSION` and this file).
 
 ---
@@ -310,6 +310,13 @@ tappable version label:
   standalone the button shows "✓ Installed" and is disabled. `isStandalone()` =
   `matchMedia('(display-mode: standalone)')` `||` `navigator.standalone` (no localStorage
   flag — viewing in a browser correctly still offers install).
+  The note above the button states the requirement in plain words, `INSTALL_REQUIREMENT` +
+  the browser-specific advice from `installAdvice()`, in one box: "For offline use,
+  install with Chrome on Android or Safari on iOS." then '✓ You are in Chrome. Tap
+  Install.' / the Share-sheet steps / 'open the page in Chrome'. Only Chrome (and Samsung
+  Internet) can mint a real Android WebAPK, so the requirement is stated up front rather
+  than implied. Inside the installed app the note is hidden; on the Meditate tab only the
+  *wrong browser* advice appears, as a banner.
 - **Update** and the **tappable version** both call `runUpdate()` — the manual jump to
   the newest build. It escalates gently: probe real connectivity → hand over an already
   waiting worker → `reg.update()` → and only if the page's `APP_VERSION` still disagrees
@@ -427,18 +434,23 @@ worker, so they work offline and need no third-party request. Mincho digits are
 proportional, so `renderClock()` puts each character in a fixed-width cell (`.d` / `.c`).
 Otherwise the clock would shift sideways every second.
 
-**Layout (v26.10.16: the page never scrolls).** `html` and `body` are `overflow: hidden`,
-`body` is `100dvh`, and `.app` fills it; the pager is the one flexible child. In the
-Meditate page the hero (`.countdown-section`, `container-type: size`) takes whatever height
-the controls leave and the ring is sized from that box with container units
-(`min(100cqw, 100cqh − 26px, 440px)`, countdown `19cqw`), so it scales down on a short
-phone instead of pushing the controls off, and fills the room on a tall one. Spare height
-that the width-limited ring cannot use goes *above* it (`::before`), so Begin always sits
-right under the timer. Durations are a 3-column grid (5/10/15, then 20/25/Custom). Under
-680 / 600 px tall the buttons and the Settings page tighten. The layout test (8 sizes from
-320×568 to 768×1024) asserts no page scroll, no inner scroll, last control on screen and a
-≤ 22 px gap between the status line and Begin; re-run it after any layout change. The old
-"three bells close the session" hint under the ring is gone.
+**Layout (v26.10.12b: everything fits, on every portrait phone).** `html` and `body` are
+`overflow: hidden`; `body` is `100svh` — the SMALL viewport height, the screen with every
+browser bar showing, so the column can never be taller than the visible area — and `.app`
+fills it; the pager is the one flexible child. Every vertical size is a fluid `clamp()` on
+`svh` (header, tabs, buttons, labels, gaps), so a short screen scales the whole column
+down together instead of only the ring. In the Meditate page the hero
+(`.countdown-section`, `container-type: size`) takes whatever height the controls leave
+and the ring is sized from that box with container units
+(`min(100cqw, 100cqh − 24px, 40svh, 340px)`, countdown `17cqw`), so it shrinks on a short
+phone and is capped on a tall one. Spare height that the width-limited ring cannot use
+goes *above* it (`::before`), so Begin always sits right under the timer. Durations are a
+3-column grid (5/10/15, then 20/25/Custom). The Settings page flows top to bottom with the
+same fluid gaps — no `space-between`, which used to stretch empty bands between the
+sections on a tall phone — so Delete app stays on screen. The panels keep
+`overflow-y: auto` purely as a safety net: landscape phones and very large system text
+still scroll instead of clipping anything (touch pan verified). The old "three bells
+close the session" hint under the ring is gone.
 
 **Tabs and paging:** header, then two tabs (`TABS` + `showTab()` in app.js):
 **Meditate** (the practice screen above) and **Settings**. The two pages sit side by side
@@ -463,11 +475,12 @@ separate buttons.
 
 **Settings, top to bottom:** **Manual** (three short lines; keep it short — the user asked
 for less text, and an earlier version read as generated filler), **Random bells amount**,
-**App** (a card with the app icon, name, tappable version and one status line; then
-install + offline as one button, and Check for updates, and the `installAdvice()` note) and
-**Delete app** at the very bottom. All in-app copy is deliberately plain and short, with
-no em dashes. The Meditate tab only shows the install advice as a banner when this browser
-cannot install at all.
+**App** (a card with the app icon, name, tappable version and one status line; then the
+install note — which always opens with the Chrome-on-Android / Safari-on-iOS requirement —
+install + offline as one button, and Check for updates) and **Delete app** at the bottom.
+The sections sit at their natural size with fluid gaps; no stretched empty bands. All
+in-app copy is deliberately plain and short, with no em dashes. The Meditate tab only
+shows the install advice as a banner when this browser cannot install at all.
 
 **Random bells amount:** three buttons showing one, two or three bell glyphs (no text;
 words in `aria-label`; `renderAmounts()`). More bells = a shorter wait between strikes

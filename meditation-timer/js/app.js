@@ -11,7 +11,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.10.17';   // format vYY.MM.DD — keep in lockstep with sw.js + index.html
+const APP_VERSION = 'v26.10.12b';   // format vYY.MM.DD — keep in lockstep with sw.js + index.html
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 //
@@ -1724,32 +1724,42 @@ function installAdvice() {
   const inApp = /FBAN|FBAV|Instagram|Line\/|Snapchat|TikTok|musical_ly|WhatsApp|GSA\/|; wv\)/i.test(ua);
   if (/android/i.test(ua)) {
     if (/SamsungBrowser/i.test(ua) && !inApp) {
-      return { text: '✓ Samsung Internet can install this. Tap Install for offline use.', wrong: false };
+      return { text: '✓ Samsung Internet can install it. Tap Install.', wrong: false };
     }
     const chrome = /Chrome\/\d/.test(ua) && !inApp && !isBrave &&
       !/EdgA|OPR\/|Opera|Firefox|YaBrowser|Vivaldi|DuckDuckGo|UCBrowser|MiuiBrowser|HuaweiBrowser/i.test(ua);
     return chrome
-      ? { text: '✓ You are in Chrome. Tap Install for offline use.', wrong: false }
-      : { text: '📲 Open this page in Chrome to install it for offline use.', wrong: true };
+      ? { text: '✓ You are in Chrome. Tap Install.', wrong: false }
+      : { text: '📲 This browser cannot. Open the page in Chrome.', wrong: true };
   }
   if (isIOS()) {
     const m = ua.match(/OS (\d+)_(\d+)/);
     const ver = m ? parseInt(m[1], 10) + parseInt(m[2], 10) / 100 : 99;   // iPadOS reports as Mac
     const safari = !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua) && !inApp;
     if (inApp || (!safari && ver < 16.04)) {
-      return { text: '📲 Open this page in Safari to install it for offline use.', wrong: true };
+      return { text: '📲 This browser cannot. Open the page in Safari.', wrong: true };
     }
-    return { text: 'For offline use: tap Share, then Add to Home Screen.', wrong: false };
+    return { text: 'Tap Share, then Add to Home Screen.', wrong: false };
   }
   return { text: '', wrong: false };   // desktop: the Install button covers it
 }
 
-// The Meditate tab shows the advice only when this browser cannot install the app at
-// all — that is the one case worth interrupting a session-in-progress screen for.
-// Settings always shows it, wrong browser or right, since that is where install lives.
+// The one line every phone visitor to Settings reads: the browser requirement first, then
+// what THIS browser needs to do (installAdvice). Settings always shows it on Android and
+// iOS, wrong browser or right, since that is where install lives. The Meditate tab shows
+// the advice alone, and only when this browser cannot install the app at all — the one
+// case worth interrupting a session-in-progress screen for. On desktop the plain Install
+// button needs no note, and inside the installed app there is nothing left to install.
+const INSTALL_REQUIREMENT = 'For offline use, install with Chrome on Android or Safari on iOS.';
+
 function renderInstallAdvice() {
   const { text, wrong } = installAdvice();
-  if (elInstallNote)   { elInstallNote.textContent = text; elInstallNote.hidden = !text; }
+  if (elInstallNote) {
+    const mobile = isIOS() || /android/i.test(navigator.userAgent || '');
+    const show = mobile && !isStandalone();
+    elInstallNote.hidden = !show;
+    if (show) elInstallNote.textContent = text ? `${INSTALL_REQUIREMENT} ${text}` : INSTALL_REQUIREMENT;
+  }
   if (elInstallBanner) { elInstallBanner.textContent = wrong ? text : ''; elInstallBanner.hidden = !wrong; }
 }
 

@@ -53,7 +53,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.09.25b';
+const APP_VERSION = 'v26.10.12b';
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 // Drop real files into resources/ (see resources/README.md). Until a matching file

@@ -128,6 +128,11 @@ body {
    `.panel` below), so on a tall phone the spare height goes to the hero and the controls
    settle at the bottom, within thumb reach. */
 .app {
+  /* --p is the page position: 0 = Meditate, 1 = Settings. One variable drives the sliding
+     track and the tab highlight, so they always move together (see showTab in app.js). */
+  --p: 0;
+  --slide-dur: 0.38s;
+  --slide-ease: cubic-bezier(0.32, 0.72, 0, 1);
   width: 100%;
   max-width: 440px;
   flex: 1;
@@ -193,6 +198,7 @@ body {
 /* ── Tabs ── */
 
 .tabs {
+  position: relative;
   flex-shrink: 0;
   display: flex;
   gap: 6px;
@@ -216,25 +222,90 @@ body {
 }
 
 .tab[aria-selected="true"] {
-  border-color: var(--accent);
-  background: var(--accent-bg);
   color: var(--accent);
   font-weight: 700;
+}
+
+/* The highlight: one pill that slides from tab to tab (and follows a swipe, via --p).
+   It sits over the tabs and lets taps through; its fill is translucent so the label under
+   it stays crisp. 6px is the .tabs gap. */
+.tab-pill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: calc((100% - 6px) / 2);
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: var(--accent-bg);
+  pointer-events: none;
+  transform: translateX(calc(var(--p) * (100% + 6px)));
+  transition: transform var(--slide-dur) var(--slide-ease);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .tab:hover:not([aria-selected="true"]) { border-color: var(--accent-dim); color: var(--text); }
 }
 
-/* ── Panel: the one flexible child of .app ──
-   Holds either the practice screen or Settings. Its own gap carries the spacing that
-   used to sit directly on .app, so the hero-to-controls rhythm is unchanged. */
+/* ── Pager: the one flexible child of .app ──
+   Both pages sit side by side on a track twice the width of the pager; --p slides it.
+   Each page scrolls on its own (overflow-y), so a tall Settings page never stretches the
+   practice screen, and the controls stay at the bottom of the viewport. The 4px negative
+   margin / padding pair keeps focus rings from being clipped at the pager's edges. */
+.pager {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 0;
+  margin-inline: -4px;
+  overflow: hidden;
+  touch-action: pan-y;   /* vertical scroll stays native; app.js owns horizontal swipes */
+}
+
+.track {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 200%;
+  display: flex;
+  transform: translateX(calc(var(--p) * -50%));
+  transition: transform var(--slide-dur) var(--slide-ease);
+  will-change: transform;
+}
+
+/* While a finger is dragging, follow it 1:1 — no easing. */
+.app.dragging .track,
+.app.dragging .tab-pill { transition: none; }
+
+/* ── Panel: one page. Its own gap carries the spacing that used to sit directly on
+   .app, so the hero-to-controls rhythm is unchanged. ── */
 .panel {
-  flex: 1 1 auto;
+  flex: 0 0 50%;
+  min-width: 0;
   min-height: 0;
   display: flex;
   flex-direction: column;
   gap: clamp(10px, 1.8svh, 18px);
+  padding-inline: 4px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  scrollbar-width: none;
+}
+
+.panel::-webkit-scrollbar { display: none; }
+
+/* The page that is not showing: out of the tab order and the accessibility tree (inert),
+   and not painted once its slide has finished. Mid-drag both are visible. */
+.panel[inert] {
+  visibility: hidden;
+  transition: visibility 0s linear var(--slide-dur);
+}
+
+.app.dragging .panel[inert] {
+  visibility: visible;
+  transition: none;
 }
 
 /* Install advice, shared look with the note in Settings below. A quiet, paper-coloured
@@ -638,9 +709,31 @@ body.paused .countdown { color: var(--muted); }
   background: var(--accent-dim);
 }
 
-.settings-about .version {
+/* Install, Check for updates and the version share one section: a gap between them. */
+.section .btn-action + .btn-action { margin-top: var(--control-gap); }
+
+#version {
   display: block;
-  margin: 12px auto 0;
+  margin: 10px auto 0;
+}
+
+/* Random bells amount: one, two or three bell glyphs per button. The count is the label
+   (aria-label carries the words), so no text and no sub-line. */
+#amount-group { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+.btn-amount {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 52px;
+}
+
+.btn-amount svg {
+  width: 21px;
+  height: 21px;
+  flex: none;
+  fill: currentColor;
 }
 
 .btn-small {
@@ -949,6 +1042,7 @@ body.session-complete .enso-glow { opacity: 1; transform: scale(1.05); }
 
 @media (prefers-reduced-motion: reduce) {
   body.session-complete::before { animation: none; }
+  .app { --slide-dur: 0.01s; }   /* switch pages without the slide */
 }
 
 /* ── Short screens (small phones, landscape): the ensō gives up height first ── */

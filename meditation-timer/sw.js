@@ -25,16 +25,15 @@
      data, silently. AUDIO_CACHE is never versioned and never evicted.
 
    * THE BELL IS PRECACHED (into AUDIO_CACHE, best-effort). 'Single bowl sound.mp3'
-     (1.5 MB) is not background music: it is the end-of-session chime and every interval
-     beat, decoded into an AudioBuffer and scheduled on the audio clock. If it can't be
-     fetched, scheduleHit() drops every hit and the session ends in silence — so it must
-     work offline. It is added best-effort and OUTSIDE the atomic shell addAll(), so a
+     (1.5 MB) is not background music: it is the end-of-session chime, decoded into an
+     AudioBuffer and scheduled on the audio clock. If it can't be fetched, scheduleHit()
+     drops every hit and the session ends in silence — so it must work offline. It is added best-effort and OUTSIDE the atomic shell addAll(), so a
      flaky connection can't block a shell update, and it is not re-downloaded on every
      version bump. */
 
 'use strict';
 
-const VERSION      = 'v26.10.13';
+const VERSION      = 'v26.10.15';
 const CACHE_PREFIX = 'meditation-timer-';        // never touch caches outside this prefix
 const CACHE        = CACHE_PREFIX + VERSION;
 const AUDIO_CACHE  = CACHE_PREFIX + 'audio';     // unversioned on purpose — see header
@@ -58,9 +57,14 @@ const PRECACHE = [
 // Not part of the atomic shell: added best-effort into the persistent audio cache.
 const BELL = './resources/Single bowl sound.mp3';
 
-// The random-bells mode's five denoised recordings (lossless, ~12 MB total). Same
+// The random-bells mode's five denoised recordings (lossless FLAC, ~6 MB total). Same
 // best-effort treatment as the bell above: they are core session content that must work
 // offline, but they must never block or bust a shell update.
+//
+// Their 320 kbps .mp3 twins (~4 MB) are deliberately NOT precached: only an engine that
+// cannot decode FLAC needs them, and app.js stores them in AUDIO_CACHE itself the moment
+// it falls back (serveAudio below would too, but not for the fetches a page makes before
+// this worker controls it — i.e. the very first visit).
 const RANDOM_BELLS = [
   './resources/random/bell-1-c3-flat.flac',
   './resources/random/bell-2-c3.flac',

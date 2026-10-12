@@ -11,7 +11,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.10.15';   // format vYY.MM.DD — keep in lockstep with sw.js + index.html
+const APP_VERSION = 'v26.10.16';   // format vYY.MM.DD — keep in lockstep with sw.js + index.html
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 //
@@ -184,7 +184,7 @@ function loadBell(attempt) {
         setTimeout(() => { if (!stale()) loadBell(attempt + 1); }, 1000 * Math.pow(2, attempt));  // 1s,2s,4s,8s
         return;
       }
-      if (state === 'idle') setStatus('bell unavailable — reconnect once to save it offline');
+      if (state === 'idle') setStatus('Bell unavailable. Connect once to save it.');
     });
 }
 
@@ -466,7 +466,7 @@ function loadRandomBells(attempt = 0) {
       }
       // Said in every state: during a session the status line would otherwise keep
       // promising "loading bells…". The next Begin or mode pick tries again.
-      setStatus('bells unavailable — reconnect once to save them offline');
+      setStatus('Bells unavailable. Connect once to save them.');
     });
 }
 
@@ -1066,7 +1066,7 @@ function shutdownApp() {
     if (!closing) return;
     elClosedSub.textContent = isStandalone()
       ? 'Swipe the app away to finish.'
-      : 'A browser tab cannot close itself, so close this tab. Installed, this button closes the app.';
+      : 'Close this tab to finish.';
     elClosedLayer.classList.remove('hidden');
     document.body.classList.add('modal-open');
     elReopenBtn.focus();
@@ -1773,13 +1773,13 @@ function refreshInstallUI() {
   if (isStandalone()) {
     // Definitive: we ARE the installed app.
     if (audioSaved) {
-      elInstallBtn.textContent = '✓ Installed · works offline';
+      elInstallBtn.textContent = '✓ Installed';
       elInstallBtn.disabled = true;
-      elInstallStatus.textContent = 'Everything is saved on this device. It works without a connection.';
+      elInstallStatus.textContent = 'Works offline.';
     } else {
       elInstallBtn.textContent = 'Save for offline · 44 MB';
       elInstallBtn.disabled = false;
-      elInstallStatus.textContent = 'You are in the installed app. Save the soundtrack to use it without a connection.';
+      elInstallStatus.textContent = 'Save the 44 MB soundtrack to use it offline.';
     }
     return;
   }
@@ -1789,12 +1789,12 @@ function refreshInstallUI() {
   // button. A remembered flag can outlive the install (uninstalled, app data cleared,
   // second device), and a permanently dead Install button is precisely the "install
   // doesn't work" symptom this pass exists to remove.
-  elInstallBtn.textContent = wasInstalled() ? '✓ Installed — install again?' : 'Install app';
+  elInstallBtn.textContent = wasInstalled() ? '✓ Installed · install again' : 'Install app';
   elInstallBtn.disabled = false;
   elInstallStatus.textContent = (wasInstalled()
-    ? 'Installed on this device. This is the browser copy.'
-    : 'Running in the browser. Install it to open it like an app.')
-    + (audioSaved ? ' Saved for offline use.' : ' Installing also saves the 44 MB soundtrack, so it works offline.');
+    ? 'Installed. This is the browser copy.'
+    : 'Install it to open it like an app.')
+    + (audioSaved ? ' Works offline.' : ' Also saves the 44 MB soundtrack for offline use.');
 }
 
 window.addEventListener('beforeinstallprompt', e => {
@@ -1860,7 +1860,7 @@ function installSteps() {
   if (isIOS()) {
     return [
       ...(wrong ? ['Open this page in Safari first.'] : []),
-      'Tap the Share button — the square with an upward arrow.',
+      'Tap the Share button (the square with an arrow).',
       'Choose "Add to Home Screen", then tap "Add".',
     ];
   }
@@ -1876,13 +1876,13 @@ function installSteps() {
       ...(wrong ? ['This browser only adds a shortcut. Open this page in Chrome first.'] : []),
       'Open the browser menu (⋮, top-right).',
       'Tap "Install app" or "Add to Home screen".',
-      'Confirm — it installs and opens on its own.',
+      'Confirm. It installs and opens on its own.',
     ];
   }
   return [
     'Click the install icon in the address bar (⊕ / a small screen icon).',
     'Or open the browser menu and choose "Install Meditation Timer".',
-    'Confirm — it opens as its own app.',
+    'Confirm.',
   ];
 }
 
@@ -1980,7 +1980,7 @@ function handOverToWaitingWorker(reg) {
   elUpdateBtn.textContent = 'Updating…';
   reg.waiting.postMessage({ type: 'SKIP_WAITING' });
   setTimeout(() => {
-    if (document.visibilityState !== 'hidden') flashUpdateMsg('Update stalled — retry');
+    if (document.visibilityState !== 'hidden') flashUpdateMsg('Update stalled, retry');
   }, 8000);
 }
 
@@ -1990,7 +1990,7 @@ function awaitInstallThenHandOver(reg) {
   elUpdateBtn.textContent = 'Downloading…';
   sw.addEventListener('statechange', () => {
     if (sw.state === 'installed' && reg.waiting && state === 'idle') handOverToWaitingWorker(reg);
-    else if (sw.state === 'redundant') flashUpdateMsg('Update failed — retry');
+    else if (sw.state === 'redundant') flashUpdateMsg('Update failed, retry');
   });
   setTimeout(() => {
     if (elUpdateBtn.textContent === 'Downloading…') flashUpdateMsg('Still downloading…');
@@ -2005,7 +2005,7 @@ function awaitInstallThenHandOver(reg) {
 //     shell and re-fetching it is the one moment the app has no offline copy at all.
 async function hardReset() {
   if (!await isReallyOnline()) {           // re-check: the first probe may be seconds old
-    flashUpdateMsg('Offline — kept cache');
+    flashUpdateMsg('Offline, kept cache');
     return;
   }
   try {
@@ -2032,7 +2032,7 @@ async function runUpdate() {
 
   try {
     if (!await isReallyOnline()) {
-      flashUpdateMsg('Offline — cached ✓');
+      flashUpdateMsg('Offline, cached ✓');
       return;
     }
 
@@ -2044,7 +2044,7 @@ async function runUpdate() {
     // it and let the session end apply it.
     if (state !== 'idle' && reg && (reg.waiting || reg.installing)) {
       waitingReg = reg;
-      flashUpdateMsg('Ready — after this session');
+      flashUpdateMsg('Ready after this session');
       return;
     }
 
@@ -2057,7 +2057,7 @@ async function runUpdate() {
       await reg.update();
       if (state !== 'idle' && (reg.installing || reg.waiting)) {
         waitingReg = reg;
-        flashUpdateMsg('Ready — after this session');
+        flashUpdateMsg('Ready after this session');
         return;
       }
       if (reg.waiting)    { handOverToWaitingWorker(reg); return; }
@@ -2077,7 +2077,7 @@ async function runUpdate() {
 
     flashUpdateMsg(`Newest ✓ ${APP_VERSION}`);
   } catch {
-    flashUpdateMsg('Check failed — retry');
+    flashUpdateMsg('Check failed, retry');
   } finally {
     updateBusy = false;
   }
@@ -2138,7 +2138,7 @@ async function saveOffline() {
   const urls = [...BIG_AUDIO, BELL_FILE, ...RANDOM_BELLS.map(b => b.file + '.' + randomCodec)];
   try {
     for (let i = 0; i < urls.length; i++) {
-      elInstallStatus.textContent = `Saving for offline use… ${i + 1} of ${urls.length}`;
+      elInstallStatus.textContent = `Saving for offline… ${i + 1} of ${urls.length}`;
       const resp = await fetch(new Request(urls[i]));   // no Range header → sw.js caches the full 200
       if (!resp.ok) throw new Error('fetch failed');
       await resp.arrayBuffer();
@@ -2159,7 +2159,7 @@ async function saveOffline() {
   } catch {
     offlineBusy = false;
     refreshInstallUI();
-    elInstallStatus.textContent = 'Could not save the soundtrack. Check your connection and tap again.';
+    elInstallStatus.textContent = 'Could not save. Check your connection and try again.';
   }
 }
 
@@ -2202,9 +2202,7 @@ async function dropIndexedDB() {
 }
 
 async function deleteApp() {
-  if (!confirm('Delete this app from your device?\n\n'
-    + 'Its saved soundtrack, offline files and settings are removed, and it will stop '
-    + 'working offline. You can install it again later.')) return;
+  if (!confirm('Delete the app and its saved data from this device?')) return;
 
   elDeleteBtn.disabled = true;
 
@@ -2242,8 +2240,7 @@ async function deleteApp() {
 
   // Never reload: that would re-fetch the shell and re-register the worker.
   elDeletedSub.textContent = (freed > 100000 ? `${mb} freed. ` : '')
-    + 'To remove the icon, delete it from your home screen like any other app. '
-    + 'Opening this page again installs it fresh.';
+    + 'Remove the icon from your home screen too.';
   elDeletedLayer.classList.remove('hidden');
   document.body.classList.add('modal-open');
   elDeletedReopen.focus();

@@ -2,7 +2,7 @@
 
 A minimalist meditation timer PWA. The user selects a sound and a duration; audio fades in at the start and fades out at the end. Installable on Android + iPhone, offline-first.
 
-**Version:** v26.10.15 (format `vYY.MM.DD` — year.month.day; bump on every change, in
+**Version:** v26.10.16 (format `vYY.MM.DD` — year.month.day; bump on every change, in
 lockstep across `index.html`, `sw.js` `VERSION`, `js/app.js` `APP_VERSION` and this file).
 
 ---
@@ -330,7 +330,7 @@ tappable version label:
   in the browser one tap starts `saveOffline()` (progress "Saving for offline use… n of
   7" in `#install-status`) **and** runs the install flow (native prompt, or the steps
   modal); inside the installed app the same button reads "Save for offline · 44 MB" until
-  the soundtrack is cached, then "✓ Installed · works offline" (disabled). `audioSaved`
+  the soundtrack is cached, then "✓ Installed" with "Works offline." (disabled). `audioSaved`
   comes from `isAudioCached()`, which checks **this app's own caches** for the actual
   soundtrack URL — the old "is any `.mp3` cached on the origin?" check was fooled by
   SoundAnnoyer's twelve and reported "downloaded" for a file never fetched. The soundtrack
@@ -418,17 +418,25 @@ traditional Japanese colours, lightened where needed for contrast on a phone scr
 
 Background: a radial "lamp over paper" glow high on the page, falling off to ink.
 
-**Type:** *Shippori Mincho* 700 (title, countdown, Begin, bell hint) gives a brush-serif
+**Type:** *Shippori Mincho* 700 (title, countdown, Begin) gives a brush-serif
 voice; *Zen Maru Gothic* 500/700 (all controls and small text) is rounded and legible at
 12 px. Both are SIL OFL and self-hosted as Latin subsets (~52 KB total), precached by the
 worker, so they work offline and need no third-party request. Mincho digits are
 proportional, so `renderClock()` puts each character in a fixed-width cell (`.d` / `.c`).
 Otherwise the clock would shift sideways every second.
 
-**Layout:** a full-height column (`100svh`). The ensō section is the only flexible child,
-so on tall phones the spare height goes to the hero and the controls sit at the bottom,
-in thumb reach. Durations are a 3-column grid (5/10/15, then 20/25/Custom — two rows).
-Screens under 680 px tall shrink the ensō and drop the bell hint.
+**Layout (v26.10.16: the page never scrolls).** `html` and `body` are `overflow: hidden`,
+`body` is `100dvh`, and `.app` fills it; the pager is the one flexible child. In the
+Meditate page the hero (`.countdown-section`, `container-type: size`) takes whatever height
+the controls leave and the ring is sized from that box with container units
+(`min(100cqw, 100cqh − 26px, 440px)`, countdown `19cqw`), so it scales down on a short
+phone instead of pushing the controls off, and fills the room on a tall one. Spare height
+that the width-limited ring cannot use goes *above* it (`::before`), so Begin always sits
+right under the timer. Durations are a 3-column grid (5/10/15, then 20/25/Custom). Under
+680 / 600 px tall the buttons and the Settings page tighten. The layout test (8 sizes from
+320×568 to 768×1024) asserts no page scroll, no inner scroll, last control on screen and a
+≤ 22 px gap between the status line and Begin; re-run it after any layout change. The old
+"three bells close the session" hint under the ring is gone.
 
 **Tabs and paging:** header, then two tabs (`TABS` + `showTab()` in app.js):
 **Meditate** (the practice screen above) and **Settings**. The two pages sit side by side
@@ -446,11 +454,18 @@ tree. Arrow keys move between tabs. `prefers-reduced-motion` switches pages with
 slide. A running session keeps running while Settings is open; `reopenApp()` always
 returns to Meditate.
 
-**Settings, top to bottom:** **Manual** (the former "How it works"; update its copy if the
-fade lengths `FADE_IN` / `FADE_OUT` change), **Random bells amount**, **App** (install +
-offline as one button, Check for updates, the tappable version, the `installAdvice()` note)
-and **Delete app** at the very bottom. The Meditate tab only shows the install advice as
-a banner when this browser cannot install at all.
+**Header and tabs:** the title is left-aligned; the top-right control is a pill reading
+"Close app ×" (it is `shutdownApp`). The tabs are one connected, bordered track with a
+single highlight pill inside it that slides between the halves (`--p`, see above) — not two
+separate buttons.
+
+**Settings, top to bottom:** **Manual** (three short lines; keep it short — the user asked
+for less text, and an earlier version read as generated filler), **Random bells amount**,
+**App** (a card with the app icon, name, tappable version and one status line; then
+install + offline as one button, and Check for updates, and the `installAdvice()` note) and
+**Delete app** at the very bottom. All in-app copy is deliberately plain and short, with
+no em dashes. The Meditate tab only shows the install advice as a banner when this browser
+cannot install at all.
 
 **Random bells amount:** three buttons showing one, two or three bell glyphs (no text;
 words in `aria-label`; `renderAmounts()`). More bells = a shorter wait between strikes

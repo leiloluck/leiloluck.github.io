@@ -46,12 +46,11 @@
   <!-- Header: title centred, close (X) on the right. The left spacer keeps the title
        optically centred. -->
   <header class="header">
-    <span class="header-spacer" aria-hidden="true"></span>
     <h1>Meditation Timer</h1>
     <!-- Stops everything, releases the audio device and all decoded audio, then closes
          the window. window.close() is only honoured for an installed app, so in a plain
          tab this falls back to a "closed" screen instead of looking broken. See shutdownApp(). -->
-    <button class="btn-close" id="close-btn" type="button" aria-label="Close app" title="Close app">&#215;</button>
+    <button class="btn-close" id="close-btn" type="button" aria-label="Close app" title="Close app"><span>Close app</span><span class="btn-close-x" aria-hidden="true">&#215;</span></button>
   </header>
 
   <!-- Two tabs: Meditate (the whole practice screen) and Settings (install / update /
@@ -98,7 +97,6 @@
       </div>
     </div>
     <p class="status" id="status" aria-live="polite"></p>
-    <p class="bell-hint">three bells close the session</p>
   </section>
 
   <!-- Play / Pause / Reset -->
@@ -124,17 +122,15 @@
   </section>
 
   <!-- Settings, top to bottom: the manual, the one setting (random bells amount), the app
-       itself (install and offline are one action, then updates), and delete at the very
+       itself (icon, install + offline as one button, updates), and delete at the very
        bottom. The inactive page is `inert`; app.js flips it in showTab(). -->
   <section class="panel panel-settings" id="panel-settings" role="tabpanel" aria-labelledby="tab-settings" inert>
     <section class="section settings-about">
       <p class="section-label">Manual</p>
       <ul class="settings-list">
-        <li>Swipe left or right, or tap the tabs, to move between Meditate and Settings.</li>
-        <li>The soundtrack fades in over 8 seconds and out over the last 10. Random bells always ring out in full.</li>
-        <li>Three bells close the session. They are scheduled ahead, so they ring with the screen locked too.</li>
-        <li>Pause and play from the lock screen. The × stops everything and frees the audio.</li>
-        <li>Updates install on their own between sessions, never during one.</li>
+        <li>Swipe left or right to switch pages.</li>
+        <li>Bells always ring out in full. The soundtrack fades.</li>
+        <li>Pause from the lock screen. Close app stops everything.</li>
       </ul>
     </section>
 
@@ -146,17 +142,21 @@
 
     <section class="section">
       <p class="section-label">App</p>
-      <p class="settings-status" id="install-status">Running in the browser.</p>
+      <div class="app-card">
+        <img class="app-icon" src="icons/icon-192.png?v=26.10.15" width="52" height="52" alt="">
+        <div class="app-card-text">
+          <p class="app-name">Meditation Timer <button class="version" id="version" type="button" title="Check for updates">v26.10.16</button></p>
+          <p class="settings-status" id="install-status">Running in the browser.</p>
+        </div>
+      </div>
       <!-- Which browser installs this properly on this phone (installAdvice() in app.js). -->
       <p class="install-note" id="install-note" hidden></p>
       <button class="btn btn-action" id="install-btn" type="button">Install app</button>
       <button class="btn btn-action" id="update-btn" type="button">Check for updates</button>
-      <button class="version" id="version" type="button" title="Check for updates">v26.10.15</button>
     </section>
 
     <section class="section">
       <p class="section-label">Delete app</p>
-      <p class="settings-status" id="delete-status">Removes the app from this device: the app shell, the saved soundtrack and your settings. Nothing on the website is touched.</p>
       <button class="btn btn-action btn-danger" id="delete-btn" type="button">Delete app and data</button>
     </section>
   </section>
@@ -184,7 +184,7 @@
 <div class="closed-layer hidden" id="deleted-layer" role="dialog" aria-modal="true" aria-labelledby="deleted-title">
   <div class="closed-panel">
     <h2 id="deleted-title">App deleted</h2>
-    <p class="closed-copy">Its saved soundtrack, offline files and settings are gone from this device.</p>
+    <p class="closed-copy">Saved files and settings are gone.</p>
     <p class="closed-sub" id="deleted-sub"></p>
     <button class="btn-small" id="deleted-reopen-btn" type="button">Open again</button>
   </div>
@@ -194,9 +194,9 @@
   <button class="modal-backdrop" id="custom-modal-dismiss" aria-label="Close custom duration dialog"></button>
 
   <section class="custom-modal" id="custom-modal" role="dialog" aria-modal="true" aria-labelledby="custom-modal-title" tabindex="-1">
-    <p class="custom-modal-kicker">Custom duration</p>
-    <h2 id="custom-modal-title">Set your session length</h2>
-    <p class="custom-modal-copy">Choose any duration between 1 and 180 minutes.</p>
+    <p class="custom-modal-kicker">Custom</p>
+    <h2 id="custom-modal-title">Session length</h2>
+    <p class="custom-modal-copy">1 to 180 minutes.</p>
 
     <form class="custom-modal-form" id="custom-duration-form" novalidate>
       <p class="custom-modal-label">Minutes</p>
@@ -238,7 +238,7 @@
   <section class="custom-modal" id="install-modal" role="dialog" aria-modal="true" aria-labelledby="install-modal-title" tabindex="-1">
     <p class="custom-modal-kicker">Install</p>
     <h2 id="install-modal-title">Add to your home screen</h2>
-    <p class="custom-modal-copy">Install Meditation Timer as an app. Once installed it opens on its own and works offline.</p>
+    <p class="custom-modal-copy">It opens on its own and works offline.</p>
     <ol class="install-steps" id="install-steps"></ol>
     <!-- Only shown when the browser actually has a native prompt to give us. On Brave
          that prompt exists but only produces a shortcut, so the steps recommend Chrome

@@ -96,7 +96,8 @@ button:focus-visible {
 /* On a touchscreen :hover latches on tap, so every :hover rule below is gated behind a
    real pointer; touch gets :active instead. */
 html {
-  min-height: 100%;
+  height: 100%;
+  overflow: hidden;   /* the page itself never scrolls: everything is sized to fit */
   /* No pull-to-refresh: a flick at the top must never reload mid-meditation. */
   overscroll-behavior-y: contain;
   -webkit-text-size-adjust: 100%;
@@ -113,14 +114,13 @@ body {
   font-weight: 500;
   font-size: 15px;
   line-height: 1.45;
-  min-height: 100vh;  /* fallback for engines without the newer units */
-  min-height: 100svh; /* small viewport: no reflow when Chrome's URL bar slides */
-  overflow-x: hidden;
+  height: 100vh;      /* fallback for engines without the newer units */
+  height: 100dvh;     /* follows Chrome's URL bar, so the bottom row is never pushed off */
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
-  overflow-y: auto;
-  overscroll-behavior-y: contain;
+  overscroll-behavior: none;
 }
 
 /* ── App shell: one full-height column ──
@@ -145,45 +145,53 @@ body {
   padding-bottom: max(env(safe-area-max-inset-bottom, env(safe-area-inset-bottom, 0px)), 10px);
   padding-left: max(var(--page-pad-x), env(safe-area-inset-left, 0px));
   padding-right: max(var(--page-pad-x), env(safe-area-inset-right, 0px));
-  min-height: 100vh;
-  min-height: 100svh;
+  min-height: 0;
 }
 
 /* ── Header ── */
 
 .header {
-  display: grid;
-  grid-template-columns: 44px 1fr 44px;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   flex-shrink: 0;
 }
 
 .header h1 {
-  grid-column: 2;
-  text-align: center;
+  text-align: left;
   font-family: var(--serif);
   font-size: clamp(18px, 2.6svh, 21px);
   font-weight: 700;
   letter-spacing: 0.06em;
   color: var(--text);
+  white-space: nowrap;
 }
 
+/* "Close app ×": the word says what the cross does. */
 .btn-close {
-  grid-column: 3;
-  justify-self: end;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 12px 0 14px;
+  border-radius: 999px;
   border: 1px solid var(--border);
   background: transparent;
   color: var(--muted);
   font-family: var(--sans);
-  font-size: 22px;
-  line-height: 1;
-  display: grid;
-  place-items: center;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
   cursor: pointer;
   transition: color var(--fade), border-color var(--fade), filter 90ms ease, transform 90ms ease;
+}
+
+.btn-close-x {
+  font-size: 20px;
+  line-height: 1;
+  transform: translateY(-1px);
 }
 
 .btn-close:active:not(:disabled) {
@@ -195,21 +203,26 @@ body {
   .btn-close:hover { color: var(--shu); border-color: var(--shu); }
 }
 
-/* ── Tabs ── */
+/* ── Tabs: one connected track, one highlight that slides along it ── */
 
 .tabs {
   position: relative;
   flex-shrink: 0;
   display: flex;
-  gap: 6px;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .tab {
+  position: relative;
+  z-index: 1;                /* above the highlight, so the label is never tinted */
   flex: 1 1 0;
   min-width: 0;
-  min-height: 38px;
-  padding: 8px 10px;
-  border: 1px solid var(--border);
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 0;
   border-radius: 999px;
   background: transparent;
   color: var(--muted);
@@ -218,7 +231,7 @@ body {
   font-weight: 500;
   letter-spacing: 0.04em;
   cursor: pointer;
-  transition: border-color var(--fade), color var(--fade), background var(--fade);
+  transition: color var(--fade);
 }
 
 .tab[aria-selected="true"] {
@@ -227,24 +240,24 @@ body {
 }
 
 /* The highlight: one pill that slides from tab to tab (and follows a swipe, via --p).
-   It sits over the tabs and lets taps through; its fill is translucent so the label under
-   it stays crisp. 6px is the .tabs gap. */
+   It is half the track's inner width, so it moves by exactly its own width. */
 .tab-pill {
   position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
+  z-index: 0;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
   width: calc((100% - 6px) / 2);
   border: 1px solid var(--accent);
   border-radius: 999px;
   background: var(--accent-bg);
   pointer-events: none;
-  transform: translateX(calc(var(--p) * (100% + 6px)));
+  transform: translateX(calc(var(--p) * 100%));
   transition: transform var(--slide-dur) var(--slide-ease);
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .tab:hover:not([aria-selected="true"]) { border-color: var(--accent-dim); color: var(--text); }
+  .tab:hover:not([aria-selected="true"]) { color: var(--text); }
 }
 
 /* ── Pager: the one flexible child of .app ──
@@ -327,22 +340,33 @@ body {
 
 /* ── Hero: ensō + countdown (the flexible part of the column) ── */
 
+/* The hero takes whatever height the controls leave, and the ring is sized from THAT box
+   (container units) — so it fills the room instead of floating in a gap, and shrinks on a
+   short phone instead of pushing the controls off the screen. */
 .countdown-section {
-  flex: 1 0 auto;
+  flex: 1 1 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: clamp(4px, 1svh, 10px);
-  min-height: 0;
+  gap: 4px;
+  container-type: size;
 }
+
+/* Spare height (tall phones, where the ring is width-limited) goes ABOVE the ring, so
+   Begin always sits close under the timer. */
+.countdown-section::before { content: ''; flex: 1 1 0; min-height: 0; }
 
 .enso-wrap {
   position: relative;
-  width: min(80vw, 38svh, 340px);
+  flex: none;
+  width: min(80vw, 38svh, 340px);                 /* fallback without container units */
+  width: min(100cqw, calc(100cqh - 26px), 440px); /* 26px: the status line under the ring */
   aspect-ratio: 1;
   display: grid;
   place-items: center;
+  container-type: size;
 }
 
 .enso {
@@ -401,7 +425,8 @@ body:not(.running):not(.paused) #enso-arc {
 .countdown {
   font-family: var(--serif);
   font-weight: 700;
-  font-size: clamp(44px, min(15vw, 8.4svh), 76px);
+  font-size: clamp(36px, min(15vw, 8.4svh), 76px);   /* fallback */
+  font-size: clamp(24px, 19cqw, 84px);               /* scales with the ring */
   line-height: 1;
   color: var(--text);
   letter-spacing: 0.01em;
@@ -433,18 +458,12 @@ body:not(.running):not(.paused) #enso-arc {
 }
 
 .status {
+  flex: none;
   font-size: 13px;
   color: var(--accent);
   letter-spacing: 0.06em;
-  min-height: 19px;
-  text-align: center;
-}
-
-.bell-hint {
-  font-family: var(--serif);
-  font-size: 13px;
-  color: var(--faint);
-  letter-spacing: 0.08em;
+  min-height: 18px;
+  line-height: 18px;
   text-align: center;
 }
 
@@ -631,9 +650,9 @@ body.paused .countdown { color: var(--muted); }
    of leaving one empty block. */
 
 .panel-settings {
-  gap: clamp(16px, 3svh, 28px);
+  gap: clamp(8px, 2svh, 22px);
   justify-content: space-between;
-  padding-top: clamp(4px, 1svh, 12px);
+  padding-top: 2px;
 }
 
 .settings-status {
@@ -685,7 +704,7 @@ body.paused .countdown { color: var(--muted); }
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   font-family: var(--serif);
   font-size: 13px;
   line-height: 1.55;
@@ -712,9 +731,41 @@ body.paused .countdown { color: var(--muted); }
 /* Install, Check for updates and the version share one section: a gap between them. */
 .section .btn-action + .btn-action { margin-top: var(--control-gap); }
 
+/* The app card: icon, name, version, one status line. The version is a button (tap to
+   check for updates), kept small and quiet beside the name. */
+.app-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.app-icon {
+  width: 52px;
+  height: 52px;
+  flex: none;
+  border-radius: 12px;
+  box-shadow: 0 0 0 1px var(--border);
+}
+
+.app-card-text { min-width: 0; }
+
+.app-name {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-family: var(--serif);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.app-card .settings-status { margin: 2px 0 0; }
+
 #version {
-  display: block;
-  margin: 10px auto 0;
+  min-height: 22px;
+  padding: 0 6px;
+  font-family: var(--sans);
 }
 
 /* Random bells amount: one, two or three bell glyphs per button. The count is the label
@@ -1049,12 +1100,23 @@ body.session-complete .enso-glow { opacity: 1; transform: scale(1.05); }
 
 @media (max-height: 680px) {
   .app { gap: 8px; }
-  .enso-wrap { width: min(70vw, 34svh, 280px); }
-  .countdown { font-size: clamp(36px, min(12vw, 7.4svh), 60px); }
-  .bell-hint { display: none; }
-  .btn, .btn-play, .btn-reset { min-height: 44px; }
+  .btn, .btn-play, .btn-reset { min-height: 42px; }
   .btn-play { font-size: 17px; }
   .section-label { margin-bottom: 5px; }
+  .panel { gap: 8px; }
+}
+
+@media (max-height: 600px) {
+  .app-icon { width: 40px; height: 40px; border-radius: 10px; }
+  .settings-list { font-size: 12px; gap: 2px; }
+  .settings-status { margin-bottom: 6px; }
+  .app-card { margin-bottom: 4px; }
+  .panel-settings { gap: 4px; }
+  .section .btn-action + .btn-action { margin-top: 6px; }
+  .btn, .btn-play, .btn-reset { min-height: 38px; }
+  .btn-action { min-height: 38px; }
+  .btn-amount { min-height: 42px; }
+  .tab { min-height: 30px; }
 }
 
 @media (max-width: 360px) {

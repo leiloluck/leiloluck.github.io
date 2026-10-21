@@ -600,10 +600,10 @@ body.paused .countdown { color: var(--muted); }
   width: 100%;
 }
 
-/* auto-fit: one sound fills the row; two sounds share it. */
-#sound-group    { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
-/* Three across: 5 / 10 / 15, then 20 / 25 / Custom. Two rows instead of three. */
-#duration-group { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+/* Three across: 5 / 10 / 15, then 20 / 25 / Custom. Two rows instead of three. The bell
+   frequency grid matches it: none / 1 / 2, then 3 / 4 / 5. */
+#duration-group,
+#level-group    { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 
 .btn {
   min-width: 0;
@@ -777,21 +777,20 @@ body.paused .countdown { color: var(--muted); }
   font-family: var(--sans);
 }
 
-/* Random bells amount: one, two or three bell glyphs per button. The count is the label
-   (aria-label carries the words), so no text and no sub-line. */
-#amount-group { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-
+/* Bell frequency: a cross, or one to five bell glyphs per button. The count is the label
+   (aria-label carries the words), so no text and no sub-line. Same height as the
+   duration buttons. Glyphs shrink so five always fit across a third of a phone. */
 .btn-amount {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  min-height: clamp(34px, 6.6svh, 52px);
+  gap: 1px;
 }
 
 .btn-amount svg {
-  width: clamp(16px, 2.7svh, 21px);
-  height: clamp(16px, 2.7svh, 21px);
+  width: min(clamp(14px, 2.5svh, 20px), 19%);
+  aspect-ratio: 1;
+  height: auto;
   flex: none;
   fill: currentColor;
 }

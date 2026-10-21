@@ -19,21 +19,18 @@
      (and SoundAnnoyer returned the favour, wiping the 44 MB soundtrack downloaded by the
      "Save audio offline" button). Only ever delete keys starting with CACHE_PREFIX.
 
-   * AUDIO LIVES IN ITS OWN, UNVERSIONED CACHE. The soundtrack is ~44 MB and the user
-     downloads it deliberately. If it sat in the version-keyed shell cache, every single
-     version bump would evict it and they would have to fetch 44 MB again — over mobile
-     data, silently. AUDIO_CACHE is never versioned and never evicted.
+   * AUDIO LIVES IN ITS OWN, UNVERSIONED CACHE. If the bells sat in the version-keyed
+     shell cache, every single version bump would evict them and re-fetch ~4 MB — over
+     mobile data, silently. AUDIO_CACHE is never versioned and never evicted as a whole.
 
-   * THE BELL IS PRECACHED (into AUDIO_CACHE, best-effort). 'Single bowl sound.mp3'
-     (1.5 MB) is not background music: it is the end-of-session chime, decoded into an
-     AudioBuffer and scheduled on the audio clock. If it can't be fetched, scheduleHit()
-     drops every hit and the session ends in silence — so it must work offline. It is added best-effort and OUTSIDE the atomic shell addAll(), so a
-     flaky connection can't block a shell update, and it is not re-downloaded on every
-     version bump. */
+   * THE BELLS ARE PRECACHED (into AUDIO_CACHE, best-effort). They are the whole session,
+     and one of them is the end-of-session chime, so they must work offline. They are
+     added best-effort and OUTSIDE the atomic shell addAll(), so a flaky connection can't
+     block a shell update, and they are not re-downloaded on every version bump. */
 
 'use strict';
 
-const VERSION      = 'v26.10.12b';
+const VERSION      = 'v26.10.22';
 const CACHE_PREFIX = 'meditation-timer-';        // never touch caches outside this prefix
 const CACHE        = CACHE_PREFIX + VERSION;
 const AUDIO_CACHE  = CACHE_PREFIX + 'audio';     // unversioned on purpose — see header
@@ -54,12 +51,10 @@ const PRECACHE = [
   './fonts/zen-maru-gothic-700.woff2',
 ];
 
-// Not part of the atomic shell: added best-effort into the persistent audio cache.
-const BELL = './resources/Single bowl sound.mp3';
-
-// The random-bells mode's three denoised recordings (lossless FLAC, ~3.9 MB total). Same
-// best-effort treatment as the bell above: they are core session content that must work
-// offline, but they must never block or bust a shell update.
+// The three denoised bell recordings (lossless FLAC, ~3.9 MB total); bell-2-c3 is also
+// the end chime. Not part of the atomic shell: added best-effort into the persistent
+// audio cache — core session content that must work offline, but must never block or
+// bust a shell update.
 //
 // Their 320 kbps .mp3 twins (~2.7 MB) are deliberately NOT precached: only an engine that
 // cannot decode FLAC needs them, and app.js stores them in AUDIO_CACHE itself the moment
@@ -69,6 +64,14 @@ const RANDOM_BELLS = [
   './resources/random/bell-1-c3-flat.flac',
   './resources/random/bell-2-c3.flac',
   './resources/random/bell-4-g3.flac',
+];
+
+// Audio older builds stored that nothing plays any more (v26.10.22): the ~44 MB
+// soundtrack (its mode was removed) and the old end chime. Evicted from AUDIO_CACHE on
+// activate, so phones that saved the soundtrack get the space back.
+const RETIRED_AUDIO = [
+  './resources/bowls long interval.mp3',
+  './resources/Single bowl sound.mp3',
 ];
 
 // Always fetch precache entries from the network, never the HTTP cache. See header.
@@ -81,13 +84,10 @@ self.addEventListener('install', event => {
     const cache = await caches.open(CACHE);
     await cache.addAll(PRECACHE.map(fresh));                 // atomic: all or nothing
 
-    // The bell goes into the persistent audio cache, best-effort. Keeping it out of the
-    // addAll above means a flaky connection can't block the shell update, and keeping it
-    // out of the versioned cache means it is not re-fetched on every bump.
+    // The bells go into the persistent audio cache, best-effort. Keeping them out of the
+    // addAll above means a flaky connection can't block the shell update, and keeping
+    // them out of the versioned cache means they are not re-fetched on every bump.
     const audio = await caches.open(AUDIO_CACHE);
-    if (!(await audio.match(new Request(new URL(BELL, self.location).href)))) {
-      try { await audio.add(fresh(BELL)); } catch {}
-    }
     for (const f of RANDOM_BELLS) {
       if (!(await audio.match(new Request(new URL(f, self.location).href)))) {
         try { await audio.add(fresh(f)); } catch {}
@@ -104,12 +104,16 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
-    // AUDIO_CACHE is deliberately spared: it holds the 44 MB soundtrack the user chose to
-    // download, and re-fetching that on every version bump would be inexcusable.
+    // AUDIO_CACHE is deliberately spared: re-fetching the bells on every version bump
+    // would be wasteful. Only the files no build plays any more are dropped from it.
     await Promise.all(
       keys.filter(k => k.startsWith(CACHE_PREFIX) && k !== CACHE && k !== AUDIO_CACHE)
           .map(k => caches.delete(k))
     );
+    try {
+      const audio = await caches.open(AUDIO_CACHE);
+      await Promise.all(RETIRED_AUDIO.map(f => audio.delete(new Request(new URL(f, self.location).href))));
+    } catch {}
     await self.clients.claim();
   })());
 });
@@ -168,8 +172,8 @@ async function serveShell(request) {
 // - If a full response is already cached: serve it. Browsers accept 200 in place
 //   of 206 for <audio loop>, which avoids the Cache API / range-request mismatch.
 // - If not cached AND this is a range request: let it through to the network so
-//   the browser can stream naturally without downloading the full 44 MB first.
-// - If not cached AND this is a full request (e.g. "Save audio offline" button):
+//   the browser can stream naturally without downloading the full file first.
+// - If not cached AND this is a full request (a bell decode, the offline save):
 //   fetch, cache the 200 response, return it.
 async function serveAudio(event) {
   const request = event.request;
@@ -190,9 +194,8 @@ async function serveAudio(event) {
     // Full request (no Range header): fetch, cache, return.
     const response = await fetch(cacheKey);
     if (response.status === 200) {
-      // waitUntil, not fire-and-forget: writing 44 MB takes a while, and without this the
-      // worker can be killed mid-write — leaving a partial cache while the page has
-      // already reported "Audio offline ✓".
+      // waitUntil, not fire-and-forget: without it the worker can be killed mid-write —
+      // leaving a partial cache while the page has already reported "Works offline".
       event.waitUntil(cache.put(cacheKey, response.clone()));
     }
     return response;

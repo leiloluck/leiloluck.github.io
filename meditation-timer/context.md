@@ -9,7 +9,12 @@ frequency moved from Settings to the Meditate page with six levels (none, 1 … 
 chime is now the C3 random bell struck three times (the old `Single bowl sound.mp3` had a
 stray tone ~24 s in); the shortest strike (G3 at +3 semitones) was retired.
 
-**Version:** v26.10.22 (format `vYY.MM.DD` — year.month.day; bump on every change, in
+**v26.10.22b changes:** Settings explains Bell frequency in a table (level glyphs → mean
+silence between bells); the end bell is selectable (Long / Warm / Bright, always three
+strikes) with a Test button; every strike audible for under 18 s is dropped from sessions
+(`MIN_RING`).
+
+**Version:** v26.10.22b (format `vYY.MM.DD` — year.month.day; bump on every change, in
 lockstep across `index.html`, `sw.js` `VERSION`, `js/app.js` `APP_VERSION` and this file).
 
 ---
@@ -82,8 +87,12 @@ locked or the tab is backgrounded. The **Web Audio hardware clock keeps running*
 fire while the screen is off is placed on the audio clock at session start, not
 triggered by a JS timer:
 
-- **Triple end bell** (`scheduleChime`) — ONE bell, `RANDOM_BELLS[CHIME_BELL]` (the C3,
-  `bell-2-c3`: the longest ring, 28 s, and a tone-scan-clean recording), played as recorded
+- **Triple end bell** (`scheduleChime`) — ONE bell, the chosen `END_BELLS` entry
+  (Settings → End bell, v26.10.22b): **Long** = C3 `bell-2-c3` (28 s, the default),
+  **Warm** = C3 −27¢ `bell-1-c3-flat` (22 s), **Bright** = G3 `bell-4-g3` (20 s). All three
+  were scanned for tones that are not partials of the bell (the old chime's fault): bell-1's
+  flagged 246 / 680 Hz events are beating partials present from the first second, the
+  others have none. Played as recorded
   (rate 1) at its loudness-matched gain, struck at `end`, `end+0.4`, `end+0.8`
   (`END_BELL_OFFSETS`). Each strike after the first damps the previous one to 0 over
   `CHIME_DAMP` (25 ms) landing exactly on the new onset, and stops it there: one bell rung
@@ -208,10 +217,10 @@ media element plays; every strike is a decoded `AudioBufferSourceNode` whose
 loudness match.
 
 - **Pitch changes length too.** `playbackRate` resamples, so a strike at +n semitones also
-  lasts 2^(−n/12) as long: the top of the window holds the shortest strikes. The G3 at +3
-  (18.7 s / 1.19 ≈ 15.7 s audible) read as a bell that ends early and was retired in
-  v26.10.22 (`RANDOM_RETIRED`), leaving 20 strikes in the pool (3 × 7 − 1). The shortest
-  now: G3 +2 (16.7 s audible, 17.8 s played), C3 −27¢ +3 (17.4 s), G3 +1 (17.7 s).
+  lasts 2^(−n/12) as long: the top of the window holds the shortest strikes. Any strike
+  audible (ring40 / rate) for under `MIN_RING` = 18 s reads as a bell that ends early and
+  is never struck (v26.10.22b; v26.10.22 dropped only G3 +3): G3 +1 / +2 / +3 (17.7, 16.7,
+  15.7 s) and C3 −27¢ +3 (17.4 s). 17 strikes remain; the shortest is C3 −27¢ +2 (18.4 s).
 
 - **Codec fallback (v26.10.14).** WebKit's `decodeAudioData` (AudioFileReaderCocoa.mm)
   maps FLAC to `audio/flac` and decodes it through AVFoundation, so iOS 11+ *should*
@@ -402,6 +411,7 @@ The `serveAudio` function strips the `Range` header from the cache key so the st
 | `meditation-audio-cached` | `'1'` while every bell is in the audio cache (mirror of `isAudioCached()`, re-derived on every open) |
 | `meditation-duration` | Last-used duration in minutes (preset or custom) |
 | `meditation-bell-frequency` | Bell frequency level `0` … `5` (default `3`) |
+| `meditation-end-bell` | End bell: `long` (default) \| `warm` \| `bright` |
 | `meditation-sound`, `meditation-bells` | Legacy (≤ v26.10.12b): the Sound mode and the 1 … 3 amount. Removed at init after the amount is migrated (+1); still in `DELETE_KEYS` |
 
 ---
@@ -445,7 +455,8 @@ goes *above* it (`::before`), so Begin always sits right under the timer. Below 
 **Duration**, a 3-column grid (5/10/15, then 20/25/Custom), then **Bell frequency**, the
 same grid (cross/1/2, then 3/4/5 bells; v26.10.22 — it replaced the Sound row, so the
 column grew by one button row; verified to fit at 390×844 and 360×640 with no scroll).
-The Settings page flows top to bottom with the
+Since v26.10.22b Settings (with the frequency table and End bell) fits a 390×844 phone
+but scrolls ~73 px on a 360×640 one, through the panel's own `overflow-y: auto`. The Settings page flows top to bottom with the
 same fluid gaps — no `space-between`, which used to stretch empty bands between the
 sections on a tall phone — so Delete app stays on screen. The panels keep
 `overflow-y: auto` purely as a safety net: landscape phones and very large system text
@@ -474,7 +485,14 @@ single highlight pill inside it that slides between the halves (`--p`, see above
 separate buttons.
 
 **Settings, top to bottom:** **Manual** (three short lines; keep it short — the user asked
-for less text, and an earlier version read as generated filler), **App** (a card with the app icon, name, tappable version and one status line; then the
+for less text, and an earlier version read as generated filler), **Bell frequency** (a
+table, `renderLevelTable()` from `BELL_LEVELS[].silence`: each level's glyphs and the
+measured mean silence between bells — about 80 / 36 / 15 / 6 / 2 s; no strike counts, by
+request), **End bell** (three buttons Long / Warm / Bright with their length, and **Test
+end bell**, which plays the chosen triple exactly as a session ends and becomes Stop while
+it rings; disabled during a session so it never mixes with a session's bells; picking
+another bell while testing plays the new one; the context is suspended again when the
+test ends; a change during a session re-lays that session's ending), **App** (a card with the app icon, name, tappable version and one status line; then the
 install note — which always opens with the Chrome-on-Android / Safari-on-iOS requirement —
 install + offline as one button, and Check for updates) and **Delete app** at the bottom.
 The sections sit at their natural size with fluid gaps; no stretched empty bands. All
@@ -552,6 +570,6 @@ All files have metadata stripped (`-map_metadata -1`; for MP3 sources with `-c:a
    320 kbps MP3 twin) into `resources/random/` with metadata stripped.
 2. Add an entry to `RANDOM_BELLS` in `js/app.js` (`label`, `file` without extension,
    measured `ring40`/`ring50`, `gain`) and the FLAC to `RANDOM_BELLS` in `sw.js`.
-   `CHIME_BELL` and `RANDOM_RETIRED` refer to bells by index: keep them pointing at the
+   `END_BELLS[].bell` refers to bells by index: keep it pointing at the
    right ones.
 3. Bump the version in all four places (see the top of this file).

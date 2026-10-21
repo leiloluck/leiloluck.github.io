@@ -122,9 +122,10 @@
 
   </section>
 
-  <!-- Settings, top to bottom: the manual, the app itself (icon, install + offline as one
-       button, updates), and delete at the very bottom. The inactive page is `inert`;
-       app.js flips it in showTab(). -->
+  <!-- Settings, top to bottom: the manual, what the bell frequency levels mean, the end
+       bell (choose + test), the app itself (icon, install + offline as one button,
+       updates), and delete at the very bottom. The inactive page is `inert`; app.js flips
+       it in showTab(). -->
   <section class="panel panel-settings" id="panel-settings" role="tabpanel" aria-labelledby="tab-settings" inert>
     <section class="section settings-about">
       <p class="section-label">Manual</p>
@@ -135,12 +136,30 @@
       </ul>
     </section>
 
+    <!-- What each Bell frequency button on the Meditate page means. Rows filled by
+         renderLevelTable() in app.js from BELL_LEVELS. -->
+    <section class="section">
+      <p class="section-label">Bell frequency</p>
+      <table class="freq-table">
+        <thead><tr><th scope="col">Level</th><th scope="col">Silence between bells</th></tr></thead>
+        <tbody id="level-table"></tbody>
+      </table>
+    </section>
+
+    <!-- The bell that closes every session, always struck three times. Filled by
+         renderEndBells() in app.js; Test plays it between sessions. -->
+    <section class="section">
+      <p class="section-label">End bell</p>
+      <div class="btn-group" id="end-bell-group" role="radiogroup" aria-label="End bell"></div>
+      <button class="btn btn-action" id="end-bell-test" type="button">Test end bell</button>
+    </section>
+
     <section class="section">
       <p class="section-label">App</p>
       <div class="app-card">
         <img class="app-icon" src="icons/icon-192.png?v=26.10.15" width="52" height="52" alt="">
         <div class="app-card-text">
-          <p class="app-name">Meditation Timer <button class="version" id="version" type="button" title="Check for updates">v26.10.22</button></p>
+          <p class="app-name">Meditation Timer <button class="version" id="version" type="button" title="Check for updates">v26.10.22b</button></p>
           <p class="settings-status" id="install-status">Running in the browser.</p>
         </div>
       </div>

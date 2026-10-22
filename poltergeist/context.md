@@ -172,11 +172,24 @@ This is the hard part and mirrors the proven approach in `../meditation-timer/`.
 
   Full writeup incl. sources: `knowledge/locked-screen-audio.md`. Waking the speaker
   is still the primer's job — see below.
-- **Wake primer.** ~0.6 s before each real sound, a short, quiet primer tone is
-  scheduled. This is what actually wakes a dozing BT speaker so the sound's onset
-  isn't clipped — it's brief and tied to each sound, not a continuous noise floor.
-  (Trade-off: if a specific speaker sleeps hard during a long gap, its first onset
-  after waking could be slightly soft; the primer minimises this.)
+- **Wake primer.** Bluetooth speakers put the amplifier on standby after a stretch of
+  silence (the 25 Hz keep-alive is too faint to count as signal) and take about a
+  second to come back, often with a fade-in, so the first part of the next sound is
+  lost. Until v26.10.23 the primer was a 0.13 s blip 0.6 s ahead, and on a 10 min
+  interval the 0.6 s `kitty-meow.mp3` (loud from its first sample) vanished entirely
+  while `knock.mp3` (0.6 s of leading silence, then raps for over a second) got
+  through. The primer is now a **sustained 70 Hz tone at 0.05** that starts
+  `PRIMER_LEAD` = 2.5 s before every sound and runs `PRIMER_TAIL` = 0.3 s under its
+  onset, with 0.4 s raised-cosine fades, so the speaker is fully awake at the onset
+  and is never let back to sleep in between. 70 Hz sits below what small speakers
+  reproduce well, so it registers as signal without being noticed in the room.
+  It is tied to each sound, not a continuous noise floor.
+  Immediate sounds (first hit, Play a sound now, test taps) use `immediateLead()`:
+  the full 2.6 s only when the speaker may be idle, 0.3 s while one of our sounds is
+  playing or ended under `AWAKE_HOLD` = 3 s ago. A primer that has to start late
+  enters at a whole period of the sine, so it starts at zero rather than with a click.
+  Speakers whose auto power-off switches them fully OFF after a long silence (often
+  15 to 30 min) cannot be woken by any signal; keep the interval under that.
 - **Media Session API** metadata is set so the OS treats this as active media
   playback (helps keep the session alive and shows on the lock screen). It grants no
   exemption on its own — it is metadata on top of an existing player.
@@ -410,7 +423,7 @@ that meant giving up the three things that claim the audio output.
 | MediaSession metadata + handlers | cleared | set |
 | Other app's music | keeps playing | stops |
 | Locked-screen playback | Android yes, iPhone no | yes |
-| Shade controls (Resume/Stop/Close) | none | yes |
+| Shade controls (Resume/Stop/Close) | "running" card with Stop | yes |
 
 Why each one:
 
@@ -471,9 +484,28 @@ nulled or they push the real controls out of the compact view.
 notification outright and takes Resume with it.
 
 All of this applies only while **Share the speaker** is off. With it on, `setMediaSession()`
-delegates to `clearMediaSession()` and the app deliberately has no shade entry, because
+delegates to `clearMediaSession()` and the app deliberately has no media shade entry, because
 registering one is what takes the audio focus away from the music. The in-app X is still
-the way to close; only the shade shortcut to it is gone.
+the way to close.
+
+### "Running" notification (Share the speaker on)
+
+Without a media card a running prank was invisible outside the app, with no way to stop
+it from the shade. Since v26.10.23, while a session runs with Share the speaker **on**,
+`showRunNotification()` posts a plain Notifications API card ("poltergeist.exe is
+running") through the service worker. A notification claims no audio focus, so the music
+keeps playing. Details:
+
+* One action, **Stop**. `sw.js` `notificationclick` posts `STOP_RUN` to every window and
+  the page calls `stopAnnoying()`. Tapping the card body focuses (or reopens) the app.
+* `silent: true`, so the card never dings or buzzes and gives the prank away.
+* Permission is requested on the first UNLEASH (a user gesture). Denied means no card;
+  nothing else changes. iOS only shows web notifications for home-screen installs and
+  ignores actions.
+* `syncRunNotification()` keeps exactly one card: it runs on start, stop and the Share the
+  speaker toggle, and closes this card whenever the media card is the one showing (Share
+  off). `shutdownApp()` closes it too, and every page load closes a leftover one from a
+  killed window.
 
 ---
 

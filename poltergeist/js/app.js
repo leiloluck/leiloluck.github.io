@@ -23,9 +23,9 @@
    threshold at that frequency even on big ones). See knowledge/locked-screen-
    audio.md for the full writeup, including the caveat that the exact dBFS
    numbers below are an engineering safety margin, not a verified Chromium
-   constant. A short "wake primer" tone is additionally scheduled just before
-   every real sound so a speaker that dozed off mid-gap is awake by the time the
-   sound plays.
+   constant. A sustained "wake primer" tone is additionally scheduled around
+   every real sound, from 2.5 s before it until just after it starts, so a speaker
+   that dozed off mid-gap is fully awake by the time the sound plays.
 
    Sharing the speaker with whatever is already playing:
    The point of this app is to sit UNDER someone's music, not to replace it, so by
@@ -53,7 +53,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.10.12d';
+const APP_VERSION = 'v26.10.23';
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 // Drop real files into resources/ (see resources/README.md). Until a matching file
@@ -116,8 +116,18 @@ const PRESETS = [
 
 // ── Scheduling constants ─────────────────────────────────────────────────────
 
-const PRIMER_LEAD  = 0.6;     // s — wake primer fires this long before each sound
-const FIRST_LEAD   = 0.75;    // s — an immediate sound still gets a full primer first
+// Bluetooth speakers put their amplifier on standby after a stretch of silence (the 25 Hz
+// keep-alive is too faint to count as signal) and need about a second to come back, often
+// with a fade-in, so whatever arrives first is lost. A 0.6 s meow vanished completely while
+// the knock, which starts with 0.6 s of silence and raps for over a second, got through.
+// So the primer is a sustained tone that starts PRIMER_LEAD before every sound and keeps
+// going PRIMER_TAIL into it: the speaker is awake well before the onset and is never let
+// back to sleep between the primer and the sound.
+const PRIMER_LEAD  = 2.5;     // s — wake tone starts this long before each sound
+const PRIMER_TAIL  = 0.3;     // s — and runs on this far under the sound's onset
+const FIRST_LEAD   = PRIMER_LEAD + 0.1;   // s — an immediate sound on an idle speaker
+const AWAKE_LEAD   = 0.3;     // s — an immediate sound while the speaker is still awake
+const AWAKE_HOLD   = 3;       // s after our last sound the speaker is taken to be awake
 // A frozen page's AudioContext stops rendering, so pre-scheduling cannot outlive a
 // freeze anyway; the horizon only has to cover JS being *throttled*, which is at worst
 // one wake-up a minute. Ten minutes is ample, and halving it halves the number of source
@@ -125,9 +135,10 @@ const FIRST_LEAD   = 0.75;    // s — an immediate sound still gets a full prim
 const HORIZON_SEC  = 600;     // schedule 10 min ahead
 const MAX_AHEAD    = 90;      // …but never queue more than this many hits at once
 const MIN_GAP_MS   = 1500;    // floor so randomization can't bunch sounds up
-const PRIMER_AMP   = 0.05;    // quiet BT wake blip (only fires briefly before a sound)
-const PRIMER_FREQ  = 120;     // Hz — low, felt more than heard
-const PRIMER_DUR   = 0.13;    // s
+const PRIMER_AMP   = 0.05;    // quiet BT wake tone (only runs around each sound)
+const PRIMER_FREQ  = 70;      // Hz — below what small speakers reproduce well, so it
+                              // reads as signal to the speaker but barely to the room
+const PRIMER_FADE  = 0.4;     // s — fade in / out, so the tone never thumps
 
 const HEARTBEAT_MS = 60000;   // schedule-top-up safety net (see startHeartbeat)
 
@@ -163,6 +174,7 @@ let scheduled        = [];   // { soundSrc, primerSrc, when, soundId }
 let nextHitTime      = 0;    // ctx time of the next hit still to be scheduled
 let recentIds        = [];   // most-recent-first ids of scheduled hits (anti-repeat)
 let heartbeatId      = null;
+let lastSoundEnd     = -Infinity;   // ctx time the last sound finished (see immediateLead)
 
 // ── Audio setup ──────────────────────────────────────────────────────────────
 
@@ -205,22 +217,34 @@ function ensureAudio() {
   primerGain.connect(audioCtx.destination);
 
   primerBuffer = makePrimerBuffer();
+  lastSoundEnd = -Infinity;   // a new context has a new clock
   prepareSounds();
 }
 
-// Build a short, soft, low tone used to wake a sleeping Bluetooth speaker.
+// Build the soft, low wake tone that brings a sleeping Bluetooth speaker up before a sound.
 function makePrimerBuffer() {
-  const sr  = audioCtx.sampleRate;
-  const len = Math.floor(sr * PRIMER_DUR);
-  const buf = audioCtx.createBuffer(1, len, sr);
-  const ch  = buf.getChannelData(0);
+  const sr   = audioCtx.sampleRate;
+  const len  = Math.floor(sr * (PRIMER_LEAD + PRIMER_TAIL));
+  const fade = Math.floor(sr * PRIMER_FADE);
+  const buf  = audioCtx.createBuffer(1, len, sr);
+  const ch   = buf.getChannelData(0);
   for (let i = 0; i < len; i++) {
     const t = i / sr;
-    // Hann window so the blip has no click at on/offset.
-    const env = 0.5 - 0.5 * Math.cos((2 * Math.PI * i) / (len - 1));
+    // Raised-cosine edges so the tone has no click at on/offset.
+    const edge = Math.min(i, len - 1 - i);
+    const env  = edge >= fade ? 1 : 0.5 - 0.5 * Math.cos((Math.PI * edge) / fade);
     ch[i] = Math.sin(2 * Math.PI * PRIMER_FREQ * t) * env;
   }
   return buf;
+}
+
+// Lead time for a sound that should play "now" (first hit, Play a sound now, test taps).
+// The full wake lead only when the speaker may have dozed off; while something of ours is
+// playing, or only just stopped, it is awake and a 2.6 s wait would make taps feel dead.
+function immediateLead() {
+  const now = audioCtx.currentTime;
+  const busy = scheduled.some(e => e.when - PRIMER_LEAD <= now);
+  return busy || now - lastSoundEnd < AWAKE_HOLD ? AWAKE_LEAD : FIRST_LEAD;
 }
 
 // Synthesize a stand-in for every sound immediately, then try to replace each with
@@ -451,14 +475,17 @@ function pickNextSound(list) {
 function scheduleHit(sound, when) {
   const now = audioCtx.currentTime;
 
-  // Wake primer just before the sound (skip if there isn't room before `when`).
+  // Wake tone from PRIMER_LEAD before the sound until PRIMER_TAIL into it. With less room
+  // than that (an immediate sound) it starts part-way in, at a whole period so the sine
+  // enters at zero instead of with a click.
   let primerSrc = null;
   const primerAt = when - PRIMER_LEAD;
-  if (primerAt > now) {
+  const skip = Math.max(0, Math.ceil((now - primerAt) * PRIMER_FREQ) / PRIMER_FREQ);
+  if (skip < PRIMER_LEAD) {
     primerSrc = audioCtx.createBufferSource();
     primerSrc.buffer = primerBuffer;
     primerSrc.connect(primerGain);
-    primerSrc.start(primerAt);
+    primerSrc.start(primerAt + skip, skip);
   }
 
   const soundSrc = audioCtx.createBufferSource();
@@ -468,6 +495,7 @@ function scheduleHit(sound, when) {
 
   const entry = { soundSrc, primerSrc, when, soundId: sound.id };
   soundSrc.onended = () => {
+    if (audioCtx) lastSoundEnd = audioCtx.currentTime;
     scheduled = scheduled.filter(e => e !== entry);
     fillSchedule();   // top up as each one completes (foreground)
   };
@@ -575,6 +603,7 @@ function startAnnoying() {
   clearScheduled();
   startKeepAlive();
   setMediaSession();
+  syncRunNotification();
 
   if (startWithSound) {
     // Fire one sound right away (confirms it works / lets you gauge the volume).
@@ -582,7 +611,7 @@ function startAnnoying() {
     // Far enough out to leave room for the wake primer. The Bluetooth speaker has been
     // idle up to this point, so this is the hit that most needs waking — and it was the
     // one hit that never got a primer at all.
-    const firstWhen = audioCtx.currentTime + FIRST_LEAD;
+    const firstWhen = audioCtx.currentTime + immediateLead();
     const entry     = scheduleHit(first, firstWhen);
     if (entry) entry.fired = true;      // flashed right here; don't flash again on the tick
     onFiredVisible(first);
@@ -618,6 +647,7 @@ function stopAnnoying() {
 
   setLaunchBtn();
   setMediaSession();          // flip the shade to Resume
+  syncRunNotification();      // nothing is running any more: drop the "running" card
   elHeroStatus.textContent = 'stopped, no sounds';
   elHeroSub.textContent = '';
   setHeroIdleArt();
@@ -650,6 +680,7 @@ function shutdownApp() {
 
   // Drop the lock-screen controls, or the media notification outlives the app.
   clearMediaSession();
+  closeRunNotification();
 
   // Release the keep-alive element and the blob: URL backing it.
   releaseKeepAliveEl();
@@ -752,7 +783,8 @@ function previewSound(sound, btn) {
   ensureAudio();
   audioCtx.resume();
   startKeepAlive();
-  const entry = scheduleHit(sound, audioCtx.currentTime + FIRST_LEAD);
+  const lead  = immediateLead();
+  const entry = scheduleHit(sound, audioCtx.currentTime + lead);
   if (entry) entry.fired = true;
   onFiredVisible(sound);
 
@@ -766,7 +798,8 @@ function previewSound(sound, btn) {
   // Drop the keep-alive shortly after the preview so we don't hold the session open
   // when the app isn't actually running.
   clearTimeout(previewStopTimer);
-  previewStopTimer = setTimeout(() => { if (!running) stopKeepAlive(); }, 2500);
+  const doneMs = (lead + (sound.buffer?.duration ?? 1)) * 1000 + 1000;
+  previewStopTimer = setTimeout(() => { if (!running) stopKeepAlive(); }, doneMs);
 }
 
 // ── Media Session ────────────────────────────────────────────────────────────
@@ -827,6 +860,53 @@ function updateMediaSessionState() {
   // Nothing here is seekable; leaving these bound would put dead scrub buttons in the
   // shade and push the ones that matter off the compact view.
   ['seekbackward', 'seekforward', 'seekto', 'previoustrack', 'nexttrack'].forEach(a => set(a, null));
+}
+
+// ── "Running" notification ───────────────────────────────────────────────────
+//
+// With Share the speaker on there is deliberately no media card (registering one takes
+// the audio focus away from the music), which left a running prank invisible outside the
+// app and no way to stop it from the shade. A plain Notifications API card fills that gap:
+// it claims no audio focus at all, so the music keeps playing. It carries one action,
+// Stop, handled in sw.js (notificationclick), which messages this page to stopAnnoying().
+// silent: the card must never ding or buzz and give the prank away.
+// With Share the speaker off the media card already shows state and Stop, so this one is
+// closed rather than doubling it.
+const RUN_NOTE_TAG = 'poltergeist-running';
+
+function syncRunNotification() {
+  if (running && mixWithMedia) showRunNotification();
+  else closeRunNotification();
+}
+
+async function showRunNotification() {
+  if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
+  try {
+    // Asked on the first UNLEASH, which is a user gesture, so the prompt is allowed.
+    if (Notification.permission === 'default') await Notification.requestPermission();
+    if (Notification.permission !== 'granted') return;
+    const reg = await navigator.serviceWorker.ready;
+    if (!running || !mixWithMedia) return;   // stopped while the prompt was open
+    await reg.showNotification('poltergeist.exe is running', {
+      body: 'Sounds at random intervals. Tap Stop to end the prank.',
+      tag: RUN_NOTE_TAG,
+      icon: './icons/icon-192.png',
+      silent: true,
+      requireInteraction: true,
+      actions: [{ action: 'stop', title: 'Stop' }],
+    });
+    // Stop was tapped during the await above: showNotification resolved after the close.
+    if (!running || !mixWithMedia) closeRunNotification();
+  } catch {}
+}
+
+async function closeRunNotification() {
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    const reg = await navigator.serviceWorker.getRegistration();
+    if (!reg || !reg.getNotifications) return;
+    (await reg.getNotifications({ tag: RUN_NOTE_TAG })).forEach(n => n.close());
+  } catch {}
 }
 
 // ── Synthesized stand-in sounds ──────────────────────────────────────────────
@@ -1517,6 +1597,7 @@ elMixToggle.addEventListener('click', () => {
   if (running) {
     startKeepAlive();
     setMediaSession();
+    syncRunNotification();    // one card at a time: the media card or the "running" one
   } else if (mixWithMedia) {
     releaseKeepAliveEl();
     clearMediaSession();
@@ -1533,9 +1614,10 @@ function skipNow() {
   const list = getArmedSounds();
   if (!list.length) return;
   audioCtx.resume();
+  const lead = immediateLead();   // before clearScheduled(), which hides a playing sound
   clearScheduled();
   const s = pickNextSound(list);
-  const when = audioCtx.currentTime + FIRST_LEAD;   // room for the wake primer
+  const when = audioCtx.currentTime + lead;         // room for the wake primer
   const entry = scheduleHit(s, when);
   if (entry) entry.fired = true;
   onFiredVisible(s);
@@ -2241,6 +2323,13 @@ function noteUpdateReady(reg) {
 if ('serviceWorker' in navigator) {
   const hadController = !!navigator.serviceWorker.controller;
   let reloading = false;
+
+  // The Stop button on the "running" notification (sw.js notificationclick).
+  navigator.serviceWorker.addEventListener('message', e => {
+    if (e.data && e.data.type === 'STOP_RUN') stopAnnoying();
+  });
+  // A fresh page is never running, so a card left behind by a killed window is stale.
+  closeRunNotification();
 
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     // !hadController = the very first worker claiming a fresh page; there is no newer

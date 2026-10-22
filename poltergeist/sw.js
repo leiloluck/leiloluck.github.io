@@ -34,7 +34,7 @@
 
 'use strict';
 
-const VERSION      = 'v26.10.12d';
+const VERSION      = 'v26.10.23';
 const CACHE_PREFIX = 'poltergeist-';           // never touch caches outside this prefix
 const CACHE        = CACHE_PREFIX + VERSION;
 const AUDIO_CACHE  = CACHE_PREFIX + 'sounds';    // unversioned on purpose — see header
@@ -167,4 +167,20 @@ self.addEventListener('message', event => {
   if (type === 'GET_VERSION' && event.ports && event.ports[0]) {
     event.ports[0].postMessage({ version: VERSION, cache: CACHE });
   }
+});
+
+// The "running" notification (js/app.js showRunNotification). Stop messages every open
+// window of this app, which calls stopAnnoying(); tapping the card itself brings the app
+// to the front. No window left (it was killed) means nothing is playing: just close.
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  event.waitUntil((async () => {
+    const wins = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    if (event.action === 'stop') {
+      wins.forEach(c => c.postMessage({ type: 'STOP_RUN' }));
+      return;
+    }
+    if (wins.length) return wins[0].focus();
+    return self.clients.openWindow('./');
+  })());
 });

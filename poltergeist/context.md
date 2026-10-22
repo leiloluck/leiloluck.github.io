@@ -178,18 +178,31 @@ This is the hard part and mirrors the proven approach in `../meditation-timer/`.
   lost. Until v26.10.23 the primer was a 0.13 s blip 0.6 s ahead, and on a 10 min
   interval the 0.6 s `kitty-meow.mp3` (loud from its first sample) vanished entirely
   while `knock.mp3` (0.6 s of leading silence, then raps for over a second) got
-  through. The primer is now a **sustained 70 Hz tone at 0.05** that starts
+  through. The primer is now a **sustained 40 Hz tone at 0.01 (-40 dBFS)** that starts
   `PRIMER_LEAD` = 2.5 s before every sound and runs `PRIMER_TAIL` = 0.3 s under its
   onset, with 0.4 s raised-cosine fades, so the speaker is fully awake at the onset
-  and is never let back to sleep in between. 70 Hz sits below what small speakers
-  reproduce well, so it registers as signal without being noticed in the room.
+  and is never let back to sleep in between.
+  **It must be genuinely inaudible** (owner's requirement: no hum before a sound gives
+  the prank away). Hearing at 40 Hz only starts around 51 dB SPL (ISO 226), so even a
+  speaker that reproduced 40 Hz flat at full volume (~90 dB SPL for full scale) puts
+  this tone below threshold, and portable speakers reproduce 40 Hz far worse than flat.
+  To the speaker's electronics it is still plainly non-zero, which is all that waking
+  needs. v26.10.23 briefly shipped 70 Hz at 0.05: 14 dB louder, and in a range bigger
+  speakers do reproduce, i.e. a faint audible hum. Do not raise either value.
   It is tied to each sound, not a continuous noise floor.
   Immediate sounds (first hit, Play a sound now, test taps) use `immediateLead()`:
   the full 2.6 s only when the speaker may be idle, 0.3 s while one of our sounds is
   playing or ended under `AWAKE_HOLD` = 3 s ago. A primer that has to start late
   enters at a whole period of the sine, so it starts at zero rather than with a click.
-  Speakers whose auto power-off switches them fully OFF after a long silence (often
-  15 to 30 min) cannot be woken by any signal; keep the interval under that.
+- **Anti-auto-off nudges.** Speakers also switch themselves fully OFF after some
+  minutes with no audio (the owner's does at 15 min), and an OFF speaker cannot be woken
+  by anything. Digital silence counts as no audio, so a "silent sound" would not help:
+  `planNudges()` plays the same inaudible primer tone wherever the stretch between wake
+  signals (each hit's own primer counts) would exceed `NUDGE_EVERY` = 300 s, planned out
+  to the horizon with the hits and stopped with them. Five minutes, not fifteen, so the
+  nudge lands well before the shortest common auto-off timers rather than on them.
+  `rescheduleFromNow()` and `skipNow()` reset `lastWake` from what really played, so a
+  dropped plan cannot leave a longer gap.
 - **Media Session API** metadata is set so the OS treats this as active media
   playback (helps keep the session alive and shows on the lock screen). It grants no
   exemption on its own — it is metadata on top of an existing player.

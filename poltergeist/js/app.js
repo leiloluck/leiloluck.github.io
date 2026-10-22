@@ -53,7 +53,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.10.23';
+const APP_VERSION = 'v26.10.23a';
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 // Drop real files into resources/ (see resources/README.md). Until a matching file
@@ -135,10 +135,20 @@ const AWAKE_HOLD   = 3;       // s after our last sound the speaker is taken to 
 const HORIZON_SEC  = 600;     // schedule 10 min ahead
 const MAX_AHEAD    = 90;      // …but never queue more than this many hits at once
 const MIN_GAP_MS   = 1500;    // floor so randomization can't bunch sounds up
-const PRIMER_AMP   = 0.05;    // quiet BT wake tone (only runs around each sound)
-const PRIMER_FREQ  = 70;      // Hz — below what small speakers reproduce well, so it
-                              // reads as signal to the speaker but barely to the room
+// The wake tone must be genuinely inaudible, not just quiet. 40 Hz at 0.01 is -40 dBFS:
+// hearing at 40 Hz only starts around 51 dB SPL (ISO 226), so even a speaker that played
+// 40 Hz flat at full volume (~90 dB SPL for full scale) would land below the threshold,
+// and portable speakers reproduce 40 Hz far worse than flat. To the speaker's electronics
+// it is still plainly non-zero, which is all that waking it needs. (v26.10.23 shipped
+// 70 Hz at 0.05, 14 dB louder and in a range bigger speakers do reproduce: a faint hum.)
+const PRIMER_AMP   = 0.01;    // -40 dBFS
+const PRIMER_FREQ  = 40;      // Hz
 const PRIMER_FADE  = 0.4;     // s — fade in / out, so the tone never thumps
+// Speakers also switch themselves fully OFF after some minutes with no audio (often 15 to
+// 30), and a switched-off speaker cannot be woken by anything. Digital silence counts as
+// no audio, so during long gaps the same inaudible tone is played as a nudge, often enough
+// that no stretch without signal ever reaches the shortest common auto-off timers.
+const NUDGE_EVERY  = 300;     // s — longest stretch without any wake signal
 
 const HEARTBEAT_MS = 60000;   // schedule-top-up safety net (see startHeartbeat)
 
@@ -175,6 +185,9 @@ let nextHitTime      = 0;    // ctx time of the next hit still to be scheduled
 let recentIds        = [];   // most-recent-first ids of scheduled hits (anti-repeat)
 let heartbeatId      = null;
 let lastSoundEnd     = -Infinity;   // ctx time the last sound finished (see immediateLead)
+let nudges           = [];   // { src, when } anti-auto-off wake tones (see planNudges)
+let lastWake         = 0;    // ctx time of the latest wake signal planned so far
+let runStartedAt     = 0;    // ctx time of UNLEASH: the speaker was awake then
 
 // ── Audio setup ──────────────────────────────────────────────────────────────
 
@@ -243,7 +256,8 @@ function makePrimerBuffer() {
 // playing, or only just stopped, it is awake and a 2.6 s wait would make taps feel dead.
 function immediateLead() {
   const now = audioCtx.currentTime;
-  const busy = scheduled.some(e => e.when - PRIMER_LEAD <= now);
+  const busy = scheduled.some(e => e.when - PRIMER_LEAD <= now)
+            || nudges.some(n => n.when <= now && now < n.when + PRIMER_LEAD + PRIMER_TAIL);
   return busy || now - lastSoundEnd < AWAKE_HOLD ? AWAKE_LEAD : FIRST_LEAD;
 }
 
@@ -529,6 +543,45 @@ function fillSchedule() {
     rememberPick(sound.id);
     nextHitTime += computeGapMs(sound) / 1000;
   }
+  planNudges();
+}
+
+// Anti-auto-off nudges: a wake tone wherever the gap between wake signals (each hit's own
+// primer counts as one) would otherwise exceed NUDGE_EVERY, planned out to the horizon.
+// lastWake carries over between fills, so each fill only plans the stretch after it.
+function planNudges() {
+  const now = audioCtx.currentTime;
+  nudges = nudges.filter(n => n.when > now - 60);
+  // After a freeze lastWake can be far behind: nudge once now, not once per missed slot.
+  if (lastWake < now - NUDGE_EVERY) lastWake = now - NUDGE_EVERY;
+  const primers = scheduled.map(e => e.when - PRIMER_LEAD).filter(t => t > lastWake);
+  const horizon = now + HORIZON_SEC;
+  for (const t of [...primers, horizon]) {
+    while (t - lastWake > NUDGE_EVERY) {
+      lastWake += NUDGE_EVERY;
+      scheduleNudge(lastWake);
+    }
+    if (t !== horizon) lastWake = Math.max(lastWake, t);
+  }
+}
+
+function scheduleNudge(at) {
+  const src = audioCtx.createBufferSource();
+  src.buffer = primerBuffer;
+  src.connect(primerGain);
+  const when = Math.max(at, audioCtx.currentTime + 0.05);
+  src.start(when);
+  nudges.push({ src, when });
+}
+
+// Stop every nudge that starts after `after` (all of them by default).
+function dropNudges(after = -Infinity) {
+  nudges = nudges.filter(n => {
+    if (n.when <= after) return true;
+    try { n.src.stop(); } catch {}
+    try { n.src.disconnect(); } catch {}
+    return false;
+  });
 }
 
 // Drop every hit that has not started yet and rebuild the horizon from the current
@@ -549,6 +602,12 @@ function rescheduleFromNow() {
     });
   });
   scheduled = keep;
+  // Future nudges were planned around the dropped hits. Replan from the last wake signal
+  // that really happened, or a gap could run past NUDGE_EVERY. Erring older only makes
+  // the next nudge come sooner.
+  dropNudges(now);
+  lastWake = Math.max(runStartedAt, lastSoundEnd,
+                      ...nudges.map(n => n.when), ...keep.map(e => e.when - PRIMER_LEAD));
   // The hits we just dropped never made a sound, so they must not count as "recently
   // played" — otherwise toggling a sound mid-session bans clips the listener never heard.
   // `keep` is in ascending time order, so the tail is the most recent.
@@ -561,6 +620,7 @@ function rescheduleFromNow() {
 }
 
 function clearScheduled() {
+  dropNudges();
   scheduled.forEach(e => {
     [e.soundSrc, e.primerSrc].forEach(s => {
       if (!s) return;
@@ -601,6 +661,7 @@ function startAnnoying() {
   closing = false;
   recentIds = [];
   clearScheduled();
+  runStartedAt = lastWake = audioCtx.currentTime;
   startKeepAlive();
   setMediaSession();
   syncRunNotification();
@@ -1616,6 +1677,7 @@ function skipNow() {
   audioCtx.resume();
   const lead = immediateLead();   // before clearScheduled(), which hides a playing sound
   clearScheduled();
+  lastWake = audioCtx.currentTime;  // the planned nudges are gone; this sound wakes it now
   const s = pickNextSound(list);
   const when = audioCtx.currentTime + lead;         // room for the wake primer
   const entry = scheduleHit(s, when);

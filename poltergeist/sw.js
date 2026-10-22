@@ -34,7 +34,7 @@
 
 'use strict';
 
-const VERSION      = 'v26.10.23';
+const VERSION      = 'v26.10.23a';
 const CACHE_PREFIX = 'poltergeist-';           // never touch caches outside this prefix
 const CACHE        = CACHE_PREFIX + VERSION;
 const AUDIO_CACHE  = CACHE_PREFIX + 'sounds';    // unversioned on purpose — see header

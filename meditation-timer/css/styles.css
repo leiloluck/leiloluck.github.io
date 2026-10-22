@@ -859,6 +859,18 @@ body.paused .countdown { color: var(--muted); }
 
 .freq-stop.on { background: var(--accent); }
 
+/* The default point (15 s): a thin vertical line through the track, under its dot. */
+.freq-default {
+  position: absolute;
+  top: 50%;
+  width: 2px;
+  height: 18px;
+  margin: -9px 0 0 -1px;
+  border-radius: 1px;
+  background: var(--muted);
+  opacity: 0.75;
+}
+
 .freq-thumb {
   position: absolute;
   top: 50%;

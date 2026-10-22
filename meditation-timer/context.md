@@ -24,7 +24,7 @@ silence between bells); the end bell is selectable (Long / Warm / Bright, always
 strikes) with a Test button; every strike audible for under 18 s is dropped from sessions
 (`MIN_RING`).
 
-**Version:** v26.10.22d (format `vYY.MM.DD` — year.month.day; bump on every change, in
+**Version:** v26.10.22e (format `vYY.MM.DD` — year.month.day; bump on every change, in
 lockstep across `index.html`, `sw.js` `VERSION`, `js/app.js` `APP_VERSION` and this file).
 
 ---
@@ -529,6 +529,8 @@ prototype in `resources/bells.html` → "Slider", with "On release" snapping.
   text ("Average wait 15 s" / "Wait 15 s" per Bell behavior, or "No bells, only the end
   bell"). Under the track: each point's wait in light gray (✕, 60 s … 3 s), the current
   one brighter. Points up to the current one are lit gold.
+- The default point (`DEFAULT_LEVEL`, 15 s) carries a thin vertical line through the track
+  (`.freq-default`, muted, under its dot and the thumb; v26.10.22e).
 - Dragging: the thumb follows the pointer continuously and the readout previews the
   nearest level; nothing is committed. On release the thumb glides (240 ms, slight
   overshoot easing, `.anim`) to the nearest point and `setBellLevel` commits it — so a

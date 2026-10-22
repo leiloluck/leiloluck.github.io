@@ -13,7 +13,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.10.22d';   // format vYY.MM.DD — keep in lockstep with sw.js + index.html
+const APP_VERSION = 'v26.10.22e';   // format vYY.MM.DD — keep in lockstep with sw.js + index.html
 
 const PAUSE_FADE_OUT = 2;    // user-initiated stop/pause: each sounding bell fades over this
 
@@ -257,12 +257,13 @@ const BELL_LEVELS = [
   { id: 4, label: 'Frequent bells',      wait: 8,  floor: 4,  mean: 4.3, maxgap: 44,  minGap: 1 },
   { id: 5, label: 'Very frequent bells', wait: 3,  floor: 1,  mean: 2,   maxgap: 36,  minGap: 1 },
 ];
-let bellLevel = 3;   // id of the chosen entry; restored from localStorage at init
+const DEFAULT_LEVEL = 3;        // 15 s; marked on the slider
+let bellLevel = DEFAULT_LEVEL;  // id of the chosen entry; restored from localStorage at init
 
 let bellMode  = 'random';   // Settings → Bell behavior: 'random' | 'fixed'
 
 function currentLevel() {
-  return BELL_LEVELS.find(l => l.id === bellLevel) || BELL_LEVELS[3];
+  return BELL_LEVELS.find(l => l.id === bellLevel) || BELL_LEVELS[DEFAULT_LEVEL];
 }
 
 const RANDOM_POOL = [];
@@ -1162,8 +1163,14 @@ function levelWaitText(id) {
 }
 
 // Stops on the track and their light-gray wait labels, once; then the pointer and key
-// handlers.
+// handlers. A thin vertical line through the default point (DEFAULT_LEVEL, 15 s) marks
+// it; it sits under that point's dot and the thumb.
 function buildLevelSlider() {
+  const mark = document.createElement('span');
+  mark.className = 'freq-default';
+  mark.style.left = (DEFAULT_LEVEL / LEVEL_LAST * 100) + '%';
+  mark.title = 'Default';
+  elLevelTrack.appendChild(mark);
   BELL_LEVELS.forEach((l, i) => {
     const dot = document.createElement('span');
     dot.className = 'freq-stop';

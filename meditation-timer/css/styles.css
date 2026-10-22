@@ -600,10 +600,8 @@ body.paused .countdown { color: var(--muted); }
   width: 100%;
 }
 
-/* Three across: 5 / 10 / 15, then 20 / 25 / Custom. Two rows instead of three. The bell
-   frequency grid matches it: none / 1 / 2, then 3 / 4 / 5. */
-#duration-group,
-#level-group    { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+/* Three across: 5 / 10 / 15, then 20 / 25 / Custom. Two rows instead of three. */
+#duration-group { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 /* Settings → Bell behavior: Random / Fixed side by side. */
 #mode-group     { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
@@ -779,22 +777,130 @@ body.paused .countdown { color: var(--muted); }
   font-family: var(--sans);
 }
 
-/* Bell frequency: a cross, or one to five bell glyphs per button. The count is the label
-   (aria-label carries the words), so no text and no sub-line. Same height as the
-   duration buttons. Glyphs shrink so five always fit across a third of a phone. */
-.btn-amount {
+/* Bell frequency slider (Meditate page, v26.10.22d; it replaced six buttons). Readout
+   above (the level's bells, popping when the level changes, and its wait), the track with
+   six points, and each point's wait in light gray under it. The thumb follows the finger
+   while dragging and glides to the nearest point on release (.anim). About the height of
+   the two button rows it replaced. */
+.freq-readout {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 1px;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: clamp(22px, 3.6svh, 30px);
 }
 
-.btn-amount svg {
-  width: min(clamp(14px, 2.5svh, 20px), 19%);
-  aspect-ratio: 1;
-  height: auto;
-  flex: none;
+.freq-now {
+  display: flex;
+  gap: 2px;
+  color: var(--accent);
+  transform-origin: left center;
+}
+
+.freq-now svg {
+  width: clamp(16px, 2.6svh, 20px);
+  height: clamp(16px, 2.6svh, 20px);
   fill: currentColor;
+}
+
+.freq-now.pop { animation: freq-pop 260ms cubic-bezier(.3, 1.6, .5, 1); }
+
+@keyframes freq-pop {
+  0%   { transform: scale(0.82); opacity: 0.55; }
+  100% { transform: scale(1);    opacity: 1; }
+}
+
+.freq-wait {
+  color: var(--muted);
+  font-size: clamp(11.5px, 1.8svh, 13px);
+  text-align: right;
+}
+
+/* touch-action: none — a horizontal drag here moves the slider, never the page (and the
+   pager's swipe handler ignores pointers that start on it). */
+.freq-slider {
+  position: relative;
+  height: clamp(34px, 5.4svh, 44px);
+  touch-action: none;
+  cursor: pointer;
+  outline: none;
+}
+
+.freq-track {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 50%;
+  height: 4px;
+  margin-top: -2px;
+  border-radius: 2px;
+  background: var(--border);
+}
+
+.freq-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 2px;
+  background: var(--accent);
+  opacity: 0.75;
+}
+
+.freq-stop {
+  position: absolute;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  background: var(--border);
+}
+
+.freq-stop.on { background: var(--accent); }
+
+.freq-thumb {
+  position: absolute;
+  top: 50%;
+  width: 24px;
+  height: 24px;
+  margin: -12px 0 0 -12px;
+  border-radius: 50%;
+  background: #ecd09a;
+  border: 2px solid var(--bg);
+  box-shadow: 0 0 0 1px var(--accent), 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.freq-slider:focus-visible .freq-thumb {
+  box-shadow: 0 0 0 1px var(--accent), 0 0 0 4px rgba(217, 174, 104, 0.35);
+}
+
+.freq-slider.anim .freq-thumb,
+.freq-slider.anim .freq-fill {
+  transition: left 240ms cubic-bezier(.2, .9, .3, 1.15), width 240ms cubic-bezier(.2, .9, .3, 1.15);
+}
+
+.freq-ticks {
+  position: relative;
+  height: clamp(15px, 2.4svh, 18px);
+  margin: 0 12px;
+}
+
+.freq-ticks span {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: clamp(10.5px, 1.6svh, 11.5px);
+  color: var(--muted);
+  opacity: 0.8;
+  white-space: nowrap;
+}
+
+.freq-ticks span.on { color: var(--text); opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .freq-now.pop { animation: none; }
+  .freq-slider.anim .freq-thumb,
+  .freq-slider.anim .freq-fill { transition: none; }
 }
 
 /* Settings → Bell frequency: what each level means. The glyphs repeat the Meditate page's

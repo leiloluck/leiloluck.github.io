@@ -113,13 +113,22 @@
     <div class="btn-group" id="duration-group"></div>
   </section>
 
-  <!-- Bell frequency: a cross (no bells), then one to five bells; more bells means a
-       shorter wait between strikes. Filled by renderLevels() in app.js, which also sets
-       the label: "Random bell frequency", or "Bell frequency" when Settings -> Bell
-       behavior is Fixed. -->
+  <!-- Bell frequency: a slider with six points, none then one to five bells; more bells
+       means a shorter wait between strikes. Above it the level's bells and its wait, under
+       it each point's wait in light gray. Built by buildLevelSlider() and kept current by
+       renderLevels() in app.js, which also sets the words: "Random bell frequency" /
+       "Average wait", or "Bell frequency" / "Wait" when Settings -> Bell behavior is Fixed. -->
   <section class="section">
     <p class="section-label" id="level-label">Random bell frequency</p>
-    <div class="btn-group" id="level-group" role="radiogroup" aria-label="Bell frequency"></div>
+    <div class="freq-readout">
+      <div class="freq-now" id="level-glyphs" aria-hidden="true"></div>
+      <div class="freq-wait" id="level-wait"></div>
+    </div>
+    <div class="freq-slider" id="level-slider" role="slider" tabindex="0" aria-label="Bell frequency" aria-valuemin="0" aria-valuemax="5">
+      <div class="freq-track" id="level-track"><div class="freq-fill" id="level-fill"></div></div>
+      <div class="freq-thumb" id="level-thumb"></div>
+    </div>
+    <div class="freq-ticks" id="level-ticks" aria-hidden="true"></div>
   </section>
 
   </section>
@@ -160,7 +169,7 @@
       <div class="app-card">
         <img class="app-icon" src="icons/icon-192.png?v=26.10.15" width="52" height="52" alt="">
         <div class="app-card-text">
-          <p class="app-name">Meditation Timer <button class="version" id="version" type="button" title="Check for updates">v26.10.22c</button></p>
+          <p class="app-name">Meditation Timer <button class="version" id="version" type="button" title="Check for updates">v26.10.22d</button></p>
           <p class="settings-status" id="install-status">Running in the browser.</p>
         </div>
       </div>

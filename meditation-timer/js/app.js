@@ -13,7 +13,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.10.22c';   // format vYY.MM.DD — keep in lockstep with sw.js + index.html
+const APP_VERSION = 'v26.10.22d';   // format vYY.MM.DD — keep in lockstep with sw.js + index.html
 
 const PAUSE_FADE_OUT = 2;    // user-initiated stop/pause: each sounding bell fades over this
 
@@ -1012,7 +1012,13 @@ const elDurationLabel = document.getElementById('duration-label');
 const elStatus        = document.getElementById('status');
 const elPlayBtn       = document.getElementById('btn-play');
 const elResetBtn      = document.getElementById('btn-reset');
-const elLevelGroup    = document.getElementById('level-group');
+const elLevelSlider   = document.getElementById('level-slider');
+const elLevelTrack    = document.getElementById('level-track');
+const elLevelFill     = document.getElementById('level-fill');
+const elLevelThumb    = document.getElementById('level-thumb');
+const elLevelTicks    = document.getElementById('level-ticks');
+const elLevelGlyphs   = document.getElementById('level-glyphs');
+const elLevelWait     = document.getElementById('level-wait');
 const elLevelTable    = document.getElementById('level-table');
 const elLevelLabel    = document.getElementById('level-label');
 const elLevelWaitHead = document.getElementById('level-wait-head');
@@ -1131,37 +1137,123 @@ function resetUI() {
 }
 
 // ── Bell frequency (Meditate page) ───────────────────────────────────────────
-// Six buttons: a cross (no bells), then one to five bell glyphs — more bells = a shorter
-// wait between strikes. The words live in aria-label only. A change applies at once: a
-// running session re-samples what is still to come (setBellLevel), and the bell that is
-// ringing is never touched.
+// A slider with six points (v26.10.22d, chosen from the prototype in resources/bells.html;
+// it replaced six buttons): none, then one to five bells — more bells = a shorter wait
+// between strikes. While dragging, the thumb follows the finger and the readout (bells,
+// popping as a level is passed, and the wait) previews the nearest level; on release the
+// thumb glides to that point and the level is committed. Only the commit touches the
+// session: a running session re-samples what is still to come (setBellLevel), and the
+// bell that is ringing is never touched. Tapping the track jumps to the nearest point;
+// arrow keys / Home / End step through them.
 
 const BELL_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6a1.2 1.2 0 0 1 1.2 1.2v.5a6.3 6.3 0 0 1 5 6.2v3.7l1.8 2.7c.4.7 0 1.5-.8 1.5H4.8c-.8 0-1.2-.8-.8-1.5L5.8 14v-3.5a6.3 6.3 0 0 1 5-6.2v-.5A1.2 1.2 0 0 1 12 2.6z"/><circle cx="12" cy="20.2" r="1.9"/></svg>';
 const NONE_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
 
+const LEVEL_LAST = BELL_LEVELS.length - 1;
+let levelShown  = -1;      // the level the readout shows (previews the drag; -1 = not yet)
+let levelDrag   = false;   // a finger / mouse is dragging the thumb
+
 // The words follow Settings → Bell behavior: "Random bell frequency" / "Average wait"
 // in Random mode, "Bell frequency" / "Wait" in Fixed mode.
-function renderLevels() {
-  elLevelLabel.textContent = bellMode === 'fixed' ? 'Bell frequency' : 'Random bell frequency';
-  elLevelGroup.innerHTML = '';
-  BELL_LEVELS.forEach(l => {
-    const btn = document.createElement('button');
-    btn.className = 'btn btn-amount' + (l.id === bellLevel ? ' selected' : '');
-    btn.type = 'button';
-    btn.setAttribute('role', 'radio');
-    btn.setAttribute('aria-checked', l.id === bellLevel ? 'true' : 'false');
-    btn.setAttribute('aria-label', l.label);
-    btn.innerHTML = l.id ? BELL_SVG.repeat(l.id) : NONE_SVG;
-    btn.addEventListener('click', () => setBellLevel(l.id));
-    elLevelGroup.appendChild(btn);
+function levelWaitText(id) {
+  const l = BELL_LEVELS[id];
+  if (!l.wait) return 'No bells, only the end bell';
+  return (bellMode === 'fixed' ? 'Wait ' : 'Average wait ') + l.wait + ' s';
+}
+
+// Stops on the track and their light-gray wait labels, once; then the pointer and key
+// handlers.
+function buildLevelSlider() {
+  BELL_LEVELS.forEach((l, i) => {
+    const dot = document.createElement('span');
+    dot.className = 'freq-stop';
+    dot.style.left = (i / LEVEL_LAST * 100) + '%';
+    elLevelTrack.appendChild(dot);
+    const tick = document.createElement('span');
+    tick.style.left = (i / LEVEL_LAST * 100) + '%';
+    tick.innerHTML = l.wait ? `${l.wait} s` : '&#x2715;';
+    elLevelTicks.appendChild(tick);
   });
+
+  // Pointer x → slider position in level units (0 … LEVEL_LAST), continuous.
+  const toPos = x => {
+    const r = elLevelTrack.getBoundingClientRect();
+    return Math.max(0, Math.min(LEVEL_LAST, (x - r.left) / r.width * LEVEL_LAST));
+  };
+  let moved = false, x0 = 0, pos = 0;
+  elLevelSlider.addEventListener('pointerdown', e => {
+    if (!e.isPrimary) return;
+    levelDrag = true; moved = false; x0 = e.clientX; pos = bellLevel;
+    try { elLevelSlider.setPointerCapture(e.pointerId); } catch {}
+  });
+  elLevelSlider.addEventListener('pointermove', e => {
+    if (!levelDrag) return;
+    if (!moved && Math.abs(e.clientX - x0) < 4) return;
+    moved = true;
+    pos = toPos(e.clientX);
+    placeLevelThumb(pos, false);
+    showLevel(Math.round(pos));
+  });
+  const release = (e, commit) => {
+    if (!levelDrag) return;
+    levelDrag = false;
+    // A tap jumps to the nearest point, a drag glides to where it was let go; a cancelled
+    // gesture (the OS took the pointer) goes back to the committed level.
+    const target = !commit ? bellLevel : Math.round(moved ? pos : toPos(e.clientX));
+    if (target === bellLevel) renderLevels(true);
+    else setBellLevel(target);
+  };
+  elLevelSlider.addEventListener('pointerup', e => release(e, true));
+  elLevelSlider.addEventListener('pointercancel', e => release(e, false));
+  elLevelSlider.addEventListener('keydown', e => {
+    const step = { ArrowLeft: -1, ArrowDown: -1, ArrowRight: 1, ArrowUp: 1 }[e.key];
+    let t = null;
+    if (step) t = Math.max(0, Math.min(LEVEL_LAST, bellLevel + step));
+    if (e.key === 'Home') t = 0;
+    if (e.key === 'End') t = LEVEL_LAST;
+    if (t === null) return;
+    e.preventDefault();
+    e.stopPropagation();    // never also a tab switch
+    setBellLevel(t);
+  });
+}
+
+function placeLevelThumb(p, animate) {
+  elLevelSlider.classList.toggle('anim', !!animate);
+  const f = p / LEVEL_LAST;
+  elLevelThumb.style.left = `calc(12px + (100% - 24px) * ${f})`;
+  elLevelFill.style.width = (f * 100) + '%';
+}
+
+// The readout, the lit points and ticks, and the a11y value for one level. Pops the bells
+// when the level shown changes (not on the first paint).
+function showLevel(id) {
+  const changed = levelShown !== -1 && id !== levelShown;
+  levelShown = id;
+  elLevelGlyphs.innerHTML = id ? BELL_SVG.repeat(id) : NONE_SVG;
+  elLevelWait.textContent = levelWaitText(id);
+  [...elLevelTrack.querySelectorAll('.freq-stop')].forEach((d, i) => d.classList.toggle('on', i <= id));
+  [...elLevelTicks.children].forEach((t, i) => t.classList.toggle('on', i === id));
+  elLevelSlider.setAttribute('aria-valuenow', String(id));
+  elLevelSlider.setAttribute('aria-valuetext', levelWaitText(id));
+  if (changed) {                                // restart the pop animation
+    elLevelGlyphs.classList.remove('pop');
+    void elLevelGlyphs.offsetWidth;
+    elLevelGlyphs.classList.add('pop');
+  }
+}
+
+function renderLevels(animate = false) {
+  elLevelLabel.textContent = bellMode === 'fixed' ? 'Bell frequency' : 'Random bell frequency';
+  showLevel(bellLevel);
+  if (!levelDrag) placeLevelThumb(bellLevel, animate);
 }
 
 function setBellLevel(id) {
   if (id === bellLevel) return;
   bellLevel = id;
   try { localStorage.setItem(FREQ_KEY, String(id)); } catch {}
-  renderLevels();
+  renderLevels(true);
   if (state === 'playing' || state === 'paused') resampleRunningPlan();
 }
 
@@ -1492,6 +1584,7 @@ TABS.forEach((t, i) => {
 
   elPager.addEventListener('pointerdown', e => {
     if (closing || !e.isPrimary || e.pointerType === 'mouse') return;
+    if (e.target.closest && e.target.closest('#level-slider')) return;   // the slider's own drag
     id = e.pointerId; mode = 'pending';
     x0 = lastX = e.clientX; y0 = e.clientY; lastT = e.timeStamp;
     vx = 0; dx = 0; width = elPager.clientWidth || 1;
@@ -2158,6 +2251,7 @@ try {
   localStorage.removeItem(LEGACY_END_KEY);
 } catch {}
 renderModes();
+buildLevelSlider();
 renderLevels();
 renderLevelTable();
 renderDurations();

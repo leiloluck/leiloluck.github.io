@@ -9,6 +9,10 @@ frequency moved from Settings to the Meditate page with six levels (none, 1 … 
 chime is now the C3 random bell struck three times (the old `Single bowl sound.mp3` had a
 stray tone ~24 s in); the shortest strike (G3 at +3 semitones) was retired.
 
+**v26.10.22d changes:** Bell frequency on the Meditate page is a slider (six snapping
+points) instead of six buttons — the prototype from `resources/bells.html` → "Slider",
+"On release" snapping.
+
 **v26.10.22c changes:** the end bell is fixed to Bright (G3) and its Settings section is
 gone; new Settings → Bell behavior (Random / Fixed waits); the level waits evened out to
 60 / 30 / 15 / 8 / 3 s; wording follows the behavior ("Random bell frequency" / "Average
@@ -20,7 +24,7 @@ silence between bells); the end bell is selectable (Long / Warm / Bright, always
 strikes) with a Test button; every strike audible for under 18 s is dropped from sessions
 (`MIN_RING`).
 
-**Version:** v26.10.22c (format `vYY.MM.DD` — year.month.day; bump on every change, in
+**Version:** v26.10.22d (format `vYY.MM.DD` — year.month.day; bump on every change, in
 lockstep across `index.html`, `sw.js` `VERSION`, `js/app.js` `APP_VERSION` and this file).
 
 ---
@@ -270,7 +274,7 @@ loudness match.
 - The last-used duration (preset or custom) and bell frequency come back on open
   (`localStorage`: `meditation-duration`, `meditation-bell-frequency`).
 - **Bell frequency (v26.10.22; was "Random bells amount" in Settings, v26.10.15).** Six
-  levels on the Meditate page (`BELL_LEVELS`). Each has a nominal `wait`: 60 / 30 / 15 /
+  levels on the Meditate page's slider (`BELL_LEVELS`). Each has a nominal `wait`: 60 / 30 / 15 /
   8 / 3 s (v26.10.22c; they were ≈ 80 / 36 / 15 / 6 / 2 s, which read as exponential).
   A stored pre-v26.10.22 amount is migrated once to level + 1. "Wait" is always measured
   from one bell's audible ring-out (ring40) to the next strike; bells never overlap.
@@ -471,9 +475,9 @@ and the ring is sized from that box with container units
 (`min(100cqw, 100cqh − 24px, 40svh, 340px)`, countdown `17cqw`), so it shrinks on a short
 phone and is capped on a tall one. Spare height that the width-limited ring cannot use
 goes *above* it (`::before`), so Begin always sits right under the timer. Below Begin:
-**Duration**, a 3-column grid (5/10/15, then 20/25/Custom), then **Bell frequency**, the
-same grid (cross/1/2, then 3/4/5 bells; v26.10.22 — it replaced the Sound row, so the
-column grew by one button row; verified to fit at 390×844 and 360×640 with no scroll).
+**Duration**, a 3-column grid (5/10/15, then 20/25/Custom), then **Bell frequency**, a
+slider (v26.10.22d; about the height of the two button rows it replaced; verified to fit
+at 360×640, 390×844 and 412×915 with no scroll).
 Since v26.10.22c Settings (Manual, Bell behavior, the frequency table, App, Delete) fits
 360×640, 390×844 and 412×915 without scrolling; the table rows are deliberately tight
 (`.freq-table td` padding `clamp(0px, 0.22svh, 4px)`) for the 360×640 case. The Settings page flows top to bottom with the
@@ -515,11 +519,27 @@ The sections sit at their natural size with fluid gaps; no stretched empty bands
 in-app copy is deliberately plain and short, with no em dashes. The Meditate tab only
 shows the install advice as a banner when this browser cannot install at all.
 
-**Bell frequency (Meditate page):** six buttons, a cross then one to five bell glyphs (no
-text; words in `aria-label`; `renderLevels()`, radiogroup `#level-group`). Glyphs shrink
-(`min(…, 19%)`) so five always fit a third of a phone's width. More bells = a shorter wait
-between strikes (`BELL_LEVELS`, table above). It applies at once without touching a
-ringing bell. Stored as `meditation-bell-frequency`.
+**Bell frequency (Meditate page, v26.10.22d):** a slider (`#level-slider`, `role="slider"`)
+with six points — none, then one to five bells; more bells = a shorter wait between strikes
+(`BELL_LEVELS`, table above). It replaced six buttons; the user picked it from the
+prototype in `resources/bells.html` → "Slider", with "On release" snapping.
+
+- Above the track: the level's bells (`#level-glyphs`, a cross for none), which *pop*
+  (260 ms scale-in) whenever the level shown changes, and its wait on the right in muted
+  text ("Average wait 15 s" / "Wait 15 s" per Bell behavior, or "No bells, only the end
+  bell"). Under the track: each point's wait in light gray (✕, 60 s … 3 s), the current
+  one brighter. Points up to the current one are lit gold.
+- Dragging: the thumb follows the pointer continuously and the readout previews the
+  nearest level; nothing is committed. On release the thumb glides (240 ms, slight
+  overshoot easing, `.anim`) to the nearest point and `setBellLevel` commits it — so a
+  drag across five levels re-samples a running session once, not five times (tested). A
+  tap jumps to the nearest point; arrow keys / Home / End step; a cancelled pointer goes
+  back to the committed level.
+- `touch-action: none` on the slider, and the pager's swipe handler ignores pointers that
+  start on it, so dragging it never swipes to Settings (tested with real touch events).
+- `buildLevelSlider()` adds the points, ticks and handlers once at init; `renderLevels()`
+  repaints label, readout and thumb (it skips the thumb mid-drag). Reduced motion turns
+  off the pop and the glide. Stored as `meditation-bell-frequency`.
 
 **Ensō hero / progress:** the brushstroke path (generated, identical to the icon) is inline
 in `index.html` and drawn twice: a faint ghost, and the gold ink masked by `#enso-arc`.

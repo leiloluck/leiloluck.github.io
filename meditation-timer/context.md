@@ -9,12 +9,18 @@ frequency moved from Settings to the Meditate page with six levels (none, 1 … 
 chime is now the C3 random bell struck three times (the old `Single bowl sound.mp3` had a
 stray tone ~24 s in); the shortest strike (G3 at +3 semitones) was retired.
 
+**v26.10.22c changes:** the end bell is fixed to Bright (G3) and its Settings section is
+gone; new Settings → Bell behavior (Random / Fixed waits); the level waits evened out to
+60 / 30 / 15 / 8 / 3 s; wording follows the behavior ("Random bell frequency" / "Average
+wait time" vs "Bell frequency" / "Wait time"); a new Manual; a slider prototype for Bell
+frequency in `resources/bells.html` (tab "Slider", not in the app).
+
 **v26.10.22b changes:** Settings explains Bell frequency in a table (level glyphs → mean
 silence between bells); the end bell is selectable (Long / Warm / Bright, always three
 strikes) with a Test button; every strike audible for under 18 s is dropped from sessions
 (`MIN_RING`).
 
-**Version:** v26.10.22b (format `vYY.MM.DD` — year.month.day; bump on every change, in
+**Version:** v26.10.22c (format `vYY.MM.DD` — year.month.day; bump on every change, in
 lockstep across `index.html`, `sw.js` `VERSION`, `js/app.js` `APP_VERSION` and this file).
 
 ---
@@ -87,12 +93,13 @@ locked or the tab is backgrounded. The **Web Audio hardware clock keeps running*
 fire while the screen is off is placed on the audio clock at session start, not
 triggered by a JS timer:
 
-- **Triple end bell** (`scheduleChime`) — ONE bell, the chosen `END_BELLS` entry
-  (Settings → End bell, v26.10.22b): **Long** = C3 `bell-2-c3` (28 s, the default),
-  **Warm** = C3 −27¢ `bell-1-c3-flat` (22 s), **Bright** = G3 `bell-4-g3` (20 s). All three
-  were scanned for tones that are not partials of the bell (the old chime's fault): bell-1's
-  flagged 246 / 680 Hz events are beating partials present from the first second, the
-  others have none. Played as recorded
+- **Triple end bell** (`scheduleChime`) — ONE bell, `RANDOM_BELLS[CHIME_BELL]`, the G3
+  `bell-4-g3` (20 s, "Bright"). Picked by ear in v26.10.22c from three candidates a
+  v26.10.22b Settings section let the user try (C3 `bell-2-c3` 28 s, the v26.10.22 default;
+  C3 −27¢ `bell-1-c3-flat` 22 s); that section, its Test button and the
+  `meditation-end-bell` key are gone again. All three were scanned for tones that are not
+  partials of the bell (the old chime's fault): bell-1's flagged 246 / 680 Hz events are
+  beating partials present from the first second, the others have none. Played as recorded
   (rate 1) at its loudness-matched gain, struck at `end`, `end+0.4`, `end+0.8`
   (`END_BELL_OFFSETS`). Each strike after the first damps the previous one to 0 over
   `CHIME_DAMP` (25 ms) landing exactly on the new onset, and stops it there: one bell rung
@@ -263,28 +270,39 @@ loudness match.
 - The last-used duration (preset or custom) and bell frequency come back on open
   (`localStorage`: `meditation-duration`, `meditation-bell-frequency`).
 - **Bell frequency (v26.10.22; was "Random bells amount" in Settings, v26.10.15).** Six
-  levels on the Meditate page pick the wait profile (`BELL_LEVELS`). Levels 2 … 4 are the
-  old amounts 1 … 3 unchanged; a stored old amount is migrated once to level + 1. Measured
-  with the sampler, 2000 × 15 min:
+  levels on the Meditate page (`BELL_LEVELS`). Each has a nominal `wait`: 60 / 30 / 15 /
+  8 / 3 s (v26.10.22c; they were ≈ 80 / 36 / 15 / 6 / 2 s, which read as exponential).
+  A stored pre-v26.10.22 amount is migrated once to level + 1. "Wait" is always measured
+  from one bell's audible ring-out (ring40) to the next strike; bells never overlap.
+- **Bell behavior (Settings, v26.10.22c): Random (default) or Fixed** (`bellMode`,
+  `meditation-bell-mode`). The bell and its pitch are random in both; only the timing
+  differs.
+  - *Random*: a wait is `floor` + a truncated-exponential draw (mean `mean`), capped by
+    `maxgap`, with floor/mean tuned so the measured mean equals `wait`. Sampler, 3000 ×
+    15 min:
 
-  | Level | Button | floor | mean | max strike-to-strike | `minGap`† | strikes / 15 min | silence mean (median) |
-  |---|---|---|---|---|---|---|---|
-  | 0 | cross | — | — | — | — | 0 (end chime only) | — |
-  | 1 | one bell | 45 s | 45 s | 200 s | 15 s | 9.5 | 80 s (72 s) |
-  | 2 | two bells | 20 s | 20 s | 100 s | 8 s | 16 | 36 s (33 s) |
-  | 3 default | three bells | 8 s | 8 s | 56 s | 1 s | 24 | 15 s (13 s) |
-  | 4 | four bells | 3 s | 3 s | 40 s | 1 s | 31 | 6 s (5 s) |
-  | 5 | five bells | 0.5 s | 1 s | 36 s | 0.5 s | 36 | 1.8 s (1.2 s) |
+    | Level | Button | wait | floor | mean | maxgap | `minGap`† | measured mean | strikes / 15 min |
+    |---|---|---|---|---|---|---|---|---|
+    | 0 | cross | — | — | — | — | — | — | 0 (end chime only) |
+    | 1 | one bell | 60 s | 30 s | 32 s | 200 s | 15 s | 59.8 s | 11 |
+    | 2 | two bells | 30 s | 15 s | 16 s | 100 s | 8 s | 29.8 s | 17 |
+    | 3 default | three bells | 15 s | 8 s | 8 s | 56 s | 1 s | 14.9 s | 23 |
+    | 4 | four bells | 8 s | 4 s | 4.3 s | 44 s | 1 s | 8.1 s | 28 |
+    | 5 | five bells | 3 s | 1 s | 2 s | 36 s | 1 s | 3.2 s | 33 |
 
-  "Silence" is from one bell's audible ring-out (ring40) to the next strike. Level 1 is
-  meant to let you forget the bell; level 5 strikes again a second or two after the last
-  one has died away. The strike count barely rises past level 4 because the ~20–30 s
-  ring, not the wait, fills the session; bells never overlap at any level.
-
-  † the least the pulled-in final bell may follow the previous ring-out (the ending rule
-  above); levels 1 and 2 ask for more so a sparse session does not end with two bells in
-  a row. `sampleRandomPlan(durSec, amt, after)` takes the level (default: `bellLevel`).
-- **A change applies at once** (`setBellLevel` → `resampleRunningPlan`). Strikes that
+    † the least the pulled-in final bell may follow the previous ring-out (the ending rule
+    above). The strike count barely rises at the top because the ~18–33 s ring, not the
+    wait, fills the session.
+  - *Fixed*: every wait is exactly `wait` (tested: zero error). The ending is NOT pulled in
+    or shifted: a bell is struck only if it rings out before D − 3 s; otherwise the session
+    waits in silence (up to one wait + one ring) for the triple chime — never a bell over
+    the chime (tested over 300–1500 s sessions, every level).
+  - `sampleRandomPlan(durSec, amt, after, mode)` takes level and mode (defaults:
+    `bellLevel`, `bellMode`).
+  - Wording follows the mode: the Meditate label reads "Random bell frequency" (Random) or
+    "Bell frequency" (Fixed); the Settings table's wait column reads "Average wait time" or
+    "Wait time".
+- **A change applies at once** (`setBellLevel` / `setBellMode` → `resampleRunningPlan`). Strikes that
   already rang stay in the plan; the rest is re-sampled from the last strike under the new
   level (`after`, its time relative to now; a wait already over strikes now), and a
   playing session is re-laid via `resyncRunningSession`, so a ringing bell rings out in
@@ -411,7 +429,8 @@ The `serveAudio` function strips the `Range` header from the cache key so the st
 | `meditation-audio-cached` | `'1'` while every bell is in the audio cache (mirror of `isAudioCached()`, re-derived on every open) |
 | `meditation-duration` | Last-used duration in minutes (preset or custom) |
 | `meditation-bell-frequency` | Bell frequency level `0` … `5` (default `3`) |
-| `meditation-end-bell` | End bell: `long` (default) \| `warm` \| `bright` |
+| `meditation-bell-mode` | Bell behavior: `random` (default) \| `fixed` |
+| `meditation-end-bell` | Legacy (v26.10.22b only): the end bell choice. Removed at init; in `DELETE_KEYS` |
 | `meditation-sound`, `meditation-bells` | Legacy (≤ v26.10.12b): the Sound mode and the 1 … 3 amount. Removed at init after the amount is migrated (+1); still in `DELETE_KEYS` |
 
 ---
@@ -455,8 +474,9 @@ goes *above* it (`::before`), so Begin always sits right under the timer. Below 
 **Duration**, a 3-column grid (5/10/15, then 20/25/Custom), then **Bell frequency**, the
 same grid (cross/1/2, then 3/4/5 bells; v26.10.22 — it replaced the Sound row, so the
 column grew by one button row; verified to fit at 390×844 and 360×640 with no scroll).
-Since v26.10.22b Settings (with the frequency table and End bell) fits a 390×844 phone
-but scrolls ~73 px on a 360×640 one, through the panel's own `overflow-y: auto`. The Settings page flows top to bottom with the
+Since v26.10.22c Settings (Manual, Bell behavior, the frequency table, App, Delete) fits
+360×640, 390×844 and 412×915 without scrolling; the table rows are deliberately tight
+(`.freq-table td` padding `clamp(0px, 0.22svh, 4px)`) for the 360×640 case. The Settings page flows top to bottom with the
 same fluid gaps — no `space-between`, which used to stretch empty bands between the
 sections on a tall phone — so Delete app stays on screen. The panels keep
 `overflow-y: auto` purely as a safety net: landscape phones and very large system text
@@ -484,15 +504,11 @@ returns to Meditate.
 single highlight pill inside it that slides between the halves (`--p`, see above) — not two
 separate buttons.
 
-**Settings, top to bottom:** **Manual** (three short lines; keep it short — the user asked
-for less text, and an earlier version read as generated filler), **Bell frequency** (a
-table, `renderLevelTable()` from `BELL_LEVELS[].silence`: each level's glyphs and the
-measured mean silence between bells — about 80 / 36 / 15 / 6 / 2 s; no strike counts, by
-request), **End bell** (three buttons Long / Warm / Bright with their length, and **Test
-end bell**, which plays the chosen triple exactly as a session ends and becomes Stop while
-it rings; disabled during a session so it never mixes with a session's bells; picking
-another bell while testing plays the new one; the context is suspended again when the
-test ends; a change during a session re-lays that session's ending), **App** (a card with the app icon, name, tappable version and one status line; then the
+**Settings, top to bottom:** **Manual** (three short lines, the user's own wording since
+v26.10.22c: what the app is, Bell frequency, Close app; keep it short — an earlier version
+read as generated filler), **Bell behavior** (Random / Fixed, see Sounds), **Bell
+frequency** (a table, `renderLevelTable()`: each level's glyphs and its wait, the column
+heading per Bell behavior; no strike counts, by request), **App** (a card with the app icon, name, tappable version and one status line; then the
 install note — which always opens with the Chrome-on-Android / Safari-on-iOS requirement —
 install + offline as one button, and Check for updates) and **Delete app** at the bottom.
 The sections sit at their natural size with fluid gaps; no stretched empty bands. All
@@ -570,6 +586,5 @@ All files have metadata stripped (`-map_metadata -1`; for MP3 sources with `-c:a
    320 kbps MP3 twin) into `resources/random/` with metadata stripped.
 2. Add an entry to `RANDOM_BELLS` in `js/app.js` (`label`, `file` without extension,
    measured `ring40`/`ring50`, `gain`) and the FLAC to `RANDOM_BELLS` in `sw.js`.
-   `END_BELLS[].bell` refers to bells by index: keep it pointing at the
-   right ones.
+   `CHIME_BELL` refers to a bell by index: keep it pointing at the G3.
 3. Bump the version in all four places (see the top of this file).

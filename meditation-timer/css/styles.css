@@ -603,8 +603,9 @@ body.paused .countdown { color: var(--muted); }
 /* Three across: 5 / 10 / 15, then 20 / 25 / Custom. Two rows instead of three. The bell
    frequency grid matches it: none / 1 / 2, then 3 / 4 / 5. */
 #duration-group,
-#level-group,
-#end-bell-group { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+#level-group    { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+/* Settings → Bell behavior: Random / Fixed side by side. */
+#mode-group     { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
 .btn {
   min-width: 0;
@@ -810,11 +811,11 @@ body.paused .countdown { color: var(--muted); }
   text-align: left;
   font-weight: 500;
   color: var(--muted);
-  padding: 0 0 clamp(2px, 0.5svh, 5px);
+  padding: 0 0 clamp(1px, 0.3svh, 5px);
 }
 
 .freq-table td {
-  padding: clamp(2px, 0.55svh, 5px) 0;
+  padding: clamp(0px, 0.22svh, 4px) 0;   /* tight enough that Settings fits 360×640 */
   border-top: 1px solid var(--border);
   vertical-align: middle;
 }
@@ -835,8 +836,6 @@ body.paused .countdown { color: var(--muted); }
   vertical-align: -2px;
   fill: currentColor;
 }
-
-#end-bell-group { margin-bottom: clamp(4px, 0.9svh, 10px); }
 
 .btn-small {
   background: transparent;

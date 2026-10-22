@@ -13,38 +13,36 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.10.22b';   // format vYY.MM.DD — keep in lockstep with sw.js + index.html
+const APP_VERSION = 'v26.10.22c';   // format vYY.MM.DD — keep in lockstep with sw.js + index.html
 
 const PAUSE_FADE_OUT = 2;    // user-initiated stop/pause: each sounding bell fades over this
 
-// End-of-session chime: ONE bell (the chosen END_BELLS entry) struck three times. Each
-// strike damps the one before it over CHIME_DAMP and restarts the file from its start,
-// so the strikes never pile up. Before v26.10.22 the chime was 'Single bowl sound.mp3',
+// End-of-session chime: ONE bell (RANDOM_BELLS[CHIME_BELL], the G3 "Bright") struck three
+// times. Each strike damps the one before it over CHIME_DAMP and restarts the file from
+// its start, so the strikes never pile up. Before v26.10.22 the chime was 'Single bowl sound.mp3',
 // three overlapping copies; that recording has a stray tone ~24 s in (a ~474 Hz partial
 // that is not one of the bowl's, jumping in by +35 dB), heard as a beep after the bell.
 const END_BELL_OFFSETS = [0, 0.4, 0.8];
 const CHIME_DAMP = 0.025;    // seconds
 
-// The three end bells to choose from (Settings → End bell): the three random-bell
-// recordings, played as recorded (rate 1). `bell` indexes RANDOM_BELLS. All three were
-// scanned for tones that are not partials of the bell (the old chime's fault): clean.
-const END_BELLS = [
-  { id: 'long',   label: 'Long',   bell: 1, secs: 28 },   // C3, the default
-  { id: 'warm',   label: 'Warm',   bell: 0, secs: 22 },   // C3 −27¢
-  { id: 'bright', label: 'Bright', bell: 2, secs: 20 },   // G3
-];
-let endBell = 'long';   // id of the chosen entry; restored from localStorage at init
+// The end bell is the G3 recording (bell-4-g3, 20 s), played as recorded (rate 1). Chosen
+// by ear in v26.10.22c from three candidates (C3 28 s, C3 −27¢ 22 s, G3 20 s) that a
+// v26.10.22b Settings section offered for trying; that section is gone again. All three
+// had been scanned for tones that are not partials of the bell (the old chime's fault).
+const CHIME_BELL = 2;
 
 // ── State ────────────────────────────────────────────────────────────────────
 
 const DURATION_KEY = 'meditation-duration';
 const FREQ_KEY     = 'meditation-bell-frequency';   // bell frequency level, 0 … 5
-const END_BELL_KEY = 'meditation-end-bell';         // END_BELLS id
+const MODE_KEY     = 'meditation-bell-mode';        // bell behavior: 'random' | 'fixed'
 // Keys older builds wrote. Never read for state (one is migrated once); Delete app still
 // removes them: 'meditation-sound' (the retired Soundtrack / Random switch),
-// 'meditation-bells' (the 1 … 3 amount, now level + 1).
+// 'meditation-bells' (the 1 … 3 amount, now level + 1), 'meditation-end-bell' (the
+// v26.10.22b end bell choice).
 const LEGACY_SOUND_KEY = 'meditation-sound';
 const LEGACY_BELLS_KEY = 'meditation-bells';
+const LEGACY_END_KEY   = 'meditation-end-bell';
 
 let selectedMinutes   = 15;
 let state             = 'idle';   // idle | playing | paused | finishing
@@ -146,12 +144,8 @@ function scheduleBuffer(buffer, when, level, dest, rate = 1) {
 }
 
 // The end chime's decoded bell, or null while the set is still loading.
-function chimeBell() {
-  return (END_BELLS.find(e => e.id === endBell) || END_BELLS[0]).bell;
-}
-
 function chimeBuffer() {
-  return randomBuffers ? randomBuffers[chimeBell()] : null;
+  return randomBuffers ? randomBuffers[CHIME_BELL] : null;
 }
 
 // The triple end bell: the same file struck three times, as recorded (no pitch shift), at
@@ -160,7 +154,7 @@ function chimeBuffer() {
 // again — never three copies stacked (and so no headroom stage is needed either).
 function scheduleChime(end) {
   if (!audioCtx || !chimeBuffer()) return;
-  const level = RANDOM_BELLS[chimeBell()].gain;
+  const level = RANDOM_BELLS[CHIME_BELL].gain;
   let prev = null;
   END_BELL_OFFSETS.forEach(off => {
     const when = end + off;
@@ -245,31 +239,27 @@ const RANDOM_GAP     = 3;      // ring-out gap before the triple chime
 // 17 strikes remain; the shortest is C3 −27¢ at +2 (18.4 s).
 const MIN_RING = 18;
 
-// Bell frequency (on the Meditate page): how long the app waits between strikes. A wait
-// is the previous bell's audible ring + `floor` + a truncated-exponential draw (mean
-// `mean`), capped so no strike-to-strike distance exceeds `maxgap`. Waits always start at
-// the audible ring-out (ring40) and bells never overlap, at any level. `minGap` is the
-// least the pulled-in final bell may follow the previous ring-out (see sampleRandomPlan).
-// Levels 2 … 4 are the old one / two / three bells amounts, unchanged. Level 1 leaves long
-// enough silences to forget the bell (≈ 80 s on average, vs 36 s at level 2); level 5
-// strikes again a second or two after the last one has died away (mean silence 1.8 s).
-// Level 0: no bells, only the end chime. Strikes per 15 min (sampler, 2000 runs):
-// 1 ≈ 10, 2 ≈ 16, 3 ≈ 24, 4 ≈ 31, 5 ≈ 36 (ring time, not the wait, bounds the top end).
-// `silence` is the Settings table's text: the measured mean silence between bells.
+// Bell frequency (on the Meditate page): how long the app waits between strikes, always
+// counted from the previous bell's audible ring-out (ring40), so bells never overlap.
+// `wait` is the level's nominal wait in seconds: shown in Settings, and in Fixed mode
+// (Settings → Bell behavior) it IS the wait, exactly. In Random mode (the default) a wait
+// is `floor` + a truncated-exponential draw (mean `mean`), capped so no strike-to-strike
+// distance exceeds `maxgap`; floor/mean are tuned so the measured mean silence matches
+// `wait` (sampler, 3000 × 15 min: 59.9 / 29.8 / 14.9 / 8.1 / 3.1 s). `minGap` is the
+// least the pulled-in final bell may follow the previous ring-out (Random mode's ending
+// rule, see sampleRandomPlan). Level 0: no bells, only the end chime. v26.10.22c evened
+// the steps out (they were ≈ 80 / 36 / 15 / 6 / 2 s).
 const BELL_LEVELS = [
-  { id: 0, label: 'No bells',            silence: 'None, only the end bell' },
-  { id: 1, label: 'Very rare bells',     silence: 'About 80 s',
-    floor: 45,  mean: 45, maxgap: 200, minGap: 15 },
-  { id: 2, label: 'Rare bells',          silence: 'About 36 s',
-    floor: 20,  mean: 20, maxgap: 100, minGap: 8 },
-  { id: 3, label: 'Some bells',          silence: 'About 15 s (default)',
-    floor: 8,   mean: 8,  maxgap: 56,  minGap: 1 },   // the default
-  { id: 4, label: 'Frequent bells',      silence: 'About 6 s',
-    floor: 3,   mean: 3,  maxgap: 40,  minGap: 1 },
-  { id: 5, label: 'Very frequent bells', silence: 'About 2 s, right after a bell fades',
-    floor: 0.5, mean: 1,  maxgap: 36,  minGap: 0.5 },
+  { id: 0, label: 'No bells' },
+  { id: 1, label: 'Very rare bells',     wait: 60, floor: 30, mean: 32,  maxgap: 200, minGap: 15 },
+  { id: 2, label: 'Rare bells',          wait: 30, floor: 15, mean: 16,  maxgap: 100, minGap: 8 },
+  { id: 3, label: 'Some bells',          wait: 15, floor: 8,  mean: 8,   maxgap: 56,  minGap: 1 },   // the default
+  { id: 4, label: 'Frequent bells',      wait: 8,  floor: 4,  mean: 4.3, maxgap: 44,  minGap: 1 },
+  { id: 5, label: 'Very frequent bells', wait: 3,  floor: 1,  mean: 2,   maxgap: 36,  minGap: 1 },
 ];
 let bellLevel = 3;   // id of the chosen entry; restored from localStorage at init
+
+let bellMode  = 'random';   // Settings → Bell behavior: 'random' | 'fixed'
 
 function currentLevel() {
   return BELL_LEVELS.find(l => l.id === bellLevel) || BELL_LEVELS[3];
@@ -315,11 +305,16 @@ function truncExp(rand, a, b, theta) {
 // late decode re-samples only the REMAINDER, and with too little left a strike at t = 0
 // would still be ringing over the chime — so it opens with a bell that fits, or not at all.
 //
-// `after` (a bell frequency change mid-session): the strike that is ringing or last rang,
-// with `t` relative to now (≤ 0). The plan then continues from it under the new level —
-// no strike at t = 0, nothing before now, and the bell that is ringing is never touched.
-function sampleRandomPlan(durSec, amt = currentLevel(), after = null) {
-  if (!amt.mean) return [];                                   // level 0: no bells
+// `after` (a bell frequency or behavior change mid-session): the strike that is ringing or
+// last rang, with `t` relative to now (≤ 0). The plan then continues from it under the new
+// setting — no strike at t = 0, nothing before now, and the bell that is ringing is never
+// touched.
+//
+// Fixed mode: every wait is exactly `amt.wait` after the previous ring-out, and nothing is
+// pulled in or shifted at the end — a bell that would not ring out before D − GAP is
+// simply not struck; the session waits in silence for the triple chime.
+function sampleRandomPlan(durSec, amt = currentLevel(), after = null, mode = bellMode) {
+  if (!amt.wait) return [];                                   // level 0: no bells
   const deadline = durSec - RANDOM_GAP;
   const evs = [];
   let prev = after;
@@ -328,6 +323,15 @@ function sampleRandomPlan(durSec, amt = currentLevel(), after = null) {
     if (!fits.length) return [];
     prev = { t: 0, pool: pickRandomBell(null, fits) };       // a sound right at the start
     evs.push(prev);
+  }
+  if (mode === 'fixed') {
+    for (;;) {
+      const cand = { pool: pickRandomBell(prev.pool) };
+      cand.t = Math.max(0, prev.t + prev.pool.ring + amt.wait);
+      if (cand.t + cand.pool.ring > deadline) return evs;
+      evs.push(cand);
+      prev = cand;
+    }
   }
   for (;;) {
     const cand = { pool: pickRandomBell(prev.pool) };
@@ -679,8 +683,6 @@ function startSession() {
   clearTimeout(endHoldTimeout);      // a pending release from the previous session
   clearTimeout(endUiTimeout);
   clearTimeout(bgFadeTimeout);
-  clearTimeout(previewTimer);        // an end bell test still ringing fades below
-  previewing = false;
   // The previous session's end chime may still be ringing (it lasts ~29 s and the UI comes
   // back after 3.5 s), or a stopped bell may still be fading: fade, never cut.
   releaseSources();
@@ -851,8 +853,6 @@ function shutdownApp() {
   clearTimeout(bgFadeTimeout);
   clearTimeout(endHoldTimeout);
   clearTimeout(endUiTimeout);
-  clearTimeout(previewTimer);
-  previewing = false;
   // The one deliberate hard stop: the X releases the device NOW, and ctx.close() below
   // silences everything regardless (an installed window is closed outright).
   clearScheduledSources();
@@ -1014,8 +1014,9 @@ const elPlayBtn       = document.getElementById('btn-play');
 const elResetBtn      = document.getElementById('btn-reset');
 const elLevelGroup    = document.getElementById('level-group');
 const elLevelTable    = document.getElementById('level-table');
-const elEndBellGroup  = document.getElementById('end-bell-group');
-const elEndBellTest   = document.getElementById('end-bell-test');
+const elLevelLabel    = document.getElementById('level-label');
+const elLevelWaitHead = document.getElementById('level-wait-head');
+const elModeGroup     = document.getElementById('mode-group');
 const elDurationGroup = document.getElementById('duration-group');
 const elInstallBtn    = document.getElementById('install-btn');
 const elInstallBanner = document.getElementById('install-banner');
@@ -1105,7 +1106,6 @@ function setRunClass(mode) {
 
 function setPlayBtn(mode) {
   setRunClass(mode);
-  renderEndBellTest();               // Test works between sessions only
   if (mode === 'play') {
     elPlayBtn.disabled = false;
     elPlayBtn.textContent = 'Begin';
@@ -1139,7 +1139,10 @@ function resetUI() {
 const BELL_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6a1.2 1.2 0 0 1 1.2 1.2v.5a6.3 6.3 0 0 1 5 6.2v3.7l1.8 2.7c.4.7 0 1.5-.8 1.5H4.8c-.8 0-1.2-.8-.8-1.5L5.8 14v-3.5a6.3 6.3 0 0 1 5-6.2v-.5A1.2 1.2 0 0 1 12 2.6z"/><circle cx="12" cy="20.2" r="1.9"/></svg>';
 const NONE_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
 
+// The words follow Settings → Bell behavior: "Random bell frequency" / "Average wait"
+// in Random mode, "Bell frequency" / "Wait" in Fixed mode.
 function renderLevels() {
+  elLevelLabel.textContent = bellMode === 'fixed' ? 'Bell frequency' : 'Random bell frequency';
   elLevelGroup.innerHTML = '';
   BELL_LEVELS.forEach(l => {
     const btn = document.createElement('button');
@@ -1182,9 +1185,9 @@ function resampleRunningPlan() {
   if (state === 'playing' && randomBuffers) resyncRunningSession(elapsed);
 }
 
-// Settings explains the levels in words: one row per level, its glyphs and the silence
-// between bells (BELL_LEVELS[].silence, measured with the sampler).
+// Settings explains the levels in words: one row per level, its glyphs and its wait.
 function renderLevelTable() {
+  elLevelWaitHead.textContent = bellMode === 'fixed' ? 'Wait time' : 'Average wait time';
   elLevelTable.innerHTML = '';
   BELL_LEVELS.forEach(l => {
     const tr = document.createElement('tr');
@@ -1193,92 +1196,44 @@ function renderLevelTable() {
     glyphs.innerHTML = l.id ? BELL_SVG.repeat(l.id) : NONE_SVG;
     glyphs.setAttribute('aria-label', l.label);
     const text = document.createElement('td');
-    text.textContent = l.silence;
+    text.textContent = l.wait ? `${l.wait} s` + (l.id === 3 ? ' (default)' : '') : 'No bells, only the end bell';
     tr.append(glyphs, text);
     elLevelTable.appendChild(tr);
   });
 }
 
-// ── End bell (Settings) ──────────────────────────────────────────────────────
-// Three bells to close the session with, always struck three times, and a Test button
-// that plays the chosen one exactly as a session ends. A change during a session applies
-// to that session's ending (re-laid, nothing ringing is touched); Test only works between
-// sessions, so it can never mix with a running session's bells.
+// ── Bell behavior (Settings) ─────────────────────────────────────────────────
+// Random (default): waits drawn around the level's average. Fixed: exactly the level's
+// wait every time. Either way the bell and its pitch are random, and a change applies at
+// once, like a frequency change (the ringing bell is never touched).
 
-let previewing = false;
-let previewTimer = null;
+const BELL_MODES = [
+  { id: 'random', label: 'Random' },
+  { id: 'fixed',  label: 'Fixed' },
+];
 
-function renderEndBells() {
-  elEndBellGroup.innerHTML = '';
-  END_BELLS.forEach(e => {
+function renderModes() {
+  elModeGroup.innerHTML = '';
+  BELL_MODES.forEach(m => {
     const btn = document.createElement('button');
-    btn.className = 'btn' + (e.id === endBell ? ' selected' : '');
+    btn.className = 'btn' + (m.id === bellMode ? ' selected' : '');
     btn.type = 'button';
     btn.setAttribute('role', 'radio');
-    btn.setAttribute('aria-checked', e.id === endBell ? 'true' : 'false');
-    const label = document.createElement('span');
-    label.textContent = e.label;
-    const sub = document.createElement('span');
-    sub.className = 'btn-detail';
-    sub.textContent = `${e.secs} s`;
-    btn.append(label, sub);
-    btn.addEventListener('click', () => setEndBell(e.id));
-    elEndBellGroup.appendChild(btn);
+    btn.setAttribute('aria-checked', m.id === bellMode ? 'true' : 'false');
+    btn.textContent = m.label;
+    btn.addEventListener('click', () => setBellMode(m.id));
+    elModeGroup.appendChild(btn);
   });
 }
 
-function setEndBell(id) {
-  if (id === endBell) return;
-  endBell = id;
-  try { localStorage.setItem(END_BELL_KEY, id); } catch {}
-  renderEndBells();
-  if (previewing) playEndBellPreview();               // hear the new one straight away
-  else if (state === 'playing' && randomBuffers && startTimestamp !== null) {
-    resyncRunningSession(elapsedMs + (performance.now() - startTimestamp));
-  }
-}
-
-function renderEndBellTest() {
-  elEndBellTest.disabled = state !== 'idle';
-  elEndBellTest.textContent = previewing ? 'Stop' : 'Test end bell';
-}
-
-function playEndBellPreview() {
-  if (state !== 'idle') return;
-  ensureAudio();
-  if (!chimeBuffer()) {
-    loadRandomBells();
-    elEndBellTest.textContent = 'Loading bells…';
-    setTimeout(renderEndBellTest, 1500);
-    return;
-  }
-  releaseSources();                   // a previous test or the last end chime: fade, never cut
-  audioCtx.resume().catch(() => {});  // suspended after the last session (releaseAudioHold)
-  scheduleChime(audioCtx.currentTime + 0.05);
-  previewing = true;
-  const tail = endBellTail() * 1000;
-  quietAt = Math.max(quietAt, performance.now() + tail);   // no update reload over it
-  clearTimeout(previewTimer);
-  previewTimer = setTimeout(endEndBellPreview, tail);
-  renderEndBellTest();
-}
-
-function stopEndBellPreview() {
-  releaseSources();
-  quietAt = performance.now() + PAUSE_FADE_OUT * 1000 + 600;
-  clearTimeout(previewTimer);
-  previewTimer = setTimeout(endEndBellPreview, PAUSE_FADE_OUT * 1000 + 100);
-  previewing = false;
-  renderEndBellTest();
-}
-
-// The preview is over: let the CPU sleep again, as the end of a session does.
-function endEndBellPreview() {
-  clearTimeout(previewTimer);
-  previewing = false;
-  renderEndBellTest();
-  if (state === 'idle' && audioCtx && audioCtx.state === 'running') audioCtx.suspend().catch(() => {});
-  applyUpdateIfSafe();
+function setBellMode(id) {
+  if (id === bellMode) return;
+  bellMode = id;
+  try { localStorage.setItem(MODE_KEY, id); } catch {}
+  renderModes();
+  renderLevels();
+  renderLevelTable();
+  if (state === 'playing' || state === 'paused') resampleRunningPlan();
 }
 
 // ── Duration buttons ─────────────────────────────────────────────────────────
@@ -1590,8 +1545,6 @@ elPlayBtn.addEventListener('click', () => {
 elResetBtn.addEventListener('click', () => {
   stopSession();
 });
-
-elEndBellTest.addEventListener('click', () => previewing ? stopEndBellPreview() : playEndBellPreview());
 
 elCloseBtn.addEventListener('click', shutdownApp);
 elReopenBtn.addEventListener('click', reopenApp);
@@ -2105,8 +2058,8 @@ async function saveOffline() {
 // The browser's HTTP cache is unreachable from script (Clear-Site-Data needs a response
 // header, which a static GitHub Pages host cannot send). It is small and self-expiring.
 const APP_SCOPE = new URL('./', location.href).pathname;   // '/meditation-timer/'
-const DELETE_KEYS = [CUSTOM_KEY, INSTALLED_KEY, DRIFT_KEY, AUDIO_CACHED_KEY, DURATION_KEY, FREQ_KEY, END_BELL_KEY,
-                     LEGACY_SOUND_KEY, LEGACY_BELLS_KEY];
+const DELETE_KEYS = [CUSTOM_KEY, INSTALLED_KEY, DRIFT_KEY, AUDIO_CACHED_KEY, DURATION_KEY, FREQ_KEY, MODE_KEY,
+                     LEGACY_SOUND_KEY, LEGACY_BELLS_KEY, LEGACY_END_KEY];
 
 async function usedBytes() {
   try { return navigator.storage && navigator.storage.estimate ? ((await navigator.storage.estimate()).usage || 0) : 0; }
@@ -2201,12 +2154,12 @@ try {
   if (BELL_LEVELS.some(l => l.id === level)) bellLevel = level;
 } catch {}
 try {
-  const saved = localStorage.getItem(END_BELL_KEY);
-  if (END_BELLS.some(e => e.id === saved)) endBell = saved;
+  if (localStorage.getItem(MODE_KEY) === 'fixed') bellMode = 'fixed';
+  localStorage.removeItem(LEGACY_END_KEY);
 } catch {}
+renderModes();
 renderLevels();
 renderLevelTable();
-renderEndBells();
 renderDurations();
 showIdleCountdown();
 refreshOfflineState();

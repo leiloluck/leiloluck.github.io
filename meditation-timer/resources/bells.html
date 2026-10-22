@@ -10,7 +10,10 @@
      sampling, the app's triple stop chime. Sources: ../resources/sources.md.
      Tab 5 "Tuned 3": the palette revision — G3 −27¢ (bell_003) and C4 (bell_006) retired
      as the two shortest tails; three bells × seven pitches (±3 semitones), denoised
-     files only, pitched live. -->
+     files only, pitched live.
+     Tab 6 "Slider": UI prototype only (not in the app) — the Meditate page's six Bell
+     frequency buttons next to a snapping slider, in the app's own colours and fonts, with
+     the Random / Fixed wording of Settings → Bell behavior. -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -88,6 +91,56 @@
   table.modes th { color: var(--muted); }
   .families { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   @media (max-width: 700px) { .families { grid-template-columns: 1fr; } .clip-meta { font-size: 12px; } }
+
+  /* ── Tab 6 "Slider": a mock of the app's Meditate page, in the app's tokens ── */
+  @font-face { font-family: 'SlMincho'; src: url('../fonts/shippori-mincho-700.woff2') format('woff2'); font-weight: 700; }
+  @font-face { font-family: 'SlMaru'; src: url('../fonts/zen-maru-gothic-500.woff2') format('woff2'); font-weight: 500; }
+  @font-face { font-family: 'SlMaru'; src: url('../fonts/zen-maru-gothic-700.woff2') format('woff2'); font-weight: 700; }
+  .sl-row { display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start; }
+  .sl-col { flex: 1 1 320px; max-width: 390px; }
+  .sl-col h2 { margin-bottom: 6px; }
+  .sl-phone {
+    --s-bg: #151310; --s-text: #efe6d2; --s-accent: #d9ae68; --s-muted: #a79d89; --s-border: #3b352c;
+    --s-accent-bg: rgba(217, 174, 104, 0.12);
+    background: radial-gradient(120% 70% at 50% 0%, #2a241b 0%, var(--s-bg) 70%);
+    color: var(--s-text); border: 1px solid var(--border); border-radius: 26px;
+    padding: 22px 16px 26px; font-family: 'SlMaru', system-ui, sans-serif; font-weight: 500;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .sl-begin { min-height: 48px; border-radius: 999px; border: 1px solid var(--s-accent); color: var(--s-accent);
+    background: rgba(217, 174, 104, 0.05); font: 700 18px 'SlMincho', serif; letter-spacing: 0.12em; }
+  .sl-label { display: flex; align-items: center; gap: 10px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--s-muted); margin: 0 0 6px; }
+  .sl-label::after { content: ''; flex: 1; height: 1px; background: linear-gradient(to right, var(--s-border), transparent); }
+  .sl-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .sl-btn { min-height: 42px; border-radius: 13px; border: 1px solid var(--s-border); background: rgba(255,255,255,0.015);
+    color: var(--s-text); font: 500 14px 'SlMaru', sans-serif; display: flex; align-items: center; justify-content: center;
+    gap: 1px; cursor: pointer; padding: 4px; }
+  .sl-btn.sel { border-color: var(--s-accent); background: var(--s-accent-bg); color: var(--s-accent); font-weight: 700; }
+  .sl-btn svg { width: min(18px, 19%); aspect-ratio: 1; fill: currentColor; flex: none; }
+  .sl-btn small { display: block; color: var(--s-muted); font-size: 11px; }
+
+  /* The slider itself. Readout (glyphs + wait) above, track with six stops, light-gray
+     wait times under each stop. */
+  .sl-readout { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 30px; margin-bottom: 4px; }
+  .sl-glyphs { display: flex; gap: 2px; color: var(--s-accent); transform-origin: left center; }
+  .sl-glyphs svg { width: 20px; height: 20px; fill: currentColor; }
+  .sl-glyphs.pop { animation: sl-pop 260ms cubic-bezier(.3, 1.6, .5, 1); }
+  @keyframes sl-pop { 0% { transform: scale(0.82); opacity: .55; } 100% { transform: scale(1); opacity: 1; } }
+  .sl-wait { color: var(--s-muted); font-size: 13px; text-align: right; }
+  .sl-slider { position: relative; height: 44px; touch-action: none; cursor: pointer; outline: none; }
+  .sl-slider:focus-visible .sl-thumb { box-shadow: 0 0 0 3px rgba(217, 174, 104, 0.35); }
+  .sl-track { position: absolute; left: 11px; right: 11px; top: 50%; height: 4px; margin-top: -2px; border-radius: 2px; background: var(--s-border); }
+  .sl-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 2px; background: var(--s-accent); opacity: .75; }
+  .sl-stop { position: absolute; top: 50%; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%; background: var(--s-border); }
+  .sl-stop.on { background: var(--s-accent); }
+  .sl-thumb { position: absolute; top: 50%; width: 24px; height: 24px; margin: -12px 0 0 -12px; border-radius: 50%;
+    background: #ecd09a; border: 2px solid var(--s-bg); box-shadow: 0 0 0 1px var(--s-accent), 0 2px 8px rgba(0,0,0,.5); }
+  .sl-slider.anim .sl-thumb, .sl-slider.anim .sl-fill { transition: left 240ms cubic-bezier(.2, .9, .3, 1.15), width 240ms cubic-bezier(.2, .9, .3, 1.15); }
+  .sl-ticks { position: relative; height: 18px; margin: 0 11px; }
+  .sl-ticks span { position: absolute; transform: translateX(-50%); font-size: 11.5px; color: var(--s-muted); opacity: .8; white-space: nowrap; }
+  .sl-ticks span.on { color: var(--s-text); opacity: 1; }
+  .sl-ctl { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; margin: 4px 0 10px; font-size: 14px; }
 </style>
 </head>
 <body>
@@ -100,6 +153,7 @@
       <button class="tab" id="tab-tuned" type="button" role="tab" aria-selected="false">Tuned</button>
       <button class="tab" id="tab-final" type="button" role="tab" aria-selected="false">Tuned 2</button>
       <button class="tab" id="tab-tuned3" type="button" role="tab" aria-selected="false">Tuned 3</button>
+      <button class="tab" id="tab-slider" type="button" role="tab" aria-selected="false">Slider</button>
     </div>
     <button class="btn" id="stop-all" type="button" title="Stop everything that is playing">■ Stop all</button>
   </div>
@@ -406,6 +460,60 @@ for (const p of partials) {                 // ~6–12 partials
       <div id="t3-rows"></div>
     </div>
   </section>
+
+  <!-- ── TAB 6: SLIDER (UI prototype, not in the app) ─────────────────────── -->
+  <section id="panel-slider" class="hidden">
+    <div class="panel">
+      <h2>Slider · a UI prototype for Bell frequency</h2>
+      <p class="muted">Left: the Meditate page as it ships (v26.10.22c), six buttons. Right: the same page with a slider instead. Drag it: the thumb follows your finger, the bells above pop as you pass a level, and on release it glides to the nearest of the six points. "Magnetic" also pulls gently toward the points while you drag. Tapping the track or the arrow keys move one point at a time. Nothing here plays sound or changes the app.</p>
+      <div class="sl-ctl">
+        <span class="muted">Settings → Bell behavior:</span>
+        <button class="btn sel" type="button" data-sl-mode="random">Random</button>
+        <button class="btn" type="button" data-sl-mode="fixed">Fixed</button>
+        <span class="muted" style="margin-left:10px">Snapping:</span>
+        <button class="btn sel" type="button" data-sl-snap="release">On release</button>
+        <button class="btn" type="button" data-sl-snap="magnet">Magnetic</button>
+      </div>
+      <div class="sl-row">
+        <div class="sl-col">
+          <h2 class="muted">Now: buttons</h2>
+          <div class="sl-phone">
+            <button class="sl-begin" type="button" tabindex="-1">Begin</button>
+            <div>
+              <p class="sl-label">Duration</p>
+              <div class="sl-grid sl-durations"></div>
+            </div>
+            <div>
+              <p class="sl-label sl-freq-label">Random bell frequency</p>
+              <div class="sl-grid" id="sl-buttons"></div>
+            </div>
+          </div>
+        </div>
+        <div class="sl-col">
+          <h2 class="muted">Prototype: slider</h2>
+          <div class="sl-phone">
+            <button class="sl-begin" type="button" tabindex="-1">Begin</button>
+            <div>
+              <p class="sl-label">Duration</p>
+              <div class="sl-grid sl-durations"></div>
+            </div>
+            <div>
+              <p class="sl-label sl-freq-label">Random bell frequency</p>
+              <div class="sl-readout">
+                <div class="sl-glyphs" id="sl-glyphs"></div>
+                <div class="sl-wait" id="sl-wait"></div>
+              </div>
+              <div class="sl-slider" id="sl-slider" role="slider" tabindex="0" aria-label="Bell frequency" aria-valuemin="0" aria-valuemax="5">
+                <div class="sl-track"><div class="sl-fill" id="sl-fill"></div></div>
+                <div class="sl-thumb" id="sl-thumb"></div>
+              </div>
+              <div class="sl-ticks" id="sl-ticks"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 </main>
 
 <script src="bells/bells-data.js?v=8"></script>
@@ -423,7 +531,7 @@ const rndi = (a, b) => Math.floor(rnd(a, b + 1));
 const db2amp = db => Math.pow(10, db / 20);
 
 // ── tabs ─────────────────────────────────────────────────────────────────────
-const TAB_NAMES = ['extracted', 'generated', 'tuned', 'final', 'tuned3'];
+const TAB_NAMES = ['extracted', 'generated', 'tuned', 'final', 'tuned3', 'slider'];
 function showTab(which) {
   TAB_NAMES.forEach(n => {
     document.getElementById('tab-' + n).setAttribute('aria-selected', String(n === which));
@@ -1859,6 +1967,155 @@ ensureFinalRows();
 refreshFinalRows();
 refreshPattern();
 redrawAll();
+</script>
+<script>
+// ── Tab 6 "Slider": UI prototype for the Meditate page's Bell frequency ──────
+// Self-contained: no audio, no app state. Waits are the app's BELL_LEVELS[].wait
+// (v26.10.22c); wording follows Settings → Bell behavior (Random: "Random bell
+// frequency" / "Average wait"; Fixed: "Bell frequency" / "Wait").
+(() => {
+  const WAITS = [null, 60, 30, 15, 8, 3];
+  const LAST = WAITS.length - 1;
+  const BELL = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6a1.2 1.2 0 0 1 1.2 1.2v.5a6.3 6.3 0 0 1 5 6.2v3.7l1.8 2.7c.4.7 0 1.5-.8 1.5H4.8c-.8 0-1.2-.8-.8-1.5L5.8 14v-3.5a6.3 6.3 0 0 1 5-6.2v-.5A1.2 1.2 0 0 1 12 2.6z"/><circle cx="12" cy="20.2" r="1.9"/></svg>';
+  const NONE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
+  const glyphs = n => n ? BELL.repeat(n) : NONE;
+  let level = 3, pos = 3, mode = 'random', snap = 'release';
+
+  const slider = document.getElementById('sl-slider');
+  const thumb = document.getElementById('sl-thumb');
+  const fill = document.getElementById('sl-fill');
+  const track = slider.querySelector('.sl-track');
+  const elGlyphs = document.getElementById('sl-glyphs');
+  const elWait = document.getElementById('sl-wait');
+  const ticks = document.getElementById('sl-ticks');
+
+  // Static duration grid, both phones.
+  document.querySelectorAll('.sl-durations').forEach(g => {
+    g.innerHTML = ['5 min', '10 min', '15 min', '20 min', '25 min'].map((t, i) =>
+      `<button class="sl-btn${i === 2 ? ' sel' : ''}" type="button" tabindex="-1">${t}</button>`).join('') +
+      '<button class="sl-btn" type="button" tabindex="-1"><span>Custom<small>Create time</small></span></button>';
+  });
+
+  // Stops on the track and their light-gray wait labels.
+  WAITS.forEach((w, i) => {
+    const dot = document.createElement('span');
+    dot.className = 'sl-stop';
+    dot.style.left = (i / LAST * 100) + '%';
+    track.appendChild(dot);
+    const t = document.createElement('span');
+    t.style.left = (i / LAST * 100) + '%';
+    t.innerHTML = w ? `${w} s` : '&#x2715;';
+    ticks.appendChild(t);
+  });
+  const dots = [...track.querySelectorAll('.sl-stop')];
+  const tickEls = [...ticks.children];
+
+  function waitText(l) {
+    if (!WAITS[l]) return 'No bells, only the end bell';
+    return (mode === 'fixed' ? 'Wait ' : 'Average wait ') + WAITS[l] + ' s';
+  }
+
+  function renderButtons() {
+    const g = document.getElementById('sl-buttons');
+    g.innerHTML = '';
+    WAITS.forEach((w, i) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'sl-btn' + (i === level ? ' sel' : '');
+      b.innerHTML = glyphs(i);
+      b.title = waitText(i);
+      b.onclick = () => { setLevel(i, true); placeThumb(i, true); };
+      g.appendChild(b);
+    });
+  }
+
+  function placeThumb(p, animate) {
+    pos = p;
+    slider.classList.toggle('anim', !!animate);
+    const pct = p / LAST * 100;
+    thumb.style.left = `calc(11px + (100% - 22px) * ${pct / 100})`;
+    fill.style.width = pct + '%';
+  }
+
+  function setLevel(l, quiet) {
+    const changed = l !== level;
+    level = l;
+    elGlyphs.innerHTML = glyphs(l);
+    elWait.textContent = waitText(l);
+    dots.forEach((d, i) => d.classList.toggle('on', i <= l));
+    tickEls.forEach((t, i) => t.classList.toggle('on', i === l));
+    slider.setAttribute('aria-valuenow', String(l));
+    slider.setAttribute('aria-valuetext', waitText(l));
+    if (changed && !quiet) {                     // the pop: restart the animation
+      elGlyphs.classList.remove('pop'); void elGlyphs.offsetWidth; elGlyphs.classList.add('pop');
+    }
+    renderButtons();
+  }
+
+  // Raw pointer position → slider position in stop units (0 … LAST). "Magnetic" flattens
+  // the response near each stop, so the thumb lingers on a point before moving on.
+  function toPos(clientX) {
+    const r = track.getBoundingClientRect();
+    const raw = Math.max(0, Math.min(LAST, (clientX - r.left) / r.width * LAST));
+    if (snap !== 'magnet') return raw;
+    const n = Math.round(raw), d = raw - n;      // d in −0.5 … 0.5
+    return n + Math.sign(d) * Math.pow(Math.abs(d) * 2, 2.4) / 2;
+  }
+
+  let dragging = false, moved = false, x0 = 0;
+  slider.addEventListener('pointerdown', e => {
+    dragging = true; moved = false; x0 = e.clientX;
+    slider.setPointerCapture(e.pointerId);
+    slider.focus();
+  });
+  slider.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    if (!moved && Math.abs(e.clientX - x0) < 4) return;
+    moved = true;
+    const p = toPos(e.clientX);
+    placeThumb(p, false);
+    setLevel(Math.round(p));
+  });
+  const release = e => {
+    if (!dragging) return;
+    dragging = false;
+    // A tap (no drag) jumps to the nearest point; a drag glides to it.
+    const target = Math.round(moved ? pos : toPos(e.clientX));
+    setLevel(target);
+    placeThumb(target, true);
+  };
+  slider.addEventListener('pointerup', release);
+  slider.addEventListener('pointercancel', release);
+  slider.addEventListener('keydown', e => {
+    const step = { ArrowLeft: -1, ArrowDown: -1, ArrowRight: 1, ArrowUp: 1 }[e.key];
+    let t = null;
+    if (step) t = Math.max(0, Math.min(LAST, level + step));
+    if (e.key === 'Home') t = 0;
+    if (e.key === 'End') t = LAST;
+    if (t === null) return;
+    e.preventDefault();
+    setLevel(t);
+    placeThumb(t, true);
+  });
+
+  function selectIn(attr, val) {
+    document.querySelectorAll(`[${attr}]`).forEach(b => b.classList.toggle('sel', b.getAttribute(attr) === val));
+  }
+  document.querySelectorAll('[data-sl-mode]').forEach(b => b.onclick = () => {
+    mode = b.dataset.slMode;
+    selectIn('data-sl-mode', mode);
+    document.querySelectorAll('.sl-freq-label').forEach(l =>
+      l.textContent = mode === 'fixed' ? 'Bell frequency' : 'Random bell frequency');
+    setLevel(level, true);
+  });
+  document.querySelectorAll('[data-sl-snap]').forEach(b => b.onclick = () => {
+    snap = b.dataset.slSnap;
+    selectIn('data-sl-snap', snap);
+  });
+
+  setLevel(3, true);
+  placeThumb(3, false);
+})();
 </script>
 </body>
 </html>

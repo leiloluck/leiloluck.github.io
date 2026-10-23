@@ -53,7 +53,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.10.23a';
+const APP_VERSION = 'v26.10.23b';
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 // Drop real files into resources/ (see resources/README.md). Until a matching file
@@ -537,7 +537,12 @@ function fillSchedule() {
   // Drop the backlog and resume one fresh gap from here.
   if (nextHitTime < now) nextHitTime = now + computeGapMs() / 1000;
 
-  while (nextHitTime < now + HORIZON_SEC && scheduled.length < MAX_AHEAD) {
+  // Always hold at least the next hit, however far out it is. With an interval longer
+  // than the horizon (20 min, or a long custom one) nothing used to be queued until the
+  // hit came within 10 min, so the countdown read "scheduling…" for half the gap and a
+  // locked phone depended on JS waking up in time to queue it at all.
+  const hasNext = () => scheduled.some(e => e.when > now);
+  while ((nextHitTime < now + HORIZON_SEC || !hasNext()) && scheduled.length < MAX_AHEAD) {
     const sound = pickNextSound(list);
     scheduleHit(sound, nextHitTime);
     rememberPick(sound.id);
@@ -949,7 +954,7 @@ async function showRunNotification() {
     const reg = await navigator.serviceWorker.ready;
     if (!running || !mixWithMedia) return;   // stopped while the prompt was open
     await reg.showNotification('poltergeist.exe is running', {
-      body: 'Sounds at random intervals. Tap Stop to end the prank.',
+      body: 'Sounds at random intervals.',
       tag: RUN_NOTE_TAG,
       icon: './icons/icon-192.png',
       silent: true,
@@ -1212,7 +1217,7 @@ function updateRunningStatus() {
     const label = s ? s.name.toLowerCase() : 'a sound';
     text = `next sound: ${label} in ${formatCountdown(next.when - now)}`;
   } else {
-    text = 'scheduling…';
+    text = 'next sound coming up';
   }
   // Only touch the DOM when the displayed value actually changes: hero-sub is
   // aria-live="polite", and rewriting it four times a second made a screen reader read

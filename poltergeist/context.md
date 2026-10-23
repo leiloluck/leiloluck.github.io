@@ -151,6 +151,9 @@ This is the hard part and mirrors the proven approach in `../meditation-timer/`.
   *replenish* the horizon. A locked phone therefore keeps annoying people for the
   whole horizon even if JS never wakes; in practice the phone gets touched and the
   horizon is topped up continuously.
+  At least the next hit is always queued, even past the horizon (20 min or a long
+  custom interval), so the countdown always names it and a locked phone never depends
+  on JS waking up to queue it.
 - **Keep-alive — two halves, each doing a different job.** Both run for the whole
   session and **neither is optional**:
   1. A **Web Audio 25 Hz tone at amplitude 0.002**. This clears Chrome's audibility

@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<!-- dev.html — poltergeist.exe dev page (resources/ tool page, NOT part of the app)
+     Renamed from sounds.html on 2026-10-26. Three tabs:
+       New sounds     candidate clips in candidates/ to audition: give each a verdict
+                      (include / maybe / skip) plus an optional comment.
+       UI proposal    ui-proposal.html in a frame: the app's sound list as a swipeable
+                      row, so far more sounds fit. Mock only; the app is untouched.
+       Live sounds    the sounds the app fires today (keep / okay / replace).
+     Feedback is kept in localStorage only; nothing is sent anywhere. The generated report
+     (bottom of the sound tabs) is what gets handed back to the agent.
+     See resources/README.md and candidates/README.md. -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👻</text></svg>">
+<title>poltergeist.exe — dev</title>
+<style>
+  :root {
+    --bg: #101418;
+    --panel: #171c22;
+    --panel-2: #1d242c;
+    --border: #2b333d;
+    --text: #e8eef4;
+    --muted: #93a1af;
+    --faint: #66727f;
+    --good: #57c98b;
+    --okay: #e2b45f;
+    --bad: #e07575;
+    --accent: #6fb3d9;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    padding: 20px 14px 60px;
+  }
+  main { max-width: 780px; margin: 0 auto; }
+  h1 { font-size: 22px; margin-bottom: 4px; }
+  .sub { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
+  .sub code, .group-note code { background: var(--panel-2); padding: 1px 5px; border-radius: 5px; }
+  h2 {
+    font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted); margin: 26px 0 10px;
+  }
+  .group-note { color: var(--faint); font-size: 12px; margin: -4px 0 10px; }
+  .subhead { color: var(--accent); font-size: 12px; font-weight: 600; margin: 18px 0 8px; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 6px; margin-bottom: 18px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg); padding-top: 6px; z-index: 5; }
+  .tab {
+    flex: 1 1 0; min-height: 42px; padding: 8px 10px;
+    border: 1px solid var(--border); border-bottom: 0; border-radius: 10px 10px 0 0;
+    background: transparent; color: var(--muted); font: inherit; font-size: 14px; cursor: pointer;
+  }
+  .tab:hover { color: var(--text); }
+  .tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .tab[aria-selected="true"] { background: var(--panel); color: var(--text); border-color: var(--accent); font-weight: 600; }
+  .tab .n { color: var(--faint); font-weight: normal; font-size: 12px; }
+  [hidden] { display: none !important; }
+
+  .row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+  .row.playing { border-color: var(--accent); }
+  .row-head { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .play {
+    flex: none; width: 44px; height: 44px;
+    border: 1px solid var(--border); border-radius: 50%;
+    background: var(--panel-2); color: var(--text);
+    font-size: 17px; cursor: pointer;
+  }
+  .play:hover { border-color: var(--accent); }
+  .play:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .row.playing .play { background: var(--accent); border-color: var(--accent); color: #0b0f13; }
+  .names { min-width: 0; }
+  .title { font-weight: 600; }
+  .file { color: var(--faint); font-size: 12px; word-break: break-all; }
+  .meta { color: var(--faint); font-size: 12px; margin-top: 2px; }
+  .meta a { color: var(--muted); }
+  .meta a:hover { color: var(--accent); }
+  .tag { display: inline-block; margin-left: 6px; padding: 0 7px; border-radius: 999px; font-size: 11px; font-weight: 600; vertical-align: 1px; }
+  .tag.fixed { color: var(--accent); border: 1px solid var(--accent); }
+
+  .rate { display: flex; gap: 6px; flex-wrap: wrap; }
+  .rate button {
+    min-height: 34px; padding: 5px 12px;
+    border: 1px solid var(--border); border-radius: 999px;
+    background: transparent; color: var(--muted); font-size: 13px; cursor: pointer;
+  }
+  .rate button:hover { border-color: var(--muted); color: var(--text); }
+  .rate button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .rate button[aria-pressed="true"][data-v="good"] { border-color: var(--good); color: var(--good); }
+  .rate button[aria-pressed="true"][data-v="okay"] { border-color: var(--okay); color: var(--okay); }
+  .rate button[aria-pressed="true"][data-v="bad"]  { border-color: var(--bad);  color: var(--bad); }
+
+  .comment {
+    width: 100%; background: var(--panel-2); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); padding: 8px 10px; font: inherit; font-size: 13px;
+  }
+  .comment::placeholder { color: var(--faint); }
+  .comment:focus { outline: none; border-color: var(--accent); }
+
+  details.rejected { margin-top: 22px; }
+  details.rejected > summary { cursor: pointer; color: var(--muted); font-size: 13px; padding: 6px 0; }
+  details.rejected[open] > summary { margin-bottom: 10px; }
+
+  .report textarea {
+    width: 100%; min-height: 180px; resize: vertical;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    color: var(--text); font: 12px/1.5 ui-monospace, Consolas, monospace;
+    padding: 12px;
+  }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .actions button {
+    min-height: 38px; padding: 8px 16px;
+    border: 1px solid var(--border); border-radius: 999px;
+    background: var(--panel-2); color: var(--text); font-size: 13px; cursor: pointer;
+  }
+  .actions button:hover { border-color: var(--accent); }
+  .actions button.primary { border-color: var(--accent); color: var(--accent); }
+  .actions button.danger { color: var(--bad); border-color: rgba(224, 117, 117, 0.5); }
+  .copied { color: var(--good); font-size: 12px; align-self: center; }
+
+  /* UI proposal tab */
+  .proposal-frame {
+    display: block; width: 100%; max-width: 500px; height: 940px; margin: 0 auto;
+    border: 1px solid var(--border); border-radius: 12px; background: #008080;
+  }
+  .proposal-notes { max-width: 560px; margin: 0 auto 16px; color: var(--muted); font-size: 13px; }
+  .proposal-notes ul { margin: 8px 0 0 18px; }
+  .proposal-notes li { margin-bottom: 4px; }
+  .proposal-notes b { color: var(--text); }
+  .proposal-link { display: block; max-width: 500px; margin: 10px auto 0; font-size: 12px; color: var(--faint); text-align: center; }
+  .proposal-link a { color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <h1>poltergeist.exe — dev</h1>
+  <p class="sub">
+    Audition sounds and look at UI mock-ups. Feedback is saved in this browser
+    (localStorage) only. Copy the report and paste it back to Marcel. Nothing here is part of
+    the installed app and nothing is uploaded anywhere.
+  </p>
+
+  <nav class="tabs" role="tablist" aria-label="Dev sections">
+    <button class="tab" id="tab-new" type="button" role="tab" aria-selected="true" aria-controls="panel-new">🎧 New sounds <span class="n" id="n-new"></span></button>
+    <button class="tab" id="tab-ui" type="button" role="tab" aria-selected="false" aria-controls="panel-ui">📱 UI proposal</button>
+    <button class="tab" id="tab-live" type="button" role="tab" aria-selected="false" aria-controls="panel-live">🔊 Live sounds</button>
+  </nav>
+
+  <!-- ── New sounds ── -->
+  <section id="panel-new" role="tabpanel" aria-labelledby="tab-new">
+    <p class="group-note">
+      Everything under audition for the app. Your picks so far are already marked
+      <b>include</b>; tap 👍 / 🤷 / 👎 on the rest. Files live in <code>candidates/</code>;
+      add one to the <code>CANDIDATES</code> list in this file (and to candidates/README.md)
+      to see it here.
+    </p>
+    <div id="candidates"></div>
+    <details class="rejected">
+      <summary id="rejected-summary">Rejected earlier</summary>
+      <div id="rejected"></div>
+    </details>
+  </section>
+
+  <!-- ── UI proposal ── -->
+  <section id="panel-ui" role="tabpanel" aria-labelledby="tab-ui" hidden>
+    <div class="proposal-notes">
+      <b>The idea:</b> the app keeps its look, but the sound list no longer has to be one long
+      wrapping grid. It is the app's real stylesheet, so this is what it would look like. Tap a
+      sound to latch it and hear it. Groups: <b>Haunted</b> (ghosts plus Knock, Ding, Vibrate),
+      <b>Laughs</b>, and <b>Animals &amp; people</b> (Sneeze and Crowd gasp joined the animals).
+      <ul>
+        <li><b>B · Shelves</b> (what the app ships now): one row per group, swipe each row
+            sideways; the next column is cut in half at the edge. With a mouse: drag the row, or
+            use the ◄ ► buttons that appear once the mouse moves over the page.</li>
+        <li><b>C · Pages</b> (new): three pages with every sound of a page visible at once.
+            Swipe sideways between pages or tap the page buttons.</li>
+        <li><b>Both:</b> the page still scrolls up and down wherever your finger lands, and
+            nothing fades: content is clipped cleanly at an edge.</li>
+      </ul>
+    </div>
+    <iframe class="proposal-frame" id="proposal" title="UI proposal: sound list, shelves or pages" data-src="ui-proposal.html"></iframe>
+    <p class="proposal-link"><a href="ui-proposal.html" target="_blank" rel="noopener">open the mock full screen</a></p>
+  </section>
+
+  <!-- ── Live sounds ── -->
+  <section id="panel-live" role="tabpanel" aria-labelledby="tab-live" hidden>
+    <p class="group-note">The twelve sounds the app fires today.</p>
+    <div id="sounds"></div>
+  </section>
+
+  <section id="report-section">
+    <h2>Feedback report</h2>
+    <p class="group-note">Only entries you rated or commented on are listed.</p>
+    <div class="report">
+      <textarea id="report" readonly aria-label="Feedback report"></textarea>
+      <div class="actions">
+        <button class="primary" id="copy-btn">Copy report</button>
+        <button id="download-btn">Download .txt</button>
+        <button class="danger" id="reset-btn">Reset all feedback</button>
+        <span class="copied" id="copied" hidden>copied ✓</span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<audio id="player" preload="none"></audio>
+
+<script>
+'use strict';
+
+// ── What to audition ─────────────────────────────────────────────────────────
+// Candidates live in candidates/ (all CC0, from Freesound; sources and processing in
+// candidates/README.md). Numbers are stable: say "1 and 5" and it means these rows.
+// pre: 'good' marks Marcel's verdict from 2026-10-26, so the report starts out right.
+// fixed: a note on what changed after the first round of feedback.
+const fs = id => 'https://freesound.org/s/' + id + '/';
+const CANDIDATES = [
+  // Approved
+  { group: 'Approved: laughs', icon: '🧒', title: '#1 Kids laughing', file: 'candidates/laugh-01-kids.mp3', pre: 'good',
+    fixed: 'ending fixed', meta: '3.1 s · CC0 · Freesound 371342 by Iamgiorgio. The last "ha" was being faded away; now it keeps its natural ending.', url: fs(371342) },
+  { group: 'Approved: laughs', icon: '🧒', title: '#2 Boy laughing', file: 'candidates/laugh-02-kids.mp3', pre: 'good',
+    fixed: 'ending fixed', meta: '3.3 s (from 5.0) · CC0 · Freesound 365632 by OBXJohn. Now ends in a quiet gap, not mid-laugh.', url: fs(365632) },
+  { group: 'Approved: laughs', icon: '🧒', title: '#3 Child laughing', file: 'candidates/laugh-03-kids.mp3', pre: 'good',
+    meta: '3.2 s · CC0 · Freesound 135387 by ashjenx', url: fs(135387) },
+  { group: 'Approved: laughs', icon: '🧑', title: '#5 Woman laughing', file: 'candidates/laugh-05-adult.mp3', pre: 'good',
+    meta: '1.8 s · CC0 · Freesound 433921 by Kalibrk', url: fs(433921) },
+  { group: 'Approved: laughs', icon: '🧑', title: '#6 Woman guffaw', file: 'candidates/laugh-06-adult.mp3', pre: 'good',
+    meta: '2.4 s · CC0 · Freesound 475212 by jodybruchon', url: fs(475212) },
+  { group: 'Approved: laughs', icon: '📺', title: '#9 Sitcom audience (clapping removed)', file: 'candidates/laugh-09-sitcom.mp3', pre: 'good',
+    fixed: 'clapping cut', meta: '2.9 s (from 5.8) · CC0 · Freesound 371562 by Kinoton. Cut before the applause starts (~3.3 s in the original). A few faint early ticks remain.', url: fs(371562) },
+  { group: 'Approved: laughs', icon: '📺', title: '#11 Crowd laugh', file: 'candidates/laugh-11-sitcom.mp3', pre: 'good',
+    meta: '2.8 s · CC0 · Freesound 324894', url: fs(324894) },
+  { group: 'Approved: laughs', icon: '📺', title: '#12 Stock laughter', file: 'candidates/laugh-12-sitcom.mp3', pre: 'good',
+    meta: '2.0 s · CC0 · Freesound 242244 by ehohnke', url: fs(242244) },
+
+  // Ghost
+  { group: 'New: ghost woo woo', icon: '👻', title: '#27 Classic ghost', file: 'candidates/ghost-27-woo.mp3',
+    meta: '3.8 s · CC0 · Freesound 541635 by mosaichorse, "Classic Ghost Sound". Sustained wavering "ooo".', url: fs(541635) },
+  { group: 'New: ghost woo woo', icon: '👻', title: '#28 Wooooo (rising)', file: 'candidates/ghost-28-woo.mp3',
+    meta: '3.0 s · CC0 · Freesound 718952 by sierra721. Glides up, the closest to a cartoon "woooo".', url: fs(718952) },
+  { group: 'New: ghost woo woo', icon: '👻', title: '#29 Cartoony ghost', file: 'candidates/ghost-29-woo.mp3',
+    meta: '3.6 s · CC0 · Freesound 639426 by LaurenPonder', url: fs(639426) },
+  { group: 'New: ghost woo woo', icon: '👻', title: '#30 Ghostly moan', file: 'candidates/ghost-30-moan.mp3',
+    meta: '4.5 s (from 5.0) · CC0 · Freesound 643741 by SnowFightStudios. Breathier, creepier.', url: fs(643741) },
+  { group: 'New: ghost woo woo', icon: '👻', title: '#31 Sad ghost', file: 'candidates/ghost-31-moan.mp3',
+    meta: '2.0 s · CC0 · Freesound 448754 by LilMati, "Sad Ghost 01". Pulsing "oo oo".', url: fs(448754) },
+  { group: 'New: ghost woo woo', icon: '👻', title: '#32 Lonely ghost crying', file: 'candidates/ghost-32-cry.mp3',
+    meta: '4.5 s · CC0 · Freesound 267197 by BrainClaim', url: fs(267197) },
+
+  // More laughs
+  { group: 'New: more kids', icon: '🧒', title: '#13 Kids laugh', file: 'candidates/laugh-13-kids.mp3',
+    meta: '2.3 s · CC0 · Freesound 430815 by Ben Keaton', url: fs(430815) },
+  { group: 'New: more kids', icon: '🧒', title: '#14 Classroom kids', file: 'candidates/laugh-14-kids.mp3',
+    meta: '2.3 s · CC0 · Freesound 807751 by o_ultimo, "Classroom Kids laughing out loud"', url: fs(807751) },
+  { group: 'New: more kids', icon: '🧒', title: '#15 Girl laughing uncontrollably', file: 'candidates/laugh-15-kids.mp3',
+    meta: '2.9 s (from 4.2) · CC0 · Freesound 164243 by caculo', url: fs(164243) },
+  { group: 'New: more kids', icon: '🧒', title: '#16 Child giggle', file: 'candidates/laugh-16-kids.mp3',
+    meta: '1.4 s · CC0 · Freesound 367493 by FunWithSound', url: fs(367493) },
+
+  { group: 'New: more adults', icon: '🧑', title: '#17 Female laugh', file: 'candidates/laugh-17-adult.mp3',
+    meta: '3.1 s · CC0 · Freesound 93775 by rdneubauer', url: fs(93775) },
+  { group: 'New: more adults', icon: '🧑', title: '#18 Man laughing', file: 'candidates/laugh-18-adult.mp3',
+    meta: '3.5 s · CC0 · Freesound 529818 by dastudiospr', url: fs(529818) },
+  { group: 'New: more adults', icon: '🧑', title: '#19 Guffaw', file: 'candidates/laugh-19-adult.mp3',
+    meta: '3.3 s · CC0 · Freesound 421723 by Navadaux', url: fs(421723) },
+  { group: 'New: more adults', icon: '🧑', title: '#20 Man laughing (2)', file: 'candidates/laugh-20-adult.mp3',
+    meta: '3.3 s · CC0 · Freesound 203719 by bwav', url: fs(203719) },
+  { group: 'New: more adults', icon: '🧑', title: '#21 Girl chuckle', file: 'candidates/laugh-21-adult.mp3',
+    meta: '2.8 s · CC0 · Freesound 377742 by BlueSiren', url: fs(377742) },
+
+  { group: 'New: more crowds', icon: '📺', title: '#22 Small crowd laughing', file: 'candidates/laugh-22-crowd.mp3',
+    meta: '3.5 s (from 4.4) · CC0 · Freesound 138112 by snakebarney', url: fs(138112) },
+  { group: 'New: more crowds', icon: '📺', title: '#23 Crowd small laugh', file: 'candidates/laugh-23-crowd.mp3',
+    meta: '3.6 s · CC0 · Freesound 618972 by mrrap4food', url: fs(618972) },
+  { group: 'New: more crowds', icon: '📺', title: '#24 Audience laughing', file: 'candidates/laugh-24-crowd.mp3',
+    meta: '3.4 s · CC0 · Freesound 262983 by Alcappuccino', url: fs(262983) },
+  { group: 'New: more crowds', icon: '📺', title: '#25 A few people laughing', file: 'candidates/laugh-25-crowd.mp3',
+    meta: '2.3 s · CC0 · Freesound 452749 by schots', url: fs(452749) },
+  { group: 'New: more crowds', icon: '📺', title: '#26 Three people laughing', file: 'candidates/laugh-26-crowd.mp3',
+    meta: '2.7 s · CC0 · Freesound 399089 by rwan0731', url: fs(399089) },
+];
+
+// Marked "not good" on 2026-10-26. Files stay in candidates/ until Marcel says delete them.
+const REJECTED = [
+  { icon: '🧒', title: '#4 Child\'s laugh', file: 'candidates/laugh-04-kids.mp3', pre: 'bad', meta: 'Freesound 616088 by medyk3D', url: fs(616088) },
+  { icon: '🧑', title: '#7 Man, genuine laugh', file: 'candidates/laugh-07-adult.mp3', pre: 'bad', meta: 'Freesound 720133 by JotrainG', url: fs(720133) },
+  { icon: '🧑', title: '#8 Man laughing', file: 'candidates/laugh-08-adult.mp3', pre: 'bad', meta: 'Freesound 119459 by Eneasz', url: fs(119459) },
+  { icon: '📺', title: '#10 Small audience laughter', file: 'candidates/laugh-10-sitcom.mp3', pre: 'bad', meta: 'Freesound 17121 by cognito perceptu', url: fs(17121) },
+];
+
+// The app's live sounds (canonical filenames from js/app.js). The Cat entry is the CC0
+// cute kitten meow that won the last audition; cat-meow.mp3 remains only as an offline
+// fallback inside the app, so it is not listed here.
+const SOUNDS = [
+  { icon: '🐱', title: 'Cat',           file: 'kitty-meow.mp3' },
+  { icon: '🐶', title: 'Dog',           file: 'dog-bark.mp3' },
+  { icon: '🚪', title: 'Knock',         file: 'knock.mp3' },
+  { icon: '🐦', title: 'Sparrow',       file: 'bird-chirp.mp3' },
+  { icon: '🦗', title: 'Crickets',      file: 'crickets.mp3' },
+  { icon: '😱', title: 'Crowd gasp',    file: 'crowd-gasp.mp3' },
+  { icon: '🛎️', title: 'Ding',          file: 'ding.mp3' },
+  { icon: '🦟', title: 'Mosquito',      file: 'mosquito.mp3' },
+  { icon: '🐭', title: 'Mouse',         file: 'mouse-squeak.mp3' },
+  { icon: '📳', title: 'Vibrate',       file: 'phone-vibrate.mp3' },
+  { icon: '🤧', title: 'Sneeze',        file: 'sneeze.mp3' },
+  { icon: '🐤', title: 'Morning birds', file: 'morning-birds.mp3' },
+];
+
+const KEY = 'poltergeist-sound-feedback-v1';
+const player = document.getElementById('player');
+
+// rating[file] = { verdict: 'good'|'okay'|'bad'|'', note: '' }. A verdict stored here always
+// wins; without one the entry's preset (Marcel's earlier verdict) applies.
+let rating = {};
+try { rating = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch { rating = {}; }
+
+let playingFile = null;
+
+function verdictOf(entry) {
+  const cur = rating[entry.file];
+  if (cur && 'verdict' in cur) return cur.verdict;
+  return entry.pre || '';
+}
+
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(rating)); } catch { /* private mode */ }
+  renderReport();
+}
+
+function row(entry, group) {
+  const el = document.createElement('div');
+  el.className = 'row';
+  el.dataset.file = entry.file;
+
+  const head = document.createElement('div');
+  head.className = 'row-head';
+
+  const play = document.createElement('button');
+  play.className = 'play';
+  play.type = 'button';
+  play.textContent = '▶';
+  play.setAttribute('aria-label', 'Play ' + entry.title);
+  play.addEventListener('click', () => toggle(entry.file));
+  head.appendChild(play);
+
+  const names = document.createElement('div');
+  names.className = 'names';
+  const title = document.createElement('div');
+  title.className = 'title';
+  title.textContent = entry.icon + ' ' + entry.title;
+  if (entry.fixed) {
+    const t = document.createElement('span');
+    t.className = 'tag fixed';
+    t.textContent = entry.fixed;
+    title.appendChild(t);
+  }
+  names.appendChild(title);
+  const file = document.createElement('div');
+  file.className = 'file';
+  file.textContent = group === 'sound' ? entry.file : entry.file.split('/').pop();
+  names.appendChild(file);
+  if (entry.meta) {
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    meta.textContent = entry.meta + ' · ';
+    const a = document.createElement('a');
+    a.href = entry.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+    a.textContent = 'source';
+    meta.appendChild(a);
+    names.appendChild(meta);
+  }
+  head.appendChild(names);
+  el.appendChild(head);
+
+  const rate = document.createElement('div');
+  rate.className = 'rate';
+  // New candidates are included or skipped; live sounds are kept or replaced.
+  const opts = group === 'sound'
+    ? [['good', '👍 good'], ['okay', '🤷 okay'], ['bad', '👎 replace']]
+    : [['good', '👍 include'], ['okay', '🤷 maybe'], ['bad', '👎 skip']];
+  for (const [v, label] of opts) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.dataset.v = v;
+    b.textContent = label;
+    b.setAttribute('aria-pressed', 'false');
+    b.addEventListener('click', () => {
+      const cur = rating[entry.file] || {};
+      cur.verdict = verdictOf(entry) === v ? '' : v;    // tap again to clear
+      rating[entry.file] = cur;
+      save();
+      paintVerdicts(el, entry);
+    });
+    rate.appendChild(b);
+  }
+  el.appendChild(rate);
+
+  const note = document.createElement('input');
+  note.className = 'comment';
+  note.type = 'text';
+  note.placeholder = 'comment (optional)';
+  note.value = (rating[entry.file] || {}).note || '';
+  note.addEventListener('input', () => {
+    const cur = rating[entry.file] || {};
+    cur.note = note.value.trim();
+    rating[entry.file] = cur;
+    save();
+  });
+  el.appendChild(note);
+
+  el.dataset.title = entry.title;
+  paintVerdicts(el, entry);
+  return el;
+}
+
+function paintVerdicts(el, entry) {
+  const v = verdictOf(entry);
+  el.querySelectorAll('.rate button').forEach(b => {
+    b.setAttribute('aria-pressed', String(b.dataset.v === v));
+  });
+}
+
+function toggle(file) {
+  if (playingFile === file && !player.paused) {
+    player.pause();
+    return;
+  }
+  playingFile = file;
+  player.src = file;
+  player.play().catch(() => { /* tap-to-play guards; the button already is a tap */ });
+}
+
+player.addEventListener('play', () => paintPlaying());
+player.addEventListener('pause', () => paintPlaying());
+player.addEventListener('ended', () => { playingFile = null; paintPlaying(); });
+
+function paintPlaying() {
+  for (const el of document.querySelectorAll('.row')) {
+    const on = player.paused ? false : el.dataset.file === playingFile;
+    el.classList.toggle('playing', on);
+    el.querySelector('.play').textContent = on ? '■' : '▶';
+  }
+}
+
+// ── Feedback report ──────────────────────────────────────────────────────────
+function renderReport() {
+  const label = { good: 'good', okay: 'okay', bad: 'REPLACE' };
+  const candLabel = { good: 'INCLUDE', okay: 'maybe', bad: 'skip' };
+  const isCand = new Set([...CANDIDATES, ...REJECTED].map(c => c.file));
+  const order = [...CANDIDATES, ...REJECTED, ...SOUNDS];
+  const lines = [];
+  lines.push('poltergeist.exe — sound feedback');
+  lines.push('date: ' + new Date().toISOString().slice(0, 10));
+  lines.push('');
+  let n = 0;
+  for (const entry of order) {
+    const cur = rating[entry.file] || {};
+    const verdict = verdictOf(entry);
+    if (!verdict && !cur.note) continue;
+    n++;
+    const head = verdict ? (isCand.has(entry.file) ? candLabel : label)[verdict] : 'noted';
+    lines.push(('[' + head + '] ' + entry.title + ' (' + entry.file.split('/').pop() + ')')
+      + (cur.note ? ' — "' + cur.note + '"' : ''));
+  }
+  lines.push('');
+  lines.push(n ? n + ' entr' + (n === 1 ? 'y' : 'ies') + ' rated or commented.'
+              : 'nothing rated yet.');
+  document.getElementById('report').value = lines.join('\n');
+}
+
+document.getElementById('copy-btn').addEventListener('click', async () => {
+  const ta = document.getElementById('report');
+  try {
+    await navigator.clipboard.writeText(ta.value);
+  } catch {
+    ta.select(); document.execCommand('copy');
+  }
+  const done = document.getElementById('copied');
+  done.hidden = false;
+  setTimeout(() => { done.hidden = true; }, 1800);
+});
+
+document.getElementById('download-btn').addEventListener('click', () => {
+  const blob = new Blob([document.getElementById('report').value], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'poltergeist-sound-feedback.txt';
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+document.getElementById('reset-btn').addEventListener('click', () => {
+  if (!confirm('Clear every verdict and comment on this page? (Your earlier picks go back to their presets.)')) return;
+  rating = {};
+  save();
+  const all = [...CANDIDATES, ...REJECTED, ...SOUNDS];
+  for (const el of document.querySelectorAll('.row')) {
+    const entry = all.find(e => e.file === el.dataset.file);
+    paintVerdicts(el, entry);
+    el.querySelector('.comment').value = '';
+  }
+});
+
+// ── Build the page ───────────────────────────────────────────────────────────
+const candBox = document.getElementById('candidates');
+let lastGroup = null;
+for (const c of CANDIDATES) {
+  if (c.group && c.group !== lastGroup) {
+    const h = document.createElement('div');
+    h.className = 'subhead';
+    h.textContent = c.group;
+    candBox.appendChild(h);
+    lastGroup = c.group;
+  }
+  candBox.appendChild(row(c, 'candidate'));
+}
+document.getElementById('n-new').textContent = '(' + CANDIDATES.length + ')';
+const rejBox = document.getElementById('rejected');
+for (const r of REJECTED) rejBox.appendChild(row(r, 'candidate'));
+document.getElementById('rejected-summary').textContent =
+  'Rejected earlier (' + REJECTED.length + '): ' + REJECTED.map(r => r.title.split(' ')[0]).join(', ');
+const soundBox = document.getElementById('sounds');
+for (const s of SOUNDS) soundBox.appendChild(row(s, 'sound'));
+renderReport();
+
+// ── Tabs ─────────────────────────────────────────────────────────────────────
+const TABS = ['new', 'ui', 'live'];
+function showTab(name, fromHash) {
+  if (!TABS.includes(name)) name = 'new';
+  for (const t of TABS) {
+    document.getElementById('tab-' + t).setAttribute('aria-selected', String(t === name));
+    document.getElementById('panel-' + t).hidden = t !== name;
+  }
+  document.getElementById('report-section').hidden = name === 'ui';
+  if (name !== 'ui') player.pause();
+  if (name === 'ui') {
+    const f = document.getElementById('proposal');
+    if (!f.src) f.src = f.dataset.src;     // load the mock only when it is looked at
+  }
+  if (!fromHash) { try { history.replaceState(null, '', '#' + name); } catch { /* file:// */ } }
+}
+for (const t of TABS) document.getElementById('tab-' + t).addEventListener('click', () => showTab(t));
+showTab(location.hash.slice(1), true);
+</script>
+</body>
+</html>

@@ -32,7 +32,7 @@ needed to pull this off:
 
 These are the explicit asks. Treat them as a checklist.
 
-- [x] **Toggle sounds** — multi-select. **First run arms the Cat only**, not all twelve:
+- [x] **Toggle sounds** — multi-select. **First run arms the Cat only**, not all of them:
       arming everything made the grid read as "all selected" at a glance and hid the fact
       that these are choices. A small **Select all** button sits in the section label; its
       text states what the next tap does, so it reads **Deselect all** only once every
@@ -244,8 +244,8 @@ Two caches, and the split matters:
 
 - `poltergeist-<VERSION>` — the shell. Version-keyed, replaced wholesale on every bump,
   so index.html / app.js / styles.css are always from one deploy and can never skew.
-- `poltergeist-sounds` — the twelve mp3s. **Unversioned and never evicted.** They are
-  1.3 MB and change far less often than the code; keeping them in the versioned cache
+- `poltergeist-sounds` — the mp3s. **Unversioned and never evicted.** They are
+  about 1.9 MB and change far less often than the code; keeping them in the versioned cache
   meant every bump silently re-downloaded all of them over mobile data.
 
 `caches.keys()` is per **origin**, not per app, and this site hosts several. Every
@@ -312,17 +312,54 @@ opened again. The deleted screen says exactly that.
 - If no file matches, the app falls back to a **synthesized stand-in** so every
   button works and the app is testable before the real files are dropped in. Real
   files override the synth automatically once present.
-- Current sounds (12, all supplied + normalized): Cat, Dog, Knock, Sparrow,
-  Crickets, Crowd gasp, Ding, Mosquito, Mouse, Vibrate, Sneeze, Morning birds.
+- Current sounds (20, all supplied + normalized): Cat, Dog, Knock, Sparrow,
+  Crickets, Crowd gasp, Ding, Mosquito, Mouse, Vibrate, Sneeze, Morning birds, plus 8 laughs
+  (Kids, Boy, Child, Woman, Guffaw, Sitcom, Crowd, Laugh track; CC0 Freesound clips chosen in the
+  2026-10-26 audition, sources in `resources/candidates/README.md`).
   (The placeholder Doorbell was dropped once real sounds arrived; "Ding" covers the
   bell niche, and a `doorbell.mp3` would be picked up by the Ding entry.)
 - **Cat is `kitty-meow.mp3`** since v26.10.12d: the CC0 "Cute Kitten Meow"
   (Freesound 448084 by Breviceps) chosen in the 2026-10-12 audition (record and
-  workflow in `resources/candidates/README.md`, tool page `resources/sounds.html`).
+  workflow in `resources/candidates/README.md`, tool page `resources/dev.html`, formerly
+  `sounds.html`).
   The old meme `cat-meow.mp3` sits second in the Cat `files:` list purely as an
   offline fallback for installs that predate the swap. The new filename is
   deliberate: the sounds cache is unversioned and cache-first, so a file replaced
   at the same URL would keep serving the old bytes.
+
+### Sound list: shelves
+
+The sounds are no longer one wrapping grid. `SOUNDS` entries carry a `shelf`, `SHELVES` in
+`js/app.js` fixes the row order (**Laughs**, **Haunted**, **Animals & people**), and
+`renderSounds()` draws one row per shelf: a title, a count, a small **All / None** button
+(label states the next tap, same floor as Deselect all: never nothing armed) and a sunken
+well holding a sideways scroller. Haunted holds Knock, Ding and Vibrate (and the ghost
+"woo" sounds when they join); Sneeze and Crowd gasp sit with the animals as "people".
+
+Behaviour that must not regress (the owner asked for each):
+
+* **The page scrolls vertically wherever a finger lands.** The scroller has `overflow-y:
+  hidden` and nothing taller than itself, so a vertical drag has nothing to capture and
+  chains to the page. Never give it `overflow-y: auto/scroll` or `overscroll-behavior-y`.
+* **"There is more" = the half-cut column.** Columns are 3.5 across
+  (`grid-auto-columns: calc((100% - 15px) / 3.5)`). No hint text, no edge fades, no opacity
+  or transitions: an earlier mock faded the edge column and the text popped in and out at
+  the boundary. Content is now clipped hard at the well's inner edge (the well's 2px padding
+  equals its bevel, so nothing paints over the frame).
+* **Mouse works too.** Click-and-drag scrolls a row (pointer capture only after 6 px, so a
+  plain click still arms; a drag swallows its closing click). Each row also gets ◄ ► end
+  buttons, but only under `html.has-mouse`, which `watchForMouse()` sets on the first
+  `pointerType === 'mouse'` event. **Do not gate them on `(hover: hover)`**: touch laptops
+  report no hover, which is exactly why the owner could not scroll with the mouse in the first
+  mock. Shift+wheel and trackpads work natively; the plain wheel is left alone so it keeps
+  scrolling the page.
+* **No rebuild under the finger.** `prepareSounds()` (first tap) only refreshes buttons in
+  place, and `renderSounds()` keeps each shelf's scroll position, so a swiped row never snaps
+  back to the start.
+
+`resources/ui-proposal.html` (framed in the "UI proposal" tab of `resources/dev.html`) mocks
+this and a variant **C, Pages** (Haunted / Laughs / Animals & people as three swipeable
+pages, every sound of a page visible at once). C is not in the app; the owner is trying it.
 
 ### Test mode
 
@@ -596,7 +633,7 @@ The reskin is CSS-only. Every class name and state hook (`.armed`, `.selected`,
 | `manifest.json` | PWA manifest. |
 | `sw.js` | Service worker: cache-first / offline-first, precaches shell + all sounds, version-keyed cache. |
 | `icons/` | `icon.svg` + `icon-192/512/180.png`. |
-| `resources/` | Owner-supplied `.mp3` sounds (see its `README.md`). |
+| `resources/` | Owner-supplied `.mp3` sounds (see its `README.md`), plus `dev.html` (audition + UI mock page, never cached by the service worker), `ui-proposal.html` and `candidates/`. |
 
 ## Versioning
 

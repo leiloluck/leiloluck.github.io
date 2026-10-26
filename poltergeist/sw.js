@@ -34,7 +34,7 @@
 
 'use strict';
 
-const VERSION      = 'v26.10.23b';
+const VERSION      = 'v26.10.26a';
 const CACHE_PREFIX = 'poltergeist-';           // never touch caches outside this prefix
 const CACHE        = CACHE_PREFIX + VERSION;
 const AUDIO_CACHE  = CACHE_PREFIX + 'sounds';    // unversioned on purpose — see header
@@ -69,6 +69,14 @@ const SOUNDS = [
   './resources/knock.mp3',
   './resources/ding.mp3',
   './resources/phone-vibrate.mp3',
+  './resources/laugh-kids.mp3',
+  './resources/laugh-boy.mp3',
+  './resources/laugh-child.mp3',
+  './resources/laugh-woman.mp3',
+  './resources/laugh-guffaw.mp3',
+  './resources/laugh-sitcom.mp3',
+  './resources/laugh-crowd.mp3',
+  './resources/laugh-track.mp3',
 ];
 
 // Always fetch precache entries from the network, never the HTTP cache. See header.
@@ -127,10 +135,11 @@ async function serve(request) {
   // device look online and the Update button could wipe the caches with no way back.
   if (url.searchParams.has('probe')) return fetch(request);
 
-  // resources/sounds.html is the sound-workshop tool page, not app content: always serve
-  // it from the network, never cache it. Auditioning must show the latest list, and a
-  // cached copy would keep hiding edits until the next version bump.
-  if (url.pathname.endsWith('/resources/sounds.html')) return fetch(request);
+  // resources/*.html (dev.html and the ui-proposal.html mock it frames) are dev tool pages,
+  // not app content: always serve them from the network, never cache them. Auditioning
+  // must show the latest list, and a cached copy would keep hiding edits until the next
+  // version bump.
+  if (url.pathname.includes('/resources/') && url.pathname.endsWith('.html')) return fetch(request);
 
   // Sounds are served from (and added to) the persistent cache; everything else from the
   // version-keyed shell cache.

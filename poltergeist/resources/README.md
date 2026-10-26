@@ -20,27 +20,42 @@ exact name. Until a matching file is present, the app plays a synthesized stand-
 | 📳 Vibrate | `phone-vibrate.mp3` (`vibrate`) | a phone buzzing on a table |
 | 🤧 Sneeze | `sneeze.mp3` (`estornudo`) | an achoo |
 | 🐤 Morning birds | `morning-birds.mp3` (`garden-birds`) | gentle garden birds |
+| 🧒 Kids laugh | `laugh-kids.mp3` | CC0, Freesound 371342 (2026-10-26 audition) |
+| 👦 Boy laugh | `laugh-boy.mp3` | CC0, Freesound 365632 |
+| 🧒 Child laugh | `laugh-child.mp3` | CC0, Freesound 135387 |
+| 👩 Woman laugh | `laugh-woman.mp3` | CC0, Freesound 433921 |
+| 😂 Guffaw | `laugh-guffaw.mp3` | CC0, Freesound 475212 |
+| 📺 Sitcom | `laugh-sitcom.mp3` | CC0, Freesound 371562, applause cut off |
+| 🤣 Crowd laugh | `laugh-crowd.mp3` | CC0, Freesound 324894 |
+| 🎞️ Laugh track | `laugh-track.mp3` | CC0, Freesound 242244 |
 
 Each sound accepts any name in its `files:` list (`js/app.js`); the first that
 decodes wins. Want another name? Add it there.
 
-> All 12 files above are present under their canonical names and loudness-normalized.
+> All files above are present under their canonical names and loudness-normalized.
 > The Cat file is `kitty-meow.mp3` — the CC0 "Cute Kitten Meow" chosen in the
 > 2026-10-12 audition (record in `candidates/README.md`); `cat-meow.mp3` remains only
 > as an offline fallback. ✓ There is no real **Doorbell** ding-dong yet — the closest
 > is **Ding**. Drop a `doorbell.mp3` and it will be used for the Ding button, or add
 > a dedicated entry in `SOUNDS`.
 
-## Auditioning sounds — `sounds.html`
+## Dev page — `dev.html`
 
-Open **`resources/sounds.html`** (on the live site:
-`leiloluck.github.io/poltergeist/resources/sounds.html`) to play the app's twelve sounds
-and any replacement candidates, rate each one 👍 good / 🤷 okay / 👎 replace with an
-optional comment, and copy the generated feedback report. It is a local tool page: the
-feedback lives in that browser's `localStorage` and is never uploaded. The app's service
-worker deliberately never caches this page (`sw.js` serves it network-only), so edits show
-up immediately. Replacement candidates live in `candidates/` — sources and licences in
-its README.
+Open **`resources/dev.html`** (on the live site:
+`leiloluck.github.io/poltergeist/resources/dev.html`; renamed from `sounds.html` on
+2026-10-26). It has three tabs:
+
+* **New sounds** — every clip under audition from `candidates/`. Rate each one 👍 include /
+  🤷 maybe / 👎 skip with an optional comment, then copy the generated feedback report.
+* **UI proposal** — `ui-proposal.html` in a frame: a mock of the app's sound list as a
+  swipeable row (two variants), built on the app's real `css/styles.css`. Mock only; the app
+  is untouched.
+* **Live sounds** — the app's twelve sounds today (good / okay / replace).
+
+It is a local tool page: the feedback lives in that browser's `localStorage` and is never
+uploaded. The app's service worker deliberately never caches any `resources/*.html` page
+(`sw.js` serves them network-only), so edits show up immediately. Candidates live in
+`candidates/` — sources and licences in its README.
 
 ## Loudness — keep volumes consistent
 

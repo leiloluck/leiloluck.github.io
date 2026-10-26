@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<!-- ui-proposal.html — poltergeist.exe: mock of the sound list (dev tool, NOT part of the app)
+     Shown inside the "UI proposal" tab of dev.html (and works on its own). It links the REAL
+     ../css/styles.css, so every bevel, colour and button is the app's own, and the shelf rules
+     come straight from that file. Nothing here is wired to the app: tapping a sound latches it
+     (like arming) AND plays it, so the mock doubles as a listening room.
+
+     B  "Shelves"  - what the app ships today: one sideways-swipeable row per group, the next
+                     column half cut off at the edge. Mouse: drag, or the end buttons that appear
+                     once a mouse moves over the page. Same markup and wiring as js/app.js.
+     C  "Pages"    - three pages (Haunted, Laughs, Animals & people), every sound of a page
+                     visible at once. Swipe sideways between pages, or tap the page buttons.
+                     Proposed 2026-10-26; the app does not use it (yet).
+
+     Both: the page keeps scrolling vertically wherever a finger lands (the sideways scroller
+     has no vertical overflow to capture), nothing fades, and content is clipped hard at an
+     edge. If C wins, the .pager* rules below move into css/styles.css. -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>poltergeist.exe — sound list (mock)</title>
+<link rel="stylesheet" href="../css/styles.css">
+<style>
+  /* Mock controls live above the window; they are not part of the proposal. */
+  body { flex-direction: column; justify-content: flex-start; align-items: center; gap: 8px; padding-top: 8px; padding-bottom: 12px; }
+  .devbar { width: 100%; max-width: 470px; display: flex; gap: 4px; align-items: stretch; font-size: 12px; color: #fff; }
+  .devbar .lbl { align-self: center; padding-right: 4px; white-space: nowrap; }
+  .devbar button { flex: 1 1 0; min-height: 30px; padding: 4px 6px; font-size: 12px; background: var(--surface); box-shadow: var(--raised); }
+  .devbar button[aria-pressed="true"] { box-shadow: var(--sunken); font-weight: bold; background-color: #d6d6d6; }
+  .app { min-height: 0; }
+  .launch-section { gap: 8px; }
+  .mock-note { font-size: 11px; color: var(--muted); }
+
+  /* ───────── Variant C: pages (candidate for css/styles.css) ───────── */
+  /* Page buttons: the app's own "selected = sunken + bold" pattern (see .interval-btn). */
+  .pager-tabs { display: flex; gap: 4px; }
+  .pager-tab {
+    flex: 1 1 0; min-width: 0; min-height: 40px; padding: 5px 4px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+    font-size: 12px; background: var(--surface); box-shadow: var(--raised);
+  }
+  .pager-tab .pt-count { font-size: 10px; color: var(--muted); }
+  .pager-tab[aria-selected="true"] { box-shadow: var(--sunken); font-weight: bold; background-color: #d6d6d6; }
+  .pager-tab:active { box-shadow: var(--sunken); }
+
+  /* The sideways pager. Each page is exactly one pager wide and snaps into place; the
+     pager's height follows the page in view (set from script), so there is no empty space
+     under a short page and no vertical overflow to trap a finger. */
+  .pager {
+    display: flex;
+    align-items: flex-start;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .pager::-webkit-scrollbar { display: none; }
+  .page { flex: 0 0 100%; min-width: 0; scroll-snap-align: start; scroll-snap-stop: always; }
+  .page-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 5px;
+    padding: 6px;
+    background: var(--surface);
+    box-shadow: var(--field);
+  }
+  .page-dots { display: flex; justify-content: center; gap: 6px; }
+  .page-dots i { width: 7px; height: 7px; background: var(--btn-shadow); box-shadow: var(--raised); }
+  .page-dots i.on { background: var(--sel-bg); }
+</style>
+</head>
+<body>
+
+<div class="devbar" role="group" aria-label="Mock variant">
+  <span class="lbl">Variant:</span>
+  <button type="button" id="vB" aria-pressed="false">B · Shelves (in the app)</button>
+  <button type="button" id="vC" aria-pressed="true">C · Pages</button>
+</div>
+
+<main class="app">
+  <header class="header">
+    <h1 class="logo"><span class="logo-name">poltergeist.exe</span></h1>
+    <button class="btn-close" type="button" aria-label="Close (mock)">&#215;</button>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button class="tab" type="button" role="tab" aria-selected="true">🔊 Annoy</button>
+    <button class="tab" type="button" role="tab" aria-selected="false">⚙ Settings</button>
+    <button class="tab tab-info" type="button" role="tab" aria-selected="false">ⓘ what is this?</button>
+  </nav>
+
+  <section class="panel">
+    <section class="launch-section">
+      <div class="launch-row"><button class="btn-launch" type="button">Activate</button></div>
+    </section>
+
+    <section class="section sounds-section" id="sounds">
+      <!-- built by the script below -->
+    </section>
+
+    <section class="section">
+      <p class="section-label">How often <span class="section-hint">randomized around this</span></p>
+      <div class="interval-grid">
+        <button class="interval-btn" type="button">5 sec</button>
+        <button class="interval-btn" type="button">30 sec</button>
+        <button class="interval-btn" type="button">1 min</button>
+        <button class="interval-btn" type="button">2 min</button>
+        <button class="interval-btn selected" type="button">4 min</button>
+        <button class="interval-btn" type="button">6 min</button>
+      </div>
+    </section>
+    <p class="mock-note">Mock: tap a sound to latch it and hear it. Nothing is saved.</p>
+  </section>
+</main>
+
+<audio id="player" preload="none"></audio>
+
+<script>
+'use strict';
+
+// id, name, emoji, group, file (relative to resources/). Groups are the new ones: knock,
+// ding and vibrate count as haunted; sneeze and crowd gasp join the animals as "people".
+const SOUNDS = [
+  ['g27', 'Ghost',        '👻', 'Haunted', 'candidates/ghost-27-woo.mp3'],
+  ['g28', 'Wooo',         '👻', 'Haunted', 'candidates/ghost-28-woo.mp3'],
+  ['g29', 'Cartoon ghost','👻', 'Haunted', 'candidates/ghost-29-woo.mp3'],
+  ['knock',   'Knock',    '🚪', 'Haunted', 'knock.mp3'],
+  ['ding',    'Ding',     '🛎️', 'Haunted', 'ding.mp3'],
+  ['vibrate', 'Vibrate',  '📳', 'Haunted', 'phone-vibrate.mp3'],
+
+  ['l1',  'Kids laugh',   '🧒', 'Laughs', 'laugh-kids.mp3'],
+  ['l2',  'Boy laugh',    '👦', 'Laughs', 'laugh-boy.mp3'],
+  ['l3',  'Child laugh',  '🧒', 'Laughs', 'laugh-child.mp3'],
+  ['l5',  'Woman laugh',  '👩', 'Laughs', 'laugh-woman.mp3'],
+  ['l6',  'Guffaw',       '😂', 'Laughs', 'laugh-guffaw.mp3'],
+  ['l9',  'Sitcom',       '📺', 'Laughs', 'laugh-sitcom.mp3'],
+  ['l11', 'Crowd laugh',  '🤣', 'Laughs', 'laugh-crowd.mp3'],
+  ['l12', 'Laugh track',  '🎞️', 'Laughs', 'laugh-track.mp3'],
+
+  ['cat',      'Cat',          '🐱', 'Animals & people', 'kitty-meow.mp3'],
+  ['dog',      'Dog',          '🐶', 'Animals & people', 'dog-bark.mp3'],
+  ['mouse',    'Mouse',        '🐭', 'Animals & people', 'mouse-squeak.mp3'],
+  ['bird',     'Sparrow',      '🐦', 'Animals & people', 'bird-chirp.mp3'],
+  ['mbirds',   'Morning birds','🐤', 'Animals & people', 'morning-birds.mp3'],
+  ['crickets', 'Crickets',     '🦗', 'Animals & people', 'crickets.mp3'],
+  ['mosquito', 'Mosquito',     '🦟', 'Animals & people', 'mosquito.mp3'],
+  ['sneeze',   'Sneeze',       '🤧', 'Animals & people', 'sneeze.mp3'],
+  ['gasp',     'Crowd gasp',   '😱', 'Animals & people', 'crowd-gasp.mp3'],
+].map(([id, name, emoji, group, file]) => ({ id, name, emoji, group, file }));
+
+const ORDER_B = ['Laughs', 'Haunted', 'Animals & people'];   // as in the app
+const ORDER_C = ['Haunted', 'Laughs', 'Animals & people'];   // pages, as asked
+
+const armed = new Set(['cat', 'l1', 'g27']);
+const player = document.getElementById('player');
+const root = document.getElementById('sounds');
+
+(function watchForMouse() {      // same as js/app.js: end buttons only once a real mouse shows up
+  const seen = e => {
+    if (e.pointerType !== 'mouse') return;
+    document.documentElement.classList.add('has-mouse');
+    removeEventListener('pointermove', seen); removeEventListener('pointerdown', seen);
+  };
+  addEventListener('pointermove', seen, { passive: true });
+  addEventListener('pointerdown', seen, { passive: true });
+})();
+
+function soundBtn(s) {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'sound-btn' + (armed.has(s.id) ? ' armed' : '');
+  b.dataset.id = s.id;
+  b.setAttribute('aria-pressed', armed.has(s.id) ? 'true' : 'false');
+  b.innerHTML = '<span class="s-emoji"></span><span class="s-label"><span class="s-name"></span></span>';
+  b.querySelector('.s-emoji').textContent = s.emoji;
+  b.querySelector('.s-name').textContent = s.name;
+  b.addEventListener('click', () => {
+    if (armed.has(s.id)) armed.delete(s.id); else armed.add(s.id);
+    syncArmed();
+    if (armed.has(s.id)) { player.src = s.file; player.play().catch(() => {}); } else player.pause();
+  });
+  return b;
+}
+const idsOf = g => SOUNDS.filter(s => s.group === g).map(s => s.id);
+function syncArmed() {
+  root.querySelectorAll('.sound-btn').forEach(b => {
+    const on = armed.has(b.dataset.id);
+    b.classList.toggle('armed', on);
+    b.setAttribute('aria-pressed', String(on));
+  });
+  const all = SOUNDS.every(s => armed.has(s.id));
+  const t = root.querySelector('[data-role="all"]');
+  if (t) t.textContent = all ? 'Deselect all' : 'Select all';
+  root.querySelectorAll('.shelf-all').forEach(btn => {
+    btn.textContent = idsOf(btn.dataset.shelf).every(i => armed.has(i)) ? 'None' : 'All';
+  });
+}
+function labelRow() {
+  const p = document.createElement('p');
+  p.className = 'section-label';
+  p.innerHTML = 'Sounds <span class="label-right"><span class="section-hint">tap to arm</span>' +
+    '<button class="btn-tiny" type="button" data-role="all">Select all</button></span>';
+  return p;
+}
+function wireSelectAll() {
+  root.querySelector('[data-role="all"]').addEventListener('click', () => {
+    const all = SOUNDS.every(s => armed.has(s.id));
+    SOUNDS.forEach(s => all ? armed.delete(s.id) : armed.add(s.id));
+    if (all) armed.add('cat');
+    syncArmed();
+  });
+}
+
+// ── B: shelves — identical markup and sideways wiring to js/app.js ──────────────────────
+function wireShelf(scroller, left, right) {
+  const sync = () => {
+    const max = scroller.scrollWidth - scroller.clientWidth;
+    left.hidden = scroller.scrollLeft <= 1;
+    right.hidden = max - scroller.scrollLeft <= 1;
+  };
+  scroller.addEventListener('scroll', sync, { passive: true });
+  new ResizeObserver(sync).observe(scroller); sync();
+  const step = () => Math.max(120, scroller.clientWidth * 0.75);
+  left.addEventListener('click',  () => scroller.scrollBy({ left: -step(), behavior: 'smooth' }));
+  right.addEventListener('click', () => scroller.scrollBy({ left:  step(), behavior: 'smooth' }));
+  let drag = null, swallow = false;
+  scroller.addEventListener('pointerdown', e => {
+    if (e.pointerType !== 'mouse' || e.button !== 0) return;
+    drag = { id: e.pointerId, x: e.clientX, left: scroller.scrollLeft, moved: false };
+  });
+  scroller.addEventListener('pointermove', e => {
+    if (!drag || e.pointerId !== drag.id) return;
+    const dx = e.clientX - drag.x;
+    if (!drag.moved) { if (Math.abs(dx) < 6) return; drag.moved = true; scroller.setPointerCapture(e.pointerId); scroller.classList.add('dragging'); }
+    scroller.scrollLeft = drag.left - dx;
+  });
+  const end = () => { if (!drag) return; if (drag.moved) { swallow = true; setTimeout(() => { swallow = false; }, 0); } drag = null; scroller.classList.remove('dragging'); };
+  scroller.addEventListener('pointerup', end); scroller.addEventListener('pointercancel', end);
+  scroller.addEventListener('click', e => { if (swallow) { e.stopPropagation(); e.preventDefault(); } }, true);
+}
+
+function buildB() {
+  root.replaceChildren(labelRow());
+  const wrap = document.createElement('div'); wrap.className = 'shelves'; root.appendChild(wrap);
+  for (const name of ORDER_B) {
+    const list = SOUNDS.filter(s => s.group === name);
+    const shelf = document.createElement('div'); shelf.className = 'shelf';
+    shelf.innerHTML = '<div class="shelf-head"><span class="shelf-name"></span><span class="shelf-count"></span>' +
+      '<button type="button" class="btn-tiny shelf-all"></button></div>' +
+      '<div class="shelf-well"><div class="shelf-scroller" role="group"></div>' +
+      '<button type="button" class="shelf-arrow shelf-arrow-left" aria-label="Scroll left">◄</button>' +
+      '<button type="button" class="shelf-arrow shelf-arrow-right" aria-label="Scroll right">►</button></div>';
+    shelf.querySelector('.shelf-name').textContent = name;
+    shelf.querySelector('.shelf-count').textContent = list.length;
+    const all = shelf.querySelector('.shelf-all'); all.dataset.shelf = name;
+    all.addEventListener('click', () => {
+      const every = list.every(s => armed.has(s.id));
+      list.forEach(s => every ? armed.delete(s.id) : armed.add(s.id));
+      if (!armed.size) armed.add('cat'); syncArmed();
+    });
+    const sc = shelf.querySelector('.shelf-scroller'); sc.setAttribute('aria-label', name);
+    list.forEach(s => sc.appendChild(soundBtn(s)));
+    wrap.appendChild(shelf);
+    wireShelf(sc, shelf.querySelector('.shelf-arrow-left'), shelf.querySelector('.shelf-arrow-right'));
+  }
+  wireSelectAll(); syncArmed();
+}
+
+// ── C: pages ─────────────────────────────────────────────────────────────────────────────
+function buildC() {
+  root.replaceChildren(labelRow());
+  const tabs = document.createElement('div'); tabs.className = 'pager-tabs'; tabs.setAttribute('role', 'tablist');
+  const pager = document.createElement('div'); pager.className = 'pager';
+  const dots = document.createElement('div'); dots.className = 'page-dots'; dots.setAttribute('aria-hidden', 'true');
+  const pages = [];
+  ORDER_C.forEach((name, i) => {
+    const list = SOUNDS.filter(s => s.group === name);
+    const tab = document.createElement('button'); tab.type = 'button'; tab.className = 'pager-tab'; tab.setAttribute('role', 'tab');
+    tab.innerHTML = '<span class="pt-name"></span><span class="pt-count"></span>';
+    tab.querySelector('.pt-name').textContent = name;
+    tab.querySelector('.pt-count').textContent = list.length + ' sounds';
+    tab.addEventListener('click', () => pager.scrollTo({ left: i * pager.clientWidth, behavior: 'smooth' }));
+    tabs.appendChild(tab);
+    const page = document.createElement('div'); page.className = 'page'; page.setAttribute('role', 'tabpanel');
+    const grid = document.createElement('div'); grid.className = 'page-grid';
+    list.forEach(s => grid.appendChild(soundBtn(s)));
+    page.appendChild(grid); pager.appendChild(page); pages.push({ tab, page });
+    dots.appendChild(document.createElement('i'));
+  });
+  root.append(tabs, pager, dots);
+
+  let current = -1, settle = null;
+  // The page buttons and dots follow the swipe immediately; the pager's HEIGHT only changes
+  // once the swipe has come to rest, so nothing below it jumps while a finger is down.
+  const fitHeight = () => { pager.style.height = pages[Math.max(0, current)].page.offsetHeight + 'px'; };
+  const show = i => {
+    if (i === current) return;
+    current = i;
+    pages.forEach((p, k) => p.tab.setAttribute('aria-selected', String(k === i)));
+    [...dots.children].forEach((d, k) => d.classList.toggle('on', k === i));
+  };
+  const sync = () => show(Math.max(0, Math.min(pages.length - 1, Math.round(pager.scrollLeft / Math.max(1, pager.clientWidth)))));
+  pager.addEventListener('scroll', () => { sync(); clearTimeout(settle); settle = setTimeout(fitHeight, 140); }, { passive: true });
+  let lastW = 0;     // only a WIDTH change re-seats the page; our own height changes must not
+  new ResizeObserver(() => {
+    const w = pager.clientWidth;
+    if (w === lastW) return;
+    lastW = w;
+    pager.scrollLeft = Math.max(0, current) * w;
+    fitHeight();
+  }).observe(pager);
+  wireSelectAll(); syncArmed(); show(0); fitHeight();
+}
+
+const vB = document.getElementById('vB'), vC = document.getElementById('vC');
+function show(v) {
+  vB.setAttribute('aria-pressed', String(v === 'B')); vC.setAttribute('aria-pressed', String(v === 'C'));
+  (v === 'B' ? buildB : buildC)();
+}
+vB.addEventListener('click', () => show('B')); vC.addEventListener('click', () => show('C'));
+show(location.hash === '#B' ? 'B' : 'C');
+</script>
+</body>
+</html>

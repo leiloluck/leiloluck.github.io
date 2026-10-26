@@ -176,21 +176,15 @@
   <!-- ── UI proposal ── -->
   <section id="panel-ui" role="tabpanel" aria-labelledby="tab-ui" hidden>
     <div class="proposal-notes">
-      <b>The idea:</b> the app keeps its look, but the sound list no longer has to be one long
-      wrapping grid. It is the app's real stylesheet, so this is what it would look like. Tap a
-      sound to latch it and hear it. Groups: <b>Haunted</b> (ghosts plus Knock, Ding, Vibrate),
-      <b>Laughs</b>, and <b>Animals &amp; people</b> (Sneeze and Crowd gasp joined the animals).
-      <ul>
-        <li><b>B · Shelves</b> (what the app ships now): one row per group, swipe each row
-            sideways; the next column is cut in half at the edge. With a mouse: drag the row, or
-            use the ◄ ► buttons that appear once the mouse moves over the page.</li>
-        <li><b>C · Pages</b> (new): three pages with every sound of a page visible at once.
-            Swipe sideways between pages or tap the page buttons.</li>
-        <li><b>Both:</b> the page still scrolls up and down wherever your finger lands, and
-            nothing fades: content is clipped cleanly at an edge.</li>
-      </ul>
+      <b>Shipped in the app (v26.10.26c): C · Pages.</b> The sound list is three pages
+      (<b>Haunted</b>: Knock, Ding, Vibrate, and the ghost clips once picked; <b>Laughs</b>; <b>Animals &amp; people</b>)
+      with every sound of a page visible at once. Swipe sideways, tap a page button, or drag with a
+      mouse. Arming is global, so sounds from different pages mix in playback, and Select all /
+      Deselect all cover every page. Each page button shows how many of its sounds are on. This
+      mock uses the app's real stylesheet; tap a sound to latch it and hear it.
+      <p style="margin-top:8px">The first version (v26.10.26a, commit aebaf2d) used one swipeable row per group instead of pages; it is in git history.</p>
     </div>
-    <iframe class="proposal-frame" id="proposal" title="UI proposal: sound list, shelves or pages" data-src="ui-proposal.html"></iframe>
+    <iframe class="proposal-frame" id="proposal" title="UI proposal: sound list as pages" data-src="ui-proposal.html"></iframe>
     <p class="proposal-link"><a href="ui-proposal.html" target="_blank" rel="noopener">open the mock full screen</a></p>
   </section>
 

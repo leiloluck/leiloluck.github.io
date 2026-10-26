@@ -327,39 +327,42 @@ opened again. The deleted screen says exactly that.
   deliberate: the sounds cache is unversioned and cache-first, so a file replaced
   at the same URL would keep serving the old bytes.
 
-### Sound list: shelves
+### Sound list: pages
 
-The sounds are no longer one wrapping grid. `SOUNDS` entries carry a `shelf`, `SHELVES` in
-`js/app.js` fixes the row order (**Laughs**, **Haunted**, **Animals & people**), and
-`renderSounds()` draws one row per shelf: a title, a count, a small **All / None** button
-(label states the next tap, same floor as Deselect all: never nothing armed) and a sunken
-well holding a sideways scroller. Haunted holds Knock, Ding and Vibrate (and the ghost
-"woo" sounds when they join); Sneeze and Crowd gasp sit with the animals as "people".
+The sounds are three swipeable **pages**, not one wrapping grid. `SOUNDS` entries carry a
+`page`, `PAGES` in `js/app.js` fixes the order (**Haunted**, **Laughs**, **Animals & people**)
+and `renderSounds()` draws a row of page buttons over a sideways scroller with one full-width
+page each; a page is the app's usual wrapping grid, so every sound of a page is visible at
+once. Haunted holds Knock, Ding and Vibrate (and the ghost "woo" sounds if they join); Sneeze
+and Crowd gasp sit with the animals as "people". The app opens on Haunted.
+
+* **Arming is global, not per page.** Sounds armed on different pages play mixed together:
+  the scheduler only ever looks at the armed set (`pickNextSound`), never at pages. Select all
+  / Deselect all in the section label act on every page (Deselect all keeps the Cat, the
+  never-nothing-armed floor). Each page button reports `N of M on` (`updatePageTabs()`), so a
+  sound armed on another page is never invisible.
 
 Behaviour that must not regress (the owner asked for each):
 
-* **The page scrolls vertically wherever a finger lands.** The scroller has `overflow-y:
-  hidden` and nothing taller than itself, so a vertical drag has nothing to capture and
-  chains to the page. Never give it `overflow-y: auto/scroll` or `overscroll-behavior-y`.
-* **"There is more" = the half-cut column.** Columns are 3.5 across
-  (`grid-auto-columns: calc((100% - 15px) / 3.5)`). No hint text, no edge fades, no opacity
-  or transitions: an earlier mock faded the edge column and the text popped in and out at
-  the boundary. Content is now clipped hard at the well's inner edge (the well's 2px padding
-  equals its bevel, so nothing paints over the frame).
-* **Mouse works too.** Click-and-drag scrolls a row (pointer capture only after 6 px, so a
-  plain click still arms; a drag swallows its closing click). Each row also gets ◄ ► end
-  buttons, but only under `html.has-mouse`, which `watchForMouse()` sets on the first
-  `pointerType === 'mouse'` event. **Do not gate them on `(hover: hover)`**: touch laptops
-  report no hover, which is exactly why the owner could not scroll with the mouse in the first
-  mock. Shift+wheel and trackpads work natively; the plain wheel is left alone so it keeps
-  scrolling the page.
+* **The page scrolls vertically wherever a finger lands.** The pager has `overflow-y: hidden`
+  and its height is set to the page in view, so a vertical drag has nothing to capture and
+  chains to the document. Never give it `overflow-y: auto/scroll` or `overscroll-behavior-y`.
+  The height follows the page only once a swipe has come to rest (140 ms debounce), so nothing
+  below jumps while a finger is down, and only a WIDTH change re-seats the scroll position.
+* **Nothing fades.** An earlier mock faded the edge column and its text popped in and out at
+  the boundary. Pages snap whole (`scroll-snap-type: x mandatory`, `scroll-snap-stop: always`)
+  and clip hard at the pager's edge. No opacity, no gradients, no transitions.
+* **Mouse works too.** The page buttons are the obvious route; click-and-drag also pages
+  (pointer capture only after 6 px, so a plain click still arms; a drag swallows its closing
+  click; snapping is off while dragging and the release settles on a page, a 60 px flick is
+  enough). Shift+wheel and trackpads work natively; the plain wheel keeps scrolling the page.
+  Do not rely on `(hover: hover)` for any mouse affordance: touch laptops report no hover.
 * **No rebuild under the finger.** `prepareSounds()` (first tap) only refreshes buttons in
-  place, and `renderSounds()` keeps each shelf's scroll position, so a swiped row never snaps
-  back to the start.
+  place, and `renderSounds()` keeps the page in view, so a tap never snaps you back.
 
-`resources/ui-proposal.html` (framed in the "UI proposal" tab of `resources/dev.html`) mocks
-this and a variant **C, Pages** (Haunted / Laughs / Animals & people as three swipeable
-pages, every sound of a page visible at once). C is not in the app; the owner is trying it.
+History: a first version (v26.10.26a, commit aebaf2d) used one swipeable *shelf* row per group with a
+half-cut column as the "more" cue; the owner preferred pages. `resources/ui-proposal.html`
+(framed in the "UI proposal" tab of `resources/dev.html`) mocks the pages.
 
 ### Test mode
 

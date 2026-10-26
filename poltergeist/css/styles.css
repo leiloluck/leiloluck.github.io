@@ -11,7 +11,7 @@
    hooks the JS actually sets, and which therefore MUST keep working:
 
      body.running / body.fired / body.test-mode / body.modal-open
-     .sound-btn.armed / .sound-btn.playing / .sound-btn.demo, .shelf-scroller.dragging
+     .sound-btn.armed / .sound-btn.playing / .sound-btn.demo, .pager.dragging
      .interval-btn.selected
      .tab[aria-selected="true"]
      .toggle[aria-checked="true"]
@@ -558,61 +558,78 @@ body.running .btn-launch:active:not(:disabled) {
 
 .sounds-section { gap: 7px; }
 
-/* ── Shelves: the sound list ─────────────────────────────────────────────────
-   One row (shelf) per category. Each row is a sunken well holding a scroller that moves
-   SIDEWAYS only. Rules this block exists to keep:
+/* ── Pages: the sound list ───────────────────────────────────────────────────
+   Three pages (Haunted, Laughs, Animals & people). A row of page buttons sits on top; under it
+   a sideways scroller holds one full-width page each, and a page is the app's usual wrapping
+   grid, so every sound of the page is visible at once. Rules this block exists to keep:
 
-   * The page keeps scrolling vertically wherever a finger lands. The scroller has
-     overflow-y: hidden and nothing taller than itself, so a vertical drag has nothing to
-     capture and chains straight to the page. Never give it overflow-y: auto / scroll, and
-     never an overscroll-behavior-y: that is the trapped-in-a-scroll-box bug the old
-     nested grid had.
-   * "There is more" is shown by the half-cut column at the right edge and nothing else.
-     Columns are "3.5 across" (below). No edge fades, no opacity, no transitions: content
-     is either fully drawn or clipped at the well's inner edge, so there is no half-faded
-     text anywhere. The clip edge is the well's own bevel (the well has 2px padding, as
-     wide as the bevel), so nothing paints over the frame.
-   * No snap points: free scrolling never lurches, and the half-cut column is the cue at
-     rest wherever the row stops. */
-.shelves {
+   * The page keeps scrolling vertically wherever a finger lands. The pager has
+     overflow-y: hidden and its height is set (js/app.js) to the page in view, so a vertical
+     drag has nothing to capture and chains straight to the document. Never give it
+     overflow-y: auto / scroll, and never an overscroll-behavior-y: that is the
+     trapped-in-a-scroll-box bug the old nested grid had.
+   * Nothing fades. An earlier mock faded the edge column and the text popped in and out at
+     the boundary. Pages snap whole into place and are clipped hard at the pager's edge.
+   * Armed sounds are global: the page button reports "N of M on", so a sound armed on another
+     page is never invisible. */
+.pages { display: flex; flex-direction: column; gap: 6px; }
+
+.page-tabs { display: flex; gap: 4px; }
+
+.page-tab {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 42px;
+  padding: 5px 3px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-}
-
-.shelf { display: flex; flex-direction: column; gap: 4px; }
-
-.shelf-head {
-  display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 1px;
   font-size: 12px;
-  font-weight: bold;
-}
-.shelf-count { flex: 1 1 auto; font-weight: normal; font-size: 11px; color: var(--muted); }
-
-.shelf-well {
-  position: relative;
-  padding: 2px;
+  line-height: 1.2;
+  text-align: center;
   background: var(--surface);
-  box-shadow: var(--field);
+  box-shadow: var(--raised);
 }
+.page-tab .pt-sub { font-size: 10px; color: var(--muted); }
+.page-tab.has-armed .pt-sub { color: var(--text); font-weight: bold; }
+/* Selected page = held down, the same "selected" pattern as .interval-btn. */
+.page-tab[aria-selected="true"] {
+  box-shadow: var(--sunken);
+  font-weight: bold;
+  background-color: #d6d6d6;
+}
+.page-tab:active { box-shadow: var(--sunken); }
 
-.shelf-scroller {
-  --cols: 3.5;                          /* columns across; the .5 is the half-cut one */
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: calc((100% - (var(--cols) - 0.5) * 5px) / var(--cols));
-  gap: 5px;
-  padding: 4px;
+.pager {
+  display: flex;
+  align-items: flex-start;
   overflow-x: auto;
   overflow-y: hidden;
   overscroll-behavior-x: contain;       /* a swipe past the end must not become browser "back" */
+  scroll-snap-type: x mandatory;
   scrollbar-width: none;                /* no native bar: hidden or inconsistent per platform */
   -webkit-overflow-scrolling: touch;
 }
-.shelf-scroller::-webkit-scrollbar { display: none; }
-.shelf-scroller.dragging { cursor: grabbing; user-select: none; }
+.pager::-webkit-scrollbar { display: none; }
+.pager.dragging { scroll-snap-type: none; cursor: grabbing; user-select: none; }
+
+.page {
+  flex: 0 0 100%;
+  min-width: 0;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+.page-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 5px;
+  padding: 6px;
+  background: var(--surface);
+  box-shadow: var(--field);
+}
 
 .sound-btn {
   min-width: 0;
@@ -627,31 +644,6 @@ body.running .btn-launch:active:not(:disabled) {
   box-shadow: var(--raised);
 }
 .sound-btn .s-name { overflow-wrap: anywhere; }
-
-/* End buttons for a mouse. Solid, raised, shown or hidden outright (never faded). They
-   appear only once a real mouse pointer has been seen (js/app.js sets html.has-mouse): a
-   media query such as (hover: hover) is not reliable, because touch laptops report no hover
-   and would never show them. Touch phones never see one; they have the swipe and the
-   half-cut column. */
-.shelf-arrow { display: none; }
-html.has-mouse .shelf-arrow {
-  position: absolute;
-  top: 50%;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 40px;
-  margin-top: -20px;
-  font-size: 9px;
-  background: var(--surface);
-  box-shadow: var(--raised);
-}
-html.has-mouse .shelf-arrow[hidden] { display: none; }
-html.has-mouse .shelf-arrow:active { box-shadow: var(--sunken); }
-.shelf-arrow-left  { left: 4px; }
-.shelf-arrow-right { right: 4px; }
 
 .sound-btn .s-emoji { font-size: 20px; line-height: 1; }
 .sound-btn .s-label { display: flex; flex-direction: column; align-items: center; gap: 1px; }

@@ -53,7 +53,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.10.26a';
+const APP_VERSION = 'v26.10.26c';
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 // Drop real files into resources/ (see resources/README.md). Until a matching file
@@ -62,62 +62,64 @@ const APP_VERSION = 'v26.10.26a';
 // (English + Spanish) - the first one that decodes wins, so it doesn't matter which
 // naming you drop in.
 
-// The UI shows the sounds as shelves (one swipeable row per `shelf`). SHELVES fixes the row
-// order, Laughs first; within a row the order below is the order on screen. A shelf with no
-// sounds is simply not drawn. Animals stay together (the two birds side by side).
-const SHELVES = ['Laughs', 'Haunted', 'Animals & people'];
+// The UI shows the sounds as three PAGES (swipe sideways, or tap the page buttons). Every sound
+// carries a `page`; PAGES fixes the page order and the first one is what opens. A page with no
+// sounds is simply not drawn. Arming is global, not per page: sounds armed on different pages
+// play mixed together (the scheduler only ever looks at the armed set). Knock, Ding and Vibrate
+// count as haunted; Sneeze and Crowd gasp sit with the animals as "people".
+const PAGES = ['Haunted', 'Laughs', 'Animals & people'];
 
 const SOUNDS = [
   // — laughs (CC0 clips from Freesound, picked in the 2026-10-26 audition; sources and
   //   processing in resources/candidates/README.md) —
-  { id: 'laugh-kids',   name: 'Kids laugh',   tag: 'ha ha',   emoji: '🧒', shelf: 'Laughs', synth: synthBlip,
+  { id: 'laugh-kids',   name: 'Kids laugh',   tag: 'ha ha',   emoji: '🧒', page: 'Laughs', synth: synthBlip,
     files: ['laugh-kids.mp3'] },
-  { id: 'laugh-boy',    name: 'Boy laugh',    tag: 'ha ha',   emoji: '👦', shelf: 'Laughs', synth: synthBlip,
+  { id: 'laugh-boy',    name: 'Boy laugh',    tag: 'ha ha',   emoji: '👦', page: 'Laughs', synth: synthBlip,
     files: ['laugh-boy.mp3'] },
-  { id: 'laugh-child',  name: 'Child laugh',  tag: 'ha ha',   emoji: '🧒', shelf: 'Laughs', synth: synthBlip,
+  { id: 'laugh-child',  name: 'Child laugh',  tag: 'ha ha',   emoji: '🧒', page: 'Laughs', synth: synthBlip,
     files: ['laugh-child.mp3'] },
-  { id: 'laugh-woman',  name: 'Woman laugh',  tag: 'ha ha',   emoji: '👩', shelf: 'Laughs', synth: synthBlip,
+  { id: 'laugh-woman',  name: 'Woman laugh',  tag: 'ha ha',   emoji: '👩', page: 'Laughs', synth: synthBlip,
     files: ['laugh-woman.mp3'] },
-  { id: 'laugh-guffaw', name: 'Guffaw',       tag: 'ha ha',   emoji: '😂', shelf: 'Laughs', synth: synthBlip,
+  { id: 'laugh-guffaw', name: 'Guffaw',       tag: 'ha ha',   emoji: '😂', page: 'Laughs', synth: synthBlip,
     files: ['laugh-guffaw.mp3'] },
-  { id: 'laugh-sitcom', name: 'Sitcom',       tag: 'ha ha',   emoji: '📺', shelf: 'Laughs', synth: synthBlip,
+  { id: 'laugh-sitcom', name: 'Sitcom',       tag: 'ha ha',   emoji: '📺', page: 'Laughs', synth: synthBlip,
     files: ['laugh-sitcom.mp3'] },
-  { id: 'laugh-crowd',  name: 'Crowd laugh',  tag: 'ha ha',   emoji: '🤣', shelf: 'Laughs', synth: synthBlip,
+  { id: 'laugh-crowd',  name: 'Crowd laugh',  tag: 'ha ha',   emoji: '🤣', page: 'Laughs', synth: synthBlip,
     files: ['laugh-crowd.mp3'] },
-  { id: 'laugh-track',  name: 'Laugh track',  tag: 'ha ha',   emoji: '🎞️', shelf: 'Laughs', synth: synthBlip,
+  { id: 'laugh-track',  name: 'Laugh track',  tag: 'ha ha',   emoji: '🎞️', page: 'Laughs', synth: synthBlip,
     files: ['laugh-track.mp3'] },
   // — animals: mammals —
   // The Cat sound is the CC0 "cute kitten meow" (Freesound 448084) since v26.10.12d,
   // shipped as kitty-meow.mp3. cat-meow.mp3 stays second in the list purely as an
   // offline fallback for installs that predate it; a new filename was required because
   // the sounds cache is unversioned and cache-first.
-  { id: 'cat',          name: 'Cat',          tag: 'meow',    emoji: '🐱', shelf: 'Animals & people', synth: synthMeow,
+  { id: 'cat',          name: 'Cat',          tag: 'meow',    emoji: '🐱', page: 'Animals & people', synth: synthMeow,
     files: ['kitty-meow.mp3', 'cat-meow.mp3', 'gato-miau.mp3', 'meow.mp3'] },
-  { id: 'dog',          name: 'Dog',          tag: 'bark',    emoji: '🐶', shelf: 'Animals & people', synth: synthBark,
+  { id: 'dog',          name: 'Dog',          tag: 'bark',    emoji: '🐶', page: 'Animals & people', synth: synthBark,
     files: ['dog-bark.mp3', 'bark.mp3', 'ladrido.mp3'] },
-  { id: 'mouse',        name: 'Mouse',        tag: 'squeak',  emoji: '🐭', shelf: 'Animals & people', synth: synthBlip,
+  { id: 'mouse',        name: 'Mouse',        tag: 'squeak',  emoji: '🐭', page: 'Animals & people', synth: synthBlip,
     files: ['mouse-squeak.mp3', 'mouse.mp3', 'raton.mp3'] },
   // — animals: birds (kept adjacent) —
-  { id: 'bird',         name: 'Sparrow',      tag: 'chirp',   emoji: '🐦', shelf: 'Animals & people', synth: synthBird,
+  { id: 'bird',         name: 'Sparrow',      tag: 'chirp',   emoji: '🐦', page: 'Animals & people', synth: synthBird,
     files: ['bird-chirp.mp3', 'sparrow.mp3', 'pajaro.mp3'] },
-  { id: 'morningbirds', name: 'Morning birds',tag: 'garden',  emoji: '🐤', shelf: 'Animals & people', synth: synthBird,
+  { id: 'morningbirds', name: 'Morning birds',tag: 'garden',  emoji: '🐤', page: 'Animals & people', synth: synthBird,
     files: ['morning-birds.mp3', 'garden-birds.mp3'] },
   // — animals: insects —
-  { id: 'crickets',     name: 'Crickets',     tag: 'awkward', emoji: '🦗', shelf: 'Animals & people', synth: synthBlip,
+  { id: 'crickets',     name: 'Crickets',     tag: 'awkward', emoji: '🦗', page: 'Animals & people', synth: synthBlip,
     files: ['crickets.mp3', 'grillos.mp3'] },
-  { id: 'mosquito',     name: 'Mosquito',     tag: 'buzz',    emoji: '🦟', shelf: 'Animals & people', synth: synthBlip,
+  { id: 'mosquito',     name: 'Mosquito',     tag: 'buzz',    emoji: '🦟', page: 'Animals & people', synth: synthBlip,
     files: ['mosquito.mp3', 'mosquito-buzz.mp3'] },
   // — human —
-  { id: 'sneeze',       name: 'Sneeze',       tag: 'achoo',   emoji: '🤧', shelf: 'Animals & people', synth: synthBlip,
+  { id: 'sneeze',       name: 'Sneeze',       tag: 'achoo',   emoji: '🤧', page: 'Animals & people', synth: synthBlip,
     files: ['sneeze.mp3', 'estornudo.mp3'] },
-  { id: 'gasp',         name: 'Crowd gasp',   tag: 'shock',   emoji: '😱', shelf: 'Animals & people', synth: synthBlip,
+  { id: 'gasp',         name: 'Crowd gasp',   tag: 'shock',   emoji: '😱', page: 'Animals & people', synth: synthBlip,
     files: ['crowd-gasp.mp3', 'gasp.mp3'] },
   // — mechanical / objects —
-  { id: 'knock',        name: 'Knock',        tag: 'on wood', emoji: '🚪', shelf: 'Haunted', synth: synthKnock,
+  { id: 'knock',        name: 'Knock',        tag: 'on wood', emoji: '🚪', page: 'Haunted', synth: synthKnock,
     files: ['knock.mp3', 'knock-on-wood.mp3', 'toque.mp3'] },
-  { id: 'ding',         name: 'Ding',         tag: 'notify',  emoji: '🛎️', shelf: 'Haunted', synth: synthDoorbell,
+  { id: 'ding',         name: 'Ding',         tag: 'notify',  emoji: '🛎️', page: 'Haunted', synth: synthDoorbell,
     files: ['ding.mp3', 'doorbell.mp3', 'timbre.mp3'] },
-  { id: 'vibrate',      name: 'Vibrate',      tag: 'phone',   emoji: '📳', shelf: 'Haunted', synth: synthBlip,
+  { id: 'vibrate',      name: 'Vibrate',      tag: 'phone',   emoji: '📳', page: 'Haunted', synth: synthBlip,
     files: ['phone-vibrate.mp3', 'vibrate.mp3'] },
 ];
 
@@ -1268,49 +1270,49 @@ function setLaunchBtn() {
 
 // ── UI: sound buttons ────────────────────────────────────────────────────────
 
-// Rebuild every shelf. Only for changes that affect every button (test mode, a fresh
-// load of saved state) — for a single sound use refreshSoundBtn().
+// Rebuild the pager. Only for changes that affect every button (test mode, a fresh load of
+// saved state) — for a single sound use refreshSoundBtn().
 //
-// Layout contract (css/styles.css, "Shelves"): one row per shelf, each row a sunken well
-// holding a horizontal scroller. The page itself keeps scrolling vertically as normal; only
-// the scroller moves sideways, and it never captures a vertical drag. Column width is
-// "3.5 across", so the next column is always cut in half at the well's edge, which is the
-// whole "there is more" cue: no fades, no hints, no transparency.
+// Layout contract (css/styles.css, "Pages"): a row of page buttons, then a sideways scroller
+// holding one full-width page per group; each page is the app's usual wrapping grid, so every
+// sound of the page is visible at once. The page itself keeps scrolling vertically as normal;
+// the scroller moves sideways only and never captures a vertical drag (see the CSS comment).
+let pageRefs = [];       // { name, list, tab, sub, page } per drawn page, in order
+
 function renderSounds() {
-  // Keep each shelf's scroll position across a rebuild (keyed by shelf name).
-  const keptScroll = {};
-  elSoundGroup.querySelectorAll('.shelf-scroller').forEach(sc => {
-    keptScroll[sc.getAttribute('aria-label')] = sc.scrollLeft;
-  });
+  // Keep the page in view across a rebuild.
+  const keep = pageRefs.length ? currentPageIndex() : 0;
   elSoundGroup.innerHTML = '';
-  SHELVES.forEach(shelfName => {
-    const list = SOUNDS.filter(x => x.shelf === shelfName);
+  pageRefs = [];
+
+  const tabs = document.createElement('div');
+  tabs.className = 'page-tabs';
+  tabs.setAttribute('role', 'tablist');
+  const pager = document.createElement('div');
+  pager.className = 'pager';
+
+  PAGES.forEach(pageName => {
+    const list = SOUNDS.filter(x => x.page === pageName);
     if (!list.length) return;
 
-    const shelf = document.createElement('div');
-    shelf.className = 'shelf';
+    const tab = document.createElement('button');
+    tab.type = 'button';
+    tab.className = 'page-tab';
+    tab.setAttribute('role', 'tab');
+    const tabName = document.createElement('span');
+    tabName.className = 'pt-name';
+    tabName.textContent = pageName;
+    const sub = document.createElement('span');
+    sub.className = 'pt-sub';
+    tab.append(tabName, sub);
+    tabs.appendChild(tab);
 
-    const head = document.createElement('div');
-    head.className = 'shelf-head';
-    const title = document.createElement('span');
-    title.className = 'shelf-name';
-    title.textContent = shelfName;
-    const count = document.createElement('span');
-    count.className = 'shelf-count';
-    count.textContent = String(list.length);
-    const all = document.createElement('button');
-    all.type = 'button';
-    all.className = 'btn-tiny shelf-all';
-    all.dataset.shelf = shelfName;
-    all.addEventListener('click', () => toggleShelf(shelfName));
-    head.append(title, count, all);
-
-    const well = document.createElement('div');
-    well.className = 'shelf-well';
-    const scroller = document.createElement('div');
-    scroller.className = 'shelf-scroller';
-    scroller.setAttribute('role', 'group');
-    scroller.setAttribute('aria-label', shelfName);
+    const page = document.createElement('div');
+    page.className = 'page';
+    page.setAttribute('role', 'tabpanel');
+    page.setAttribute('aria-label', pageName);
+    const grid = document.createElement('div');
+    grid.className = 'page-grid';
 
     list.forEach(sound => {
       const btn = document.createElement('button');
@@ -1332,96 +1334,122 @@ function renderSounds() {
       btn.append(emoji, label);
       btn.addEventListener('click', () => onSoundClick(sound, btn));
       sound.btn = btn;
-      scroller.appendChild(btn);
+      grid.appendChild(btn);
     });
 
-    // Desktop only (CSS hides these on touch): a mouse has no swipe and most mice have no
-    // sideways wheel, so each end gets a real button. Hidden at the ends and when the whole
-    // row fits, instantly rather than faded.
-    const left = document.createElement('button');
-    left.type = 'button';
-    left.className = 'shelf-arrow shelf-arrow-left';
-    left.setAttribute('aria-label', 'Scroll ' + shelfName + ' left');
-    left.textContent = '◄';
-    const right = document.createElement('button');
-    right.type = 'button';
-    right.className = 'shelf-arrow shelf-arrow-right';
-    right.setAttribute('aria-label', 'Scroll ' + shelfName + ' right');
-    right.textContent = '►';
-
-    well.append(scroller, left, right);
-    shelf.append(head, well);
-    elSoundGroup.appendChild(shelf);
-    if (keptScroll[shelfName]) scroller.scrollLeft = keptScroll[shelfName];
-    wireShelf(scroller, left, right);
+    page.appendChild(grid);
+    pager.appendChild(page);
+    pageRefs.push({ name: pageName, list, tab, sub, page });
   });
-  updateShelfAllBtns();
+
+  elSoundGroup.append(tabs, pager);
+  wirePager(pager, keep);
+  updatePageTabs();
 }
 
-// Sideways scrolling for one shelf. Touch needs nothing: the scroller is a plain
-// overflow-x container, so a finger swipes it and a vertical drag still scrolls the page
-// (it has no vertical overflow to capture). This adds what a mouse lacks: end buttons,
-// click-and-drag, and Shift+wheel / trackpad which the browser already does natively. The
-// plain wheel is deliberately left alone so it keeps scrolling the page.
-function wireShelf(scroller, left, right) {
-  const sync = () => {
-    const max = scroller.scrollWidth - scroller.clientWidth;
-    left.hidden  = scroller.scrollLeft <= 1;
-    right.hidden = max - scroller.scrollLeft <= 1;    // also true when everything fits
-  };
-  scroller.addEventListener('scroll', sync, { passive: true });
-  if ('ResizeObserver' in window) new ResizeObserver(sync).observe(scroller);
-  else window.addEventListener('resize', sync);
-  sync();
+function currentPageIndex() {
+  const pager = elSoundGroup.querySelector('.pager');
+  if (!pager || !pageRefs.length) return 0;
+  return Math.max(0, Math.min(pageRefs.length - 1, Math.round(pager.scrollLeft / Math.max(1, pager.clientWidth))));
+}
 
-  const step = () => Math.max(120, scroller.clientWidth * 0.75);
-  left.addEventListener('click',  () => scroller.scrollBy({ left: -step(), behavior: 'smooth' }));
-  right.addEventListener('click', () => scroller.scrollBy({ left:  step(), behavior: 'smooth' }));
-
-  // Mouse drag. Pointer capture starts only after a 6 px move, so a plain click still
-  // reaches its button; a drag that did move swallows the click it would otherwise end on.
-  let drag = null, swallow = false;
-  scroller.addEventListener('pointerdown', e => {
-    if (e.pointerType !== 'mouse' || e.button !== 0) return;
-    drag = { id: e.pointerId, x: e.clientX, left: scroller.scrollLeft, moved: false };
+// Each page button says how many of its sounds are armed, so a sound armed on another page
+// is never invisible: "2 of 8 on" beats a silent selection you cannot see.
+function updatePageTabs() {
+  pageRefs.forEach(r => {
+    const n = r.list.reduce((k, x) => k + (armed.has(x.id) ? 1 : 0), 0);
+    r.sub.textContent = n ? n + ' of ' + r.list.length + ' on' : r.list.length + ' sounds';
+    r.tab.classList.toggle('has-armed', n > 0);
   });
-  scroller.addEventListener('pointermove', e => {
+}
+
+// Sideways paging. Touch needs nothing special: the pager is a plain overflow-x scroll-snap
+// container, so a finger swipes it and a vertical drag still scrolls the page (it has no
+// vertical overflow to capture). This adds: the page buttons, a pager height that follows the
+// page in view, and click-and-drag for a mouse (Shift+wheel and trackpads already work
+// natively; the plain wheel is left alone so it keeps scrolling the page).
+function wirePager(pager, startIndex) {
+  let current = 0, settle = null, lastW = 0;
+
+  const goTo = (i, smooth) => pager.scrollTo({ left: i * pager.clientWidth, behavior: smooth ? 'smooth' : 'auto' });
+  const mark = i => {
+    current = i;
+    pageRefs.forEach((r, k) => {
+      r.tab.setAttribute('aria-selected', String(k === i));
+      r.tab.tabIndex = k === i ? 0 : -1;
+    });
+  };
+  // The height follows the page in view, but only once a swipe has come to rest, so nothing
+  // below the pager jumps while a finger is down.
+  const fit = () => { if (pageRefs[current]) pager.style.height = pageRefs[current].page.offsetHeight + 'px'; };
+
+  pager.addEventListener('scroll', () => {
+    mark(currentPageIndex());
+    clearTimeout(settle);
+    settle = setTimeout(fit, 140);
+  }, { passive: true });
+
+  pageRefs.forEach((r, i) => r.tab.addEventListener('click', () => goTo(i, true)));
+
+  // Re-seat on a WIDTH change (rotation, window resize); our own height changes must not
+  // re-seat anything. A page changing height (the grid reflowing) refits the pager.
+  if ('ResizeObserver' in window) {
+    new ResizeObserver(() => {
+      const w = pager.clientWidth;
+      if (w === lastW) return;
+      lastW = w;
+      goTo(current, false);
+      fit();
+    }).observe(pager);
+    const pageRO = new ResizeObserver(() => fit());
+    pageRefs.forEach(r => pageRO.observe(r.page));
+  } else {
+    window.addEventListener('resize', () => { goTo(current, false); fit(); });
+  }
+
+  // Mouse drag. Pointer capture starts only after a 6 px move, so a plain click still reaches
+  // its button; a drag that did move swallows the click it would otherwise end on. Snapping
+  // is switched off while dragging (CSS .dragging) and the release settles on a page.
+  let drag = null, swallow = false;
+  pager.addEventListener('pointerdown', e => {
+    if (e.pointerType !== 'mouse' || e.button !== 0) return;
+    drag = { id: e.pointerId, x: e.clientX, left: pager.scrollLeft, start: currentPageIndex(), dx: 0, moved: false };
+  });
+  pager.addEventListener('pointermove', e => {
     if (!drag || e.pointerId !== drag.id) return;
-    const dx = e.clientX - drag.x;
+    drag.dx = e.clientX - drag.x;
     if (!drag.moved) {
-      if (Math.abs(dx) < 6) return;
+      if (Math.abs(drag.dx) < 6) return;
       drag.moved = true;
-      scroller.setPointerCapture(e.pointerId);
-      scroller.classList.add('dragging');
+      pager.setPointerCapture(e.pointerId);
+      pager.classList.add('dragging');
     }
-    scroller.scrollLeft = drag.left - dx;
+    pager.scrollLeft = drag.left - drag.dx;
   });
   const endDrag = () => {
     if (!drag) return;
-    if (drag.moved) { swallow = true; setTimeout(() => { swallow = false; }, 0); }
+    const d = drag;
     drag = null;
-    scroller.classList.remove('dragging');
+    if (!d.moved) return;
+    swallow = true;
+    setTimeout(() => { swallow = false; }, 0);
+    pager.classList.remove('dragging');
+    const w = pager.clientWidth;
+    let target = Math.round((d.left - d.dx) / w);
+    if (Math.abs(d.dx) > Math.min(60, w / 4)) target = d.start + (d.dx < 0 ? 1 : -1);   // a flick is enough
+    goTo(Math.max(0, Math.min(pageRefs.length - 1, target)), true);
   };
-  scroller.addEventListener('pointerup', endDrag);
-  scroller.addEventListener('pointercancel', endDrag);
-  scroller.addEventListener('click', e => {
+  pager.addEventListener('pointerup', endDrag);
+  pager.addEventListener('pointercancel', endDrag);
+  pager.addEventListener('click', e => {
     if (swallow) { e.stopPropagation(); e.preventDefault(); }
   }, true);
-}
 
-// The shelf end buttons are for mice only, and (hover: hover) cannot tell us: touch laptops
-// report no hover and would never show them. So wait for a real mouse pointer instead; the
-// CSS reveals them under html.has-mouse. A phone never produces a pointerType 'mouse' event.
-(function watchForMouse() {
-  const seen = e => {
-    if (e.pointerType !== 'mouse') return;
-    document.documentElement.classList.add('has-mouse');
-    window.removeEventListener('pointermove', seen);
-    window.removeEventListener('pointerdown', seen);
-  };
-  window.addEventListener('pointermove', seen, { passive: true });
-  window.addEventListener('pointerdown', seen, { passive: true });
-})();
+  mark(startIndex);
+  lastW = pager.clientWidth;
+  goTo(startIndex, false);
+  fit();
+}
 
 // In-place state update for one sound's button — no teardown, so a tap in flight is
 // never lost and the pulse animation isn't interrupted.
@@ -1745,32 +1773,7 @@ function allArmed() {
 
 function updateSelectAllBtn() {
   elSelectAllBtn.textContent = allArmed() ? 'Deselect all' : 'Select all';
-  updateShelfAllBtns();
-}
-
-// Each shelf has its own All / None button, labelled with what its NEXT tap does.
-function shelfIds(shelfName) {
-  return SOUNDS.filter(x => x.shelf === shelfName).map(x => x.id);
-}
-
-function updateShelfAllBtns() {
-  document.querySelectorAll('.shelf-all').forEach(btn => {
-    btn.textContent = shelfIds(btn.dataset.shelf).every(id => armed.has(id)) ? 'None' : 'All';
-  });
-}
-
-function toggleShelf(shelfName) {
-  const ids = shelfIds(shelfName);
-  const every = ids.every(id => armed.has(id));
-  ids.forEach(id => { if (every) armed.delete(id); else armed.add(id); });
-  // Same floor as Deselect all: never leave the app with nothing armed.
-  if (!armed.size) armed.add((SOUNDS.find(x => x.id === 'cat') || SOUNDS[0]).id);
-  saveState();
-  SOUNDS.forEach(refreshSoundBtn);        // in place; never rebuild under the finger
-  updateSelectAllBtn();
-  setLaunchBtn();
-  if (!running) elHeroStatus.textContent = idleStatus();
-  else rescheduleFromNow();               // mid-session changes apply immediately
+  updatePageTabs();
 }
 
 function toggleSelectAll() {

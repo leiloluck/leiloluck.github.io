@@ -312,10 +312,11 @@ opened again. The deleted screen says exactly that.
 - If no file matches, the app falls back to a **synthesized stand-in** so every
   button works and the app is testable before the real files are dropped in. Real
   files override the synth automatically once present.
-- Current sounds (20, all supplied + normalized): Cat, Dog, Knock, Sparrow,
+- Current sounds (25, all supplied + normalized): Cat, Dog, Knock, Sparrow,
   Crickets, Crowd gasp, Ding, Mosquito, Mouse, Vibrate, Sneeze, Morning birds, plus 8 laughs
-  (Kids, Boy, Child, Woman, Guffaw, Sitcom, Crowd, Laugh track; CC0 Freesound clips chosen in the
-  2026-10-26 audition, sources in `resources/candidates/README.md`).
+  (Kids, Boy, Child, Woman, Guffaw, Sitcom, Crowd, Laugh track) and 5 ghosts (Ghost, Wooo, Moan, Sad
+  ghost, Ghost cry); CC0 Freesound clips chosen in the 2026-10-26 audition, sources in
+  `resources/candidates/README.md`.
   (The placeholder Doorbell was dropped once real sounds arrived; "Ding" covers the
   bell niche, and a `doorbell.mp3` would be picked up by the Ding entry.)
 - **Cat is `kitty-meow.mp3`** since v26.10.12d: the CC0 "Cute Kitten Meow"
@@ -333,7 +334,7 @@ The sounds are three swipeable **pages**, not one wrapping grid. `SOUNDS` entrie
 `page`, `PAGES` in `js/app.js` fixes the order (**Haunted**, **Laughs**, **Animals & people**)
 and `renderSounds()` draws a row of page buttons over a sideways scroller with one full-width
 page each; a page is the app's usual wrapping grid, so every sound of a page is visible at
-once. Haunted holds Knock, Ding and Vibrate (and the ghost "woo" sounds if they join); Sneeze
+once. Haunted holds the five ghost clips plus Knock, Ding and Vibrate; Sneeze
 and Crowd gasp sit with the animals as "people". The app opens on Haunted.
 
 * **Arming is global, not per page.** Sounds armed on different pages play mixed together:

@@ -53,7 +53,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.10.26c';
+const APP_VERSION = 'v26.10.27a';
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 // Drop real files into resources/ (see resources/README.md). Until a matching file
@@ -88,6 +88,18 @@ const SOUNDS = [
     files: ['laugh-crowd.mp3'] },
   { id: 'laugh-track',  name: 'Laugh track',  tag: 'ha ha',   emoji: '🎞️', page: 'Laughs', synth: synthBlip,
     files: ['laugh-track.mp3'] },
+  // — haunted: ghosts (CC0 Freesound clips, 2026-10-26 audition; sources in
+  //   resources/candidates/README.md). Knock, Ding and Vibrate follow them on the same page. —
+  { id: 'ghost-classic', name: 'Ghost', tag: 'woo', emoji: '👻', page: 'Haunted', synth: synthBlip,
+    files: ['ghost-classic.mp3'] },
+  { id: 'ghost-woo', name: 'Wooo', tag: 'woo', emoji: '💨', page: 'Haunted', synth: synthBlip,
+    files: ['ghost-woo.mp3'] },
+  { id: 'ghost-moan', name: 'Moan', tag: 'woo', emoji: '😮', page: 'Haunted', synth: synthBlip,
+    files: ['ghost-moan.mp3'] },
+  { id: 'ghost-sad', name: 'Sad ghost', tag: 'woo', emoji: '😔', page: 'Haunted', synth: synthBlip,
+    files: ['ghost-sad.mp3'] },
+  { id: 'ghost-cry', name: 'Ghost cry', tag: 'woo', emoji: '😢', page: 'Haunted', synth: synthBlip,
+    files: ['ghost-cry.mp3'] },
   // — animals: mammals —
   // The Cat sound is the CC0 "cute kitten meow" (Freesound 448084) since v26.10.12d,
   // shipped as kitty-meow.mp3. cat-meow.mp3 stays second in the list purely as an

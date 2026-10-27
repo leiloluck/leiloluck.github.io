@@ -28,6 +28,11 @@ exact name. Until a matching file is present, the app plays a synthesized stand-
 | 📺 Sitcom | `laugh-sitcom.mp3` | CC0, Freesound 371562, applause cut off |
 | 🤣 Crowd laugh | `laugh-crowd.mp3` | CC0, Freesound 324894 |
 | 🎞️ Laugh track | `laugh-track.mp3` | CC0, Freesound 242244 |
+| 👻 Ghost | `ghost-classic.mp3` | CC0, Freesound 541635, wavering "ooo" |
+| 🌫️ Wooo | `ghost-woo.mp3` | CC0, Freesound 718952, rising "wooooo" |
+| 😮 Moan | `ghost-moan.mp3` | CC0, Freesound 643741, ghostly moan |
+| 😔 Sad ghost | `ghost-sad.mp3` | CC0, Freesound 448754 |
+| 😢 Ghost cry | `ghost-cry.mp3` | CC0, Freesound 267197 |
 
 Each sound accepts any name in its `files:` list (`js/app.js`); the first that
 decodes wins. Want another name? Add it there.

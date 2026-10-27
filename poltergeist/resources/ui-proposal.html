@@ -5,7 +5,7 @@
      .page-grid), are the app's own. Nothing here is wired to the app: tapping a sound latches
      it (like arming) AND plays it, so the mock doubles as a listening room.
 
-     This is the design the app ships (v26.10.26c): three pages (Haunted, Laughs, Animals &
+     This is the design the app ships (v26.10.27a): three pages (Haunted, Laughs, Animals &
      people), every sound of a page visible at once. Swipe sideways, tap the page buttons, or
      drag with a mouse. The page keeps scrolling vertically wherever a finger lands (the
      sideways scroller has no vertical overflow to capture) and nothing fades. The earlier
@@ -71,12 +71,13 @@
 <script>
 'use strict';
 
-// id, name, emoji, page, file (relative to resources/). The three ghost clips are still
-// auditions (candidates/), not in the app.
+// id, name, emoji, page, file (relative to resources/), as in the app.
 const SOUNDS = [
-  ['g27', 'Ghost',        '👻', 'Haunted', 'candidates/ghost-27-woo.mp3'],
-  ['g28', 'Wooo',         '👻', 'Haunted', 'candidates/ghost-28-woo.mp3'],
-  ['g29', 'Cartoon ghost','👻', 'Haunted', 'candidates/ghost-29-woo.mp3'],
+  ['ghost-classic', 'Ghost', '👻', 'Haunted', 'ghost-classic.mp3'],
+  ['ghost-woo', 'Wooo', '💨', 'Haunted', 'ghost-woo.mp3'],
+  ['ghost-moan', 'Moan', '😮', 'Haunted', 'ghost-moan.mp3'],
+  ['ghost-sad', 'Sad ghost', '😔', 'Haunted', 'ghost-sad.mp3'],
+  ['ghost-cry', 'Ghost cry', '😢', 'Haunted', 'ghost-cry.mp3'],
   ['knock',   'Knock',    '🚪', 'Haunted', 'knock.mp3'],
   ['ding',    'Ding',     '🛎️', 'Haunted', 'ding.mp3'],
   ['vibrate', 'Vibrate',  '📳', 'Haunted', 'phone-vibrate.mp3'],
@@ -102,7 +103,7 @@ const SOUNDS = [
 ].map(([id, name, emoji, page, file]) => ({ id, name, emoji, page, file }));
 
 const PAGES = ['Haunted', 'Laughs', 'Animals & people'];
-const armed = new Set(['cat', 'l1', 'g27']);
+const armed = new Set(['cat', 'l1', 'ghost-classic']);
 const player = document.getElementById('player');
 const root = document.getElementById('sounds');
 const allBtn = document.getElementById('all');

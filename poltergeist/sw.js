@@ -34,7 +34,7 @@
 
 'use strict';
 
-const VERSION      = 'v26.10.26c';
+const VERSION      = 'v26.10.27a';
 const CACHE_PREFIX = 'poltergeist-';           // never touch caches outside this prefix
 const CACHE        = CACHE_PREFIX + VERSION;
 const AUDIO_CACHE  = CACHE_PREFIX + 'sounds';    // unversioned on purpose — see header
@@ -77,6 +77,11 @@ const SOUNDS = [
   './resources/laugh-sitcom.mp3',
   './resources/laugh-crowd.mp3',
   './resources/laugh-track.mp3',
+  './resources/ghost-classic.mp3',
+  './resources/ghost-woo.mp3',
+  './resources/ghost-moan.mp3',
+  './resources/ghost-sad.mp3',
+  './resources/ghost-cry.mp3',
 ];
 
 // Always fetch precache entries from the network, never the HTTP cache. See header.

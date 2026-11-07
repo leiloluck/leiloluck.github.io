@@ -6,30 +6,37 @@
 
    Lock-screen reliability:
    All audio events that must fire while the phone is locked — every random-bell strike
-   and the triple end bell — are scheduled on the AudioContext hardware clock at session
+   and the five end bells — are scheduled on the AudioContext hardware clock at session
    start (source.start(when) / gain ramps). The Web Audio clock keeps running while the
    screen is off; requestAnimationFrame and setTimeout do NOT. rAF is therefore used only
-   to update the visible countdown and to drive UI cleanup once the screen is visible again. */
+   to update the visible countdown and to drive UI cleanup once the screen is visible again.
+
+   Changing something mid-session (duration, bell frequency, Bell behavior) never interrupts
+   the session: everything still ahead is re-sampled and re-laid on the audio clock, the
+   bells that already rang (or are ringing right now) are left alone, and the end bells
+   still never land on a ringing bell. See resampleRunningPlan() / clearTheEnding(). */
 
 'use strict';
 
-const APP_VERSION = 'v26.10.22e';   // format vYY.MM.DD — keep in lockstep with sw.js + index.html
+const APP_VERSION = 'v26.11.05a';   // format vYY.MM.DD — keep in lockstep with sw.js + index.html
 
 const PAUSE_FADE_OUT = 2;    // user-initiated stop/pause: each sounding bell fades over this
 
-// End-of-session chime: ONE bell (RANDOM_BELLS[CHIME_BELL], the G3 "Bright") struck three
-// times. Each strike damps the one before it over CHIME_DAMP and restarts the file from
-// its start, so the strikes never pile up. Before v26.10.22 the chime was 'Single bowl sound.mp3',
-// three overlapping copies; that recording has a stray tone ~24 s in (a ~474 Hz partial
-// that is not one of the bowl's, jumping in by +35 dB), heard as a beep after the bell.
-const END_BELL_OFFSETS = [0, 0.4, 0.8];
+// End-of-session chime: ONE bell (RANDOM_BELLS[CHIME_BELL], the G3 "Bright") rung FIVE
+// times (v26.11.05a; three before — five is what the note under the timer promises). Each
+// strike damps the one before it over CHIME_DAMP and restarts the file from its start, so
+// the strikes never pile up. Before v26.10.22 the chime was 'Single bowl sound.mp3', three
+// overlapping copies; that recording has a stray tone ~24 s in (a ~474 Hz partial that is
+// not one of the bowl's, jumping in by +35 dB), heard as a beep after the bell.
+const END_BELL_OFFSETS = [0, 0.4, 0.8, 1.2, 1.6];
 const CHIME_DAMP = 0.025;    // seconds
 
 // The end bell is the G3 recording (bell-4-g3, 20 s), played as recorded (rate 1). Chosen
 // by ear in v26.10.22c from three candidates (C3 28 s, C3 −27¢ 22 s, G3 20 s) that a
 // v26.10.22b Settings section offered for trying; that section is gone again. All three
 // had been scanned for tones that are not partials of the bell (the old chime's fault).
-const CHIME_BELL = 2;
+// Its index follows the retirement of the C3 at v26.11.05a (see RANDOM_BELLS).
+const CHIME_BELL = 1;
 
 // ── State ────────────────────────────────────────────────────────────────────
 
@@ -135,6 +142,7 @@ function scheduleBuffer(buffer, when, level, dest, rate = 1) {
   src.start(when);
   src.__g = g;
   src.__when = when;
+  src.__end = when + buffer.duration / rate;   // when it stops by itself (rate scales it too)
   src.onended = () => {
     scheduledSources = scheduledSources.filter(s => s !== src);
     try { g.disconnect(); } catch {}
@@ -148,10 +156,10 @@ function chimeBuffer() {
   return randomBuffers ? randomBuffers[CHIME_BELL] : null;
 }
 
-// The triple end bell: the same file struck three times, as recorded (no pitch shift), at
-// its loudness-matched level. Every strike after the first damps the one still ringing
-// over CHIME_DAMP, landing on 0 exactly as the next one starts, so it is one bell rung
-// again — never three copies stacked (and so no headroom stage is needed either).
+// The end bells: the same file rung five times (END_BELL_OFFSETS), as recorded (no pitch
+// shift), at its loudness-matched level. Every strike after the first damps the one still
+// ringing over CHIME_DAMP, landing on 0 exactly as the next one starts, so it is one bell
+// rung again — never five copies stacked (and so no headroom stage is needed either).
 function scheduleChime(end) {
   if (!audioCtx || !chimeBuffer()) return;
   const level = RANDOM_BELLS[CHIME_BELL].gain;
@@ -209,34 +217,45 @@ function clearScheduledSources() {
 
 // ── Random bells ─────────────────────────────────────────────────────────────
 //
-// The session model studied in resources/bells.html (its "Tuned 3" tab), shipped: three
-// denoised bell recordings (G3 −27¢ and C4 retired — the palette's two shortest tails),
-// loudness-matched, each pitched live across ±3 semitones (strikes under MIN_RING
-// dropped), the whole session sampled in one go at start, never the same bell at the same pitch twice in a row, and the ending
-// protected — the last bell rings out, a 3 s gap, then the existing triple chime. Every
-// strike is an AudioBufferSourceNode scheduled on the audio clock up front, so the whole
-// session (including its ending) survives a locked screen exactly like the end bell
-// always has.
+// The session model studied in resources/bells.html (its "Tuned 3" tab), shipped: two
+// denoised bell recordings (G3 −27¢, C4 and C3 retired — see below), loudness-matched,
+// each pitched live across ±3 semitones (strikes under MIN_RING dropped), the whole
+// session sampled in one go at start, never the same bell at the same pitch twice in a
+// row, and the ending protected — the last bell rings out, a 3 s gap, then the five end
+// bells. Every strike is an AudioBufferSourceNode scheduled on the audio clock up front,
+// so the whole session (including its ending) survives a locked screen exactly like the
+// end bell always has.
+//
+// v26.11.05a RETIRED bell-2-c3 (the plain C3, "Warm"). It was not too quiet, it was CUT:
+// the recording stops dead at −45 dB while the bell is still ringing clearly, with digital
+// silence in its last 25 ms (measured: last 0.5 s −39 dB, last 10 ms −126 dB below its own
+// peak; the other two fade out at −77 and −86 dB). Heard in a session, that is a bell that
+// "ends abruptly" — and every pitch variant of it inherits the cut, the high ones being
+// shorter still. It is therefore out of the shipped palette (and out of the service
+// worker's precache; older copies are evicted), but its files stay on disk
+// (resources/random/bell-2-c3.*) until a re-cut is approved. The two that remain fade
+// properly to silence, and one of them (the G3) is the end bell.
 //
 // Measured metadata (resources/sources.md): ring40/ring50 in seconds, gain = loudness
 // match from stereo RMS (quietest bell = 1.0). `file` has no extension: '.flac' first,
 // '.mp3' (320 kbps twins, same loudness to 0.1 dB) where FLAC cannot be decoded.
-// Peaks after `gain` are ≤ 0.50 FS (bell-2 −3.3 dBFS × 0.72), and strikes never overlap
-// by construction, so the bells need no headroom stage of their own.
+// Peaks after `gain` are ≤ 0.46 FS (measured: C3 −27¢ 0.41, G3 0.46; the C3 that had the
+// highest twin, 0.49, is retired), and strikes never overlap by construction, so the bells
+// need no headroom stage.
 
 const RANDOM_BELLS = [
   { label: 'C3 −27¢', file: './resources/random/bell-1-c3-flat', ring40: 20.7, ring50: 21.4, gain: 1.00 },
-  { label: 'C3',      file: './resources/random/bell-2-c3',      ring40: 28.0, ring50: 28.0, gain: 0.72 },
   { label: 'G3 −1¢',  file: './resources/random/bell-4-g3',      ring40: 18.7, ring50: 19.5, gain: 0.67 },
 ];
 const RANDOM_OFFS    = [-3, -2, -1, 0, 1, 2, 3];   // every bell — the C4's −4…0 retired with it
-const RANDOM_GAP     = 3;      // ring-out gap before the triple chime
+const RANDOM_GAP     = 3;      // ring-out gap before the five end bells
 
 // playbackRate pitches a strike AND shortens it by the same factor (2^(semi/12)), so the
 // top of the window holds the shortest strikes. Anything audible for less than MIN_RING
 // seconds (ring40 / rate) reads as a bell that ends early and is never struck during a
 // session (v26.10.22b): G3 at +1, +2, +3 (17.7, 16.7, 15.7 s) and C3 −27¢ at +3 (17.4 s).
-// 17 strikes remain; the shortest is C3 −27¢ at +2 (18.4 s).
+// 10 strikes remain (v26.11.05a, was 17 with the C3); the shortest is C3 −27¢ at +2
+// (18.4 s), the longest C3 −27¢ at −3 (24.6 s).
 const MIN_RING = 18;
 
 // Bell frequency (on the Meditate page): how long the app waits between strikes, always
@@ -300,20 +319,21 @@ function truncExp(rand, a, b, theta) {
 // Sample the whole session instantly. End rule: nothing may collide with the ending —
 // a candidate that cannot ring out before D − GAP is pulled in to just fit; if even that
 // fails it is dropped, and the last bell is shifted so its ring ends exactly at D − GAP:
-// last bell rings out → little gap → triple chime.
+// last bell rings out → little gap → five end bells.
 //
 // The opening strike obeys the same rule. Every full session (≥ 1 min) fits any bell; a
 // late decode re-samples only the REMAINDER, and with too little left a strike at t = 0
-// would still be ringing over the chime — so it opens with a bell that fits, or not at all.
+// would still be ringing over the end bells — so it opens with a bell that fits, or not at
+// all.
 //
-// `after` (a bell frequency or behavior change mid-session): the strike that is ringing or
-// last rang, with `t` relative to now (≤ 0). The plan then continues from it under the new
-// setting — no strike at t = 0, nothing before now, and the bell that is ringing is never
-// touched.
+// `after` (a bell frequency, behavior or duration change mid-session): the strike that is
+// ringing or last rang, with `t` relative to now (≤ 0). The plan then continues from it
+// under the new setting — no strike at t = 0, nothing before now, and the bell that is
+// ringing is never touched.
 //
 // Fixed mode: every wait is exactly `amt.wait` after the previous ring-out, and nothing is
 // pulled in or shifted at the end — a bell that would not ring out before D − GAP is
-// simply not struck; the session waits in silence for the triple chime.
+// simply not struck; the session waits in silence for the five end bells.
 function sampleRandomPlan(durSec, amt = currentLevel(), after = null, mode = bellMode) {
   if (!amt.wait) return [];                                   // level 0: no bells
   const deadline = durSec - RANDOM_GAP;
@@ -400,8 +420,8 @@ function loadRandomBells(attempt = 0) {
   // nor keep retrying and re-fill the memory that was just released.
   const ctx = audioCtx;
   const stale = () => closing || ctx !== audioCtx;
-  // The first bell is the codec probe; the other two follow in parallel. An engine that
-  // cannot decode FLAC therefore fetches one FLAC, not three.
+  // The first bell is the codec probe; the other one follows in parallel. An engine that
+  // cannot decode FLAC therefore fetches one FLAC, not two.
   loadRandomBell(ctx, RANDOM_BELLS[0], stale)
     .then(first => first && Promise.all(
       [first, ...RANDOM_BELLS.slice(1).map(b => loadRandomBell(ctx, b, stale))]))
@@ -440,10 +460,12 @@ function loadRandomBells(attempt = 0) {
     });
 }
 
-// Rebuild the running session's schedule in place (a late decode landed). Only what has
-// not started is replaced — a bell already ringing keeps ringing (scheduleAudioFrom skips
-// plan events in the past, so it is not struck twice). scheduleAudioFrom reads the GLOBAL
-// elapsedMs for its origin, so sync it first, then restore the pause/resume bookkeeping.
+// Rebuild the running session's schedule in place — a late decode landed, or a bell
+// frequency / behavior / duration change re-sampled the rest (resampleRunningPlan). Only
+// what has not started is replaced — a bell already ringing keeps ringing
+// (scheduleAudioFrom skips plan events in the past, so it is not struck twice).
+// scheduleAudioFrom reads the GLOBAL elapsedMs for its origin, so sync it first, then
+// restore the pause/resume bookkeeping.
 function resyncRunningSession(elapsed) {
   dropPendingSources();
   const savedElapsed = elapsedMs;
@@ -568,12 +590,47 @@ function stopSilentKeepAlive() {
 }
 
 // ── Audio scheduling ─────────────────────────────────────────────────────────
-// Schedules the entire remaining session — the random bells' plan plus the triple end
-// bell — on the audio clock, starting from audioCtx.currentTime. Called at session start,
-// on every resume, and by a resync (a late decode, a bell frequency change). Because every
-// event is placed on the hardware clock, the session ends (and the bells ring) even if
-// the screen locks. There are no session fades: the bells ARE the session, and the ending
-// is protected by the sampled plan (last bell rings out → 3 s gap → triple chime).
+// Schedules the entire remaining session — the random bells' plan plus the five end
+// bells — on the audio clock, starting from audioCtx.currentTime. Called at session start,
+// on every resume, and by a resync (a late decode, a bell frequency / behavior / duration
+// change). Because every event is placed on the hardware clock, the session ends (and the
+// bells ring) even if the screen locks. There are no session fades: the bells ARE the
+// session, and the ending is protected by the sampled plan (last bell rings out → 3 s gap
+// → five end bells) plus, for a bell that is already ringing when the end moves, by
+// clearTheEnding().
+
+// A bell that is already sounding cannot be un-rung, so when the end moves in front of it
+// (the session was shortened while it rang, or a re-sample left a long bell with too little
+// time) it is faded into the gap in front of the end bells instead: never cut, never talked
+// over. Ending fade lengths in seconds; MIN is the shortest ramp that still cannot click,
+// and the end bells wait for it rather than landing on it.
+const ENDING_FADE = PAUSE_FADE_OUT;   // 2 s, the same fade a pause uses
+const MIN_ENDING_FADE = 0.35;
+const ENDING_TAIL = 0.25;             // silence between that fade and the first end bell
+
+// Returns the time the end bells should ring at: `endAt`, unless a bell that is sounding
+// right now would still be ringing then. Only sources that have already started are
+// touched — anything still ahead is dropped and re-sampled by the caller.
+function clearTheEnding(endAt) {
+  const now = audioCtx.currentTime;
+  for (const s of scheduledSources) {
+    if (!s.__end || s.__when > now) continue;    // not sounding (the sentinel has no __end)
+    if (s.__end <= endAt) continue;              // rings out before the end bells anyway
+    const room = endAt - ENDING_TAIL - now;      // gap available in front of the end bells
+    const fade = Math.max(MIN_ENDING_FADE, Math.min(ENDING_FADE, room));
+    const stopAt = now + fade;
+    if (stopAt + ENDING_TAIL > endAt) endAt = stopAt + ENDING_TAIL;   // never cut it short
+    try {
+      const g = s.__g.gain;
+      const v = g.value;                         // read before cancelling (see scheduleAudioFrom)
+      g.cancelScheduledValues(now);
+      g.setValueAtTime(v, now);
+      g.linearRampToValueAtTime(0.0001, stopAt); // −80 dB: inaudible, and no click
+      s.stop(stopAt);
+    } catch {}
+  }
+  return endAt;
+}
 
 function scheduleAudioFrom(remainingMs) {
   const t0      = audioCtx.currentTime;
@@ -592,8 +649,11 @@ function scheduleAudioFrom(remainingMs) {
     });
   }
 
-  // ── Triple end bell ──
-  scheduleChime(t0 + remSec);
+  // ── Five end bells ──
+  // Where the timer says, unless a bell that is ringing right now would still be sounding
+  // then — then that bell is faded first and the end bells follow it (clearTheEnding).
+  const endAt = clearTheEnding(t0 + remSec);
+  scheduleChime(endAt);
 
   // ── End-of-session sentinel ──
   // The visible timer runs on requestAnimationFrame, which is frozen while the screen is
@@ -604,11 +664,11 @@ function scheduleAudioFrom(remainingMs) {
   // locked screen; its onended is the one end-of-session signal that actually fires on
   // time. It also covers the case where the bell failed to load and there is no end bell
   // whose completion we could hang this off.
-  scheduleEndSentinel(t0 + remSec + endBellTail());
+  scheduleEndSentinel(endAt + endBellTail());
 }
 
-// How long after the nominal end the last end bell is still sounding. The chime bell is
-// ~28 s, not a short ding, so a fixed few seconds here would tear the audio session down
+// How long after the last end bell starts the bell is still sounding. The chime bell is
+// ~20 s, not a short ding, so a fixed few seconds here would tear the audio session down
 // while the final bell was still ringing — which on Android 17 means the foreground
 // service goes away and the bell is silently muted mid-strike.
 function endBellTail() {
@@ -660,6 +720,13 @@ function releaseAudioHold() {
 // Drives the visible countdown only. All audio is already scheduled on the audio
 // clock, so this loop freezing while the screen is locked is harmless.
 
+// Where the session's own clock stands right now, in ms — the same expression tick() uses.
+// A pause accumulates into elapsedMs; a running session adds the time since startTimestamp.
+function elapsedNow() {
+  const live = (state === 'playing' || state === 'finishing') && startTimestamp !== null;
+  return live ? elapsedMs + (performance.now() - startTimestamp) : elapsedMs;
+}
+
 function tick(now) {
   if (state !== 'playing' && state !== 'finishing') return;
 
@@ -684,7 +751,7 @@ function startSession() {
   clearTimeout(endHoldTimeout);      // a pending release from the previous session
   clearTimeout(endUiTimeout);
   clearTimeout(bgFadeTimeout);
-  // The previous session's end chime may still be ringing (it lasts ~29 s and the UI comes
+  // The previous session's end bells may still be ringing (they last ~22 s and the UI comes
   // back after 3.5 s), or a stopped bell may still be fading: fade, never cut.
   releaseSources();
   ensureAudio();
@@ -766,8 +833,10 @@ function resumeSession() {
   rafId = requestAnimationFrame(tick);
 }
 
-// Every way out of a running session — Reset, a duration change — comes through here, so
-// this is the one place the no-cut rule has to hold for them.
+// Every way out of a running session — Reset, and a paused session shortened past its own
+// end (retimeSession) — comes through here, so this is the one place the no-cut rule has
+// to hold for them. A duration, bell frequency or Bell behavior change while the session
+// runs does NOT come through here any more: it re-times or re-samples in place instead.
 function stopSession() {
   if (state === 'idle') return;
 
@@ -792,14 +861,14 @@ function onSessionEnd() {
 
   document.body.classList.add('session-complete');
 
-  // The bells and the triple end bell were scheduled on the audio clock back at
+  // The bells and the five end bells were scheduled on the audio clock back at
   // session start, so they ring on time — even if the screen was locked when the
   // timer ran out. Here we only tidy up the UI and stop the silent playback once
   // the page is visible again.
   if (audioCtx) audioCtx.resume();
 
-  // The end chime rings from the nominal end for endBellTail(); an update must not reload
-  // over it. Computed from the session clock, so a late onSessionEnd (screen was off)
+  // The end bells ring from the nominal end for endBellTail(); an update must not reload
+  // over them. Computed from the session clock, so a late onSessionEnd (screen was off)
   // does not push it out.
   if (startTimestamp !== null) {
     quietAt = startTimestamp + (sessionDurationMs - elapsedMs) + endBellTail() * 1000;
@@ -807,7 +876,7 @@ function onSessionEnd() {
 
   // Two different clocks, on purpose.
   //
-  // The UI comes back quickly — the user should not have to wait out a 28-second bowl
+  // The UI comes back quickly — the user should not have to wait out a 20-second bowl
   // before they can start another session. The AUDIO is released separately, once the end
   // bells have actually finished; normally the audio-clock sentinel does that (it is the
   // only thing that fires on time with the screen off), and endHoldTimeout is just the
@@ -953,13 +1022,15 @@ function setMediaSession() {
   navigator.mediaSession.setActionHandler('stop',  shutdownApp);
 }
 
-// Surface the countdown on the lock screen where the platform supports it.
+// Surface the countdown on the lock screen where the platform supports it. Reads the live
+// clock, so a session that was re-timed mid-way (retimeSession) reports the new length.
 function updateMediaPosition() {
   if (!('mediaSession' in navigator) || !navigator.mediaSession.setPositionState) return;
   try {
+    const elapsed = Math.min(elapsedNow(), sessionDurationMs);
     navigator.mediaSession.setPositionState({
       duration: sessionDurationMs / 1000,
-      position: Math.min(elapsedMs, sessionDurationMs) / 1000,
+      position: elapsed / 1000,
       playbackRate: 1,
     });
   } catch {}
@@ -990,12 +1061,16 @@ function getSelectableCustomTime() {
   return savedMin && !isPresetDuration(savedMin) ? savedMin : null;
 }
 
+// Picking a duration: while a session runs this re-times it in place (retimeSession) — the
+// session keeps playing, nothing is stopped or restarted — and otherwise it is simply the
+// next session's length. Remembered as the last-used duration either way.
 function setSelectedDuration(min) {
-  if (state !== 'idle') stopSession();
   selectedMinutes = min;
   try { localStorage.setItem(DURATION_KEY, String(min)); } catch {}
   renderDurations();
-  showIdleCountdown();
+  if (state === 'playing' || state === 'paused') retimeSession();
+  else if (state === 'idle') showIdleCountdown();
+  // finishing: the end bells are ringing and the UI reset already scheduled paints it.
 }
 
 // ── UI helpers ───────────────────────────────────────────────────────────────
@@ -1264,24 +1339,58 @@ function setBellLevel(id) {
   if (state === 'playing' || state === 'paused') resampleRunningPlan();
 }
 
-// Re-sample the rest of a running (or paused) session under the new level. Strikes that
-// already rang stay in the plan (scheduleAudioFrom skips them); the new part continues
-// from the last one, so a bell that is ringing rings out in full and the next one keeps
-// the new level's wait after it. The ending rule still holds (sampleRandomPlan).
+// Re-sample everything still ahead of a running (or paused) session and re-lay it on the
+// audio clock. THE one path for a change that alters the shape of the rest of the session:
+// a bell frequency (setBellLevel), a Bell behavior (setBellMode) and a duration
+// (retimeSession, which sets sessionDurationMs first). Strikes that already rang stay in
+// the plan (scheduleAudioFrom skips them); the new part continues from the last one, so a
+// bell that is ringing rings out in full and the next one keeps the new setting's wait
+// after it. The ending rule still holds — sampleRandomPlan pulls the last bell in front of
+// the end bells — and a bell that is ringing and no longer fits is faded into them by
+// clearTheEnding instead of being cut or talked over.
+//
+// Nothing is ever restarted or re-struck: the session simply carries on, one sampling
+// onward. A duration shortened past the elapsed time leaves no plan ahead at all, and
+// scheduleAudioFrom rings the end bells at once.
 function resampleRunningPlan() {
   if (!randomPlan || startTimestamp === null) return;
-  const elapsed = state === 'playing'
-    ? elapsedMs + (performance.now() - startTimestamp) : elapsedMs;
+  const elapsed = elapsedNow();
   const now = elapsed / 1000;
   const remaining = sessionDurationMs / 1000 - now;
-  if (remaining <= 0) return;
   const past = randomPlan.filter(ev => ev.t <= now);
   const last = past[past.length - 1];
   const after = last ? { t: last.t - now, pool: last.pool } : null;
-  const next = sampleRandomPlan(remaining, currentLevel(), after)
-    .map(ev => ({ t: ev.t + now, pool: ev.pool }));
+  const next = remaining > 0
+    ? sampleRandomPlan(remaining, currentLevel(), after)
+        .map(ev => ({ t: ev.t + now, pool: ev.pool }))
+    : [];
   randomPlan = past.concat(next);
   if (state === 'playing' && randomBuffers) resyncRunningSession(elapsed);
+}
+
+// A duration change mid-session: same session, new end. The elapsed time is untouched and
+// nothing is interrupted; the clock, the ring and the lock-screen position follow the new
+// length at once, and the rest of the session — end bells included — is re-sampled for the
+// new deadline (resampleRunningPlan).
+//
+// A new end that is already in the past (the session was shortened below its own elapsed
+// time) ends the session: while playing, the end bells ring immediately and tick() closes
+// the session on the next frame; while paused there is no audio to ring, so it stops.
+function retimeSession() {
+  sessionDurationMs = selectedMinutes * 60 * 1000;
+  elDurationLabel.textContent = `${selectedMinutes} min`;
+
+  const remainingMs = Math.max(0, sessionDurationMs - elapsedNow());
+  updateCountdown(remainingMs);
+  setEnsoProgress(sessionDurationMs > 0 ? 1 - remainingMs / sessionDurationMs : null);
+  updateMediaPosition();
+
+  if (state === 'paused' && remainingMs <= 0) {
+    stopSession();
+    setStatus('');
+    return;
+  }
+  resampleRunningPlan();
 }
 
 // Settings explains the levels in words: one row per level, its glyphs and its wait.
@@ -1394,7 +1503,8 @@ function appendCustomBtn() {
   editBtn.appendChild(editSub);
 
   editBtn.addEventListener('click', () => {
-    if (state !== 'idle') stopSession();
+    // A running session keeps running while the dialog is open; Save re-times it (see
+    // setSelectedDuration). Before v26.11.05a this stopped the session.
     openCustomTimeModal(savedMin);
   });
 
@@ -1743,7 +1853,7 @@ function wasInstalled() {
 }
 
 // Install and offline are ONE thing here: an installed copy is only worth having if it
-// works without a connection. The worker precaches the shell and the bells (~4 MB) on its
+// works without a connection. The worker precaches the shell and the bells (~2.5 MB) on its
 // own, best-effort; the one button re-fetches any bell that precache missed — installing
 // also saves them, and inside the installed app it finishes the save.
 let audioSaved  = false;   // every bell is in our audio cache (see refreshOfflineState)
@@ -1759,7 +1869,7 @@ function refreshInstallUI() {
       elInstallBtn.disabled = true;
       elInstallStatus.textContent = 'Works offline.';
     } else {
-      elInstallBtn.textContent = 'Save for offline · 4 MB';
+      elInstallBtn.textContent = 'Save for offline · 3 MB';
       elInstallBtn.disabled = false;
       elInstallStatus.textContent = 'Save the bells to use it offline.';
     }
@@ -2305,7 +2415,7 @@ let pendingReload = false;   // another window switched workers while we were ru
 let updateTimer = null;
 
 // The handover reloads the page, and a reload stops every sound dead. So it waits for idle
-// AND for quietAt: the 2 s stop fade, and the ~40 s end chime (idle comes back 3.5 s after
+// AND for quietAt: the 2 s stop fade, and the ~22 s end bells (idle comes back 3.5 s after
 // the end while the bowl is still ringing — the reload used to cut it about 7 s in).
 // The flags stay set until the moment it applies, so a session that starts meanwhile
 // simply defers it to the next idle moment.

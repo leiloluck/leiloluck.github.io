@@ -371,8 +371,9 @@ body {
   flex: none;
   width: min(74vw, 38svh, 300px);                 /* fallback without container units */
   /* The ring is the only flexible block: it takes whatever height the controls leave,
-     capped so it never dominates the column. 24px = the status line's room under the ring. */
-  width: min(100cqw, calc(100cqh - 24px), 40svh, 340px);
+     capped so it never dominates the column. 44px = the caption's and the status line's
+     room under the ring (.end-note + .status, 15px each, plus both gaps). */
+  width: min(100cqw, calc(100cqh - 44px), 40svh, 340px);
   aspect-ratio: 1;
   display: grid;
   place-items: center;
@@ -464,6 +465,18 @@ body:not(.running):not(.paused) #enso-arc {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   min-height: 16px;
+  text-align: center;
+}
+
+/* What the session ends with, directly under the ring so nobody has to guess. Muted, one
+   line: it is a caption, not a control, and it must never compete with the countdown. */
+.end-note {
+  flex: none;
+  font-size: clamp(10px, 1.5svh, 12px);
+  color: var(--muted);
+  letter-spacing: 0.05em;
+  min-height: 15px;
+  line-height: 15px;
   text-align: center;
 }
 

@@ -20,7 +20,7 @@
      "Save audio offline" button). Only ever delete keys starting with CACHE_PREFIX.
 
    * AUDIO LIVES IN ITS OWN, UNVERSIONED CACHE. If the bells sat in the version-keyed
-     shell cache, every single version bump would evict them and re-fetch ~4 MB — over
+     shell cache, every single version bump would evict them and re-fetch ~2.5 MB — over
      mobile data, silently. AUDIO_CACHE is never versioned and never evicted as a whole.
 
    * THE BELLS ARE PRECACHED (into AUDIO_CACHE, best-effort). They are the whole session,
@@ -30,7 +30,7 @@
 
 'use strict';
 
-const VERSION      = 'v26.10.22e';
+const VERSION      = 'v26.11.05a';
 const CACHE_PREFIX = 'meditation-timer-';        // never touch caches outside this prefix
 const CACHE        = CACHE_PREFIX + VERSION;
 const AUDIO_CACHE  = CACHE_PREFIX + 'audio';     // unversioned on purpose — see header
@@ -51,27 +51,34 @@ const PRECACHE = [
   './fonts/zen-maru-gothic-700.woff2',
 ];
 
-// The three denoised bell recordings (lossless FLAC, ~3.9 MB total); bell-2-c3 is also
-// the end chime. Not part of the atomic shell: added best-effort into the persistent
+// The two shipped denoised bell recordings (lossless FLAC, ~2.5 MB total); bell-4-g3 is
+// also the end chime. Not part of the atomic shell: added best-effort into the persistent
 // audio cache — core session content that must work offline, but must never block or
 // bust a shell update.
 //
-// Their 320 kbps .mp3 twins (~2.7 MB) are deliberately NOT precached: only an engine that
+// bell-2-c3 (the plain C3) is deliberately NOT here since v26.11.05a: the recording stops
+// dead at −45 dB while it is still ringing, which is the bell that "ends abruptly" (see
+// RANDOM_BELLS in js/app.js). Its files stay on disk but are not shipped — and phones that
+// cached it earlier give the space back (RETIRED_AUDIO).
+//
+// Their 320 kbps .mp3 twins (~1.7 MB) are deliberately NOT precached: only an engine that
 // cannot decode FLAC needs them, and app.js stores them in AUDIO_CACHE itself the moment
 // it falls back (serveAudio below would too, but not for the fetches a page makes before
 // this worker controls it — i.e. the very first visit).
 const RANDOM_BELLS = [
   './resources/random/bell-1-c3-flat.flac',
-  './resources/random/bell-2-c3.flac',
   './resources/random/bell-4-g3.flac',
 ];
 
-// Audio older builds stored that nothing plays any more (v26.10.22): the ~44 MB
-// soundtrack (its mode was removed) and the old end chime. Evicted from AUDIO_CACHE on
-// activate, so phones that saved the soundtrack get the space back.
+// Audio older builds stored that nothing plays any more — evicted from AUDIO_CACHE on
+// activate, so phones get the space back:
+//   v26.10.22 — the ~44 MB soundtrack (its mode was removed) and the old end chime
+//   v26.11.05a — the retired C3, whose recording ends abruptly
 const RETIRED_AUDIO = [
   './resources/bowls long interval.mp3',
   './resources/Single bowl sound.mp3',
+  './resources/random/bell-2-c3.flac',
+  './resources/random/bell-2-c3.mp3',
 ];
 
 // Always fetch precache entries from the network, never the HTTP cache. See header.

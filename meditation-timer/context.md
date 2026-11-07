@@ -1,8 +1,19 @@
 # Meditation Timer
 
 A minimalist meditation timer PWA. The user picks a duration and a bell frequency; random,
-pitched bell strikes fill the session and a triple bell closes it. Installable on Android +
-iPhone, offline-first.
+pitched bell strikes fill the session and five bells close it. Installable on Android +
+iPhone, offline-first. The duration and the bell frequency can both be changed while the
+session runs; nothing is interrupted.
+
+**v26.11.05a changes:** the plain C3 bell (`bell-2-c3`) is retired — it was CUT, not faded
+(see Sounds) — so the palette is two bells and 10 pitched strikes instead of three and 17,
+and the end bell is `RANDOM_BELLS[1]`; the end bells ring FIVE times instead of three
+(`END_BELL_OFFSETS`), and a caption under the ring says so; the duration can be changed
+during a session (it re-times it in place instead of stopping it) and the bell frequency /
+Bell behavior changes still apply at once, all through the same re-sample; a bell that is
+already ringing when the end moves is faded into the end bells (`clearTheEnding`) instead
+of being cut or talked over; the bell set drops from 3.9 MB to 2.5 MB (precache and the
+"Save for offline" label follow).
 
 **v26.10.22 changes:** the Soundtrack mode is gone (random bells are the only sound); Bell
 frequency moved from Settings to the Meditate page with six levels (none, 1 … 5); the end
@@ -24,7 +35,7 @@ silence between bells); the end bell is selectable (Long / Warm / Bright, always
 strikes) with a Test button; every strike audible for under 18 s is dropped from sessions
 (`MIN_RING`).
 
-**Version:** v26.10.22e (format `vYY.MM.DD` — year.month.day; bump on every change, in
+**Version:** v26.11.05a (format `vYY.MM.DD` — year.month.day; bump on every change, in
 lockstep across `index.html`, `sw.js` `VERSION`, `js/app.js` `APP_VERSION` and this file).
 
 ---
@@ -60,7 +71,7 @@ idle ──[Begin]──► playing ──[Pause]──► paused ──[Resume]
 - `idle` — no session running; UI shows selected duration
 - `playing` — rAF loop ticking, bells scheduled on the audio clock
 - `paused` — rAF stopped, pending strikes dropped, the sounding one faded over 2 s
-- `finishing` — session timer hit 0; the end chime is ringing; the UI resets 3.5 s later
+- `finishing` — session timer hit 0; the end bells are ringing; the UI resets 3.5 s later
 
 State transitions happen in: `startSession`, `pauseSession`, `resumeSession`, `stopSession` and `onSessionEnd`.
 
@@ -73,7 +84,7 @@ All audio goes through one Web Audio graph; every scheduled strike has its own g
 
 ```
 random strike ──► AudioBufferSource (playbackRate) ──► own GainNode (loudness match) ──► destination
-end chime ×3  ──► AudioBufferSource (rate 1)       ──► own GainNode (same match)     ──► destination
+end chime ×5  ──► AudioBufferSource (rate 1)       ──► own GainNode (same match)     ──► destination
 end sentinel  ──► AudioBufferSource ──► own GainNode (0, silent) ─────────────────────► destination
 keep-alive 25 Hz ──► AudioBufferSource (loop) ───────────────────────────────────────► destination
 keep-alive <audio> (blob: WAV, plays outside the graph)
@@ -83,7 +94,7 @@ There is no soundtrack, no media-element source and no session fade any more (v2
 All fades are Web Audio gain ramps — never `setInterval` or CSS transitions.
 
 `ensureAudio()` creates the context lazily (first call only, at init) and starts
-`loadRandomBells()`, which decodes all three bells — the end chime is one of them.
+`loadRandomBells()`, which decodes both bells — the end bell is one of them.
 
 **Important:** read `gain.value` *before* `cancelScheduledValues()` — cancelling drops the
 ramp in progress, and the value then reverts to the ramp's start, not where it had got to.
@@ -97,17 +108,18 @@ locked or the tab is backgrounded. The **Web Audio hardware clock keeps running*
 fire while the screen is off is placed on the audio clock at session start, not
 triggered by a JS timer:
 
-- **Triple end bell** (`scheduleChime`) — ONE bell, `RANDOM_BELLS[CHIME_BELL]`, the G3
-  `bell-4-g3` (20 s, "Bright"). Picked by ear in v26.10.22c from three candidates a
-  v26.10.22b Settings section let the user try (C3 `bell-2-c3` 28 s, the v26.10.22 default;
-  C3 −27¢ `bell-1-c3-flat` 22 s); that section, its Test button and the
-  `meditation-end-bell` key are gone again. All three were scanned for tones that are not
-  partials of the bell (the old chime's fault): bell-1's flagged 246 / 680 Hz events are
-  beating partials present from the first second, the others have none. Played as recorded
-  (rate 1) at its loudness-matched gain, struck at `end`, `end+0.4`, `end+0.8`
-  (`END_BELL_OFFSETS`). Each strike after the first damps the previous one to 0 over
-  `CHIME_DAMP` (25 ms) landing exactly on the new onset, and stops it there: one bell rung
-  again from the start, never three copies stacked, so no headroom stage is needed.
+- **Five end bells** (`scheduleChime`) — ONE bell, `RANDOM_BELLS[CHIME_BELL]`, the G3
+  `bell-4-g3` (20 s, "Bright"), rung FIVE times (v26.11.05a; three before). Picked by ear
+  in v26.10.22c from three candidates a v26.10.22b Settings section let the user try (C3
+  `bell-2-c3` 28 s, the v26.10.22 default — retired in v26.11.05a, see Sounds; C3 −27¢
+  `bell-1-c3-flat` 22 s); that section, its Test button and the `meditation-end-bell` key
+  are gone again. All three were scanned for tones that are not partials of the bell (the
+  old chime's fault): bell-1's flagged 246 / 680 Hz events are beating partials present
+  from the first second, the others have none. Played as recorded (rate 1) at its
+  loudness-matched gain, struck at `end`, `end+0.4` … `end+1.6` (`END_BELL_OFFSETS`). Each
+  strike after the first damps the previous one to 0 over `CHIME_DAMP` (25 ms) landing
+  exactly on the new onset, and stops it there: one bell rung again from the start, never
+  five copies stacked, so no headroom stage is needed.
   Before v26.10.22 the chime was `resources/Single bowl sound.mp3` ×3 overlapping through a
   0.55 headroom gain; that file has a stray partial (~474 Hz) jumping in by +35 dB at
   24.3 s, which was the "beep" after the bell. The file is no longer referenced.
@@ -115,42 +127,51 @@ triggered by a JS timer:
 
 `scheduleAudioFrom(remainingMs)` (re)builds this entire schedule from
 `audioCtx.currentTime`. It is called by `startSession`, `resumeSession` and
-`resyncRunningSession` (a late decode, a bell frequency change).
+`resyncRunningSession` (a late decode, a bell frequency / Bell behavior / duration change).
+The end bells land at `t0 + remaining`, unless a bell that is sounding right now would still
+be ringing then: `clearTheEnding()` fades that one bell (its own gain, `ENDING_FADE` = 2 s,
+shortest `MIN_ENDING_FADE` = 0.35 s) into a `ENDING_TAIL` (0.25 s) gap and moves the end
+bells after it — never a cut, never the end bells over a ringing bell.
 
 ### Scheduled sources and the no-cut rule
 
 `scheduledSources[]` holds every buffer source scheduled ahead. Each carries its own gain
-stage (`src.__g`) and start time (`src.__when`), set by `scheduleBuffer()`:
+stage (`src.__g`), start time (`src.__when`) and natural end (`src.__end`), set by
+`scheduleBuffer()`:
 
 - `dropPendingSources()` — stops only sources that have not started (silent, so no click)
   and keeps the sounding ones. Used by `resyncRunningSession` (late decode): a bell that is
   already ringing keeps ringing, and `scheduleAudioFrom` skips plan events in the past so
-  it is not struck twice. Also used by a bell frequency change mid-session.
+  it is not struck twice. Also used by every mid-session change (frequency, behavior,
+  duration).
 - `releaseSources()` — the same, then ramps each sounding source's own gain to 0.001 over
   `PAUSE_FADE_OUT` (2 s, exponential) and `stop()`s it at the end of the ramp on the audio
-  clock. Used by pause, stop (and so by a duration change, which goes through
-  `stopSession`) and Begin (the previous session's ~29 s end chime may still be ringing).
+  clock. Used by pause, stop (including a paused session shortened past its own end, which
+  goes through `stopSession`) and Begin (the previous session's ~22 s end bells may still be
+  ringing).
 - `clearScheduledSources()` — hard stop. Only the X (`shutdownApp`) uses it; the context is
   closed straight after anyway.
 
-**No sound is ever hard-cut** (the X, and the chime's own 25 ms damp between its three
+**No sound is ever hard-cut** (the X, and the chime's own 25 ms damp between its five
 strikes, excepted). Every audio path and every stop path:
 
 | Stop path | Random strike / end chime | Keep-alives |
 |---|---|---|
 | Pause (button, lock screen) | `releaseSources` 2 s | stopped after the fade |
-| Stop / Reset, duration change | `releaseSources` 2 s | stopped (inaudible 25 Hz) |
-| Bell frequency change | `dropPendingSources` — ringing one untouched, rest re-sampled | untouched |
+| Stop / Reset, a paused session shortened past its end | `releaseSources` 2 s | stopped (inaudible 25 Hz) |
+| Bell frequency, Bell behavior or duration change | `dropPendingSources` — ringing one untouched, the rest re-sampled and re-laid | untouched |
+| Duration shortened to the moment of a ringing bell | that one bell faded into the end bells (`clearTheEnding`) | untouched |
 | Begin while the last session still sounds | `releaseSources` 2 s | restarted |
-| Session end | last bell rings out → 3 s gap → chime rings out | released by the sentinel after the chime |
+| Session end | last bell rings out → 3 s gap → five end bells ring out | released by the sentinel after the last one |
 | Late decode of the bells | `dropPendingSources` — ringing one untouched | untouched |
 | Update reload | only when idle AND after `quietAt` | (same) |
 | X close | hard stop + `ctx.close()` — deliberate | released |
 
-Peaks: bells × their loudness gain are ≤ 0.50 FS (measured on the decoded buffers; the
-rendered chime peaks at 0.49), and strikes never overlap by construction. The only
-overlap is a released (fading, ≤ −6 dB within 0.2 s) bell under a fresh strike after an
-immediate Stop → Begin.
+Peaks: bells × their loudness gain are ≤ 0.46 FS (measured on the decoded buffers: C3 −27¢
+0.41, G3 0.46; the C3 that had the highest twin, 0.49, is retired), and strikes never
+overlap by construction. The only overlap is a released (fading, ≤ −6 dB within 0.2 s) bell
+under a fresh strike after an immediate Stop → Begin, and a bell fading into the end bells
+in the "shortened at the last moment" row above.
 
 **Keeping the context awake.** Two layers that do *different* jobs — both always run
 during a session (`startSilentKeepAlive()` used to be interval-only, which is a large
@@ -220,26 +241,36 @@ v26.10.13).
 ### Random bells
 
 The study behind them lives in `resources/bells.html`'s "Tuned 3" tab and
-`resources/sources.md`. Three denoised, loudness-matched bell recordings
-(`resources/random/*.flac`, lossless, ~3.9 MB total, precached best-effort into the audio
-cache) — G3 −27¢ and C4 were retired as the palette's two shortest tails (v26.10.17). No
-media element plays; every strike is a decoded `AudioBufferSourceNode` whose
-`playbackRate` pitches it across ±3 semitones, with its own gain stage carrying the
-loudness match.
+`resources/sources.md`. Two denoised, loudness-matched bell recordings
+(`resources/random/*.flac`, lossless, ~2.5 MB total, precached best-effort into the audio
+cache) — G3 −27¢ and C4 were retired as the palette's two shortest tails (v26.10.17), the
+plain C3 in v26.11.05a (see below). No media element plays; every strike is a decoded
+`AudioBufferSourceNode` whose `playbackRate` pitches it across ±3 semitones, with its own
+gain stage carrying the loudness match.
 
+- **The C3 was removed because it is CUT, not because it is short (v26.11.05a).**
+  `bell-2-c3` stops dead while it is still ringing clearly: measured on the recording, its
+  last 0.5 s sits at −39 dB and its last 10 ms at −126 dB below its own peak, i.e. the tone
+  is truncated to digital silence in the final 25 ms. In a session that reads as a bell that
+  ends abruptly; the other two fade out at −77 and −86 dB instead. Every pitch variant of
+  the file inherits the cut (and the high ones are shorter as well), so the whole bell left
+  the palette — and the precache, and (via `RETIRED_AUDIO`) phones that had cached it. The
+  files stay on disk in `resources/random/` until a re-cut is approved. The end bell is
+  still the G3, so `CHIME_BELL` is now `1`.
 - **Pitch changes length too.** `playbackRate` resamples, so a strike at +n semitones also
   lasts 2^(−n/12) as long: the top of the window holds the shortest strikes. Any strike
   audible (ring40 / rate) for under `MIN_RING` = 18 s reads as a bell that ends early and
   is never struck (v26.10.22b; v26.10.22 dropped only G3 +3): G3 +1 / +2 / +3 (17.7, 16.7,
-  15.7 s) and C3 −27¢ +3 (17.4 s). 17 strikes remain; the shortest is C3 −27¢ +2 (18.4 s).
+  15.7 s) and C3 −27¢ +3 (17.4 s). 10 strikes remain (v26.11.05a; 17 while the C3 was in);
+  the shortest is C3 −27¢ +2 (18.4 s), the longest C3 −27¢ −3 (24.6 s).
 
 - **Codec fallback (v26.10.14).** WebKit's `decodeAudioData` (AudioFileReaderCocoa.mm)
   maps FLAC to `audio/flac` and decodes it through AVFoundation, so iOS 11+ *should*
   decode it — unverified on a device. `loadRandomBell()` therefore tries `.flac`, and on a
   **decode** failure (not a network one) switches `randomCodec` to `'mp3'` for the page's
-  life and loads the 320 kbps twins (`resources/random/*.mp3`, ~2.7 MB, same mean/peak
+  life and loads the 320 kbps twins (`resources/random/*.mp3`, ~1.7 MB, same mean/peak
   level to 0.1 dB, ~−85 dB codec noise floor — 50 dB under the recordings' own hiss). The
-  first bell is the probe, so a FLAC-less engine fetches one FLAC, not three. The twins are
+  first bell is the probe, so a FLAC-less engine fetches one FLAC, not two. The twins are
   not precached; the page stores them in the audio cache itself on fallback (a first-visit
   fetch is not yet controlled by the worker). `RANDOM_BELLS[].file` has no extension.
 - `loadRandomBells()` has an in-flight guard (`randomLoading`; init and Begin both ask)
@@ -255,16 +286,16 @@ loudness match.
   every strike plays its full buffer to its natural end.
 - **The ending is protected by the sample, not by a fade.** Nothing may collide with the
   last 3 s: the final bell is pulled in / dropped so it rings out, a 3 s gap follows, then
-  the existing triple chime (`END_BELL_OFFSETS`) rings at the nominal end. The pulled-in
+  the five end bells (`END_BELL_OFFSETS`) ring at the nominal end. The pulled-in
   final bell is the one place the 8 s floor does not hold: it may follow the previous
   ring-out by as little as 1 s (`tFit >= prev.t + prev.ring + 1`, the study's "squeeze"
   rule, same in bells.html). There are no start/end fades — the bells ARE the session.
 - **The opening strike must fit too** (v26.10.14): `sampleRandomPlan` opens with a bell
   whose ring ends before D − 3 s, or with none. Every full session (≥ 1 min) fits any bell;
   this matters for a late-decode remainder, which used to be able to strike a bell that
-  rang straight over the chime.
+  rang straight over the end bells.
 - **Pause/stop never cut a ringing bell**: `releaseSources()` drops strikes that have not
-  started and fades the sounding one (or the end chime) on its own gain over 2 s, stopping
+  started and fades the sounding one (or the end bells) on its own gain over 2 s, stopping
   it when the fade lands. Resume re-schedules the remaining plan (`scheduleAudioFrom` skips
   events already past; a bell interrupted mid-ring is not restarted).
 - A late decode re-samples the remainder of the session (translated so a strike lands
@@ -287,30 +318,47 @@ loudness match.
 
     | Level | Button | wait | floor | mean | maxgap | `minGap`† | measured mean | strikes / 15 min |
     |---|---|---|---|---|---|---|---|---|
-    | 0 | cross | — | — | — | — | — | — | 0 (end chime only) |
-    | 1 | one bell | 60 s | 30 s | 32 s | 200 s | 15 s | 59.8 s | 11 |
-    | 2 | two bells | 30 s | 15 s | 16 s | 100 s | 8 s | 29.8 s | 17 |
-    | 3 default | three bells | 15 s | 8 s | 8 s | 56 s | 1 s | 14.9 s | 23 |
-    | 4 | four bells | 8 s | 4 s | 4.3 s | 44 s | 1 s | 8.1 s | 28 |
-    | 5 | five bells | 3 s | 1 s | 2 s | 36 s | 1 s | 3.2 s | 33 |
+    | 0 | cross | — | — | — | — | — | — | 0 (end bells only) |
+    | 1 | one bell | 60 s | 30 s | 32 s | 200 s | 15 s | 59.4 s | 12 |
+    | 2 | two bells | 30 s | 15 s | 16 s | 100 s | 8 s | 29.9 s | 18 |
+    | 3 default | three bells | 15 s | 8 s | 8 s | 56 s | 1 s | 15.1 s | 25 |
+    | 4 | four bells | 8 s | 4 s | 4.3 s | 44 s | 1 s | 8.3 s | 31 |
+    | 5 | five bells | 3 s | 1 s | 2 s | 36 s | 1 s | 3.3 s | 37 |
 
     † the least the pulled-in final bell may follow the previous ring-out (the ending rule
-    above). The strike count barely rises at the top because the ~18–33 s ring, not the
-    wait, fills the session.
+    above). The strike count barely rises at the top because the ~18–25 s ring, not the
+    wait, fills the session. (Re-measured at v26.11.05a with the two-bell palette; the
+    counts are up from 11 / 17 / 23 / 28 / 33 because the retired C3 had the longest
+    rings. The means still land on the level's nominal wait, which is what floor / mean
+    were tuned for.)
   - *Fixed*: every wait is exactly `wait` (tested: zero error). The ending is NOT pulled in
     or shifted: a bell is struck only if it rings out before D − 3 s; otherwise the session
-    waits in silence (up to one wait + one ring) for the triple chime — never a bell over
-    the chime (tested over 300–1500 s sessions, every level).
+    waits in silence (up to one wait + one ring) for the five end bells — never a bell over
+    them (tested over 300–1500 s sessions, every level).
   - `sampleRandomPlan(durSec, amt, after, mode)` takes level and mode (defaults:
     `bellLevel`, `bellMode`).
   - Wording follows the mode: the Meditate label reads "Random bell frequency" (Random) or
     "Bell frequency" (Fixed); the Settings table's wait column reads "Average wait time" or
     "Wait time".
-- **A change applies at once** (`setBellLevel` / `setBellMode` → `resampleRunningPlan`). Strikes that
-  already rang stay in the plan; the rest is re-sampled from the last strike under the new
-  level (`after`, its time relative to now; a wait already over strikes now), and a
-  playing session is re-laid via `resyncRunningSession`, so a ringing bell rings out in
-  full and the end chime is kept. Paused, only the plan changes; resume lays it.
+- **A change applies at once, and never interrupts the session** (`setBellLevel`,
+  `setBellMode`, `setSelectedDuration` → `retimeSession` → `resampleRunningPlan`). Strikes
+  that already rang stay in the plan; the rest is re-sampled from the last strike under the
+  new setting (`after`, its time relative to now; a wait already over strikes now), and a
+  playing session is re-laid via `resyncRunningSession`, so a bell that is ringing rings out
+  in full and the end bells are kept. Paused, only the plan changes; resume lays it. The
+  re-sample is always against the CURRENT deadline, so the ending rule holds after any
+  change — including a duration change (which only moves `sessionDurationMs` first).
+  Measured over 5000 randomised mid-session re-samples: no strike is ever re-struck, none
+  overlaps the next one, and none rings over the protected last 3 s.
+- **A duration change mid-session re-times the session, it does not stop it** (v26.11.05a;
+  before, any duration tap went through `stopSession`). The elapsed time is untouched; the
+  clock, the ring (`setEnsoProgress`), the label under the clock and the lock-screen
+  position (`updateMediaPosition`, which reads the live clock) follow at once, and the end
+  bells move to the new end because the rest of the session is re-sampled for it. A new end
+  that is already in the past ends the session there: while playing the end bells ring
+  immediately (after `clearTheEnding` has faded whatever was sounding into them); while
+  paused there is no audio to ring, so the session stops. Picking a duration during
+  `finishing` only stores it for the next session — the end bells are left alone.
 
 ---
 
@@ -323,6 +371,13 @@ remaining = sessionDurationMs - elapsed
 ```
 
 `elapsedMs` accumulates across pauses. On pause: `elapsedMs += performance.now() - startTimestamp`. On resume: `startTimestamp = performance.now()`.
+
+`elapsedNow()` is the same expression for the rest of the app (a bell frequency change, a
+duration change, the lock-screen position), so all of them agree with the visible clock.
+
+A duration change mid-session (`retimeSession`) rewrites `sessionDurationMs` and leaves the
+elapsed time alone, so `remaining` — and with it the clock, the ensō and the end bells —
+moves at once, on the same session.
 
 The rAF loop is cancelled with `cancelAnimationFrame(rafId)` on pause, stop, and session end. It drives the **display only** — the audio schedule is independent (see Lock-screen scheduling above), so a frozen rAF loop never affects whether the session ends or the bells ring.
 
@@ -365,11 +420,11 @@ tappable version label:
   to do, which no web page can automate.
 - **Offline is part of Install** (v26.10.15: one button, no separate Offline section). An
   installed copy is only worth having if it works without a connection. The worker
-  precaches the shell and the three bells (~4 MB) best-effort; `#install-btn` also runs
+  precaches the shell and the two bells (~3 MB) best-effort; `#install-btn` also runs
   `saveOffline()`, which re-fetches any bell that precache missed (progress "Saving for
-  offline… n of 3" in `#install-status`), **and** runs the install flow (native prompt, or
+  offline… n of 2" in `#install-status`), **and** runs the install flow (native prompt, or
   the steps modal); inside the installed app the same button reads "Save for offline ·
-  4 MB" until every bell is cached, then "✓ Installed" with "Works offline." (disabled).
+  3 MB" until every bell is cached, then "✓ Installed" with "Works offline." (disabled).
   `audioSaved` comes from `isAudioCached()`, which checks **this app's own audio cache**
   for the actual bell URLs (`OFFLINE_AUDIO`) — an old "is any `.mp3` cached on the
   origin?" check was fooled by SoundAnnoyer's twelve. Until v26.10.22 this button saved
@@ -410,9 +465,9 @@ anywhere?", which SoundAnnoyer's twelve sounds once answered for it.
 
 **Old-cache eviction is prefix-scoped** to `meditation-timer-`. `caches.keys()` is per-origin and this site hosts several apps; the old unscoped filter deleted SoundAnnoyer's cache on every update here, and SoundAnnoyer's returned the favour by deleting the 44 MB soundtrack the user had explicitly downloaded.
 
-**The bells (~3.9 MB FLAC) ARE precached** — into the *audio* cache, best-effort, and only if not already there. Keeping them out of the atomic shell `addAll` means a flaky connection can't block a shell update; keeping them out of the versioned cache means they aren't re-downloaded on every bump. See the audio-engine section for why they must be offline at all.
+**The bells (~2.5 MB FLAC) ARE precached** — into the *audio* cache, best-effort, and only if not already there. Keeping them out of the atomic shell `addAll` means a flaky connection can't block a shell update; keeping them out of the versioned cache means they aren't re-downloaded on every bump. See the audio-engine section for why they must be offline at all.
 
-**Freshness / auto-update:** comes from the SW lifecycle, not a per-launch network hit. The SW deliberately does **not** call `skipWaiting()` on install: the shell is cache-first, so a worker that activates mid-session would serve new JS/CSS to a page running the old code. Instead the new worker waits, and `app.js` sends it `SKIP_WAITING` (`applyUpdateIfSafe`) once `state === 'idle'` **and** `performance.now() >= quietAt` — from session stop, session end, and on becoming visible — after which `controllerchange` reloads unconditionally. `quietAt` is when the last sound has finished: stop + 2.6 s, or the nominal end + `endBellTail()` (~30 s). Before v26.10.14 a waiting update reloaded ~7 s after the session end and cut the ~40 s end chime. The previous build had this backwards: it let the worker take over immediately and deferred the *reload*, which was then simply dropped, so an update arriving during a session never landed at all.
+**Freshness / auto-update:** comes from the SW lifecycle, not a per-launch network hit. The SW deliberately does **not** call `skipWaiting()` on install: the shell is cache-first, so a worker that activates mid-session would serve new JS/CSS to a page running the old code. Instead the new worker waits, and `app.js` sends it `SKIP_WAITING` (`applyUpdateIfSafe`) once `state === 'idle'` **and** `performance.now() >= quietAt` — from session stop, session end, and on becoming visible — after which `controllerchange` reloads unconditionally. `quietAt` is when the last sound has finished: stop + 2.6 s, or the nominal end + `endBellTail()` (~23 s). Before v26.10.14 a waiting update reloaded ~7 s after the session end and cut the old ~40 s end chime. The previous build had this backwards: it let the worker take over immediately and deferred the *reload*, which was then simply dropped, so an update arriving during a session never landed at all.
 
 `app.js` registers with `updateViaCache:'none'` and re-checks on load, on foreground and on `online`, throttled to once a minute. It also compares its own `APP_VERSION` against the worker's `VERSION` and self-heals a mismatch once per browsing session.
 
@@ -472,8 +527,10 @@ fills it; the pager is the one flexible child. Every vertical size is a fluid `c
 down together instead of only the ring. In the Meditate page the hero
 (`.countdown-section`, `container-type: size`) takes whatever height the controls leave
 and the ring is sized from that box with container units
-(`min(100cqw, 100cqh − 24px, 40svh, 340px)`, countdown `17cqw`), so it shrinks on a short
-phone and is capped on a tall one. Spare height that the width-limited ring cannot use
+(`min(100cqw, 100cqh − 44px, 40svh, 340px)`, countdown `17cqw`), so it shrinks on a short
+phone and is capped on a tall one. The 44px is the room the two lines under the ring need
+(the caption `.end-note` and the status line, 15px each plus both gaps). Spare height that
+the width-limited ring cannot use
 goes *above* it (`::before`), so Begin always sits right under the timer. Below Begin:
 **Duration**, a 3-column grid (5/10/15, then 20/25/Custom), then **Bell frequency**, a
 slider (v26.10.22d; about the height of the two button rows it replaced; verified to fit
@@ -484,8 +541,15 @@ Since v26.10.22c Settings (Manual, Bell behavior, the frequency table, App, Dele
 same fluid gaps — no `space-between`, which used to stretch empty bands between the
 sections on a tall phone — so Delete app stays on screen. The panels keep
 `overflow-y: auto` purely as a safety net: landscape phones and very large system text
-still scroll instead of clipping anything (touch pan verified). The old "three bells
-close the session" hint under the ring is gone.
+still scroll instead of clipping anything (touch pan verified).
+
+**The caption under the ring (v26.11.05a):** "The session ends with five bells." in muted
+text between the ensō and the status line — a caption, not a control, so nobody has to
+guess how the session ends (the same reason the old "three bells close the session" hint
+existed, and it says five now because five is what rings). It is 15px tall and its height
+is taken out of the ring's maximum, so it costs ring size rather than pushing Begin off the
+screen; verified at 360×640 (ring 221px), 390×844 (338px) and 412×915 (340px), no scroll,
+everything on screen.
 
 **Tabs and paging:** header, then two tabs (`TABS` + `showTab()` in app.js):
 **Meditate** (the practice screen above) and **Settings**. The two pages sit side by side
@@ -593,7 +657,8 @@ dead context and refill the memory the X just released.
 
 | File | Duration | Type |
 |---|---|---|
-| `resources/random/bell-1-c3-flat.flac` … `bell-4-g3.flac` (3 files: bells 1, 2, 4) | ~3.9 MB total, 20–28 s, 48 kHz/24-bit stereo | the random bells — denoised recordings (spectral subtraction, see `resources/sources.md`); names carry the bell and pitch. G3 −27¢ and C4 retired in v26.10.17 (the palette's two shortest tails — see the study's "Tuned 3" tab). `bell-2-c3` is also the end chime (v26.10.22) |
+| `resources/random/bell-1-c3-flat.flac` … `bell-4-g3.flac` (2 shipped files: bells 1 and 4) | ~2.5 MB total, 20–22 s, 48 kHz/24-bit stereo | the random bells — denoised recordings (spectral subtraction, see `resources/sources.md`); names carry the bell and pitch. G3 −27¢ and C4 retired in v26.10.17 (the palette's two shortest tails — see the study's "Tuned 3" tab); `bell-2-c3` retired in v26.11.05a (it ends on a hard cut at −45 dB, see Sounds). `bell-4-g3` is also the end bell (v26.10.22) |
+| `resources/random/bell-2-c3.flac` / `.mp3` | 1.55 MB / 1.1 MB, 28 s | **not shipped since v26.11.05a** (the plain C3, retired for its abrupt end). Kept on disk until a re-cut is approved; evicted from the audio cache by `sw.js` `RETIRED_AUDIO` |
 | `resources/bowls long interval.mp3` | ~44 MB, ~1 hr | **unused since v26.10.22** (the removed Soundtrack). Kept on disk until deletion is approved |
 | `resources/Single bowl sound.mp3` | ~1.5 MB, ~39 s | **unused since v26.10.22** (the old end chime; stray ~474 Hz tone at 24.3 s). Kept on disk until deletion is approved |
 | `resources/random/*.mp3` (3 twins) | ~2.7 MB total | FLAC-less fallback: `ffmpeg -i x.flac -map_metadata -1 -c:a libmp3lame -b:a 320k x.mp3` (48 kHz kept; mean/peak identical to the FLAC within 0.1 dB). Re-encode them whenever a FLAC changes. |
@@ -605,8 +670,12 @@ All files have metadata stripped (`-map_metadata -1`; for MP3 sources with `-c:a
 ## Adding a New Bell
 
 1. Denoise and loudness-match it as in `resources/sources.md`; drop the FLAC (and its
-   320 kbps MP3 twin) into `resources/random/` with metadata stripped.
+   320 kbps MP3 twin) into `resources/random/` with metadata stripped. **Check the tail
+   before it ships**: measure the last 0.5 s and the last 10 ms against the file's own peak
+   (the retired C3 failed exactly here — see Sounds). A bell that stops above ~−60 dB is
+   heard as an abrupt end and must be re-cut or faded out, not shipped.
 2. Add an entry to `RANDOM_BELLS` in `js/app.js` (`label`, `file` without extension,
    measured `ring40`/`ring50`, `gain`) and the FLAC to `RANDOM_BELLS` in `sw.js`.
-   `CHIME_BELL` refers to a bell by index: keep it pointing at the G3.
+   `CHIME_BELL` refers to a bell by index: keep it pointing at the G3 (index 1 since
+   v26.11.05a — it follows the list, so re-check it whenever the palette changes).
 3. Bump the version in all four places (see the top of this file).

@@ -2,8 +2,17 @@
 
 ## Hosting & deployment
 - **Platform:** GitHub Pages, served at `https://leiloluck.github.io`.
-- **Deployment:** commits pushed to the `main` branch publish automatically. There
-  is no CI build step — the repository is served as-is.
+- **Deployment:** commits pushed to the `main` branch publish automatically through
+  GitHub's `pages build and deployment` workflow (Jekyll; there is no custom
+  workflow). `_config.yml` `exclude` keeps development-only material out of the
+  published site; everything else is served as-is.
+- **Site size limit:** a published Pages site may be no larger than 1 GB, and a
+  deployment that takes longer than 10 minutes is aborted. Keep the artifact
+  under that limit by listing large, runtime-unused files (studies, source
+  recordings, archives) in `_config.yml` — they stay in the repository but are
+  not published. Do not exclude anything an app fetches at runtime; the bells the
+  meditation timer loads live in `meditation-timer/resources/random/` and must
+  stay published.
 - **Stack:** plain HTML, CSS, and JavaScript. No framework or bundler unless a
   subpage documents one.
 

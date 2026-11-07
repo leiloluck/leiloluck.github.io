@@ -1,0 +1,18 @@
+# GitHub Pages builds this repository with Jekyll and publishes every file in
+# it. GitHub's limit for a published Pages site is 1 GB; on 2026-11-07 the
+# artifact reached 1.14 GB and the deploy step hit its 10-minute timeout.
+#
+# The paths below are development-only material: bell studies and papers, the
+# retired soundtrack files, and an unreferenced PDF. They stay in the repo,
+# they are just not copied into the published site. Everything the apps load at
+# runtime (including meditation-timer/resources/random/) is still published.
+exclude:
+  - "meditation-timer/resources/bells"
+  - "meditation-timer/resources/sources"
+  - "meditation-timer/resources/bowls long interval.mp3"
+  - "meditation-timer/resources/Single bowl sound.mp3"
+  - "meditation-timer/resources/bells.html"
+  - "meditation-timer/resources/sources.md"
+  - "meditation-timer/resources/random/bell-2-c3.flac"
+  - "meditation-timer/resources/random/bell-2-c3.mp3"
+  - "roveredo/MAGMA ELEKTRO.pdf"

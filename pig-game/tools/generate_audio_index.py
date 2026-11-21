@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Generate audio-files.json from the audio directory structure.
+Generate audio/audio-files.json from the audio directory structure.
 Run this script whenever you add new audio files to automatically update the website.
 
-Usage: python generate_audio_index.py
+Usage: python tools/generate_audio_index.py   (works from any folder)
 """
 
 import os
@@ -193,7 +193,8 @@ def clean_filename(filename):
 
 def scan_audio_directory():
     """Scan the audio directory and build the data structure."""
-    script_dir = Path(__file__).parent
+    # This script lives in tools/; the audio folder is one level up.
+    script_dir = Path(__file__).parent.parent
     audio_dir = script_dir / "audio"
     
     if not audio_dir.exists():
@@ -257,7 +258,7 @@ def main():
         return
     
     # Write JSON file
-    output_file = Path(__file__).parent / "audio-files.json"
+    output_file = Path(__file__).parent.parent / "audio" / "audio-files.json"
     with open(output_file, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
     

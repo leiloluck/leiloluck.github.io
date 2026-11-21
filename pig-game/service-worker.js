@@ -20,10 +20,10 @@
      them, one network stream was tee'd into two 40-90 MB cache writes at once, and the
      slower side buffered in memory until the phone killed the download.
 
-   Bump APP_VERSION in version.js on every shell change to evict the old shell. */
+   Bump APP_VERSION in js/version.js on every shell change to evict the old shell. */
 'use strict';
 
-importScripts('./version.js');
+importScripts('./js/version.js');
 
 const CACHE_PREFIX = 'pig-game-';      // Cache Storage is per ORIGIN, not per app
 const SHELL_CACHE  = `${CACHE_PREFIX}shell-v${APP_VERSION}`;
@@ -33,13 +33,13 @@ const AUDIO_CACHE  = `${CACHE_PREFIX}audio`; // intentionally unversioned: survi
 const CORE_ASSETS = [
   './',
   './index.html',
-  './version.js',
-  './audio-files.json',
+  './js/version.js',
+  './audio/audio-files.json',
   './manifest.webmanifest',
-  './icon-192.png',
-  './icon-512.png',
-  './icon-maskable-512.png',
-  './apple-touch-icon-180.png'
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './icons/icon-maskable-512.png',
+  './icons/apple-touch-icon-180.png'
 ];
 
 self.addEventListener('install', (e) => {
@@ -71,7 +71,7 @@ self.addEventListener('install', (e) => {
 // cache, skipping any already there. Small (short clips), so it is fine on mobile data.
 async function precacheSounds() {
   const shell = await caches.open(SHELL_CACHE);
-  const idx = await shell.match('./audio-files.json');
+  const idx = await shell.match('./audio/audio-files.json');
   if (!idx) return;
   const data = await idx.json();
   const audio = await caches.open(AUDIO_CACHE);

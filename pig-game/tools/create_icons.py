@@ -11,7 +11,7 @@ central 80% (Android's maskable safe zone), so the same drawing works for "any",
 Drawn at 4x and downsampled with LANCZOS: PIL's ellipse is not antialiased, and the
 jagged edges showed at home-screen size.
 
-Run:  python create_icons.py
+Run:  python tools/create_icons.py   (writes into ../icons/)
 """
 
 from PIL import Image, ImageDraw
@@ -51,7 +51,8 @@ def create_icon(size, filename):
 
 
 def main():
-    here = os.path.dirname(os.path.abspath(__file__))
+    # This script lives in tools/; the icons go in the app's icons/ folder.
+    here = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'icons')
     for size, name in (
         (192, 'icon-192.png'),
         (512, 'icon-512.png'),

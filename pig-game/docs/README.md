@@ -1,5 +1,9 @@
 # Pig Game Track App - Audio Management
 
+> **Layout note (26.11.22b):** this folder was reorganised. Paths below are older: the
+> version is now `js/version.js`, icons are in `icons/`, the track index is
+> `audio/audio-files.json`, and the scripts are in `tools/`. See `../context.md`.
+
 ## Overview
 
 This app dynamically loads audio files from the `audio/` folder structure. No need to manually edit HTML for each new sound!

@@ -399,7 +399,7 @@ Always register with it:
 navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' });
 ```
 
-The Chrome 68+ default (`'imports'`) already bypasses the HTTP cache for the top-level worker script, so on Pages this is mostly belt-and-braces — **except when the worker uses `importScripts()`**. Imports *are* served from the HTTP cache under the default. Pig Game's worker does `importScripts('./version.js')` and derives its cache name from `APP_VERSION`, so a `version.js` served from the 10-minute HTTP cache made the new worker compute the *old* cache name and the update quietly did nothing.
+The Chrome 68+ default (`'imports'`) already bypasses the HTTP cache for the top-level worker script, so on Pages this is mostly belt-and-braces — **except when the worker uses `importScripts()`**. Imports *are* served from the HTTP cache under the default. Pig Game's worker does `importScripts('./js/version.js')` and derives its cache name from `APP_VERSION`, so a `version.js` served from the 10-minute HTTP cache made the new worker compute the *old* cache name and the update quietly did nothing.
 
 ### Guarding the manual bump
 

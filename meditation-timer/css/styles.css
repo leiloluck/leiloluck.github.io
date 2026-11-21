@@ -753,6 +753,18 @@ body.paused .countdown { color: var(--muted); }
 /* Install, Check for updates and the version share one section: a gap between them. */
 .section .btn-action + .btn-action { margin-top: clamp(4px, 0.9svh, 10px); }
 
+/* Share: two equal buttons side by side (Copy link + Share…, or the WhatsApp /
+   Telegram links where the browser has no share sheet). */
+.share-group { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.section .share-group .btn-action + .btn-action { margin-top: 0; }
+.share-group [hidden] { display: none; }
+a.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
 /* The app card: icon, name, version, one status line. The version is a button (tap to
    check for updates), kept small and quiet beside the name. */
 .app-card {

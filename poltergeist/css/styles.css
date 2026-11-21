@@ -771,6 +771,19 @@ body.test-mode .sound-btn  { background-color: #d8d4bf; }
 .settings-actions { display: flex; flex-direction: row; flex-wrap: wrap; gap: 6px; }
 .settings-actions .btn-small { flex: 1 1 118px; }
 
+/* Share: two equal raised buttons (Copy link + Share…, or the WhatsApp / Telegram
+   links where the browser has no share sheet). */
+.share-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.share-row [hidden] { display: none !important; }   /* beats the a.btn-small display below */
+.share-row a.btn-small {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  text-decoration: none;
+  cursor: pointer;
+}
+
 /* Explanatory line under a section label, quieter than the control it describes. */
 .settings-note { margin: 0; font-size: 11px; line-height: 1.45; color: var(--muted); }
 

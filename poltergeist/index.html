@@ -177,6 +177,18 @@
     <!-- Which browser installs this properly on this phone (installAdvice() in app.js). -->
     <p class="install-note" id="install-note" hidden></p>
 
+    <!-- Share: Copy link, plus the phone's own share sheet (WhatsApp, Telegram, ...);
+         without one, direct WhatsApp / Telegram links instead. initShare() in app.js. -->
+    <section class="section">
+      <p class="section-label">Share</p>
+      <div class="share-row">
+        <button class="btn-small" id="share-copy" type="button">🔗 Copy link</button>
+        <button class="btn-small" id="share-native" type="button" hidden>📤 Share…</button>
+        <a class="btn-small" id="share-wa" target="_blank" rel="noopener" hidden>WhatsApp</a>
+        <a class="btn-small" id="share-tg" target="_blank" rel="noopener" hidden>Telegram</a>
+      </div>
+    </section>
+
     <!-- Delete app: removes everything this app stored on the device and unregisters its
          service worker. Never touches the other apps that share this origin. See
          deleteApp() in app.js. -->
@@ -188,7 +200,7 @@
 
     <!-- Version + offline status (version is tappable: checks for an update) -->
     <section class="section settings-meta">
-      <button class="version" id="version" type="button" title="Check for updates">v26.10.27a</button>
+      <button class="version" id="version" type="button" title="Check for updates">v26.11.22a</button>
       <span class="offline-badge" id="offline-badge">✓ works offline</span>
     </section>
 

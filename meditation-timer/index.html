@@ -174,7 +174,7 @@
       <div class="app-card">
         <img class="app-icon" src="icons/icon-192.png?v=26.10.15" width="52" height="52" alt="">
         <div class="app-card-text">
-          <p class="app-name">Meditation Timer <button class="version" id="version" type="button" title="Check for updates">v26.11.05a</button></p>
+          <p class="app-name">Meditation Timer <button class="version" id="version" type="button" title="Check for updates">v26.11.22a</button></p>
           <p class="settings-status" id="install-status">Running in the browser.</p>
         </div>
       </div>
@@ -183,6 +183,18 @@
       <p class="install-note" id="install-note" hidden></p>
       <button class="btn btn-action" id="install-btn" type="button">Install app</button>
       <button class="btn btn-action" id="update-btn" type="button">Check for updates</button>
+    </section>
+
+    <!-- Share: Copy link, plus the phone's own share sheet (WhatsApp, Telegram, ...);
+         without one, direct WhatsApp / Telegram links instead. initShare() in app.js. -->
+    <section class="section">
+      <p class="section-label">Share</p>
+      <div class="btn-group share-group">
+        <button class="btn btn-action" id="share-copy" type="button">Copy link</button>
+        <button class="btn btn-action" id="share-native" type="button" hidden>Share…</button>
+        <a class="btn btn-action" id="share-wa" target="_blank" rel="noopener" hidden>WhatsApp</a>
+        <a class="btn btn-action" id="share-tg" target="_blank" rel="noopener" hidden>Telegram</a>
+      </div>
     </section>
 
     <section class="section">

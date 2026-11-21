@@ -176,7 +176,7 @@
           "path": "audio/end game/Millionaire 3.mp3",
           "displayName": "Millionaire 3",
           "icon": "💰",
-          "color": "#b18b00",
+          "color": "#819e00",
           "bytes": 46067373
         },
         {
@@ -184,7 +184,7 @@
           "path": "audio/end game/O Fortuna 2.mp3",
           "displayName": "O Fortuna 2",
           "icon": "🎵",
-          "color": "#00b26f",
+          "color": "#00abd1",
           "bytes": 6117322
         },
         {
@@ -192,16 +192,8 @@
           "path": "audio/end game/O Fortuna.mp3",
           "displayName": "O Fortuna",
           "icon": "🎵",
-          "color": "#009ef2",
-          "bytes": 1871328
-        },
-        {
-          "filename": "violin.mp3",
-          "path": "audio/end game/violin.mp3",
-          "displayName": "violin",
-          "icon": "🎻",
           "color": "#a36af4",
-          "bytes": 4560814
+          "bytes": 1871328
         }
       ]
     },
@@ -223,7 +215,7 @@
           "path": "audio/victory/Millionaire Win.mp3",
           "displayName": "Millionaire Win",
           "icon": "💰",
-          "color": "#b18b00",
+          "color": "#c77e00",
           "bytes": 509517
         },
         {
@@ -231,7 +223,7 @@
           "path": "audio/victory/Price is right.mp3",
           "displayName": "Price is right",
           "icon": "🎉",
-          "color": "#00b26f",
+          "color": "#45a902",
           "bytes": 54809643
         },
         {
@@ -239,16 +231,24 @@
           "path": "audio/victory/credits.mp3",
           "displayName": "credits",
           "icon": "🎓",
-          "color": "#009ef2",
+          "color": "#00b1ae",
           "bytes": 1151186
         },
         {
-          "filename": "winning.mp3",
-          "path": "audio/victory/winning.mp3",
-          "displayName": "winning",
-          "icon": "🏆",
-          "color": "#a36af4",
+          "filename": "shop.mp3",
+          "path": "audio/victory/shop.mp3",
+          "displayName": "shop",
+          "icon": "🛍️",
+          "color": "#0094ff",
           "bytes": 43572429
+        },
+        {
+          "filename": "violin.mp3",
+          "path": "audio/victory/violin.mp3",
+          "displayName": "violin",
+          "icon": "🎻",
+          "color": "#a36af4",
+          "bytes": 4560814
         }
       ]
     },

@@ -91,6 +91,18 @@
         </div>
       </div>
       <div style="opacity: 0.5;">Take your time. There's no deadline (except the obvious one).</div>
+
+      <!-- Share this page: Copy link, plus the device's own share sheet (WhatsApp,
+           Telegram, ...); without one, direct WhatsApp / Telegram links instead. -->
+      <div class="share-wrap">
+        <p class="share-label">Share this exercise</p>
+        <div class="share-actions">
+          <button class="btn btn-small" id="share-copy" type="button">Copy link</button>
+          <button class="btn btn-small" id="share-native" type="button" hidden>Share…</button>
+          <a class="btn btn-small" id="share-wa" target="_blank" rel="noopener" hidden>WhatsApp</a>
+          <a class="btn btn-small" id="share-tg" target="_blank" rel="noopener" hidden>Telegram</a>
+        </div>
+      </div>
     </div>
   </footer>
 
@@ -314,6 +326,54 @@
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && overlay.classList.contains('active')) closeReader();
     });
+
+    /* ── Share this page ────────────────────────────── */
+    // The standard pattern (web.dev "share" pattern; MDN, Web Share API): feature-detect
+    // navigator.share, call it from the tap, and treat AbortError as the user closing
+    // the sheet. Copy link is always there; where the browser has no share sheet,
+    // WhatsApp and Telegram links take its place. Only the page's address is shared,
+    // never the text in the editor.
+    (function initShare() {
+      const SHARE_URL = new URL('./', location.href).href;
+      const data = { title: 'Your Final Words', text: 'A quiet writing exercise.', url: SHARE_URL };
+      const btnShareCopy = document.getElementById('share-copy');
+      const btnShare = document.getElementById('share-native');
+      const linkWa = document.getElementById('share-wa');
+      const linkTg = document.getElementById('share-tg');
+
+      let canShare = typeof navigator.share === 'function';
+      try { if (canShare && navigator.canShare) canShare = navigator.canShare(data); } catch {}
+      btnShare.hidden = !canShare;
+      linkWa.hidden = linkTg.hidden = canShare;
+      linkWa.href = 'https://wa.me/?text=' + encodeURIComponent(data.text + ' ' + SHARE_URL);
+      linkTg.href = 'https://t.me/share/url?url=' + encodeURIComponent(SHARE_URL)
+        + '&text=' + encodeURIComponent(data.text);
+
+      async function copyText(text) {
+        try { await navigator.clipboard.writeText(text); return true; } catch {}
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+        document.body.appendChild(ta);
+        ta.select();
+        let ok = false;
+        try { ok = document.execCommand('copy'); } catch {}
+        ta.remove();
+        return ok;
+      }
+
+      btnShareCopy.addEventListener('click', async () => {
+        toast(await copyText(SHARE_URL) ? 'Link copied' : 'Could not copy');
+      });
+      btnShare.addEventListener('click', async () => {
+        try { await navigator.share(data); }
+        catch (err) {
+          if (err && err.name === 'AbortError') return;
+          if (await copyText(SHARE_URL)) toast('Link copied');
+        }
+      });
+    })();
   })();
   </script>
 </body>

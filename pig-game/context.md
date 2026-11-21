@@ -55,8 +55,13 @@ The version lives in `version.js` only, so `tools/check_versions.py` (which expe
 
 ## Header, install note, close
 
-- One row on every phone: title (shrinks, never wraps), compact **Install** button with the
-  version as tiny print inside it, **red X**. The install status floats under the button.
+- One row on every phone: title (shrinks, never wraps), then only what applies: a **library
+  icon** (outlined cloud while tracks still stream, green cloud with a tick once everything
+  is downloaded; tap opens Settings; it replaced the cloud on every tile), an **Install**
+  pill (only in a browser tab that has not installed the app), an **Update** pill (only
+  when a newer version exists: a waiting worker, or a newer `version.js` on the server,
+  compared as strings so a local build never offers a downgrade), and the **red X**. The
+  version lives in Settings. The status line floats under the header.
 - `installHint()` shows a note under the header only when the current browser cannot
   install a real app: Android anything-but-Chrome/Samsung-Internet → "Open this page in
   Chrome…"; iPhone in-app browsers or iOS < 16.4 outside Safari → "Open this page in Safari…".
@@ -68,40 +73,42 @@ The version lives in `version.js` only, so `tools/check_versions.py` (which expe
   `window.close()`. In a plain tab (where close is refused) a "Closed" screen offers
   **Open again**.
 
-## Tabs, Settings and the play bar
+## Tabs, Settings and the player
 
-- Five phase tabs — Start, Mid, End, Victory, Sounds. There is **no All tab**: adding
-  Settings made six equal tabs too tight, so Settings takes the far right under a gear.
-  Each tab is its own card (`.content-section.active`), so the Settings panel, a plain
-  sibling of the generated music sections, shares the same frame.
-- **Settings** holds a short description of the app headed by its own icon (the same
-  `icon-192.png` the OS installs, so the installed result is visible before the tap), a big
-  Install/Update button (a twin of the compact header control — `setInstallLabel()` drives
-  both, and the header's status line is mirrored underneath with a `MutationObserver`),
-  and the whole offline library.
-  **Download for offline** lives here only, never in a music tab. The download paints the
-  progress bar and confirms with a toast on start, success, partial failure and lost
-  connection (`downloadLibrary()`), and success also reads "All tracks work offline".
-  **Delete offline files** sits under it (quiet outlined red, shown only once something is
-  saved): it empties the `pig-game-audio` cache — music, precached effects, partials — and
-  nothing else, so the shell cache still launches the app offline (`deleteOfflineFiles()`).
-  **Delete app** sits last (also quiet outlined red): `deleteApp()` unregisters this app's
-  service worker, deletes every `pig-game-*` cache and its localStorage key and any
-  IndexedDB, then shows a "deleted" screen. Every step is prefix-scoped, because Cache
-  Storage and localStorage are per ORIGIN and the other apps share it. It never reloads
-  (a reload would immediately reinstall). A web page cannot remove its own home-screen
-  icon, so that final step is left to the user and the screen says so.
-- The play bar is a play/pause button, the seek bar, and a "Now playing" track name,
-  all aligned to the content column (`--max-width`) rather than stretched full width.
-- The loaded track keeps a rainbow ring at all times (`.is-current`), so it is obvious
-  which track the bar controls; while it is playing the ring spins (`.is-playing`). The
-  ring is a masked pseudo-element driven by an `@property --pig-angle` conic gradient: it
-  is static where `@property` is unsupported, and still under `prefers-reduced-motion`.
-  `updateTrackHighlight()` in `index.html` maintains the classes.
+- Seven equal tabs: **All** (the default; every category, phases in order, effects last),
+  Start, Mid, End, Victory, Sounds, Settings. The active tab gets a pill behind its icon.
+  A horizontal **swipe** on the page steps through them in that order and **wraps** at
+  both ends (left of All is Settings); the card follows the finger and the next one slides
+  in. Touch and pen only, screen edges left to the OS back gesture, vertical drags stay
+  scrolling (`touch-action: pan-y` on `<main>`). Arrow keys do the same on a desktop.
+  A track appears in All and in its phase tab, so per-track updates use `querySelectorAll`.
+- Tiles are an equal-width **grid** (2 / 3 / 4 columns for music, 3 / 4 for effects); a lone
+  last tile is centred only where the column count is odd, otherwise left-aligned. It never
+  stretches across the row.
+- **Settings**, compact, top to bottom: the app (icon, name, version, one line, one button:
+  Install app / Update now / Check for updates), the offline library, **Share**, Delete app.
+  **Download for offline** lives here only. Delete offline files empties `pig-game-audio`
+  only, so the shell still launches offline (`deleteOfflineFiles()`). Delete app
+  (`deleteApp()`) is prefix-scoped throughout, because Cache Storage and localStorage are
+  per ORIGIN and the other apps share it, and never reloads. A web page cannot remove its
+  own home-screen icon, so the deleted screen says to.
+- **Share** (same block in the meditation timer, poltergeist.exe and Your Final Words):
+  Copy link always; the native share sheet (`navigator.share`, AbortError ignored) where it
+  exists, otherwise direct WhatsApp (`wa.me/?text=`) and Telegram (`t.me/share/url`) links.
+- **Player**: a floating card above the tab bar. Track icon (in the track's colour), name and
+  phase; previous / play-pause / next as inline SVG (play with nothing loaded starts the
+  first track of the visible tab); a buffering ring on play while loading; under it the
+  seek bar (thin track, played part filled via `--p`) between elapsed and total time.
+- The loaded track keeps a rainbow ring (`.is-current`), spinning while it plays
+  (`.is-playing`), via an `@property --pig-angle` conic gradient.
 
 ## Style
 
 Deliberately loud and colourful (it is a party game), an explicit exception to the
-site's dark-minimal default. Button colours come from the OKLCH rainbow in
+site's dark-minimal default. The page is deep plum under two oversized layers of soft
+colour blobs that orbit slowly (`body::before/::after`, transform and opacity only, so the
+GPU moves ready-made layers and nothing repaints). Cards are translucent without
+`backdrop-filter`, which would be recomputed every frame over a moving background. The
+drift keeps running under reduced motion at half speed, at the owner's request. Button colours come from the OKLCH rainbow in
 `generate_audio_index.py`. The Music/SFX balance bar is drawn on the range *track*
 pseudo-elements, because the generic `input[type="range"]` rule outranks the class.

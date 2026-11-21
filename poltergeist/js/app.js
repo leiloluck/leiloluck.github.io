@@ -53,7 +53,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26.10.27a';
+const APP_VERSION = 'v26.11.22a';
 
 // ── Sound catalogue ──────────────────────────────────────────────────────────
 // Drop real files into resources/ (see resources/README.md). Until a matching file
@@ -2654,3 +2654,68 @@ if ('serviceWorker' in navigator) {
     if (await isReallyOnline()) hardReset();
   }).catch(() => {});
 }
+
+const SHARE_TITLE = 'poltergeist.exe';
+const SHARE_TEXT  = 'A prank app that plays spooky sounds at random intervals.';
+
+// ── Share ────────────────────────────────────────────────────────────────────
+// Settings → Share. The standard pattern (web.dev "share" pattern; MDN, Web Share
+// API): feature-detect navigator.share, call it straight from the tap (it needs a user
+// gesture), and treat AbortError as the user simply closing the sheet. The phone's own
+// share sheet then handles WhatsApp, Telegram and the rest. "Copy link" is always
+// there, one tap. Where there is no share sheet (most desktop browsers), WhatsApp and
+// Telegram links take its place. Same block in Pig Game, the meditation timer,
+// poltergeist.exe and Your Final Words.
+(function initShare() {
+  const btnCopy = document.getElementById('share-copy');
+  if (!btnCopy) return;
+  const btnShare = document.getElementById('share-native');
+  const linkWa   = document.getElementById('share-wa');
+  const linkTg   = document.getElementById('share-tg');
+  const SHARE_URL = new URL('./', location.href).href;           // the app, no query
+  const data = { title: SHARE_TITLE, text: SHARE_TEXT, url: SHARE_URL };
+
+  let canShare = typeof navigator.share === 'function';
+  try { if (canShare && navigator.canShare) canShare = navigator.canShare(data); } catch {}
+  btnShare.hidden = !canShare;
+  linkWa.hidden = linkTg.hidden = canShare;
+  linkWa.href = 'https://wa.me/?text=' + encodeURIComponent(data.text + ' ' + SHARE_URL);
+  linkTg.href = 'https://t.me/share/url?url=' + encodeURIComponent(SHARE_URL)
+    + '&text=' + encodeURIComponent(data.text);
+
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); return true; } catch {}
+    // Older WebViews have no async clipboard: copy from a hidden textarea instead.
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+    document.body.appendChild(ta);
+    ta.select();
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch {}
+    ta.remove();
+    return ok;
+  }
+
+  const label = btnCopy.textContent;
+  let resetTimer = null;
+  const flash = (text) => {
+    btnCopy.textContent = text;
+    clearTimeout(resetTimer);
+    resetTimer = setTimeout(() => { btnCopy.textContent = label; }, 1800);
+  };
+
+  btnCopy.addEventListener('click', async () => {
+    flash(await copyText(SHARE_URL) ? 'Copied ✓' : 'Copy failed');
+  });
+
+  btnShare.addEventListener('click', async () => {
+    try {
+      await navigator.share(data);
+    } catch (err) {
+      if (err && err.name === 'AbortError') return;          // the user closed the sheet
+      if (await copyText(SHARE_URL)) flash('Copied ✓');
+    }
+  });
+})();

@@ -290,6 +290,25 @@ footer {
   margin-bottom: 2rem;
 }
 
+/* Share this page: a quiet label and two outlined buttons, last thing on the page. */
+.share-wrap {
+  margin-top: 2rem;
+}
+.share-label {
+  margin-bottom: 0.75rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+.share-actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.share-actions [hidden] { display: none; }
+
 .btn-submit {
   background: none;
   border: none;

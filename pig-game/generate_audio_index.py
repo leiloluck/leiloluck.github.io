@@ -171,7 +171,8 @@ ICON_MAP = {
     "baba box": "📦",
     "baba key": "🗝️",
     "animal chill": "🐾",
-    "jazz": "🎷"
+    "jazz": "🎷",
+    "shop": "🛍️"
 }
 
 def get_icon_for_filename(filename):

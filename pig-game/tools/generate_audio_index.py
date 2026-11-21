@@ -39,6 +39,12 @@ CATEGORIES = {
     }
 }
 
+# Tracks that lead their category. "funny" opens the Start list, so it is also the first
+# track of the whole app: the play button starts it when nothing is loaded yet.
+PINNED_FIRST = {
+    "start game": ["funny.mp3"],
+}
+
 def rgb_to_hex(r, g, b):
     """Convert RGB values (0-255) to hex color string."""
     return f"#{int(r):02x}{int(g):02x}{int(b):02x}"
@@ -215,6 +221,9 @@ def scan_audio_directory():
         
         files = []
         mp3_files = sorted([f for f in os.listdir(category_path) if f.endswith('.mp3')])
+        # Pinned tracks go first, in the order listed (the rest stay alphabetical).
+        pinned = [f for f in PINNED_FIRST.get(category_folder, []) if f in mp3_files]
+        mp3_files = pinned + [f for f in mp3_files if f not in pinned]
         
         if not mp3_files:
             print(f"Info: No MP3 files found in '{category_folder}', skipping...")

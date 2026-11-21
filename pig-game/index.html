@@ -16,7 +16,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Pig Game Track App</title>
-  <meta name="theme-color" content="#1a0826">
+  <meta name="theme-color" content="#10061a">
   <meta name="mobile-web-app-capable" content="yes">
   <!-- Apple PWA meta tags -->
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -102,6 +102,7 @@
          reload the app mid-game. Keeps the rubber-band glow. */
       overscroll-behavior-y: contain;
       -webkit-text-size-adjust: 100%;
+      height: 100%;
     }
 
     /* Every tappable surface: no double-tap zoom (and so no tap delay), no text
@@ -126,7 +127,17 @@
       background: transparent;
     }
 
+    /* App shell (v26.11.22c): the page itself never scrolls. It is exactly one screen
+       tall (header on top, the pager filling the rest), and each tab is its own scrolling
+       panel inside the pager. So a tab change never changes the document height, the
+       browser's URL bar never collapses or springs back under the finger, and there is no
+       scroll jump to the top: the layout cannot move while you switch. */
     body {
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
       margin: 0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
       background: var(--page-bg);
@@ -196,15 +207,17 @@
     }
 
     header {
-      position: sticky;
-      top: 0;
+      position: relative;
+      flex: 0 0 auto;
       /* Above the buttons: they are position:relative (for the offline marker), and a
          positioned element later in the page otherwise paints over a sticky header. */
       z-index: 100;
       /* viewport-fit=cover + black-translucent draw the page under the status bar and
          the notch. Without this the app bar sits underneath the clock. */
       padding-top: env(safe-area-inset-top, 0px);
-      background: var(--glass-strong);
+      /* Exactly the manifest's theme_color and the tab bar's colour, so the phone's
+         status bar on top and gesture bar at the bottom blend into the app. */
+      background: #10061a;
       border-bottom: 1px solid var(--glass-border);
     }
 
@@ -255,13 +268,44 @@
       color: #0b1220;
     }
 
+    /* ---------- Pager ----------
+       All seven tabs are panels stacked in the same box. Only the current one and its two
+       neighbours are visible; they sit side by side via transform (current at 0, the
+       next one a full width to the right, the previous one to the left), so a swipe drags
+       real pages, the next tab is already there under the finger, and nothing is shown,
+       hidden or re-laid-out mid-gesture. Only `transform` moves, which the GPU does on its
+       own thread. `contain: strict` tells the browser a panel's insides never affect
+       anything outside it, so it never re-lays-out the others. See initPager(). */
     main {
-      max-width: var(--max-width);
-      margin: 0 auto;
-      padding: 16px;
+      flex: 1 1 auto;
+      min-height: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #audio-content { display: contents; }
+
+    .panel {
+      position: absolute;
+      inset: 0;
+      overflow-x: hidden;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      touch-action: pan-y;               /* vertical scroll is the browser's, sideways is ours */
+      contain: strict;
+      visibility: hidden;
+      transform: translate3d(0, 0, 0);
+      padding: 12px 16px calc(var(--tab-bar-h, 70px) + var(--player-h, 64px) + 16px);
       /* Landscape on a notched phone puts the first column under the cutout. */
       padding-left: max(16px, env(safe-area-inset-left, 0px));
       padding-right: max(16px, env(safe-area-inset-right, 0px));
+    }
+
+    .panel.is-shown { visibility: visible; }
+
+    .panel > .content-section {
+      max-width: var(--max-width);
+      margin: 0 auto;
     }
 
     .card {
@@ -574,7 +618,7 @@
       bottom: 0;
       left: 0;
       width: 100%;
-      background: rgba(16, 6, 26, 0.98);
+      background: #10061a;
       border-top: 1px solid var(--glass-border);
       display: flex;
       justify-content: center;
@@ -805,10 +849,6 @@
        Settings tab, which is a plain sibling of the generated music sections, gets the
        same frame with no extra markup. */
     .content-section {
-      display: none;
-    }
-
-    .content-section.active {
       display: flex;
       flex-direction: column;
       gap: 12px;
@@ -819,21 +859,6 @@
       box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
     }
 
-    /* Tab change: the new card slides in from the side it came from. Swiping drags the
-       card with the finger first (.is-dragging, transform set inline). */
-    .content-section.enter-next { animation: pig-enter-next .24s cubic-bezier(.2, .8, .2, 1); }
-    .content-section.enter-prev { animation: pig-enter-prev .24s cubic-bezier(.2, .8, .2, 1); }
-    .content-section.springback { transition: transform .2s ease; }
-
-    @keyframes pig-enter-next { from { transform: translateX(36px); opacity: 0; } }
-    @keyframes pig-enter-prev { from { transform: translateX(-36px); opacity: 0; } }
-
-    @media (prefers-reduced-motion: reduce) {
-      .content-section.enter-next, .content-section.enter-prev { animation: none; }
-    }
-
-    /* Swiping is a horizontal gesture on the page; vertical scrolling stays the browser's. */
-    main { touch-action: pan-y; }
 
     /* ---------- Utility & Component Classes ---------- */
 
@@ -855,11 +880,7 @@
     .loading-msg { color: var(--subtext); }
     .error-msg { color: var(--error); }
 
-    /* Clears both fixed bars plus the gesture-nav inset, so the last row of buttons is
-       always reachable. Kept in sync with the real bar height by JS on load/resize. */
-    .bottom-spacer {
-      height: calc(var(--tab-bar-h, 70px) + var(--player-h, 64px) + 16px);
-    }
+
 
     /* Download Section — lives inside the Settings tab only. Left-aligned like the other
        Settings blocks, so it no longer centres a big icon and title over empty space. */
@@ -1418,13 +1439,12 @@
 
     <div id="audio-content">
       <!-- Content will be dynamically loaded from audio-files.json -->
-      <div class="loading-msg">
-        Loading audio files...
-      </div>
+      <div class="panel is-shown"><div class="loading-msg">Loading audio files...</div></div>
     </div>
 
     <!-- Settings tab: a short description, the app install/update control, and the offline
          library. The download tooling lives here only, out of the per-phase music tabs. -->
+    <div class="panel" data-tab="settings">
     <section class="content-section" data-tab="settings" id="settings-section">
       <div class="settings-block">
         <div class="settings-app-header">
@@ -1503,8 +1523,7 @@
         </div>
       </div>
     </section>
-
-    <div class="bottom-spacer"></div>
+    </div>
 
   </main>
 
@@ -1974,8 +1993,6 @@
       Object.keys(categoriesByTab).forEach(tabName => {
         const section = document.createElement('div');
         section.className = 'content-section';
-        section.dataset.tab = tabName;
-        if (tabName === currentTab) section.classList.add('active');
 
         const categories = categoriesByTab[tabName];
 
@@ -2068,66 +2085,165 @@
           section.appendChild(volumeSliderSection);
         }
 
-        fragment.appendChild(section);
+        // Each tab is a panel of the pager (see initPager()); the card sits inside it.
+        const panel = document.createElement('div');
+        panel.className = 'panel';
+        panel.dataset.tab = tabName;
+        panel.appendChild(section);
+        fragment.appendChild(panel);
       });
 
       // Single DOM insertion for all sections (minimizes reflows)
       container.appendChild(fragment);
     }
 
-    // ---------- Tabs and swiping ----------
+    // ---------- Tabs and the pager ----------
     //
-    // Order is the tab bar's order: All, Start, Mid, End, Victory, Sounds, Settings. A tap
-    // jumps; a horizontal swipe on the page steps one tab and WRAPS (left of All is
-    // Settings, right of Settings is All). The card follows the finger while dragging and
-    // the new one slides in from the side it came from. Same gesture rules as the
-    // meditation timer's pager: touch and pen only, a vertical start is left to the page's
-    // scrolling (`touch-action: pan-y` on <main>), and the lift after a drag never taps.
+    // Order is the tab bar's: All, Start, Mid, End, Victory, Sounds, Settings, and it wraps
+    // (left of All is Settings, right of Settings is All).
+    //
+    // Why it is built like this (v26.11.22c). The first version showed one card at a time
+    // with display:none, scrolled the page to the top and faded the new card in from
+    // opacity 0. Every switch therefore re-laid-out the page, changed its height (which on
+    // a phone also moves the URL bar), jumped the scroll position and flashed the
+    // background through. Now each tab is a fixed-size scrolling panel, and a switch only
+    // ever changes `transform` on at most three of them:
+    //   * at rest the current panel sits at 0 and its two neighbours one full width
+    //     either side, already rendered, so a swipe pulls in a real page with no delay;
+    //   * while the finger is down the panels follow it 1:1, updated once per frame;
+    //   * on release, or on a tab tap, the pair slides with a CSS transition, which the
+    //     compositor runs off the main thread;
+    //   * each panel keeps its own scroll position.
+    // Gesture rules are the meditation timer's: touch and pen only, the screen edges are
+    // left to the OS back gesture, a vertical start stays a scroll (`touch-action: pan-y`),
+    // and the lift after a drag never taps a track.
     const tabNames = () => [...document.querySelectorAll('.tab-item')].map(t => t.dataset.tab);
+    const panelFor = (name) => document.querySelector(`.panel[data-tab="${name}"]`);
+    const pagerEl = document.querySelector('main');
 
-    function showTab(name, dir = 0) {
-      currentTab = name;
+    const SLIDE_MS = 300;
+    const SLIDE_EASE = 'cubic-bezier(0.22, 0.8, 0.24, 1)';   // fast start, soft landing
+    let pagerW = 1;
+    let settleTimer = null;
+
+    function markTabs(name) {
       document.querySelectorAll('.tab-item').forEach(t => {
         const on = t.dataset.tab === name;
         t.classList.toggle('active', on);
         t.setAttribute('aria-current', on ? 'page' : 'false');
       });
-      document.querySelectorAll('.content-section').forEach(s => {
-        const on = s.dataset.tab === name;
-        s.classList.remove('enter-next', 'enter-prev', 'springback');
-        s.style.transform = '';
-        s.classList.toggle('active', on);
-        if (on && dir) {
-          void s.offsetWidth;                         // restart the entry animation
-          s.classList.add(dir > 0 ? 'enter-next' : 'enter-prev');
-        }
+    }
+
+    function setX(panel, x, animate) {
+      panel.style.transition = animate ? `transform ${SLIDE_MS}ms ${SLIDE_EASE}` : 'none';
+      panel.style.transform = `translate3d(${Math.round(x)}px, 0, 0)`;
+    }
+
+    function hidePanel(panel) {
+      panel.classList.remove('is-shown');
+      panel.style.transition = 'none';
+      panel.style.transform = 'translate3d(0, 0, 0)';
+      panel.inert = true;
+    }
+
+    // Where a visible panel actually is right now, mid-transition included.
+    function currentX(panel) {
+      if (!panel.classList.contains('is-shown')) return null;
+      try { return new DOMMatrixReadOnly(getComputedStyle(panel).transform).m41; }
+      catch { return 0; }
+    }
+
+    // Current panel at `offset`, its neighbours a page either side, everything else hidden.
+    function layoutPanels(offset, animate) {
+      const names = tabNames(), n = names.length;
+      const i = Math.max(0, names.indexOf(currentTab));
+      const prev = names[(i - 1 + n) % n], next = names[(i + 1) % n];
+      names.forEach(name => {
+        const p = panelFor(name);
+        if (!p) return;
+        const x = name === currentTab ? offset
+          : name === next ? offset + pagerW
+          : name === prev ? offset - pagerW : null;
+        if (x === null) { hidePanel(p); return; }
+        p.classList.add('is-shown');
+        p.inert = name !== currentTab;
+        setX(p, x, animate);
       });
-      // Each tab is a different length. Without this, switching from a long tab
-      // scrolled to the bottom lands you below the end of a short one.
-      window.scrollTo({ top: 0, behavior: 'auto' });
+    }
+
+    // Slide to `name`. dir +1: it comes in from the right (the next tab); -1: from the left.
+    function goTo(name, dir) {
+      const names = tabNames();
+      if (!names.includes(name)) return;
+      clearTimeout(settleTimer);
+      if (name === currentTab) { layoutPanels(0, true); return; }
+      const from = panelFor(currentTab), to = panelFor(name);
+      if (!from || !to) { currentTab = name; markTabs(name); layoutPanels(0, false); return; }
+
+      // Start both pages from where they really are (a swipe may have moved them), and
+      // bring the target in from the side it belongs to.
+      const fromX = currentX(from) ?? 0;
+      let toX = currentX(to);
+      if (toX === null || Math.sign(toX - fromX) !== dir) toX = fromX + dir * pagerW;
+      names.forEach(n => { const p = panelFor(n); if (p && p !== from && p !== to) hidePanel(p); });
+      from.classList.add('is-shown');
+      to.classList.add('is-shown');
+      setX(from, fromX, false);
+      setX(to, toX, false);
+      void to.offsetWidth;                        // commit the start positions first
+      setX(from, -dir * pagerW, true);
+      setX(to, 0, true);
+      from.inert = true;
+      to.inert = false;
+
+      currentTab = name;
+      markTabs(name);
+      // Once it has landed, line up the new neighbours (off-screen, so nothing visible moves).
+      settleTimer = setTimeout(() => layoutPanels(0, false), SLIDE_MS + 30);
     }
 
     function stepTab(dir) {
       const names = tabNames();
       const i = Math.max(0, names.indexOf(currentTab));
-      showTab(names[(i + dir + names.length) % names.length], dir);
+      goTo(names[(i + dir + names.length) % names.length], dir);
+    }
+
+    // Kept for the other callers (the header's library icon, the play button).
+    function showTab(name, dir) {
+      const names = tabNames();
+      goTo(name, dir || Math.sign(names.indexOf(name) - names.indexOf(currentTab)) || 1);
+    }
+
+    function measurePager() {
+      pagerW = pagerEl.clientWidth || window.innerWidth || 1;
     }
 
     function initializeTabLogic() {
+      measurePager();
+      markTabs(currentTab);
+      layoutPanels(0, false);
+
+      // A rotation or a resized window changes the page width: re-place without animating.
+      if ('ResizeObserver' in window) {
+        new ResizeObserver(() => {
+          const w = pagerEl.clientWidth;
+          if (w && w !== pagerW) { pagerW = w; clearTimeout(settleTimer); layoutPanels(0, false); }
+        }).observe(pagerEl);
+      } else {
+        window.addEventListener('resize', () => { measurePager(); layoutPanels(0, false); });
+      }
+
       document.querySelectorAll('.tab-item').forEach(item => {
         item.setAttribute('role', 'button');
         item.tabIndex = 0;
         const go = () => {
-          const names = tabNames();
-          const from = names.indexOf(currentTab), to = names.indexOf(item.dataset.tab);
-          if (to !== from) showTab(item.dataset.tab, Math.sign(to - from));
+          if (item.dataset.tab !== currentTab) showTab(item.dataset.tab);
         };
         item.addEventListener('click', go);
         item.addEventListener('keydown', e => {
           if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); }
         });
       });
-      showTab(currentTab);
 
       // Arrow keys on a desktop step through the tabs too (not while a slider has focus).
       document.addEventListener('keydown', e => {
@@ -2142,61 +2258,61 @@
     }
 
     function enableSwipe() {
-      const main = document.querySelector('main');
       const EDGE = 16;          // px left to the OS back gesture at both screen edges
-      const COMMIT = 0.22;      // fraction of the width that commits a swipe
-      const FLICK = 0.35;       // px per ms that commits regardless of distance
+      const COMMIT = 0.25;      // fraction of the width that commits a swipe
+      const FLICK = 0.3;        // px per ms that commits regardless of distance
       let id = null, mode = 'idle';      // idle | pending | drag
-      let x0 = 0, y0 = 0, dx = 0, lastX = 0, lastT = 0, vx = 0, swallow = false, sec = null;
+      let x0 = 0, y0 = 0, dx = 0, lastX = 0, lastT = 0, vx = 0, swallow = false, frame = 0;
 
-      main.addEventListener('pointerdown', e => {
+      // Pointer events can fire several times per frame; move the pages once per frame.
+      const paint = () => { frame = 0; layoutPanels(dx, false); };
+
+      pagerEl.addEventListener('pointerdown', e => {
         if (closing || !e.isPrimary || e.pointerType === 'mouse') return;
         if (e.target.closest('input, textarea, select')) return;      // sliders drag themselves
         if (e.clientX < EDGE || e.clientX > window.innerWidth - EDGE) return;
         id = e.pointerId; mode = 'pending';
         x0 = lastX = e.clientX; y0 = e.clientY; lastT = e.timeStamp;
         dx = 0; vx = 0;
-        sec = document.querySelector('.content-section.active');
-      });
+      }, { passive: true });
 
-      main.addEventListener('pointermove', e => {
+      pagerEl.addEventListener('pointermove', e => {
         if (e.pointerId !== id || mode === 'idle') return;
-        dx = e.clientX - x0;
-        const dy = e.clientY - y0;
+        const mx = e.clientX - x0, my = e.clientY - y0;
         if (mode === 'pending') {
-          if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) { mode = 'idle'; return; }   // a scroll
-          if (Math.abs(dx) < 12 || Math.abs(dx) < Math.abs(dy) * 1.3) return;
+          if (Math.abs(my) > 10 && Math.abs(my) > Math.abs(mx)) { mode = 'idle'; return; }   // a scroll
+          if (Math.abs(mx) < 10 || Math.abs(mx) < Math.abs(my) * 1.2) return;
           mode = 'drag';
-          try { main.setPointerCapture(id); } catch {}
-          if (sec) sec.classList.remove('enter-next', 'enter-prev', 'springback');
+          try { pagerEl.setPointerCapture(id); } catch {}
+          clearTimeout(settleTimer);
+          measurePager();
+          x0 = e.clientX;                     // start following from here: no initial jump
         }
+        dx = e.clientX - x0;
         const dt = e.timeStamp - lastT;
         if (dt > 0) vx = 0.7 * vx + 0.3 * ((e.clientX - lastX) / dt);
         lastX = e.clientX; lastT = e.timeStamp;
-        if (sec) sec.style.transform = `translateX(${(dx * 0.6).toFixed(1)}px)`;
-      });
+        if (!frame) frame = requestAnimationFrame(paint);
+      }, { passive: true });
 
       const end = (e, commit) => {
         if (e.pointerId !== id) return;
         const wasDrag = mode === 'drag';
         id = null; mode = 'idle';
         if (!wasDrag) return;
+        if (frame) { cancelAnimationFrame(frame); frame = 0; layoutPanels(dx, false); }
         swallow = true;                        // the lift after a drag must not tap a track
         setTimeout(() => { swallow = false; }, 60);
-        const width = main.clientWidth || 1;
-        if (commit && (Math.abs(dx) > width * COMMIT || Math.abs(vx) > FLICK)) {
-          const towards = Math.abs(vx) > FLICK ? vx : dx;
-          stepTab(towards < 0 ? 1 : -1);       // finger moves left -> next tab
-        } else if (sec) {
-          const s = sec;
-          s.classList.add('springback');
-          s.style.transform = '';
-          s.addEventListener('transitionend', () => s.classList.remove('springback'), { once: true });
-        }
+        // A flick counts in its own direction; otherwise how far the page was pulled.
+        const flick = Math.abs(vx) > FLICK ? Math.sign(vx) : 0;
+        const pulled = Math.abs(dx) > pagerW * COMMIT ? Math.sign(dx) : 0;
+        const dirMove = commit ? (flick || pulled) : 0;
+        if (dirMove) stepTab(dirMove < 0 ? 1 : -1);      // finger moved left -> next tab
+        else layoutPanels(0, true);                       // spring back
       };
-      main.addEventListener('pointerup', e => end(e, true));
-      main.addEventListener('pointercancel', e => end(e, false));
-      main.addEventListener('click', e => {
+      pagerEl.addEventListener('pointerup', e => end(e, true));
+      pagerEl.addEventListener('pointercancel', e => end(e, false));
+      pagerEl.addEventListener('click', e => {
         if (swallow) { e.stopPropagation(); e.preventDefault(); }
       }, true);
     }
@@ -2251,9 +2367,10 @@
     btnPlayPause.addEventListener('click', () => {
       if (isPlaying()) { pauseBackground(); return; }
       if (activeMusicUrl) { resumeBackground(); return; }
-      // Nothing loaded yet: start the first track of the tab on screen.
-      const first = document.querySelector('.content-section.active .tile[data-path]');
-      const path = first ? first.dataset.path : (musicPlaylist[0] && musicPlaylist[0].path);
+      // Nothing loaded yet: start "funny", the first track of the app (pinned first in
+      // tools/generate_audio_index.py), whichever tab is on screen.
+      const funny = musicPlaylist.find(t => t.displayName.toLowerCase() === 'funny');
+      const path = (funny || musicPlaylist[0] || {}).path;
       if (path) playBackground(path);
     });
     btnPrev.addEventListener('click', () => playPreviousTrack());
@@ -2984,9 +3101,7 @@
       offlineInd.setAttribute('aria-label', text);
     }
     offlineInd.addEventListener('click', () => {
-      if (currentTab === 'settings') return;
-      const names = tabNames();
-      showTab('settings', Math.sign(names.indexOf('settings') - names.indexOf(currentTab)) || 1);
+      if (currentTab !== 'settings') showTab('settings');
     });
 
     function setDownloadButton(mode) {

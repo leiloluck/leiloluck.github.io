@@ -84,11 +84,23 @@ The version lives in `js/version.js` only, so `tools/check_versions.py` at the r
 
 - Seven equal tabs: **All** (the default; every category, phases in order, effects last),
   Start, Mid, End, Victory, Sounds, Settings. The active tab gets a pill behind its icon.
-  A horizontal **swipe** on the page steps through them in that order and **wraps** at
-  both ends (left of All is Settings); the card follows the finger and the next one slides
-  in. Touch and pen only, screen edges left to the OS back gesture, vertical drags stay
-  scrolling (`touch-action: pan-y` on `<main>`). Arrow keys do the same on a desktop.
+- **Pager** (26.11.22c, `initializeTabLogic()` / `goTo()` / `enableSwipe()`): the page never
+  scrolls (`body` is one screen tall, `overflow: hidden`); each tab is an absolutely placed,
+  self-scrolling `.panel` with `contain: strict`. At rest the current panel is at 0 and its
+  two neighbours a full width either side, already rendered. A swipe moves them 1:1 with the
+  finger (once per animation frame), a release or a tab tap slides the pair with a 300 ms
+  transform transition, and the order **wraps** at both ends. Only `transform` ever changes,
+  so a switch costs ~1 ms of main-thread work instead of the ~20 ms relayout of the old
+  show/hide cards, never moves the URL bar, and each tab keeps its own scroll position.
+  Touch and pen only, screen edges left to the OS back gesture, vertical drags stay
+  scrolling (`touch-action: pan-y` on the panels). Arrow keys step on a desktop.
   A track appears in All and in its phase tab, so per-track updates use `querySelectorAll`.
+- **funny** is pinned first in Start (`PINNED_FIRST` in `tools/generate_audio_index.py`),
+  so it is the first track of the app, and Play with nothing loaded starts it on any tab.
+- **System bars**: `theme_color`, `background_color`, the `theme-color` meta, the header and
+  the tab bar are all `#10061a`, so Android's status bar and gesture bar blend in (they were
+  pink from the old manifest). An installed app picks up manifest colour changes when
+  Chrome next refreshes it; reinstalling shows them at once.
 - Tiles are an equal-width **grid** (2 / 3 / 4 columns for music, 3 / 4 for effects); a lone
   last tile is centred only where the column count is odd, otherwise left-aligned. It never
   stretches across the row.

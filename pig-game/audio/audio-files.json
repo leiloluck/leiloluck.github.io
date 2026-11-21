@@ -6,11 +6,19 @@
       "type": "music",
       "files": [
         {
+          "filename": "funny.mp3",
+          "path": "audio/start game/funny.mp3",
+          "displayName": "funny",
+          "icon": "😂",
+          "color": "#f04f3d",
+          "bytes": 1216704
+        },
+        {
           "filename": "Happy Music.mp3",
           "path": "audio/start game/Happy Music.mp3",
           "displayName": "Happy Music",
           "icon": "😊",
-          "color": "#f04f3d",
+          "color": "#e26600",
           "bytes": 2565505
         },
         {
@@ -18,7 +26,7 @@
           "path": "audio/start game/Jeopardy.mp3",
           "displayName": "Jeopardy",
           "icon": "🧠",
-          "color": "#e26600",
+          "color": "#be8400",
           "bytes": 43715953
         },
         {
@@ -26,7 +34,7 @@
           "path": "audio/start game/Rich.mp3",
           "displayName": "Rich",
           "icon": "💰",
-          "color": "#be8400",
+          "color": "#819e00",
           "bytes": 5248262
         },
         {
@@ -34,7 +42,7 @@
           "path": "audio/start game/Root Beer Rag.mp3",
           "displayName": "Root Beer Rag",
           "icon": "🍺",
-          "color": "#819e00",
+          "color": "#00ae44",
           "bytes": 7646468
         },
         {
@@ -42,7 +50,7 @@
           "path": "audio/start game/Spanish Flea.mp3",
           "displayName": "Spanish Flea",
           "icon": "🎺",
-          "color": "#00ae44",
+          "color": "#00b393",
           "bytes": 51298434
         },
         {
@@ -50,7 +58,7 @@
           "path": "audio/start game/Spinning Monkeys.mp3",
           "displayName": "Spinning Monkeys",
           "icon": "🐒",
-          "color": "#00b393",
+          "color": "#00abd1",
           "bytes": 5081283
         },
         {
@@ -58,16 +66,8 @@
           "path": "audio/start game/elevator.mp3",
           "displayName": "elevator",
           "icon": "⏹",
-          "color": "#00abd1",
-          "bytes": 43459173
-        },
-        {
-          "filename": "funny.mp3",
-          "path": "audio/start game/funny.mp3",
-          "displayName": "funny",
-          "icon": "😂",
           "color": "#0098fa",
-          "bytes": 1216704
+          "bytes": 43459173
         },
         {
           "filename": "game_show.mp3",
